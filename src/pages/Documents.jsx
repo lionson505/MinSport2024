@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
-import { Button } from '../components/ui/button';
+import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/input';
 import { Search, Plus, Eye, Download, Trash } from 'lucide-react';
 import toast from 'react-hot-toast';

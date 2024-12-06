@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
 import { Plus } from 'lucide-react';
-import { Button } from '../components/ui/button';
+import { Button } from '../components/ui/Button';
 import TourismEventsList from '../components/tourism/TourismEventsList';
 import TourismCalendar from '../components/tourism/TourismCalendar';
 import AddEventModal from '../components/tourism/AddEventModal';

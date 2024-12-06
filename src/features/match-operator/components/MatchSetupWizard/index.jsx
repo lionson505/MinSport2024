@@ -4,7 +4,7 @@ import { TeamSetup } from '../TeamSetup';
 import { OfficialsSetup } from '../OfficialsSetup';
 import { MatchPreview } from '../MatchPreview';
 import { Steps } from '../../../../components/ui/steps';
-import { Button } from '../../../../components/ui/button';
+import { Button } from '../../../../components/ui/Button';
 import { Alert, AlertDescription } from '../../../../components/ui/alert';
 import { Loader2 } from 'lucide-react';
 

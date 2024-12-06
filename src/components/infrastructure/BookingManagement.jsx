@@ -8,7 +8,7 @@ import {
   TableCell,
   TablePagination 
 } from '../ui/table';
-import { Button } from '../ui/button';
+import { Button } from '../ui/Button';
 import { Check, X, Search, Filter } from 'lucide-react';
 import { toast } from 'sonner';
 import { Input } from '../ui/input';

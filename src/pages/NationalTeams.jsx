@@ -2,7 +2,7 @@ import React, { useState, useEffect, Fragment } from 'react';
 import axiosInstance from '../utils/axiosInstance';
 import { Plus, Eye, Edit, Trash2, X } from 'lucide-react';
 import { Dialog, Transition } from '@headlessui/react';
-import { Button } from '../components/ui/button';
+import { Button } from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import AddNationalTeamForm from '../components/forms/AddNationalTeamForm';
 import toast from 'react-hot-toast';

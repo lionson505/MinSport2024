@@ -9,7 +9,7 @@ import EditClubModal from './EditClubModal';
 import AddClubForm from './AddClubForm';
 import axios from '../../utils/axiosInstance';
 import { useDarkMode } from '../../contexts/DarkModeContext';
-import { Button } from '../ui/button'; // Import the Button component
+import { Button } from '../ui/Button'; // Import the Button component
 
 const ManageClubs = () => {
   const { isDarkMode } = useDarkMode();

@@ -4,7 +4,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { Modal } from '../ui/Modal';
-import { Button } from '../ui/button';
+import { Button } from '../ui/Button';
 import { MapPin, Users, Clock, Tag, DollarSign } from 'lucide-react';
 import { useTourism } from '../../contexts/TourismContext';
 import { format } from 'date-fns';

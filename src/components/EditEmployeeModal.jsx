@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { Button } from './ui/button';
+import { Button } from './ui/Button';
 import { X } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import AddEmployeeForm from './forms/AddEmployeeForm';

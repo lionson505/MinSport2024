@@ -8,7 +8,7 @@ import {
   TableCell,
   TablePagination,
 } from '../ui/table';
-import { Button } from '../ui/button';
+import { Button } from '../ui/Button';
 import { Input } from '../ui/input';
 import { Select } from '../ui/select';
 import { Eye, Edit, Trash2, Search, Filter, Calendar, AlertTriangle } from 'lucide-react';

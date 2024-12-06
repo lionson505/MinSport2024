@@ -1,5 +1,5 @@
 import { Modal } from '../../ui/modal';
-import { Button } from '../../ui/button';
+import { Button } from '../../ui/Button';
 
 export function StudentManagementModal({ 
   isOpen, 

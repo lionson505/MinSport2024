@@ -14,7 +14,7 @@ import { toast } from 'react-hot-toast';
 import PageLoading from '../components/ui/PageLoading';
 import Message from '../components/ui/Message';
 import { useDarkMode } from '../contexts/DarkModeContext';
-import { Button } from '../components/ui/button';
+import { Button } from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import {
   Dialog,

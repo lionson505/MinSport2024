@@ -4,7 +4,7 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Toolti
 import axiosInstance from '../utils/axiosInstance';  // Assuming this is the Axios instance to make API calls
 import { useNavigate } from 'react-router-dom';
 import { FileText, Users, Award, Building2, Flag, Calendar as CalendarIcon } from 'lucide-react';
-import { Button } from '../components/ui/button';  // Assuming Button is a custom component you have
+import { Button } from '../components/ui/Button';  // Assuming Button is a custom component you have
 
 ChartJS.register(
   CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, LineElement, PointElement, Filler

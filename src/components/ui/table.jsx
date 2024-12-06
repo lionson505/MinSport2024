@@ -1,7 +1,7 @@
 import * as React from "react"
 import { cn } from "../../lib/utils"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import { Button } from "./button"
+import { Button } from "./Button"
 
 const Table = React.forwardRef(({ className, ...props }, ref) => (
   <div className="relative w-full overflow-auto">

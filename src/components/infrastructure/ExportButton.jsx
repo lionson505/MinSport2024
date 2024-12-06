@@ -1,6 +1,6 @@
 import React from 'react';
 import { Download } from 'lucide-react';
-import { Button } from '../ui/button';
+import { Button } from '../ui/Button';
 import * as XLSX from 'xlsx';
 
 const ExportButton = ({ data, filename = 'export', type = 'xlsx' }) => {

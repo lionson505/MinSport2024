@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '../components/ui/button';
+import { Button } from '../components/ui/Button';
 import { Loader2, Edit, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import AddUserModal from '../components/AddUserModal';

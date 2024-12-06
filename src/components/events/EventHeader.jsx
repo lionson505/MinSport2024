@@ -1,5 +1,5 @@
 import { Plus } from 'lucide-react';
-import { Button } from '../ui/button';
+import { Button } from '../ui/Button';
 
 export function EventHeader({ onAddClick }) {
   return (
