@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { createEmployee, updateEmployee } from '../../services/employee';
+import toast from 'react-hot-toast';
 
 const AddEmployeeForm = ({ isEditing, onSuccess, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -33,7 +34,6 @@ const AddEmployeeForm = ({ isEditing, onSuccess, onCancel }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
   
-    // Transform the formData to match the expected API payload
     const transformedData = {
       photo_passport: formData.photoPassport,
       firstname: formData.firstName,
@@ -60,21 +60,18 @@ const AddEmployeeForm = ({ isEditing, onSuccess, onCancel }) => {
     try {
       if (isEditing) {
         await updateEmployee(transformedData);
-        alert('Employee updated successfully!');
+        toast.success('Employee updated successfully!');
       } else {
         await createEmployee(transformedData);
-        alert('Employee created successfully!');
+        toast.success('Employee created successfully!');
       }
       if (typeof onSuccess === 'function') {
         onSuccess();
       }
     } catch (error) {
       console.error('Error:', error);
-      if (error.response) {
-        alert(`An error occurred: ${error.response.data.message || error.message}`);
-      } else {
-        alert(`An error occurred: ${error.message || error}`);
-      }
+      const errorMessage = error.response?.data?.message || error.message || 'An error occurred';
+      toast.error(`An error occurred: ${errorMessage}`);
     }
   };
   

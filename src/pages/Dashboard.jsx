@@ -10,6 +10,8 @@ ChartJS.register(
   CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, LineElement, PointElement, Filler
 );
 
+
+
 const Dashboard = () => {
   const [statsData, setStatsData] = useState({
     federations: 0,
@@ -29,6 +31,12 @@ const Dashboard = () => {
   const [appointmentRequests, setAppointmentRequests] = useState([]);
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const navigate = useNavigate();
+  const jl = localStorage.getItem("jl");
+  if(jl ){
+    window.location.reload();
+    window.location.reload();
+    localStorage.removeItem("jl");
+  }
 
   useEffect(() => {
     const fetchStats = async () => {

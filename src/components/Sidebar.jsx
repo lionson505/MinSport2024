@@ -52,7 +52,7 @@ const sidebarLinks = [
   { title:"Match Operator", icon: Timer, label: 'Match Operator', path: '/match-operator' }
 ];
 
-const Sidebar = () => {
+const  Sidebar = () => {
   const { isDarkMode, toggleDarkMode } = useDarkMode();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const location = useLocation();
@@ -90,6 +90,7 @@ const Sidebar = () => {
 
   // Update accessible links whenever accessibleModules changes
   useEffect(() => {
+
     const links = sidebarLinks.filter((link) =>
       accessibleModules.some((module) =>
         link.path.toLowerCase().includes(module)
@@ -105,7 +106,7 @@ const Sidebar = () => {
     setAccessibleLinks(links);
   }, [accessibleModules]);
 
-  localStorage.setItem("accessibleLinks", JSON.stringify(accessibleLinks));
+   localStorage.setItem("accessibleLinks", JSON.stringify(accessibleLinks));
 
 
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useMatchOperator } from '../../../contexts/MatchOperatorContext';
 import { CreateMatchModal } from '../components/CreateMatchModal';
 import { MatchSetupWizard } from '../components/MatchSetupWizard';
@@ -7,6 +7,7 @@ import { Button } from '../../../components/ui/button';
 import { Plus, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '../../../components/ui/alert';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../../components/ui/tabs';
+import axiosInstance from '../../../utils/axiosInstance';
 
 export function MatchOperatorDashboard() {
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -14,12 +15,23 @@ export function MatchOperatorDashboard() {
   const [setupMode, setSetupMode] = useState(false);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('all');
-  
-  const { 
-    matches = [],
-    initializeMatchSetup,
-    checkMatchAvailability 
-  } = useMatchOperator();
+  const [matches, setMatches] = useState([]);
+
+  const { initializeMatchSetup, checkMatchAvailability } = useMatchOperator();
+
+  useEffect(() => {
+    const fetchMatches = async () => {
+      try {
+        const response = await axiosInstance.get('/live-matches');
+        setMatches(response.data);
+      } catch (error) {
+        setError('Failed to fetch matches');
+        console.error('Error fetching matches:', error);
+      }
+    };
+
+    fetchMatches();
+  }, []);
 
   const handleMatchClick = async (match) => {
     try {
@@ -181,4 +193,4 @@ export function MatchOperatorDashboard() {
       )}
     </div>
   );
-} 
+}

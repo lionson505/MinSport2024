@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { format, isValid } from 'date-fns';
 import axiosInstance from '../../utils/axiosInstance';
 import { Dialog, Transition } from '@headlessui/react';
+import EditEventModal from '../../components/tourism/EditEventModal'; // Import the EditEventModal component
 
 const TourismEventsList = () => {
   const [events, setEvents] = useState([]);
@@ -30,8 +31,8 @@ const TourismEventsList = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false); // State for edit modal
   const [selectedEvent, setSelectedEvent] = useState(null);
   const itemsPerPage = 10;
 
@@ -75,18 +76,8 @@ const TourismEventsList = () => {
     }
   };
 
-  const handleEditSave = async () => {
-    if (!selectedEvent) return;
-
-    try {
-      const response = await axiosInstance.put(`/sports-tourism-events/${selectedEvent.id}`, selectedEvent);
-      setEvents(events.map(event => (event.id === selectedEvent.id ? response.data : event)));
-      toast.success('Event updated successfully');
-      setIsEditModalOpen(false);
-    } catch (error) {
-      console.error('Error updating event:', error);
-      toast.error('Failed to update event');
-    }
+  const handleEventUpdated = (updatedEvent) => {
+    setEvents(events.map(event => event.id === updatedEvent.id ? updatedEvent : event));
   };
 
   const filteredEvents = events.filter((event) => {
@@ -320,161 +311,6 @@ const TourismEventsList = () => {
         </Dialog>
       </Transition>
 
-      {/* Edit Modal */}
-      <Transition appear show={isEditModalOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-50" onClose={() => setIsEditModalOpen(false)}>
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-black bg-opacity-25" />
-          </Transition.Child>
-
-          <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4">
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
-                <Dialog.Title className="text-lg font-medium mb-4">Edit Event</Dialog.Title>
-                <form className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Event Name</label>
-                    <Input
-                      value={selectedEvent?.name || ''}
-                      onChange={(e) => setSelectedEvent({ ...selectedEvent, name: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Category</label>
-                    <Select
-                      value={selectedEvent?.categoryId || ''}
-                      onChange={(e) => setSelectedEvent({ ...selectedEvent, categoryId: e.target.value })}
-                    >
-                      {categories.map((category) => (
-                        <option key={category.id} value={category.id}>
-                          {category.name}
-                        </option>
-                      ))}
-                    </Select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">SubCategory</label>
-                    <Input
-                      type="number"
-                      value={selectedEvent?.subCategory || ''}
-                      onChange={(e) => setSelectedEvent({ ...selectedEvent, subCategory: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Province</label>
-                    <Input
-                      value={selectedEvent?.province || ''}
-                      onChange={(e) => setSelectedEvent({ ...selectedEvent, province: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">District</label>
-                    <Input
-                      value={selectedEvent?.district || ''}
-                      onChange={(e) => setSelectedEvent({ ...selectedEvent, district: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Sector</label>
-                    <Input
-                      value={selectedEvent?.sector || ''}
-                      onChange={(e) => setSelectedEvent({ ...selectedEvent, sector: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Cell</label>
-                    <Input
-                      value={selectedEvent?.cell || ''}
-                      onChange={(e) => setSelectedEvent({ ...selectedEvent, cell: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Village</label>
-                    <Input
-                      value={selectedEvent?.village || ''}
-                      onChange={(e) => setSelectedEvent({ ...selectedEvent, village: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Start Date</label>
-                    <Input
-                      type="date"
-                      value={selectedEvent?.startDate || ''}
-                      onChange={(e) => setSelectedEvent({ ...selectedEvent, startDate: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">End Date</label>
-                    <Input
-                      type="date"
-                      value={selectedEvent?.endDate || ''}
-                      onChange={(e) => setSelectedEvent({ ...selectedEvent, endDate: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Participants</label>
-                    <Input
-                      type="number"
-                      value={selectedEvent?.participants || ''}
-                      onChange={(e) => setSelectedEvent({ ...selectedEvent, participants: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Participants Fee</label>
-                    <Input
-                      type="number"
-                      value={selectedEvent?.participantsFee || ''}
-                      onChange={(e) => setSelectedEvent({ ...selectedEvent, participantsFee: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Amount Generated</label>
-                    <Input
-                      type="number"
-                      value={selectedEvent?.amountGenerated || ''}
-                      onChange={(e) => setSelectedEvent({ ...selectedEvent, amountGenerated: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Description</label>
-                    <Input
-                      value={selectedEvent?.description || ''}
-                      onChange={(e) => setSelectedEvent({ ...selectedEvent, description: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Is Published</label>
-                    <Select
-                      value={selectedEvent?.isPublished ? 'true' : 'false'}
-                      onChange={(e) => setSelectedEvent({ ...selectedEvent, isPublished: e.target.value === 'true' })}
-                    >
-                      <option value="true">Yes</option>
-                      <option value="false">No</option>
-                    </Select>
-                  </div>
-                  <div className="flex justify-end mt-4">
-                    <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
-                      Cancel
-                    </Button>
-                    <Button className="ml-2" onClick={handleEditSave}>
-                      Save
-                    </Button>
-                  </div>
-                </form>
-              </Dialog.Panel>
-            </div>
-          </div>
-        </Dialog>
-      </Transition>
-
       {/* Schedule Modal */}
       <Transition appear show={isScheduleModalOpen} as={Fragment}>
         <Dialog as="div" className="relative z-50" onClose={() => setIsScheduleModalOpen(false)}>
@@ -552,6 +388,14 @@ const TourismEventsList = () => {
           </div>
         </Dialog>
       </Transition>
+
+      {/* Edit Modal */}
+      <EditEventModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        event={selectedEvent}
+        onEventUpdated={handleEventUpdated}
+      />
     </div>
   );
 };

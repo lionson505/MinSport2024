@@ -48,7 +48,9 @@ function AddAcademyStudent({ isOpen, onClose, onAdd, studentData = null, isEditi
   useEffect(() => {
     if (studentData) {
       setFormData(studentData);
-      if (studentData.photo_passport instanceof File) {
+      if (typeof studentData.photo_passport === 'string') {
+        setPreviewUrl(studentData.photo_passport);
+      } else if (studentData.photo_passport instanceof File) {
         setPreviewUrl(URL.createObjectURL(studentData.photo_passport));
       }
     }
@@ -80,7 +82,7 @@ function AddAcademyStudent({ isOpen, onClose, onAdd, studentData = null, isEditi
       });
 
       if (isEditing) {
-        
+        console.log(formData)
         await axiosInstance.put(`/academy-students/${formData.id}`, formDataToSend, {
           headers: {
             'Content-Type': 'multipart/form-data'
@@ -99,7 +101,8 @@ function AddAcademyStudent({ isOpen, onClose, onAdd, studentData = null, isEditi
       onAdd(formData);
       onClose();
     } catch (error) {
-      toast.error(error.message);
+      console.error('Error submitting form:', error);
+      toast.error(error.response?.data?.message || error.message || 'An error occurred');
     }
   };
 

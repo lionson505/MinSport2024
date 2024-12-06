@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../../../components/ui/select";
-import { useMatchOperator } from '../../../../contexts/MatchOperatorContext';  // Fix this import
+import axiosInstance from '../../../../utils/axiosInstance'; // Import axiosInstance
 
 export function CreateMatchModal({ open, onClose }) {
   const [formData, setFormData] = useState({
@@ -22,22 +22,30 @@ export function CreateMatchModal({ open, onClose }) {
     date: ''
   });
 
-  const { createMatch } = useMatchOperator();
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setLoading(true);
-      const startDate = new Date(`${formData.date}T${formData.startTime}`);
+      const matchDate = new Date(`${formData.date}T${formData.startTime}`).toISOString();
       
       const matchData = {
-        ...formData,
-        startDate: startDate.toISOString(),
-        status: 'UPCOMING'
+        homeTeam: formData.homeTeam,
+        awayTeam: formData.awayTeam,
+        homeScore: 0, // Default score, can be updated later
+        awayScore: 0, // Default score, can be updated later
+        competition: formData.competition,
+        venue: formData.venue,
+        matchDate: matchDate,
+        startTime: matchDate,
+        status: 'UPCOMING', // Default status
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
 
-      await createMatch(matchData);
+      // Use axiosInstance to create a new match
+      await axiosInstance.post('/live-matches', matchData);
       onClose();
     } catch (error) {
       console.error('Error creating match:', error);
@@ -142,4 +150,4 @@ export function CreateMatchModal({ open, onClose }) {
       </DialogContent>
     </Dialog>
   );
-} 
+}

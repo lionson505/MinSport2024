@@ -36,6 +36,7 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
         setClubs(clubsResponse.data || []);
         setDisciplines(disciplinesResponse.data || []);
       } catch (error) {
+        console.error('Error fetching clubs or disciplines:', error);
         toast.error('Failed to fetch clubs or disciplines');
       }
     };

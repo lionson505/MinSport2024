@@ -4,9 +4,21 @@ import { Dialog, Transition } from "@headlessui/react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Search } from "react-feather";
-import { AlertCircle } from "lucide-react";
-import { Calendar, Loader2, Edit, Download, Trash2, AlertTriangle, Eye, X } from 'lucide-react';
+import { Calendar, Eye, Trash2 } from 'lucide-react';
 import AddAppointmentForm from "../components/forms/AddAppointmentForm"; // Import the form
+
+const Toast = ({ message, onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 3000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <div className="fixed bottom-4 right-4 bg-green-500 text-white p-3 rounded-lg shadow-lg">
+      {message}
+    </div>
+  );
+};
 
 function Appointments() {
   const [appointments, setAppointments] = useState([]);
@@ -16,19 +28,13 @@ function Appointments() {
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [rescheduleData, setRescheduleData] = useState({ date: "", reason: "" });
-
-  // Modal state for view details
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [appointmentDetails, setAppointmentDetails] = useState(null);
-
-  // Delete confirmation modal state
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [appointmentToDelete, setAppointmentToDelete] = useState(null);
-
-  // Add Appointment modal state
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
 
-  // Fetch appointments with optional filters
   const fetchAppointments = async () => {
     setIsLoading(true);
     try {
@@ -38,7 +44,7 @@ function Appointments() {
       setAppointments(response.data);
     } catch (error) {
       console.error("Error fetching appointments:", error);
-      alert("Failed to fetch appointments. Please try again.");
+      setToastMessage("Failed to fetch appointments. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -48,13 +54,12 @@ function Appointments() {
     fetchAppointments();
   }, [currentPage, searchTerm]);
 
-  // Handlers for actions
   const handleReschedule = (appointment) => {
     setSelectedAppointment(appointment);
-    const formattedDate = new Date(appointment.request_time).toISOString().slice(0, 19); // Format: "YYYY-MM-DDTHH:mm:ss"
+    const formattedDate = new Date(appointment.request_time).toISOString().slice(0, 19);
     setRescheduleData({
-      date: formattedDate, // Prepopulate date with formatted value
-      reason: "", // Clear reason
+      date: formattedDate,
+      reason: "",
     });
     setIsRescheduleModalOpen(true);
   };
@@ -66,34 +71,24 @@ function Appointments() {
 
   const handleRescheduleSubmit = async () => {
     if (!rescheduleData.date || !rescheduleData.reason) {
-      alert("Please fill in all fields before submitting.");
+      setToastMessage("Please fill in all fields before submitting.");
       return;
     }
 
     try {
       const formattedData = {
-        request_date: rescheduleData.date, // Use the formatted date (ISO 8601)
-        // reason: rescheduleData.reason,
+        request_date: rescheduleData.date,
       };
 
-      const response = await axiosInstance.put(
-        `/appointments/${selectedAppointment.id}`,
-        formattedData
-      );
+      await axiosInstance.put(`/appointments/${selectedAppointment.id}`, formattedData);
 
-      alert("Appointment rescheduled successfully!");
+      setToastMessage("Appointment rescheduled successfully!");
       setIsRescheduleModalOpen(false);
-      fetchAppointments(); // Refresh appointments after rescheduling
+      fetchAppointments();
     } catch (error) {
       console.error("Error rescheduling appointment:", error);
-      if (error.response) {
-        console.error("Error response:", error.response.data);
-        const errorMessage =
-          error.response?.data?.message || "Failed to reschedule appointment.";
-        alert(errorMessage);
-      } else {
-        alert("Network or unexpected error occurred.");
-      }
+      const errorMessage = error.response?.data?.message || "Failed to reschedule appointment.";
+      setToastMessage(errorMessage);
     }
   };
 
@@ -108,28 +103,26 @@ function Appointments() {
     try {
       await axiosInstance.delete(`/appointments/${appointmentToDelete.id}`);
       setAppointments((prev) => prev.filter((appt) => appt.id !== appointmentToDelete.id));
-      alert("Appointment deleted successfully!");
+      setToastMessage("Appointment deleted successfully!");
       setDeleteModalOpen(false);
     } catch (error) {
       console.error("Error deleting appointment:", error);
-      alert("Failed to delete appointment.");
+      setToastMessage("Failed to delete appointment.");
     }
   };
 
   const handleAddAppointment = async (newAppointment) => {
     try {
-      console.log(newAppointment)
       const response = await axiosInstance.post("/appointments", newAppointment);
       setAppointments((prev) => [...prev, response.data]);
-      alert("Appointment added successfully!");
+      setToastMessage("Appointment added successfully!");
       setAddModalOpen(false);
     } catch (error) {
       console.error("Error adding appointment:", error);
-      alert("Failed to add appointment.");
+      setToastMessage("Failed to add appointment.");
     }
   };
 
-  // Render status badge
   const renderStatusBadge = (status) => {
     const statusClass = {
       Scheduled: "bg-green-100 text-green-800",
@@ -143,14 +136,13 @@ function Appointments() {
     );
   };
 
-  // Handle page changes
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
   return (
     <div className="p-4">
-      {/* Filters and Search */}
+      {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage('')} />}
       <div className="flex justify-between items-center mb-4">
         <div className="relative w-80">
           <Input
@@ -168,7 +160,6 @@ function Appointments() {
         <Button onClick={() => setAddModalOpen(true)}>Add Appointment</Button>
       </div>
 
-      {/* Appointments Table */}
       <div className="bg-white rounded-lg shadow">
         {isLoading ? (
           <div className="text-center py-4">Loading...</div>
@@ -176,7 +167,6 @@ function Appointments() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                {/* Table Headers */}
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Person to Meet</th>
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Names</th>
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Gender</th>
@@ -193,7 +183,6 @@ function Appointments() {
             <tbody className="divide-y divide-gray-200">
               {appointments.map((appointment) => (
                 <tr key={appointment.id} className="hover:bg-gray-50">
-                  {/* Table Cells */}
                   <td className="px-3 py-2 text-sm">{appointment.person_to_meet}</td>
                   <td className="px-3 py-2 text-sm">{appointment.names}</td>
                   <td className="px-3 py-2 text-sm">{appointment.gender}</td>
@@ -221,7 +210,7 @@ function Appointments() {
                       className="text-red-600 text-sm hover:underline"
                       onClick={() => handleDelete(appointment)}
                     >
-                     <Trash2 className="h-4 w-4 mr-1" />
+                      <Trash2 className="h-4 w-4 mr-1" />
                     </button>
                   </td>
                 </tr>
@@ -231,7 +220,6 @@ function Appointments() {
         )}
       </div>
 
-      {/* Pagination Controls */}
       <div className="flex justify-between items-center mt-4">
         <Button
           variant="outline"
@@ -250,7 +238,6 @@ function Appointments() {
         </Button>
       </div>
 
-      {/* View Appointment Modal */}
       <Transition show={viewModalOpen} as={Fragment}>
         <Dialog as="div" className="relative z-50" onClose={() => setViewModalOpen(false)}>
           <Transition.Child
@@ -269,7 +256,6 @@ function Appointments() {
               <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
                 <Dialog.Title className="text-lg font-medium text-gray-900">Appointment Details</Dialog.Title>
                 <div className="mt-4">
-                  {/* Display Appointment Details */}
                   <div className="mb-2"><strong>Person to Meet:</strong> {appointmentDetails?.person_to_meet}</div>
                   <div className="mb-2"><strong>Names:</strong> {appointmentDetails?.names}</div>
                   <div className="mb-2"><strong>Email:</strong> {appointmentDetails?.email}</div>
@@ -277,7 +263,6 @@ function Appointments() {
                   <div className="mb-2"><strong>Purpose:</strong> {appointmentDetails?.purpose}</div>
                   <div className="mb-2"><strong>Institution:</strong> {appointmentDetails?.institution}</div>
                   <div className="mb-2"><strong>Function:</strong> {appointmentDetails?.function}</div>
-                  {/* Add more fields as needed */}
                 </div>
                 <div className="flex justify-end mt-4">
                   <Button variant="outline" onClick={() => setViewModalOpen(false)}>
@@ -290,7 +275,6 @@ function Appointments() {
         </Dialog>
       </Transition>
 
-      {/* Reschedule Modal */}
       <Transition show={isRescheduleModalOpen} as={Fragment}>
         <Dialog as="div" className="relative z-50" onClose={() => setIsRescheduleModalOpen(false)}>
           <Transition.Child
@@ -337,7 +321,6 @@ function Appointments() {
         </Dialog>
       </Transition>
 
-      {/* Delete Confirmation Modal */}
       <Transition show={deleteModalOpen} as={Fragment}>
         <Dialog as="div" className="relative z-50" onClose={() => setDeleteModalOpen(false)}>
           <Transition.Child
@@ -372,7 +355,6 @@ function Appointments() {
         </Dialog>
       </Transition>
 
-      {/* Add Appointment Modal */}
       <Transition show={addModalOpen} as={Fragment}>
         <Dialog as="div" className="relative z-50" onClose={() => setAddModalOpen(false)}>
           <Transition.Child

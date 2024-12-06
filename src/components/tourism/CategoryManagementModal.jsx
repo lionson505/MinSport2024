@@ -64,29 +64,42 @@ const CategoryManagementModal = ({ isOpen, onClose }) => {
 
   const handleAddSubCategory = async () => {
     if (!selectedCategory) {
-      toast.error('Please select a category first')
-      return
+      toast.error('Please select a category first');
+      return;
     }
-
+  
     if (!newSubCategory.trim()) {
-      toast.error('Subcategory name cannot be empty')
-      return
+      toast.error('Subcategory name cannot be empty');
+      return;
     }
-
+  
     const payload = {
       name: newSubCategory,
       categoryId: selectedCategory,
-      description: subCategoryDescription
+      description: subCategoryDescription,
     };
-    
-    
-
-    console.log('Payload being sent:', payload)
-
+  
+    console.log('Payload being sent:', payload);
+  
     try {
       const response = await axiosInstance.post('/sports-tourism-subcategories', payload);
       console.log('API Response:', response.data);
+  
       // Update state with new subcategory
+      setCategories(prevCategories => ({
+        ...prevCategories,
+        [selectedCategory]: {
+          ...prevCategories[selectedCategory],
+          subCategories: [
+            ...prevCategories[selectedCategory].subCategories,
+            response.data,
+          ],
+        },
+      }));
+  
+      setNewSubCategory('');
+      setSubCategoryDescription('');
+      toast.success('Subcategory added successfully');
     } catch (error) {
       if (error.response) {
         console.error('Server Error:', error.response.data);
@@ -96,8 +109,8 @@ const CategoryManagementModal = ({ isOpen, onClose }) => {
         toast.error('Failed to add subcategory');
       }
     }
-  }
-
+  };
+  
   const handleDeleteCategory = async (categoryId) => {
     toast.custom((t) => (
       <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg">

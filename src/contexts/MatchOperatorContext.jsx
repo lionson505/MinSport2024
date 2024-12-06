@@ -25,6 +25,7 @@ export function MatchOperatorProvider({ children }) {
     const fetchMatches = async () => {
       try {
         const data = await matchOperatorService.getMatches();
+        console.log('Fetched matches:', data); // Log fetched matches
         setMatches(data);
       } catch (error) {
         console.error('Error fetching matches:', error);
@@ -36,7 +37,9 @@ export function MatchOperatorProvider({ children }) {
   // Check if another operator is managing a match
   const checkMatchAvailability = async (matchId) => {
     try {
-      return await matchOperatorService.checkMatchAvailability(matchId);
+      const isAvailable = await matchOperatorService.checkMatchAvailability(matchId);
+      console.log(`Match ${matchId} availability:`, isAvailable); // Log match availability
+      return isAvailable;
     } catch (error) {
       console.error('Match availability check failed:', error);
       throw error;
@@ -46,12 +49,14 @@ export function MatchOperatorProvider({ children }) {
   // Initialize match setup
   const initializeMatchSetup = async (matchId) => {
     try {
+      console.log('Initializing match setup for matchId:', matchId); // Log matchId
       const isAvailable = await checkMatchAvailability(matchId);
       if (!isAvailable) {
         throw new Error('Match is not available for management');
       }
 
       const match = matches.find(m => m.id === matchId);
+      console.log('Found match:', match); // Log found match
       if (!match) throw new Error('Match not found');
 
       setOperatorStatus({
@@ -154,4 +159,4 @@ export function MatchOperatorProvider({ children }) {
       {children}
     </MatchOperatorContext.Provider>
   );
-} 
+}

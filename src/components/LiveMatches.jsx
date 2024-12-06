@@ -1,78 +1,22 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import axiosInstance from '../utils/axiosInstance';
 
 const LiveMatches = () => {
-  // Sample matches data
-  const matches = [
-    {
-      id: 1,
-      competition: 'RPL | Match - 8',
-      homeTeam: {
-        name: 'APR FC',
-        score: 2,
-        logo: '/teams/apr.svg'
-      },
-      awayTeam: {
-        name: 'Amagaju',
-        score: 4,
-        logo: '/teams/amagaju.svg'
-      },
-      time: '33:30',
-      venue: 'Amahoro Stadium',
-      isLive: true
-    },
-    {
-      id: 2,
-      competition: 'RBL Game - 4',
-      homeTeam: {
-        name: 'REG',
-        score: 2,
-        logo: '/teams/reg.svg'
-      },
-      awayTeam: {
-        name: 'Patriots',
-        score: 4,
-        logo: '/teams/patriots.svg'
-      },
-      time: '33:30',
-      venue: 'BK ARENA',
-      isLive: true
-    },
-    {
-      id: 3,
-      competition: 'RPL | Match - 8',
-      homeTeam: {
-        name: 'BUGESERA FC',
-        score: 2,
-        logo: '/teams/bugesera.svg'
-      },
-      awayTeam: {
-        name: 'Amagaju',
-        score: 4,
-        logo: '/teams/amagaju.svg'
-      },
-      time: '33:30',
-      venue: 'Bugesera Stadium',
-      isLive: true
-    },
-    {
-      id: 4,
-      competition: 'RPL | Match - 8',
-      homeTeam: {
-        name: 'AS KIGALI',
-        score: 2,
-        logo: '/teams/as-kigali.svg'
-      },
-      awayTeam: {
-        name: 'Amagaju',
-        score: 4,
-        logo: '/teams/amagaju.svg'
-      },
-      time: '33:30',
-      venue: 'PELE Stadim',
-      isLive: true
-    }
-  ];
+  const [matches, setMatches] = useState([]);
+
+  useEffect(() => {
+    const fetchMatches = async () => {
+      try {
+        const response = await axiosInstance.get('/live-matches');
+        setMatches(response.data);
+      } catch (error) {
+        console.error('Error fetching matches:', error);
+      }
+    };
+
+    fetchMatches();
+  }, []);
 
   const scrollContainer = (direction) => {
     const container = document.getElementById('matches-container');
@@ -161,4 +105,4 @@ const LiveMatches = () => {
   );
 };
 
-export default LiveMatches; 
+export default LiveMatches;

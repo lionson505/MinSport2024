@@ -6,14 +6,24 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [permissions, setPermissions] = useState([]);
   const navigate = useNavigate();
 
-  // Simulated API call to get user data
   const fetchUser = async () => {
     try {
       const storedUser = localStorage.getItem('user');
+      const storedPermissions = localStorage.getItem('accessibleLinks');
+
       if (storedUser) {
-        setUser(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        // Ensure permissions are loaded
+        if (storedPermissions) {
+          setPermissions(JSON.parse(storedPermissions));
+        } else {
+          // Trigger permission fetch if not in localStorage
+          await fetchPermissions(parsedUser);
+        }
       }
     } catch (error) {
       console.error('Failed to fetch user:', error);
@@ -22,42 +32,64 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  useEffect(() => {
-    fetchUser();
-  }, []);
+  // New method to fetch permissions
+  const fetchPermissions = async (userData) => {
+    try {
+      // Replace with your actual API call to get permissions
+      const response = await fetch('/api/user-permissions', {
+        headers: {
+          'Authorization': `Bearer ${userData.token}`
+        }
+      });
 
-  useEffect(() => {
-    // Log user details when user state changes
-    if (user) {
-      console.log('Logged-in User:', user);
-    } else {
-      console.log('No user is logged in.');
+      if (response.ok) {
+        const permissionsData = await response.json();
+        localStorage.setItem('accessibleLinks', JSON.stringify(permissionsData));
+        setPermissions(permissionsData);
+      }
+    } catch (error) {
+      console.error('Failed to fetch permissions:', error);
     }
-  }, [user]);
+  };
 
-  const login = (userData) => {
+  const login = async (userData) => {
     localStorage.setItem('user', JSON.stringify(userData));
-    localStorage.setItem('token', userData.token); // Save token if necessary
+    localStorage.setItem('token', userData.token);
     setUser(userData);
+
+    // Fetch permissions immediately after login
+    await fetchPermissions(userData);
+    window.location.reload()
   };
 
   const logout = async () => {
-    // Simulate logout process
     return new Promise((resolve) => {
       setTimeout(() => {
         localStorage.removeItem('user');
         localStorage.removeItem('token');
+        localStorage.removeItem('accessibleLinks');
         setUser(null);
+        setPermissions([]);
         navigate('/landing');
         resolve();
       }, 1000);
     });
   };
 
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
-      {loading ? <div>Loading...</div> : children}
-    </AuthContext.Provider>
+      <AuthContext.Provider value={{
+        user,
+        login,
+        logout,
+        loading,
+        permissions
+      }}>
+        {loading ? <div>Loading...</div> : children}
+      </AuthContext.Provider>
   );
 };
 
