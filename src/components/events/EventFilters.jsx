@@ -1,6 +1,6 @@
 import { Search, Filter } from 'lucide-react';
 import { Input } from '../ui/input';
-import { Button } from '../ui/button';
+import { Button } from '../ui/Button';
 
 export function EventFilters({ 
   searchTerm, 

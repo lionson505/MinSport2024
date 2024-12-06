@@ -3,7 +3,7 @@ import { useMatchOperator } from '../../../contexts/MatchOperatorContext';
 import { CreateMatchModal } from '../components/CreateMatchModal';
 import { MatchSetupWizard } from '../components/MatchSetupWizard';
 import { MatchScoreboard } from '../components/MatchScoreboard';
-import { Button } from '../../../components/ui/button';
+import { Button } from '../../../components/ui/Button';
 import { Plus, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '../../../components/ui/alert';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../../components/ui/tabs';

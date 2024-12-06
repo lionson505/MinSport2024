@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Input } from '../ui/input';
-import { Button } from '../ui/button';
+import { Button } from '../ui/Button';
 import axiosInstance from '../../utils/axiosInstance';
 
 const Toast = ({ message, onClose }) => {
