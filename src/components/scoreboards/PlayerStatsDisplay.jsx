@@ -5,7 +5,7 @@ import {
   Award,
   BarChart
 } from 'lucide-react';
-import { Button } from '../ui/button';
+import { Button } from '../ui/Button';
 import { DialogContent } from '../ui/dialog';
 
 export function PlayerStatsDisplay({ 

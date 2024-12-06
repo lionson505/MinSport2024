@@ -1,6 +1,6 @@
 /* src/components/forms/AddSportsProfessionalForm.jsx */
 import React, { useState, useEffect } from 'react';
-import { Button } from '../ui/button';
+import { Button } from '../ui/Button';
 import { Input } from '../ui/input';
 import { toast } from 'react-hot-toast';
 import axios from '../../utils/axiosInstance';

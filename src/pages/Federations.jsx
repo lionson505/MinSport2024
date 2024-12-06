@@ -34,7 +34,7 @@ import Message from '../components/ui/Message';
 import { useDarkMode } from '../contexts/DarkModeContext';
 import ManageClubs from '../components/federation/ManageClubs';
 import AddClubForm from '../components/federation/AddClubForm';
-import { Button } from '../components/ui/button';
+import { Button } from '../components/ui/Button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 import PlayerStaffTransfer from '../components/federation/PlayerStaffTransfer';
 

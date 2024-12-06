@@ -1,6 +1,6 @@
 import React, { useState, Fragment, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
-import { Button } from '../components/ui/button';
+import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/input';
 import { Edit, Trash2, AlertTriangle, Plus } from 'lucide-react';
 import { Dialog, Transition } from '@headlessui/react';

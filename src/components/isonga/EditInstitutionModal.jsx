@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from '../ui/button';
+import { Button } from '../ui/Button';
 import Modal from '../ui/Modal';
 import { rwandaLocations } from '../../data/rwandaLocations';
 

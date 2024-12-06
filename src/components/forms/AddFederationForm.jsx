@@ -1,7 +1,7 @@
 /* src/components/forms/AddFederationForm.jsx */
 import React, { useState, useEffect } from 'react';
 import { Input } from '../ui/input';
-import { Button } from '../ui/button';
+import { Button } from '../ui/Button';
 import toast from 'react-hot-toast';
 import axiosInstance from '../../utils/axiosInstance';
 

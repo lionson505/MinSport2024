@@ -1,7 +1,7 @@
 // src/components/federations/AddPlayerStaffForm.jsx
 
 import React, { useState, useEffect } from 'react';
-import { Button } from '../ui/button';
+import { Button } from '../ui/Button';
 import axiosInstance from '../../utils/axiosInstance';
 
 const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Modal } from '../ui/Modal'
-import { Button } from '../ui/button'
+import { Button } from '../ui/Button'
 import { Input } from '../ui/input'
 import { Plus, X, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'

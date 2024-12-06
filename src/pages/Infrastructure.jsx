@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
-import { Button } from '../components/ui/button';
+import { Button } from '../components/ui/Button';
 import InfrastructureMap from '../components/infrastructure/InfrastructureMap';
 import InfrastructureList from '../components/infrastructure/InfrastructureList';
 import AddInfrastructureModal from '../components/infrastructure/AddInfrastructureModal';

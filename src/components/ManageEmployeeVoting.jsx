@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Fragment } from 'react';
-import { Button } from './ui/button';
+import { Button } from './ui/Button';
 import { Input } from './ui/input';
 import { Eye, Download, Trash2, X } from 'lucide-react';
 import { Dialog, Transition } from '@headlessui/react';

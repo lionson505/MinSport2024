@@ -1,7 +1,7 @@
 import React, { useEffect, useState, Fragment } from "react";
 import axiosInstance from "../utils/axiosInstance";
 import { Dialog, Transition } from "@headlessui/react";
-import { Button } from "../components/ui/button";
+import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/input";
 import { Search } from "react-feather";
 import { AlertCircle } from "lucide-react";
