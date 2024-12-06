@@ -37,84 +37,97 @@ import NoPageFound from './pages/unauthorized';
 import { MatchOperatorDashboard, TeamManagement, MatchOperatorProvider } from './features/match-operator';
 
 function App() {
-  const [accessibleLinks, setAccessibleLinks] = useState([]);
+  const [accessibleLinks, setAccessibleLinks] = useState(null); // Initialize as null to differentiate between loading and empty state
+  const [isLoading, setIsLoading] = useState(true); // Add a loading state
 
-  // Retrieve accessible links from localStorage and handle potential errors
   useEffect(() => {
-    const storedLinks = localStorage.getItem('accessibleLinks');
-    try {
-      // Parse the stored links, default to an empty array if parsing fails
-      setAccessibleLinks(storedLinks ? JSON.parse(storedLinks) : []);
-    } catch (error) {
-      console.error("Error parsing accessible links from localStorage", error);
-      setAccessibleLinks([]);
-    }
+    const fetchAccessibleLinks = async () => {
+      try {
+        const storedLinks = localStorage.getItem('accessibleLinks');
+        const parsedLinks = storedLinks ? JSON.parse(storedLinks) : [];
+        setAccessibleLinks(parsedLinks);
+      } catch (error) {
+        console.error("Error parsing accessible links from localStorage", error);
+        setAccessibleLinks([]);
+      } finally {
+        setIsLoading(false); // Mark loading as complete
+      }
+    };
+
+    fetchAccessibleLinks();
   }, []);
 
-  // Function to check if the current path is allowed
-  const isPathAllowed = (path) => {
-    return accessibleLinks.some(link => link.path === path);
+  const isPathAllowed = async (path) => {
+    const accessibles = await accessibleLinks
+    if(accessibles !== null) {
+      return accessibles.some(link => link.path === path);
+    }
+    else{
+      return false
+    }
   };
-  console.log("PATTTTHH", isPathAllowed("/federations"));
+
+  // Display a loading state while accessibleLinks are being fetched
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
 
   return (
-    <ThemeProvider>
-      <DarkModeProvider>
-        <InfrastructureProvider>
-          <TourismProvider>
-            <MatchOperatorProvider>
-              <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-                <AuthProvider>
-                  <Toaster position="top-right" richColors />
-                  <Routes>
-                    {/* Public Routes */}
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/forgot-password" element={<ForgotPassword />} />
-                    <Route path="/check-email" element={<CheckEmail />} />
-                    <Route path="/landing" element={<LandingPage />} />
-                    <Route path="/notAuthorized" element={<NoPageFound />} />
-                    <Route path="/sports-events" element={<AllSportsEvents />} />
-                    <Route path="/events" element={<EventsPage />} />
-                    
-                    {/* Protected Routes */}
-                    <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-                      <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                      <Route path="/dashboard" element={<Dashboard />} />
-                      <Route path="/national-teams" element={isPathAllowed('/national-teams') ? <NationalTeams /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/federations" element={isPathAllowed('/federations') ? <Federations /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/sports-professionals" element={isPathAllowed('/sports-professionals') ? <SportsProfessionals /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/trainings" element={isPathAllowed('/trainings') ? <Training /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/isonga-programs" element={isPathAllowed('/isonga-programs') ? <IsongaPrograms /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/academies" element={isPathAllowed('/academies') ? <Academies /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/infrastructure" element={isPathAllowed('/infrastructure') ? <Infrastructure /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/sports-tourism" element={isPathAllowed('/sports-tourism') ? <SportsTourism /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/documents" element={isPathAllowed('/documents') ? <Documents /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/contracts" element={isPathAllowed('/contracts') ? <Contracts /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/appointments" element={isPathAllowed('/appointments') ? <Appointments /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/employee" element={isPathAllowed('/employee') ? <Employee /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/users" element={isPathAllowed('/users') ? <Users /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/partners" element={isPathAllowed('/partners') ? <Partners /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/reports" element={isPathAllowed('/reports') ? <Reports /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/sports-for-all" element={isPathAllowed('/sports-for-all') ? <SportsForAll /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/settings" element={ <Settings />} />
-                      <Route path="/player-transfer-report" element={isPathAllowed('/player-transfer-report') ? <PlayerTransferReport /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/reports/sports-professionals" element={isPathAllowed('/reports/sports-professionals') ? <Reports /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/reports/isonga-program" element={isPathAllowed('/reports/isonga-program') ? <Reports /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/reports/infrastructure" element={isPathAllowed('/reports/infrastructure') ? <Reports /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/match-operator" element={isPathAllowed('/match-operator') ? <MatchOperatorDashboard /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/match-operator/teams" element={isPathAllowed('/match-operator/teams') ? <TeamManagement /> : <Navigate to="/unauthorized" />} />
-                    </Route>
-                    
-                    {/* Fallback Route for non-accessible paths */}
-                    <Route path="*" element={<Navigate to="/notAuthorized" replace />} />
-                  </Routes>
-                </AuthProvider>
-              </Router>
-            </MatchOperatorProvider>
-          </TourismProvider>
-        </InfrastructureProvider>
-      </DarkModeProvider>
-    </ThemeProvider>
+      <ThemeProvider>
+        <DarkModeProvider>
+          <InfrastructureProvider>
+            <TourismProvider>
+              <MatchOperatorProvider>
+                <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+                  <AuthProvider>
+                    <Toaster position="top-right" richColors />
+                    <Routes>
+                      {/* Public Routes */}
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/forgot-password" element={<ForgotPassword />} />
+                      <Route path="/check-email" element={<CheckEmail />} />
+                      <Route path="/landing" element={<LandingPage />} />
+                      <Route path="/notAuthorized" element={<NoPageFound />} />
+                      <Route path="/sports-events" element={<AllSportsEvents />} />
+                      <Route path="/events" element={<EventsPage />} />
+
+                      {/* Protected Routes */}
+                      <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+                        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                        <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/national-teams" element={isPathAllowed('/national-teams') ? <NationalTeams /> : <Navigate to="/unauthorized" />} />
+                        <Route path="/federations" element={isPathAllowed('/federations') ? <Federations /> : <Navigate to="/unauthorized" />} />
+                        <Route path="/sports-professionals" element={isPathAllowed('/sports-professionals') ? <SportsProfessionals /> : <Navigate to="/unauthorized" />} />
+                        <Route path="/trainings" element={isPathAllowed('/trainings') ? <Training /> : <Navigate to="/unauthorized" />} />
+                        <Route path="/isonga-programs" element={isPathAllowed('/isonga-programs') ? <IsongaPrograms /> : <Navigate to="/unauthorized" />} />
+                        <Route path="/academies" element={isPathAllowed('/academies') ? <Academies /> : <Navigate to="/unauthorized" />} />
+                        <Route path="/infrastructure" element={isPathAllowed('/infrastructure') ? <Infrastructure /> : <Navigate to="/unauthorized" />} />
+                        <Route path="/sports-tourism" element={isPathAllowed('/sports-tourism') ? <SportsTourism /> : <Navigate to="/unauthorized" />} />
+                        <Route path="/documents" element={isPathAllowed('/documents') ? <Documents /> : <Navigate to="/unauthorized" />} />
+                        <Route path="/contracts" element={isPathAllowed('/contracts') ? <Contracts /> : <Navigate to="/unauthorized" />} />
+                        <Route path="/appointments" element={isPathAllowed('/appointments') ? <Appointments /> : <Navigate to="/unauthorized" />} />
+                        <Route path="/employee" element={isPathAllowed('/employee') ? <Employee /> : <Navigate to="/unauthorized" />} />
+                        <Route path="/users" element={isPathAllowed('/users') ? <Users /> : <Navigate to="/unauthorized" />} />
+                        <Route path="/partners" element={isPathAllowed('/partners') ? <Partners /> : <Navigate to="/unauthorized" />} />
+                        <Route path="/reports" element={isPathAllowed('/reports') ? <Reports /> : <Navigate to="/unauthorized" />} />
+                        <Route path="/sports-for-all" element={isPathAllowed('/sports-for-all') ? <SportsForAll /> : <Navigate to="/unauthorized" />} />
+                        <Route path="/settings" element={<Settings />} />
+                        <Route path="/player-transfer-report" element={isPathAllowed('/player-transfer-report') ? <PlayerTransferReport /> : <Navigate to="/unauthorized" />} />
+                        <Route path="/match-operator" element={isPathAllowed('/match-operator') ? <MatchOperatorDashboard /> : <Navigate to="/unauthorized" />} />
+                        <Route path="/match-operator/teams" element={isPathAllowed('/match-operator/teams') ? <TeamManagement /> : <Navigate to="/unauthorized" />} />
+                      </Route>
+
+                      {/* Fallback Route for non-accessible paths */}
+                      <Route path="*" element={<Navigate to="/notAuthorized" replace />} />
+                    </Routes>
+                  </AuthProvider>
+                </Router>
+              </MatchOperatorProvider>
+            </TourismProvider>
+          </InfrastructureProvider>
+        </DarkModeProvider>
+      </ThemeProvider>
   );
 }
 

@@ -29,6 +29,7 @@ function Login() {
       // Perform login and get the logged-in user data
       const loggedInUser = await login(formData.email, formData.password);
       localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem("jl", "yes");
 
       if (formData.rememberMe) {
         localStorage.setItem('rememberMe', 'true');
