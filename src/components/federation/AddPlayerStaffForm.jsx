@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '../ui/Button';
 import axiosInstance from '../../utils/axiosInstance';
-import { toast } from 'react-hot-toast';
 
 // List of countries
 const countries = [
@@ -10,6 +9,23 @@ const countries = [
   { value: 'DZ', label: 'Algeria' },
   // Add more countries as needed
   { value: 'ZW', label: 'Zimbabwe' },
+];
+
+const maritalStatusOptions = [
+  { value: 'SINGLE', label: 'Single' },
+  { value: 'MARRIED', label: 'Married' },
+  { value: 'DIVORCED', label: 'Divorced' },
+  { value: 'WIDOWED', label: 'Widowed' },
+];
+
+const educationLevelOptions = [
+  { value: 'PRIMARY', label: 'Primary Education' },
+  { value: 'SECONDARY', label: 'Secondary Education' },
+  { value: 'DIPLOMA', label: 'Diploma' },
+  { value: 'BACHELORS', label: 'Bachelor\'s Degree' },
+  { value: 'MASTERS', label: 'Master\'s Degree' },
+  { value: 'PHD', label: 'PhD' },
+  { value: 'OTHER', label: 'Other' }
 ];
 
 const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
@@ -87,15 +103,12 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
 
       console.log('Submitting formatted data:', formattedData);
       await onSubmit(formattedData);
-      
-      toast.success(initialData ? 'Player/Staff updated successfully!' : 'Player/Staff added successfully!');
 
       // Update form data with the submitted data
       setFormData(formattedData);
     } catch (error) {
       console.error('Submission error:', error);
       const errorMessage = error.response?.data?.message || error.message || 'Failed to save data. Please try again.';
-      toast.error(errorMessage);
     }
   };
 

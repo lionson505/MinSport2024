@@ -38,30 +38,34 @@ import AddClubForm from '../components/federation/AddClubForm';
 import { Button } from '../components/ui/Button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 import PlayerStaffTransfer from '../components/federation/PlayerStaffTransfer';
+import axiosInstance from '../utils/axiosInstance';
 
 const TransferHistoryModal = ({ isOpen, onClose, player }) => {
-  // Sample transfer history data - replace with actual data from your API
-  const transferHistory = [
-    {
-      id: 1,
-      date: '2023-01-15',
-      fromClub: 'APR FC',
-      toClub: 'Rayon Sports',
-      type: 'Transfer',
-      status: 'Completed',
-      federation: 'Rwanda Football Federation',
-    },
-    {
-      id: 2,
-      date: '2022-06-30',
-      fromClub: 'Police FC',
-      toClub: 'APR FC',
-      type: 'Transfer',
-      status: 'Completed',
-      federation: 'Rwanda Football Federation',
-    },
-    // Add more history items as needed
-  ];
+  const [transferHistory, setTransferHistory] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchTransferHistory = async () => {
+      if (!player?.id) return;
+      
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await axiosInstance.get(`/transfers?playerStaffId=${player.id}`);
+        setTransferHistory(response.data);
+      } catch (err) {
+        setError('Failed to load transfer history');
+        console.error('Error fetching transfer history:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (isOpen) {
+      fetchTransferHistory();
+    }
+  }, [isOpen, player?.id]);
 
   if (!isOpen || !player) return null;
 
@@ -71,44 +75,117 @@ const TransferHistoryModal = ({ isOpen, onClose, player }) => {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <History className="h-5 w-5 text-blue-600" />
-            Transfer History - {player.name}
+            Transfer History - {player.firstName} {player.lastName}
           </DialogTitle>
         </DialogHeader>
         
         <div className="mt-4">
-          <div className="space-y-4">
-            {transferHistory.map((transfer) => (
-              <div
-                key={transfer.id}
-                className="p-4 border rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium">
-                    {new Date(transfer.date).toLocaleDateString()}
-                  </span>
-                  <span className={`text-sm px-2 py-1 rounded-full ${
-                    transfer.status === 'Completed' 
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {transfer.status}
-                  </span>
+          {isLoading ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+            </div>
+          ) : error ? (
+            <div className="text-center py-8 text-red-600">
+              <AlertCircle className="h-8 w-8 mx-auto mb-2" />
+              {error}
+            </div>
+          ) : transferHistory.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No transfer history found
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {transferHistory.map((transfer) => (
+                <div
+                  key={transfer.id}
+                  className="p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium">
+                      {new Date(transfer.transferDate).toLocaleDateString()}
+                    </span>
+                    <span className="text-sm px-2 py-1 rounded-full bg-green-100 text-green-800">
+                      Completed
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <span>{transfer.fromClub?.name || 'Unknown Club'}</span>
+                    <ArrowRight className="h-4 w-4" />
+                    <span>{transfer.toClub?.name || 'Unknown Club'}</span>
+                  </div>
+                  
+                  {transfer.additionalComments && (
+                    <div className="mt-2 text-sm text-gray-500">
+                      <p>{transfer.additionalComments}</p>
+                    </div>
+                  )}
                 </div>
-                
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <span>{transfer.fromClub}</span>
-                  <ArrowRight className="h-4 w-4" />
-                  <span>{transfer.toClub}</span>
-                </div>
-                
-                <div className="mt-2 text-sm text-gray-500">
-                  <span>{transfer.federation}</span>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
+        <div className="flex justify-end mt-4">
+          <Button variant="outline" onClick={onClose}>
+            Close
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+const ViewPlayerModal = ({ isOpen, onClose, player }) => {
+  if (!player) return null;
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{`${player.firstName} ${player.lastName}`} Details</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Basic Information</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <span className="font-medium">Name</span>
+              <p>{`${player.firstName} ${player.lastName}`}</p>
+            </div>
+            <div>
+              <span className="font-medium">Type</span>
+              <p>{player.type}</p>
+            </div>
+            <div>
+              <span className="font-medium">Federation</span>
+              <p>{player.federation?.name || 'N/A'}</p>
+            </div>
+            <div>
+              <span className="font-medium">Club</span>
+              <p>{player.currentClub?.name || 'N/A'}</p>
+            </div>
+            <div>
+              <span className="font-medium">Date of Birth</span>
+              <p>{player.dateOfBirth ? new Date(player.dateOfBirth).toLocaleDateString() : 'N/A'}</p>
+            </div>
+            <div>
+              <span className="font-medium">Nationality</span>
+              <p>{player.nationality || 'N/A'}</p>
+            </div>
+          </div>
+
+          <h3 className="text-lg font-semibold">Additional Details</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <span className="font-medium">Position/Role</span>
+              <p>{player.position || 'N/A'}</p>
+            </div>
+            <div>
+              <span className="font-medium">Jersey Number</span>
+              <p>{player.jerseyNumber || 'N/A'}</p>
+            </div>
+          </div>
+        </div>
         <div className="flex justify-end mt-4">
           <Button variant="outline" onClick={onClose}>
             Close
@@ -147,6 +224,8 @@ const Federations = () => {
   const [playerStaffToDelete, setPlayerStaffToDelete] = useState(null);
   const [showTransferHistoryModal, setShowTransferHistoryModal] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const [refreshPlayerStaffData, setRefreshPlayerStaffData] = useState(0);
+  const [showPlayerDetailsModal, setShowPlayerDetailsModal] = useState(false);
 
   const tabs = [
     'Manage Federations and associations',
@@ -168,6 +247,11 @@ const Federations = () => {
     setShowTransferHistoryModal(true);
   };
 
+  const handleViewPlayerDetails = (player) => {
+    setSelectedPlayer(player);
+    setShowPlayerDetailsModal(true);
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -175,7 +259,6 @@ const Federations = () => {
         const filters = {
           page: currentPage,
           limit: itemsPerPage,
-          search: searchTerm,
         };
         const [federationsData, federationOptions] = await Promise.all([
           federationApi.getAllFederations(filters),
@@ -194,7 +277,7 @@ const Federations = () => {
     };
 
     fetchData();
-  }, [currentPage, itemsPerPage, searchTerm]);
+  }, [currentPage, itemsPerPage]);
 
   const handleEditPlayerStaff = (staff) => {
     setPlayerToEdit(staff);
@@ -206,17 +289,14 @@ const Federations = () => {
       setIsLoading(true);
       if (playerToEdit) {
         await federationApi.updatePlayerStaff(playerToEdit.id, playerStaffData);
-        setPlayersStaffData((prev) =>
-          prev.map((p) => (p.id === playerToEdit.id ? { ...p, ...playerStaffData } : p))
-        );
         toast.success('Player/Staff updated successfully');
       } else {
-        const newPlayerStaff = await federationApi.createPlayerStaff(playerStaffData);
-        setPlayersStaffData((prev) => [...prev, newPlayerStaff]);
+        await federationApi.createPlayerStaff(playerStaffData);
         toast.success('Player/Staff added successfully');
       }
       setIsAddPlayerModalOpen(false);
       setPlayerToEdit(null);
+      setRefreshPlayerStaffData(prev => prev + 1);
     } catch (error) {
       toast.error('Failed to save player/staff');
     } finally {
@@ -376,6 +456,15 @@ const Federations = () => {
   const handleSearch = (searchValue) => {
     setSearchTerm(searchValue);
     setCurrentPage(1);
+    
+    // Only filter the existing federations array without making API calls
+    const filtered = federations.filter(federation =>
+      federation.name?.toLowerCase().includes(searchValue.toLowerCase()) ||
+      federation.acronym?.toLowerCase().includes(searchValue.toLowerCase()) ||
+      federation.legalRepresentativeNam?.toLowerCase().includes(searchValue.toLowerCase()) ||
+      federation.address?.toLowerCase().includes(searchValue.toLowerCase())
+    );
+    setFilteredFederations(filtered);
   };
 
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -465,7 +554,7 @@ const Federations = () => {
     };
 
     fetchPlayersStaff();
-  }, []);
+  }, [refreshPlayerStaffData]);
 
   const handlePlayerSearch = async (value) => {
     const newFilters = { ...playerFilters, search: value };
@@ -531,12 +620,10 @@ const Federations = () => {
     try {
       setIsSubmitting(true);
       await federationApi.deletePlayerStaff(playerStaffToDelete.id);
-      const updatedPlayersStaff = playersStaffData.filter((ps) => ps.id !== playerStaffToDelete.id);
-      setPlayersStaffData(updatedPlayersStaff);
-      setFilteredPlayersStaff(updatedPlayersStaff);
       setDeletePlayerStaffDialogOpen(false);
       setPlayerStaffToDelete(null);
       toast.success('Player/Staff deleted successfully');
+      setRefreshPlayerStaffData(prev => prev + 1);
     } catch (error) {
       toast.error('Failed to delete player/staff');
     } finally {
@@ -584,7 +671,11 @@ const Federations = () => {
               </div>
             </div>
           </div>
+<<<<<<< HEAD
           
+=======
+
+>>>>>>> origin/main
           <div className="bg-white rounded-lg shadow">
             <div className="overflow-x-auto">
               <Table>
@@ -626,7 +717,7 @@ const Federations = () => {
                     <TableCell className="text-xs font-medium">{federation.name}</TableCell>
                     <TableCell className="text-xs">{federation.acronym}</TableCell>
                     <TableCell className="text-xs">{federation.yearFounded}</TableCell>
-                    <TableCell className="text-xs">{federation.legalRepresentativeNam}</TableCell>
+                    <TableCell className="text-xs">{federation.legalRepresentativeName}</TableCell>
                     <TableCell className="text-xs">{federation.address}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-0.5">
@@ -844,7 +935,11 @@ const Federations = () => {
                       <TableCell>{person.nationality}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
-                          <button className="p-1 rounded-lg hover:bg-gray-100" title="View Details">
+                          <button
+                            onClick={() => handleViewPlayerDetails(person)}
+                            className="p-1 rounded-lg hover:bg-gray-100"
+                            title="View Details"
+                          >
                             <Eye className="h-4 w-4" />
                           </button>
                           <button
@@ -1131,6 +1226,12 @@ const Federations = () => {
           setShowTransferHistoryModal(false);
           setSelectedPlayer(null);
         }}
+        player={selectedPlayer}
+      />
+
+      <ViewPlayerModal
+        isOpen={showPlayerDetailsModal}
+        onClose={() => setShowPlayerDetailsModal(false)}
         player={selectedPlayer}
       />
     </div>

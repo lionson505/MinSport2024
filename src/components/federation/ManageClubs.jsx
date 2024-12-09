@@ -2,15 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../ui/table';
 import Modal from '../ui/Modal';
 import ConfirmDialog from '../ui/ConfirmDialog';
-import { Eye, Edit, Trash2, Users, Plus } from 'lucide-react';
+// import { Eye, Edit, Trash2, Users, Plus } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import EditClubModal from './EditClubModal';
 import AddClubForm from './AddClubForm';
 import axios from '../../utils/axiosInstance';
 import { useDarkMode } from '../../contexts/DarkModeContext';
 import { Button } from '../ui/Button';
+import {
+  Plus,
+  Users,
+  Eye,
+  Pen,
+  Trash2
+} from 'lucide-react';
 
-const ManageClubs = () => {
+const ManageClubs = ({ onAdd, onEdit, onDelete, federations, isLoading, actionIcons }) => {
   const { isDarkMode } = useDarkMode();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFederation, setSelectedFederation] = useState('');
@@ -22,8 +29,6 @@ const ManageClubs = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddClubModal, setShowAddClubModal] = useState(false);
   const [clubs, setClubs] = useState([]);
-  const [federations, setFederations] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -33,18 +38,14 @@ const ManageClubs = () => {
   const years = Array.from({ length: currentYear - 1950 + 1 }, (_, i) => currentYear - i);
 
   const fetchClubsAndFederations = async () => {
-    setIsLoading(true);
     try {
       const [clubsResponse, federationsResponse] = await Promise.all([
         axios.get('/clubs'),
         axios.get('/federations'),
       ]);
       setClubs(clubsResponse.data);
-      setFederations(federationsResponse.data);
     } catch (err) {
       setError('Failed to load data');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -67,9 +68,15 @@ const ManageClubs = () => {
 
   const handleAddClub = () => setShowAddClubModal(true);
 
-  const handleViewDetails = (club) => {
-    setSelectedClub(club);
-    setShowDetailsModal(true);
+  const handleViewDetails = async (club) => {
+    try {
+      // Fetch detailed club information when viewing details
+      const response = await axios.get(`/clubs/${club.id}`);
+      setSelectedClub(response.data);
+      setShowDetailsModal(true);
+    } catch (error) {
+      toast.error('Failed to load club details');
+    }
   };
 
   const handleEdit = (club) => {
@@ -97,6 +104,75 @@ const ManageClubs = () => {
   const handleViewPlayers = (club) => {
     setSelectedClub(club);
     setShowPlayersModal(true);
+  };
+
+  const renderClubDetails = () => {
+    if (!selectedClub) return null;
+
+    return (
+      <div className="max-h-[70vh] overflow-y-auto pr-4">
+        <div className="space-y-6">
+          {/* Basic Information */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Basic Information</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-500">Club Name</p>
+                <p className="font-medium">{selectedClub.name || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Federation</p>
+                <p className="font-medium">
+                  {federations.find(fed => fed.id === selectedClub.federationId)?.name || 'N/A'}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Year Founded</p>
+                <p className="font-medium">{selectedClub.yearFounded || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Division</p>
+                <p className="font-medium">{selectedClub.division || 'N/A'}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Legal Representative Information */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Legal Representative</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-500">Name</p>
+                <p className="font-medium">{selectedClub.legalRepresentativeName || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Gender</p>
+                <p className="font-medium">{selectedClub.legalRepresentativeGender || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Email</p>
+                <p className="font-medium">{selectedClub.legalRepresentativeEmail || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Phone</p>
+                <p className="font-medium">{selectedClub.legalRepresentativePhone || 'N/A'}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Contact Information */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Contact Information</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-500">Address</p>
+                <p className="font-medium">{selectedClub.address || 'N/A'}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -203,35 +279,37 @@ const ManageClubs = () => {
                     <TableCell>{club.name}</TableCell>
                     <TableCell>{federations.find((fed) => fed.id === club.federationId)?.name}</TableCell>
                     <TableCell>{club.yearFounded}</TableCell>
-                    <TableCell className="flex gap-1">
-                      <button
-                        className="p-1 rounded-lg hover:bg-gray-100"
-                        onClick={() => handleViewDetails(club)}
-                        title="View Details"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </button>
-                      <button
-                        className="p-1 rounded-lg hover:bg-gray-100"
-                        onClick={() => handleEdit(club)}
-                        title="Edit Club"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </button>
-                      <button
-                        className="p-1 rounded-lg hover:bg-red-50 text-red-600"
-                        onClick={() => handleDeleteClick(club)}
-                        title="Delete Club"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                      <button
-                        className="p-1 rounded-lg hover:bg-gray-100"
-                        onClick={() => handleViewPlayers(club)}
-                        title="View Players"
-                      >
-                        <Users className="h-4 w-4" />
-                      </button>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleViewDetails(club)}
+                          className="p-1 rounded-lg hover:bg-gray-100"
+                          title="View Details"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleEdit(club)}
+                          className="p-1 rounded-lg hover:bg-gray-100"
+                          title="Edit"
+                        >
+                          <Pen className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteClick(club)}
+                          className="p-1 rounded-lg hover:bg-red-50 text-red-600"
+                          title="Delete"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleViewPlayers(club)}
+                          className="p-1 rounded-lg hover:bg-gray-100"
+                          title="View Players"
+                        >
+                          <Users className="h-4 w-4" />
+                        </button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -291,6 +369,12 @@ const ManageClubs = () => {
         ) : (
           <p>No players available for this club.</p>
         )}
+      </Modal>
+
+      {/* Club Details Modal */}
+      <Modal isOpen={showDetailsModal} onClose={() => setShowDetailsModal(false)}>
+        <h3 className="text-xl">Club Details</h3>
+        {renderClubDetails()}
       </Modal>
     </div>
   );
