@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import axiosInstance from '../../../../utils/axiosInstance';
+import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../../../../components/ui/dialog';
 import { Button } from '../../../../components/ui/Button';
 import { Input } from '../../../../components/ui/input';
@@ -9,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../../../components/ui/select";
-import axiosInstance from '../../../../utils/axiosInstance'; // Import axiosInstance
+import { useMatchOperator } from '../../../../contexts/MatchOperatorContext';  // Fix this import
 
 export function CreateMatchModal({ open, onClose }) {
   const [formData, setFormData] = useState({
@@ -19,36 +21,53 @@ export function CreateMatchModal({ open, onClose }) {
     awayTeam: '',
     venue: '',
     startTime: '',
-    date: ''
+    date: '',
+    status: ''
   });
-
+// on swagger db there are 11 fields needs to be created and save
+  const { createMatch } = useMatchOperator();
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      setLoading(true);
-      const matchDate = new Date(`${formData.date}T${formData.startTime}`).toISOString();
-      
-      const matchData = {
-        homeTeam: formData.homeTeam,
-        awayTeam: formData.awayTeam,
-        homeScore: 0, // Default score, can be updated later
-        awayScore: 0, // Default score, can be updated later
-        competition: formData.competition,
-        venue: formData.venue,
-        matchDate: matchDate,
-        startTime: matchDate,
-        status: 'UPCOMING', // Default status
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
 
-      // Use axiosInstance to create a new match
-      await axiosInstance.post('/live-matches', matchData);
-      onClose();
+    // Transform data to match backend format
+    const transformedData = {
+      homeTeam: formData.homeTeam,
+      awayTeam: formData.awayTeam,
+      homeScore: 0,
+      awayScore: 0,
+      competition: formData.competition,
+      venue: formData.venue,
+      matchDate: `${formData.date}T${formData.startTime}:00Z`,
+      startTime: `${formData.date}T${formData.startTime}:00Z`,
+      status: formData.status, // De
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };                
+
+    setLoading(true);
+
+    try {
+      // POST request to your backend API
+      // const response = await axiosInstance.post('/live-matches') // Replace with your actual endpoint
+      console.log('data', transformedData);
+      const response = await axiosInstance.post('/live-matches', transformedData, {
+        headers: {
+          'Content-Type': 'application/json',  // Ensure JSON content-type
+        }
+      });
+      console.log('Responsejlknlkllk:', response.data);
+      if (response.status === 200 || response.status === 201) {
+        toast.success('Match created successfully');
+        onClose(); // Optional: Close the modal or form
+      } else {
+        toast.error(`Unexpected status code: ${response.status}`);
+      }
     } catch (error) {
-      console.error('Error creating match:', error);
+      console.error('Error posting data:', error.response?.data || error.message);
+      // console.error(error);
+      toast.error('Failed to create match. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -65,11 +84,16 @@ export function CreateMatchModal({ open, onClose }) {
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
+          <div className="space-y-2 flex flex-cols-2">
+            <div className='w-1/2 p-2'>
             <label className="text-sm font-medium">Game Type</label>
             <Select
               value={formData.gameType}
-              onValueChange={(value) => setFormData({ ...formData, gameType: value })}
+              onValueChange={(value) => {
+                setFormData({ ...formData, gameType: value });
+                console.log("you selected gameType :", value);
+            }}
+              
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select game type" />
@@ -80,6 +104,27 @@ export function CreateMatchModal({ open, onClose }) {
                 <SelectItem value="volleyball">Volleyball</SelectItem>
               </SelectContent>
             </Select>
+            </div>
+            <div className='w-1/2'>
+            <label className="text-sm font-medium">Status</label>
+            <Select
+              value={formData.status}
+              onValueChange={(value) => { 
+                setFormData({ ...formData, status: value })
+                console.log('you selected status: ', value)
+              }
+            }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="In Progress">In Progress</SelectItem>
+                <SelectItem value="LIVE">LIVE</SelectItem>
+                <SelectItem value="UPCOMING">UPCOMING</SelectItem>
+              </SelectContent>
+            </Select>
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -150,4 +195,4 @@ export function CreateMatchModal({ open, onClose }) {
       </DialogContent>
     </Dialog>
   );
-}
+} 
