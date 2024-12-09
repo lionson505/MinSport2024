@@ -5,6 +5,8 @@ import axiosInstance from '../utils/axiosInstance';
 
 const LiveMatches = () => {
   const [matches, setMatches] = useState([]);
+  const [selectedMatch, setSelectedMatch] = useState(null);
+
 
   useEffect(() => {
     const fetchMatches = async () => {
