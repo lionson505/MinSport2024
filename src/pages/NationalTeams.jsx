@@ -407,35 +407,55 @@ function NationalTeams() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {paginatedTeams.length > 0 ? (
-                  paginatedTeams.map((team) => (
-                    <tr key={team.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3">{team.id}</td>
-                      <td className="px-4 py-3">{team.teamName}</td>
-                      <td className="px-4 py-3">{team.month}</td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-1 rounded-full text-xs ${
-                          team.status === 'Active' 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {team.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">{team.federation.name || team.federation}</td>
-                      <td className="px-4 py-3">{Array.isArray(team.players) ? team.players.length : team.players}</td>
-                      <td className="px-4 py-3">
-                        {renderActions(team)}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={teamColumns.length + 1} className="px-4 py-3 text-center text-gray-500">
-                      No teams available
+                {paginatedTeams.map((team) => (
+                  <tr key={team.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3">{team.id}</td>
+                    <td className="px-4 py-3">{team.teamName}</td>
+                    <td className="px-4 py-3">{team.month}</td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-1 rounded-full text-xs ${
+                        team.status === 'Active' 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {team.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">{team.federation.name || team.federation}</td>
+                    <td className="px-4 py-3">{Array.isArray(team.players) ? team.players.length : team.players}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleView(team)}
+                          className="p-1 h-7 w-7"
+                          title="View Team"
+                        >
+                          <Eye className="h-4 w-4 text-blue-600" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleEdit(team)}
+                          className="p-1 h-7 w-7"
+                          title="Edit Team"
+                        >
+                          <Edit className="h-4 w-4 text-green-600" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDelete(team)}
+                          className="p-1 h-7 w-7"
+                          title="Delete Team"
+                        >
+                          <Trash2 className="h-4 w-4 text-red-600" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
-                )}
+                ))}
               </tbody>
             </table>
           </div>
@@ -682,7 +702,6 @@ function NationalTeams() {
         >
           <AddNationalTeamForm
             initialData={selectedTeamData}
-            onSubmit={handleAddTeam}
             onCancel={() => {
               setShowAddModal(false);
               setSelectedTeamData(null);
@@ -695,133 +714,144 @@ function NationalTeams() {
           onClose={() => setShowAddPlayerModal(false)}
           title="Add National Team Player"
         >
-          <form onSubmit={handleAddPlayerSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Player Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="name"
-                placeholder="Enter player name"
-                required
-                className="w-full border rounded-lg p-2"
-              />
-            </div>
+          <div className="max-h-[70vh] overflow-y-auto pr-2">
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              try {
+                await handleAddPlayerSubmit(e);
+                toast.success('Player added successfully');
+                setShowAddPlayerModal(false);
+              } catch (error) {
+                toast.error(error.response?.data?.message || 'Failed to add player');
+              }
+            }} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Player Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="Enter player name"
+                  required
+                  className="w-full border rounded-lg p-2"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Player/Staff <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={selectedPlayerStaff}
-                onChange={(e) => setSelectedPlayerStaff(e.target.value)}
-                className="w-full border rounded-lg p-2"
-                required
-              >
-                <option value="">Select Player/Staff</option>
-                {playerStaffList.map(staff => (
-                  <option key={staff.id} value={staff.id}>
-                    {staff.type}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Team <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={selectedTeamForPlayer}
-                onChange={(e) => {
-                  const teamId = parseInt(e.target.value);
-                  setSelectedTeamForPlayer(teamId);
-                  const team = teams.find(t => t.id === teamId);
-                  setAvailableGames(team?.games || []);
-                  setSelectedGames([]);
-                }}
-                className="w-full border rounded-lg p-2"
-                required
-              >
-                <option value="">Select Team</option>
-                {teams.map(team => (
-                  <option key={team.id} value={team.id}>{team.teamName}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Club <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={selectedClub}
-                onChange={(e) => setSelectedClub(e.target.value)}
-                className="w-full border rounded-lg p-2"
-                required
-                disabled={!selectedTeamForPlayer}
-              >
-                <option value="">Select Club</option>
-                {clubs.map(club => (
-                  <option key={club.id} value={club.id}>{club.name}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <h3 className="text-md font-medium mb-3">Games</h3>
-              {availableGames.length > 0 ? (
-                <div className="space-y-2">
-                  {availableGames.map((game) => (
-                    <div key={game.id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
-                      <input
-                        type="checkbox"
-                        id={`game-${game.id}`}
-                        checked={selectedGames.includes(game.id)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedGames(prev => [...prev, game.id]);
-                          } else {
-                            setSelectedGames(prev => prev.filter(id => id !== game.id));
-                          }
-                        }}
-                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      />
-                      <div className="flex-1">
-                        <label htmlFor={`game-${game.id}`} className="cursor-pointer">
-                          <p className="font-medium">{game.stadium}</p>
-                          <p className="text-sm text-gray-500">
-                            {game.competition || 'No competition specified'}
-                          </p>
-                        </label>
-                      </div>
-                    </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Player/Staff <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={selectedPlayerStaff}
+                  onChange={(e) => setSelectedPlayerStaff(e.target.value)}
+                  className="w-full border rounded-lg p-2"
+                  required
+                >
+                  <option value="">Select Player/Staff</option>
+                  {playerStaffList.map(staff => (
+                    <option key={staff.id} value={staff.id}>
+                      {staff.type}
+                    </option>
                   ))}
-                </div>
-              ) : (
-                <div className="text-center py-4 bg-gray-50 rounded-lg">
-                  <p className="text-gray-500">No games found</p>
-                </div>
-              )}
-            </div>
+                </select>
+              </div>
 
-            <div className="flex justify-end gap-4 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setShowAddPlayerModal(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                Add Player
-              </Button>
-            </div>
-          </form>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Team <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={selectedTeamForPlayer}
+                  onChange={(e) => {
+                    const teamId = parseInt(e.target.value);
+                    setSelectedTeamForPlayer(teamId);
+                    const team = teams.find(t => t.id === teamId);
+                    setAvailableGames(team?.games || []);
+                    setSelectedGames([]);
+                  }}
+                  className="w-full border rounded-lg p-2"
+                  required
+                >
+                  <option value="">Select Team</option>
+                  {teams.map(team => (
+                    <option key={team.id} value={team.id}>{team.teamName}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Club <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={selectedClub}
+                  onChange={(e) => setSelectedClub(e.target.value)}
+                  className="w-full border rounded-lg p-2"
+                  required
+                  disabled={!selectedTeamForPlayer}
+                >
+                  <option value="">Select Club</option>
+                  {clubs.map(club => (
+                    <option key={club.id} value={club.id}>{club.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <h3 className="text-md font-medium mb-3">Games</h3>
+                {availableGames.length > 0 ? (
+                  <div className="space-y-2">
+                    {availableGames.map((game) => (
+                      <div key={game.id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                        <input
+                          type="checkbox"
+                          id={`game-${game.id}`}
+                          checked={selectedGames.includes(game.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedGames(prev => [...prev, game.id]);
+                            } else {
+                              setSelectedGames(prev => prev.filter(id => id !== game.id));
+                            }
+                          }}
+                          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        <div className="flex-1">
+                          <label htmlFor={`game-${game.id}`} className="cursor-pointer">
+                            <p className="font-medium">{game.stadium}</p>
+                            <p className="text-sm text-gray-500">
+                              {game.competition || 'No competition specified'}
+                            </p>
+                          </label>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-4 bg-gray-50 rounded-lg">
+                    <p className="text-gray-500">No games found</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-4 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowAddPlayerModal(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Add Player
+                </Button>
+              </div>
+            </form>
+          </div>
         </Modal>
 
         <Modal
@@ -1025,6 +1055,52 @@ function NationalTeams() {
             </div>
           </div>
         </Modal>
+
+        <Transition appear show={isViewModalOpen} as={Fragment}>
+          <Dialog 
+            as="div" 
+            className="relative z-50" 
+            onClose={() => setIsViewModalOpen(false)}
+          >
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0"
+              enterTo="opacity-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+            >
+              <div className="fixed inset-0 bg-black bg-opacity-25" />
+            </Transition.Child>
+
+            <div className="fixed inset-0 overflow-y-auto">
+              <div className="flex min-h-full items-center justify-center p-4">
+                <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
+                  <div className="flex justify-between items-center mb-6">
+                    <Dialog.Title className="text-xl font-bold">
+                      View Team Details
+                    </Dialog.Title>
+                    <button
+                      onClick={() => setIsViewModalOpen(false)}
+                      className="text-gray-500 hover:text-gray-700"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
+
+                  {renderTeamDetails(viewTeam)}
+
+                  <div className="flex justify-end mt-6 pt-4 border-t">
+                    <Button onClick={() => setIsViewModalOpen(false)}>
+                      Close
+                    </Button>
+                  </div>
+                </Dialog.Panel>
+              </div>
+            </div>
+          </Dialog>
+        </Transition>
       </div>
     </ErrorBoundary>
   );

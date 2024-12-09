@@ -1,7 +1,8 @@
 import React from 'react';
 import { useDarkMode } from '../../contexts/DarkModeContext';
+import toast from 'react-hot-toast';
 
-const PlayerTransferForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
+const PlayerTransferForm = ({ initialData, onSubmit, onzCancel, isSubmitting }) => {
   const { isDarkMode } = useDarkMode();
   const [formData, setFormData] = React.useState({
     federation: initialData?.federation || '',
@@ -38,9 +39,17 @@ const PlayerTransferForm = ({ initialData, onSubmit, onCancel, isSubmitting }) =
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    try {
+      const response = await onSubmit(formData);
+      if (response) {
+        toast.success('Transfer request submitted successfully!');
+      }
+    } catch (error) {
+      console.error('Submission error:', error);
+      toast.error(error.message || 'Failed to submit transfer request. Please try again.');
+    }
   };
 
   const inputClasses = `w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${

@@ -84,36 +84,52 @@ const AddTrainingForm = ({ onSubmit, onCancel, isSubmitting, initialData }) => {
         throw new Error('Please fill in all required fields');
       }
 
+      // Format dates to match YYYY-MM-DD format
       const submissionData = {
-        title: formData.title,
+        title: formData.title.trim(),
         fromDate: formData.fromDate,
-        toDate: formData.toDate,
-        organiser: formData.organiser,
-        participants: formData.participants,
+        toDate: formData.toDate || formData.fromDate,
+        organiser: formData.organiser.toUpperCase(),
+        participants: formData.participants.length > 0 
+          ? formData.participants.map(id => parseInt(id, 10))
+          : [0],
       };
 
-      console.log('Submitting data:', submissionData); // Debugging: log the data being sent
+      // Log the exact data being sent
+      console.log('Attempting to submit:', JSON.stringify(submissionData, null, 2));
 
-      // Use axiosInstance directly to see if there's an issue with the onSubmit function
       const response = await axiosInstance.post('/trainings', submissionData);
-      console.log('Response:', response);
+      
+      if (response.data) {
+        // Reset form if successful
+        setFormData({
+          title: '',
+          fromDate: '',
+          toDate: '',
+          organiser: '',
+          participants: [],
+        });
 
-      // Reset form if successful
-      setFormData({
-        title: '',
-        fromDate: '',
-        toDate: '',
-        organiser: '',
-        participants: [],
-      });
-
-      // Call onSubmit if provided
-      if (onSubmit) {
-        await onSubmit(submissionData);
+        // Call onSubmit if provided
+        if (onSubmit) {
+          await onSubmit(response.data);
+        }
       }
     } catch (err) {
-      console.error('Error submitting form:', err);
-      setError(err.response?.data?.error || err.message || 'Failed to submit form');
+      console.error('Submission error:', {
+        status: err.response?.status,
+        statusText: err.response?.statusText,
+        data: err.response?.data,
+        message: err.message,
+      });
+
+      // Set a more specific error message
+      setError(
+        err.response?.data?.message || 
+        err.response?.statusText || 
+        err.message || 
+        'Failed to submit training. Please check your input and try again.'
+      );
     } finally {
       setLoading(false);
     }

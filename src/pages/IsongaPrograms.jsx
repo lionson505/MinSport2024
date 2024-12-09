@@ -9,7 +9,7 @@ import {
   TableHead,
   TableCell
 } from '../components/ui/table';
-import { Search, Plus, Edit, Trash2, AlertCircle } from 'lucide-react';
+import { Search, Plus, Edit, Trash2, AlertCircle, Eye, Users, Printer } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import PageLoading from '../components/ui/PageLoading';
 import Message from '../components/ui/Message';
@@ -64,6 +64,18 @@ const IsongaPrograms = () => {
     typeOfGame: '',
     contact: ''
   });
+  const [showEditStudentModal, setShowEditStudentModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showStudentsModal, setShowStudentsModal] = useState(false);
+  const [showAddStudentModal, setShowAddStudentModal] = useState(false);
+  const [nidaData, setNidaData] = useState(null);
+  const [idType, setIdType] = useState('nid');
+  const [idNumber, setIdNumber] = useState('');
+  const [passportExpiry, setPassportExpiry] = useState('');
+  const [idError, setIdError] = useState('');
+  const [isLoadingNIDA, setIsLoadingNIDA] = useState(false);
+  const [tabs] = useState(['Manage Institution', 'Manage Students', 'Student Transfer']);
+  const [selectedProgram, setSelectedProgram] = useState(null);
 
   // Load initial data
   useEffect(() => {
@@ -338,19 +350,32 @@ const IsongaPrograms = () => {
                   <TableHeader>
                     <TableRow>
                       <TableHead className="min-w-[200px] text-xs">Name</TableHead>
-                      <TableHead className="min-w-[100px] text-xs">Location</TableHead>
+                      <TableHead className="min-w-[150px] text-xs">Domain</TableHead>
                       <TableHead className="min-w-[150px] text-xs">Category</TableHead>
+                      <TableHead className="min-w-[200px] text-xs">Location</TableHead>
+                      <TableHead className="min-w-[150px] text-xs">Legal Rep.</TableHead>
                       <TableHead className="w-[150px] text-xs">Operation</TableHead>
                     </TableRow>
-                  </TableHeader>
+                  </TableHeader>  
                   <TableBody>
                     {currentPrograms.map((program) => (
                       <TableRow key={program.id}>
                         <TableCell className="text-xs font-medium">{program.name}</TableCell>
-                        <TableCell className="text-xs">{renderLocation(program.location)}</TableCell>
+                        <TableCell className="text-xs">{program.domain}</TableCell>
                         <TableCell className="text-xs">{program.category}</TableCell>
+                        <TableCell className="text-xs">
+                          {`${program.location_province}, ${program.location_district}`}
+                        </TableCell>
+                        <TableCell className="text-xs">{program.legalRepresentativeName}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => handleViewDetails(program)}
+                              className="p-1 rounded-lg hover:bg-gray-100"
+                              title="View Details"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </button>
                             <button
                               onClick={() => handleEditInstitution(program)}
                               className="p-1 rounded-lg hover:bg-gray-100"
@@ -364,6 +389,13 @@ const IsongaPrograms = () => {
                               title="Delete"
                             >
                               <Trash2 className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() => handleViewStudents(program)}
+                              className="p-1 rounded-lg hover:bg-gray-100"
+                              title="View Students"
+                            >
+                              <Users className="h-4 w-4" />
                             </button>
                           </div>
                         </TableCell>
@@ -462,6 +494,13 @@ const IsongaPrograms = () => {
                         <TableCell>
                           <div className="flex items-center gap-1">
                             <button
+                              onClick={() => handleViewStudentDetails(student)}
+                              className="p-1 rounded-lg hover:bg-gray-100"
+                              title="View Details"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </button>
+                            <button
                               onClick={() => handleEditStudent(student)}
                               className="p-1 rounded-lg hover:bg-gray-100"
                               title="Edit"
@@ -500,6 +539,54 @@ const IsongaPrograms = () => {
       default:
         return null;
     }
+  };
+
+  const handleNIDLookup = async (id, type) => {
+    setIsLoadingNIDA(true);
+    setIdError('');
+    
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Mock response
+      const mockData = {
+        firstName: 'John',
+        lastName: 'Doe',
+        gender: 'Male',
+        dateOfBirth: '1990-01-01',
+        photo: null,
+        address: {
+          province: 'Kigali',
+          district: 'Gasabo',
+          sector: 'Kimironko',
+          cell: 'Kibagabaga',
+          village: 'Nyagatovu'
+        }
+      };
+      
+      setNidaData(mockData);
+    } catch (error) {
+      setIdError('Failed to verify ID. Please try again.');
+    } finally {
+      setIsLoadingNIDA(false);
+    }
+  };
+
+  const handleViewStudentDetails = (student) => {
+    setSelectedStudent(student);
+    setShowDetailsModal(true);
+  };
+
+  const handleViewStudents = (program) => {
+    setSelectedProgram(program);
+    setShowStudentsModal(true);
+  };
+
+  const handleViewDetails = (program) => {
+    setSelectedStudent(null);
+    setSelectedProgram(program);
+    setShowDetailsModal(true);
   };
 
   if (isLoading) {
@@ -843,6 +930,320 @@ const IsongaPrograms = () => {
             >
               {isSubmitting ? 'Deleting...' : 'Delete Student'}
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
+        <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center justify-between">
+              {selectedStudent ? 'Student Details' : 'Institution Details'}
+              <div className="flex items-center gap-4">
+                <Button 
+                  onClick={() => window.print()} 
+                  variant="outline" 
+                  className="flex items-center gap-2"
+                >
+                  <Printer className="h-4 w-4" />
+                  Print Details
+                </Button>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedStudent ? (
+            <div className="space-y-6 py-4">
+              {/* Photo Section */}
+              <div className="flex justify-center">
+                {selectedStudent.photo_passport ? (
+                  <img 
+                    src={selectedStudent.photo_passport} 
+                    alt="Student" 
+                    className="w-32 h-32 rounded-full object-cover border-2 border-gray-200"
+                  />
+                ) : (
+                  <div className="w-32 h-32 rounded-full bg-gray-100 flex items-center justify-center border-2 border-gray-200">
+                    <span className="text-gray-500">No Photo</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Personal Information Section */}
+              <div>
+                <h3 className="text-lg font-semibold text-blue-600 mb-3">Personal Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="font-medium text-gray-600 block">Name</label>
+                    <p className="mt-1">
+                      {`${selectedStudent.firstName} ${selectedStudent.lastName}`}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="font-medium text-gray-600 block">School</label>
+                    <p className="mt-1">
+                      {selectedStudent.nameOfSchoolAcademyTrainingCenter || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="font-medium text-gray-600 block">Date of Birth</label>
+                    <p className="mt-1">
+                      {new Date(selectedStudent.dateOfBirth).toLocaleDateString('en-US', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric'
+                      })}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="font-medium text-gray-600 block">Nationality</label>
+                    <p className="mt-1">{selectedStudent.nationality || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="font-medium text-gray-600 block">Gender</label>
+                    <p className="mt-1">{selectedStudent.gender || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="font-medium text-gray-600 block">Class</label>
+                    <p className="mt-1">{selectedStudent.class || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="font-medium text-gray-600 block">Place of Birth</label>
+                    <p className="mt-1">{selectedStudent.placeOfBirth || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="font-medium text-gray-600 block">Place of Residence</label>
+                    <p className="mt-1">{selectedStudent.placeOfResidence || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="font-medium text-gray-600 block">ID/Passport No</label>
+                    <p className="mt-1">{selectedStudent.idPassportNo || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="font-medium text-gray-600 block">Other Nationality</label>
+                    <p className="mt-1">{selectedStudent.otherNationality || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="font-medium text-gray-600 block">Parents/Guardian</label>
+                    <p className="mt-1">{selectedStudent.namesOfParentsGuardian || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="font-medium text-gray-600 block">Contact</label>
+                    <p className="mt-1">{selectedStudent.contact || 'N/A'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Game Information Section */}
+              <div>
+                <h3 className="text-lg font-semibold text-blue-600 mb-3">Game Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="font-medium text-gray-600 block">Game Type</label>
+                    <p className="mt-1">{selectedStudent.typeOfGame || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="font-medium text-gray-600 block">Position/Role</label>
+                    <p className="mt-1">{selectedStudent.position || 'N/A'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* School Information Section */}
+              <div>
+                <h3 className="text-lg font-semibold text-blue-600 mb-3">School Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="font-medium text-gray-600 block">Institution Type</label>
+                    <p className="mt-1">{selectedStudent.typeOfSchoolAcademyTrainingCenter || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="font-medium text-gray-600 block">School Name</label>
+                    <p className="mt-1">{selectedStudent.nameOfSchoolAcademyTrainingCenter || 'N/A'}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : selectedProgram && (
+            <div className="space-y-6 py-4">
+              {/* Institution Information */}
+              <div>
+                <h3 className="text-lg font-semibold text-blue-600 mb-3">Institution Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="font-medium text-gray-600 block">Name</label>
+                    <p className="mt-1">{selectedProgram.name}</p>
+                  </div>
+                  <div>
+                    <label className="font-medium text-gray-600 block">Domain</label>
+                    <p className="mt-1">{selectedProgram.domain || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="font-medium text-gray-600 block">Category</label>
+                    <p className="mt-1">{selectedProgram.category || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="font-medium text-gray-600 block">Legal Representative</label>
+                    <p className="mt-1">{selectedProgram.legalRepresentativeName || 'N/A'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Location Information */}
+              <div>
+                <h3 className="text-lg font-semibold text-blue-600 mb-3">Location Details</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="font-medium text-gray-600 block">Province</label>
+                    <p className="mt-1">{selectedProgram.location_province || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="font-medium text-gray-600 block">District</label>
+                    <p className="mt-1">{selectedProgram.location_district || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="font-medium text-gray-600 block">Sector</label>
+                    <p className="mt-1">{selectedProgram.location_sector || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="font-medium text-gray-600 block">Cell</label>
+                    <p className="mt-1">{selectedProgram.location_cell || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="font-medium text-gray-600 block">Village</label>
+                    <p className="mt-1">{selectedProgram.location_village || 'N/A'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Contact Information */}
+              <div>
+                <h3 className="text-lg font-semibold text-blue-600 mb-3">Contact Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="font-medium text-gray-600 block">Email</label>
+                    <p className="mt-1">{selectedProgram.email || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="font-medium text-gray-600 block">Phone</label>
+                    <p className="mt-1">{selectedProgram.phone || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="font-medium text-gray-600 block">Website</label>
+                    <p className="mt-1">{selectedProgram.website || 'N/A'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Additional Information */}
+              <div>
+                <h3 className="text-lg font-semibold text-blue-600 mb-3">Additional Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="font-medium text-gray-600 block">Registration Date</label>
+                    <p className="mt-1">
+                      {selectedProgram.registrationDate ? 
+                        new Date(selectedProgram.registrationDate).toLocaleDateString() : 
+                        'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="font-medium text-gray-600 block">Status</label>
+                    <p className="mt-1">
+                      <span className={`px-2 py-1 rounded-full text-xs ${
+                        selectedProgram.status === 'active' ? 
+                          'bg-green-100 text-green-800' : 
+                          'bg-red-100 text-red-800'
+                      }`}>
+                        {selectedProgram.status || 'N/A'}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-end mt-6 pt-4 border-t">
+            <Button onClick={() => setShowDetailsModal(false)}>Close</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showStudentsModal} onOpenChange={setShowStudentsModal}>
+        <DialogContent className="sm:max-w-[900px] max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center justify-between">
+              Students - {selectedProgram?.name}
+              <div className="flex items-center gap-4">
+                <Button 
+                  onClick={() => window.print()} 
+                  variant="outline" 
+                  className="flex items-center gap-2"
+                >
+                  <Printer className="h-4 w-4" />
+                  Print List
+                </Button>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="min-w-[150px] text-xs">Name</TableHead>
+                  <TableHead className="min-w-[100px] text-xs">Gender</TableHead>
+                  <TableHead className="min-w-[120px] text-xs">Date of Birth</TableHead>
+                  <TableHead className="min-w-[150px] text-xs">Contact</TableHead>
+                  <TableHead className="w-[100px] text-xs">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {students
+                  .filter(student => 
+                    student.nameOfSchoolAcademyTrainingCenter === selectedProgram?.name
+                  )
+                  .map((student) => (
+                    <TableRow key={student.id}>
+                      <TableCell className="text-xs font-medium">
+                        {`${student.firstName} ${student.lastName}`}
+                      </TableCell>
+                      <TableCell className="text-xs">{student.gender}</TableCell>
+                      <TableCell className="text-xs">
+                        {new Date(student.dateOfBirth).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell className="text-xs">{student.contact}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => {
+                              setShowStudentsModal(false);
+                              handleViewStudentDetails(student);
+                            }}
+                            className="p-1 rounded-lg hover:bg-gray-100"
+                            title="View Details"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+
+            {students.filter(student => 
+              student.nameOfSchoolAcademyTrainingCenter === selectedProgram?.name
+            ).length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                No students found for this institution
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end mt-6 pt-4 border-t">
+            <Button onClick={() => setShowStudentsModal(false)}>Close</Button>
           </div>
         </DialogContent>
       </Dialog>

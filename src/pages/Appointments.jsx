@@ -4,7 +4,7 @@ import { Dialog, Transition } from "@headlessui/react";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/input";
 import { Search } from "react-feather";
-import { Calendar, Eye, Trash2 } from 'lucide-react';
+import { Calendar, Eye, Trash2, XIcon, Check, X } from 'lucide-react';
 import AddAppointmentForm from "../components/forms/AddAppointmentForm"; // Import the form
 
 const Toast = ({ message, onClose }) => {
@@ -34,6 +34,11 @@ function Appointments() {
   const [appointmentToDelete, setAppointmentToDelete] = useState(null);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [comment, setComment] = useState('');
+  const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
 
   const fetchAppointments = async () => {
     setIsLoading(true);
@@ -140,6 +145,45 @@ function Appointments() {
     setCurrentPage(page);
   };
 
+  const handleApproveConfirm = async () => {
+    try {
+      await axiosInstance.put(`/appointments/${selectedAppointment.id}/approve`);
+      setToastMessage("Appointment approved successfully!");
+      setIsApproveModalOpen(false);
+      fetchAppointments();
+    } catch (error) {
+      console.error("Error approving appointment:", error);
+      setToastMessage("Failed to approve appointment.");
+    }
+  };
+
+  const handleRejectConfirm = async () => {
+    try {
+      await axiosInstance.put(`/appointments/${selectedAppointment.id}/reject`);
+      setToastMessage("Appointment rejected successfully!");
+      setIsRejectModalOpen(false);
+      fetchAppointments();
+    } catch (error) {
+      console.error("Error rejecting appointment:", error);
+      setToastMessage("Failed to reject appointment.");
+    }
+  };
+
+  const handleCommentSubmit = async () => {
+    try {
+      await axiosInstance.post(`/appointments/${selectedAppointment.id}/comments`, {
+        comment: comment
+      });
+      setToastMessage("Comment added successfully!");
+      setIsCommentModalOpen(false);
+      setComment('');
+      fetchAppointments();
+    } catch (error) {
+      console.error("Error adding comment:", error);
+      setToastMessage("Failed to add comment.");
+    }
+  };
+
   return (
     <div className="p-4">
       {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage('')} />}
@@ -161,63 +205,94 @@ function Appointments() {
       </div>
 
       <div className="bg-white rounded-lg shadow">
-        {isLoading ? (
-          <div className="text-center py-4">Loading...</div>
-        ) : (
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Person to Meet</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Names</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Gender</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Email</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Cellphone</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Purpose</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Institution</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Function</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Other People to Attend</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Other Ministry Staff</th>
-                <th className="w-24 px-3 py-2 text-left text-xs font-medium text-gray-500">Actions</th>
+        <table className="w-full">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="w-10 px-3 py-2">
+                <input 
+                  type="checkbox" 
+                  className="rounded border-gray-300"
+                  checked={selectedRows.length === appointments.length}
+                  onChange={(e) => {
+                    setSelectedRows(e.target.checked ? appointments.map(a => a.id) : []);
+                  }}
+                />
+              </th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">TIME</th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">NAMES</th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Gender</th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Email</th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Cellphone</th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Purpose</th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Institution</th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Function</th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Other People to Attend</th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Other Ministry Staff</th>
+              <th className="w-24 px-3 py-2 text-left text-xs font-medium text-gray-500">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200">
+            {appointments.map((appointment) => (
+              <tr key={appointment.id} className="hover:bg-gray-50">
+                <td className="px-3 py-2">
+                  <input 
+                    type="checkbox" 
+                    className="rounded border-gray-300"
+                    checked={selectedRows.includes(appointment.id)}
+                    onChange={(e) => {
+                      setSelectedRows(prev => 
+                        e.target.checked 
+                          ? [...prev, appointment.id]
+                          : prev.filter(id => id !== appointment.id)
+                      );
+                    }}
+                  />
+                </td>
+                <td className="px-3 py-2 text-sm whitespace-nowrap">
+                  {new Date(appointment.request_time).toLocaleTimeString()}
+                </td>
+                <td className="px-3 py-2 text-sm">{appointment.names}</td>
+                <td className="px-3 py-2 text-sm">{appointment.gender}</td>
+                <td className="px-3 py-2 text-sm">{appointment.email}</td>
+                <td className="px-3 py-2 text-sm">{appointment.cellphone}</td>
+                <td className="px-3 py-2 text-sm">{appointment.purpose}</td>
+                <td className="px-3 py-2 text-sm">{appointment.institution}</td>
+                <td className="px-3 py-2 text-sm">{appointment.function}</td>
+                <td className="px-3 py-2 text-sm">{appointment.other_people_to_attend}</td>
+                <td className="px-3 py-2 text-sm">{appointment.other_ministry_staff}</td>
+                <td className="px-3 py-2 flex space-x-2">
+                  <button onClick={() => handleView(appointment)}>
+                    <Eye className="h-4 w-4" />
+                  </button>
+                  <button onClick={() => {
+                    setSelectedAppointment(appointment);
+                    setIsApproveModalOpen(true);
+                  }}>
+                    <Check className="h-4 w-4 text-green-600" />
+                  </button>
+                  <button onClick={() => {
+                    setSelectedAppointment(appointment);
+                    setIsRejectModalOpen(true);
+                  }}>
+                    <X className="h-4 w-4 text-red-600" />
+                  </button>
+                  <button
+                    className="text-yellow-600 text-sm hover:underline"
+                    onClick={() => handleReschedule(appointment)}
+                  >
+                    <Calendar className="h-4 w-4 mr-1" />
+                  </button>
+                  <button
+                    className="text-red-600 text-sm hover:underline"
+                    onClick={() => handleDelete(appointment)}
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                  </button>
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {appointments.map((appointment) => (
-                <tr key={appointment.id} className="hover:bg-gray-50">
-                  <td className="px-3 py-2 text-sm">{appointment.person_to_meet}</td>
-                  <td className="px-3 py-2 text-sm">{appointment.names}</td>
-                  <td className="px-3 py-2 text-sm">{appointment.gender}</td>
-                  <td className="px-3 py-2 text-sm">{appointment.email}</td>
-                  <td className="px-3 py-2 text-sm">{appointment.cellphone}</td>
-                  <td className="px-3 py-2 text-sm">{appointment.purpose}</td>
-                  <td className="px-3 py-2 text-sm">{appointment.institution}</td>
-                  <td className="px-3 py-2 text-sm">{appointment.function}</td>
-                  <td className="px-3 py-2 text-sm">{appointment.other_people_to_attend}</td>
-                  <td className="px-3 py-2 text-sm">{appointment.other_ministry_staff}</td>
-                  <td className="px-3 py-2 flex space-x-2">
-                    <button
-                      className="text-blue-600 text-sm hover:underline"
-                      onClick={() => handleView(appointment)}
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
-                    </button>
-                    <button
-                      className="text-yellow-600 text-sm hover:underline"
-                      onClick={() => handleReschedule(appointment)}
-                    >
-                      <Calendar className="h-4 w-4 mr-1" />
-                    </button>
-                    <button
-                      className="text-red-600 text-sm hover:underline"
-                      onClick={() => handleDelete(appointment)}
-                    >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+            ))}
+          </tbody>
+        </table>
       </div>
 
       <div className="flex justify-between items-center mt-4">
@@ -378,6 +453,114 @@ function Appointments() {
                 <div className="flex justify-end mt-4">
                   <Button variant="default" className="mt-[-48px]" onClick={() => setAddModalOpen(false)}>
                     Close
+                  </Button>
+                </div>
+              </Dialog.Panel>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
+
+      <Transition show={isApproveModalOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={() => setIsApproveModalOpen(false)}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black bg-opacity-25" />
+          </Transition.Child>
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
+                <Dialog.Title className="text-lg font-medium text-gray-900">Approve Appointment</Dialog.Title>
+                <div className="mt-4">
+                  <p>Are you sure you want to approve this appointment?</p>
+                  <div className="flex justify-end gap-3 mt-4">
+                    <Button variant="outline" onClick={() => setIsApproveModalOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button variant="destructive" onClick={handleApproveConfirm}>
+                      Confirm Approve
+                    </Button>
+                  </div>
+                </div>
+              </Dialog.Panel>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
+
+      <Transition show={isRejectModalOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={() => setIsRejectModalOpen(false)}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black bg-opacity-25" />
+          </Transition.Child>
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
+                <Dialog.Title className="text-lg font-medium text-gray-900">Reject Appointment</Dialog.Title>
+                <div className="mt-4">
+                  <p>Are you sure you want to reject this appointment?</p>
+                  <div className="flex justify-end gap-3 mt-4">
+                    <Button variant="outline" onClick={() => setIsRejectModalOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button variant="destructive" onClick={handleRejectConfirm}>
+                      Confirm Reject
+                    </Button>
+                  </div>
+                </div>
+              </Dialog.Panel>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
+
+      <Transition show={isCommentModalOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={() => setIsCommentModalOpen(false)}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black bg-opacity-25" />
+          </Transition.Child>
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
+                <Dialog.Title className="text-lg font-medium text-gray-900">Add Comment</Dialog.Title>
+                <div className="mt-4">
+                  <Input
+                    type="text"
+                    placeholder="Comment"
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    className="mb-2 w-full"
+                  />
+                </div>
+                <div className="flex justify-end gap-3 mt-4">
+                  <Button variant="outline" onClick={() => setIsCommentModalOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button variant="destructive" onClick={handleCommentSubmit}>
+                    Confirm Comment
                   </Button>
                 </div>
               </Dialog.Panel>

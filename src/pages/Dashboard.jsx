@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Bar, Pie, Line } from 'react-chartjs-2';
+import { Bar, Pie, Line, Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, LineElement, PointElement, Filler } from 'chart.js';
 import axiosInstance from '../utils/axiosInstance'; // Assuming this is the Axios instance to make API calls
 import { useNavigate } from 'react-router-dom';
-import { FileText, Users, Award, Building2, Flag, Calendar as CalendarIcon } from 'lucide-react';
+import { FileText, Users, Award, Building2, Flag, Calendar as CalendarIcon, ArrowUpRight } from 'lucide-react';
 import { Button } from '../components/ui/Button'; // Assuming Button is a custom component you have
+import { format } from 'date-fns';
+import { Clock } from 'lucide-react';
+import { useDarkMode } from '../contexts/DarkModeContext';
 
 ChartJS.register(
   CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, LineElement, PointElement, Filler
@@ -339,9 +342,9 @@ const isStatsAllowed = (path) => {
 
 
       {/* Upcoming Appointments and Appointment Requests Section */}
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Upcoming Appointments Section */}
-        <div className="bg-white p-6 rounded-lg shadow-lg">
+        <div className="bg-white p-6 rounded-lg shadow-sm">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold">Upcoming Events</h3>
             <Button size="sm" variant="secondary" onClick={() => navigate('/appointments')}>View All</Button>
@@ -365,7 +368,7 @@ const isStatsAllowed = (path) => {
         </div>
 
         {/* Appointment Requests Section */}
-        <div className="bg-white p-6 rounded-lg shadow-lg">
+        <div className="bg-white p-6 rounded-lg shadow-sm">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold">Appointment Requests</h3>
             <Button size="sm" variant="secondary" onClick={() => navigate('/appointments')}>View All</Button>
@@ -388,55 +391,94 @@ const isStatsAllowed = (path) => {
         </div>
       </div>
   
-      {/* Federation Performance and Sports Professionals Distribution Section */}
-      <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
-        {/* Federation Performance Chart */}
-        <div className="bg-white p-6 rounded-lg shadow-lg">
-          <h3 className="text-lg font-semibold mb-4">Federation Performance</h3>
+      {/* Analytics Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Federation Performance */}
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Federation Performance
+            </h3>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-green-500 flex items-center">
+                <ArrowUpRight className="h-4 w-4 mr-1" />
+                +12.5%
+              </span>
+            </div>
+          </div>
           <div className="h-[300px]">
             <Bar data={federationData} options={chartOptions} />
           </div>
         </div>
 
-        {/* Sports Professionals Distribution Chart */}
-        <div className="bg-white p-6 rounded-lg shadow-lg">
-          <h3 className="text-lg font-semibold mb-4">Sports Professionals Distribution</h3>
+        {/* Sports Professionals Distribution */}
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Sports Professionals Distribution
+            </h3>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-green-500 flex items-center">
+                <ArrowUpRight className="h-4 w-4 mr-1" />
+                +8.3%
+              </span>
+            </div>
+          </div>
           <div className="h-[300px]">
-            <Pie data={professionalsData} options={chartOptions} />
+            <Doughnut 
+              data={professionalsData} 
+              options={{
+                ...chartOptions,
+                cutout: '60%',
+              }} 
+            />
           </div>
         </div>
-      </div>
 
-      {/* National Teams Performance Chart */}
-      <div className="mt-8 bg-white p-6 rounded-lg shadow-lg">
-        <h3 className="text-lg font-semibold">National Teams Performance</h3>
-        <div className="h-[670px]">
-          <Line data={teamsPerformanceData} options={chartOptions} />
+        {/* National Teams Performance */}
+        <div className="bg-white rounded-lg shadow-sm p-6 lg:col-span-2">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-semibold text-gray-900">
+              National Teams Performance Trend
+            </h3>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-green-500 flex items-center">
+                <ArrowUpRight className="h-4 w-4 mr-1" />
+                +15.2%
+              </span>
+            </div>
+          </div>
+          <div className="h-[300px]">
+            <Line data={teamsPerformanceData} options={chartOptions} />
+          </div>
         </div>
-      </div>
 
-      {/* Key Performance Metrics Section */}
-      <div className="mt-8 space-y-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-            <div className="text-3xl font-bold text-gray-900">2,845</div>
-            <div className="text-xs text-gray-600">Active Athletes</div>
-            <div className="text-green-500">+12% from last month</div>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-            <div className="text-3xl font-bold text-gray-900">42</div>
-            <div className="text-xs text-gray-600">International Events</div>
-            <div className="text-green-500">+5 from last month</div>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-            <div className="text-3xl font-bold text-gray-900">350</div>
-            <div className="text-xs text-gray-600">Professional Staff</div>
-            <div className="text-red-500">-3 from last month</div>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-            <div className="text-3xl font-bold text-gray-900">15</div>
-            <div className="text-xs text-gray-600">Rankings Improved</div>
-            <div className="text-green-500">+3 from last month</div>
+        {/* Key Performance Metrics */}
+        <div className="bg-white rounded-lg shadow-sm p-6 lg:col-span-2">
+          <h3 className="text-lg font-semibold mb-4 text-gray-900">
+            Key Performance Metrics
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="p-4 rounded-lg bg-blue-50">
+              <p className="text-sm text-blue-600">Active Athletes</p>
+              <p className="text-2xl font-bold text-blue-700">2,845</p>
+              <p className="text-xs text-blue-500">+12% from last month</p>
+            </div>
+            <div className="p-4 rounded-lg bg-green-50">
+              <p className="text-sm text-green-600">International Events</p>
+              <p className="text-2xl font-bold text-green-700">42</p>
+              <p className="text-xs text-green-500">+8% from last month</p>
+            </div>
+            <div className="p-4 rounded-lg bg-purple-50">
+              <p className="text-sm text-purple-600">Professional Staff</p>
+              <p className="text-2xl font-bold text-purple-700">350</p>
+              <p className="text-xs text-purple-500">+5% from last month</p>
+            </div>
+            <div className="p-4 rounded-lg bg-orange-50">
+              <p className="text-sm text-orange-600">Rankings Improved</p>
+              <p className="text-2xl font-bold text-orange-700">15</p>
+              <p className="text-xs text-orange-500">+3 from last month</p>
+            </div>
           </div>
         </div>
       </div>

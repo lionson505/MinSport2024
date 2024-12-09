@@ -1,8 +1,16 @@
-// src/components/federations/AddPlayerStaffForm.jsx
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '../ui/Button';
 import axiosInstance from '../../utils/axiosInstance';
+import { toast } from 'react-hot-toast';
+
+// List of countries
+const countries = [
+  { value: 'AF', label: 'Afghanistan' },
+  { value: 'AL', label: 'Albania' },
+  { value: 'DZ', label: 'Algeria' },
+  // Add more countries as needed
+  { value: 'ZW', label: 'Zimbabwe' },
+];
 
 const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
   const [formData, setFormData] = useState({
@@ -60,10 +68,35 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Submitting form data:', formData); // Debugging line
-    onSubmit(formData);
+    try {
+      // Format dates to ISO string
+      const formattedData = {
+        ...formData,
+        dateOfBirth: formData.dateOfBirth ? new Date(formData.dateOfBirth).toISOString() : null,
+        joinDate: formData.joinDate ? new Date(formData.joinDate).toISOString() : null,
+      };
+
+      // Remove any empty string values
+      Object.keys(formattedData).forEach(key => {
+        if (formattedData[key] === '') {
+          formattedData[key] = null;
+        }
+      });
+
+      console.log('Submitting formatted data:', formattedData);
+      await onSubmit(formattedData);
+      
+      toast.success(initialData ? 'Player/Staff updated successfully!' : 'Player/Staff added successfully!');
+
+      // Update form data with the submitted data
+      setFormData(formattedData);
+    } catch (error) {
+      console.error('Submission error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to save data. Please try again.';
+      toast.error(errorMessage);
+    }
   };
 
   return (
@@ -94,10 +127,9 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
         <div>
           <label className="block text-sm font-medium text-gray-700">Passport Picture</label>
           <input
-            type="text"
+            type="file"
+            accept="image/*"
             name="passportPicture"
-            value={formData.passportPicture}
-            onChange={handleChange}
             className="mt-1 block w-full border rounded-md"
           />
         </div>
@@ -168,13 +200,18 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Nationality</label>
-          <input
-            type="text"
+          <select
             name="nationality"
             value={formData.nationality}
             onChange={handleChange}
             className="mt-1 block w-full border rounded-md"
-          />
+          >
+            {countries.map((country) => (
+              <option key={country.value} value={country.value}>
+                {country.label}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Other Nationality</label>
@@ -283,10 +320,10 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">CV/Resume</label>
-          <textarea
+          <input
+            type="file"
+            accept=".pdf,.doc,.docx"
             name="cvResume"
-            value={formData.cvResume}
-            onChange={handleChange}
             className="mt-1 block w-full border rounded-md"
           />
         </div>
