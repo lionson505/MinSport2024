@@ -1,4 +1,3 @@
-/* src/components/federation/ManageClubs.jsx */
 import React, { useState, useEffect } from 'react';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../ui/table';
 import Modal from '../ui/Modal';
@@ -9,7 +8,7 @@ import EditClubModal from './EditClubModal';
 import AddClubForm from './AddClubForm';
 import axios from '../../utils/axiosInstance';
 import { useDarkMode } from '../../contexts/DarkModeContext';
-import { Button } from '../ui/button'; // Import the Button component
+import { Button } from '../ui/Button';
 
 const ManageClubs = () => {
   const { isDarkMode } = useDarkMode();
@@ -33,23 +32,23 @@ const ManageClubs = () => {
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: currentYear - 1950 + 1 }, (_, i) => currentYear - i);
 
-  useEffect(() => {
-    const fetchClubsAndFederations = async () => {
-      setIsLoading(true);
-      try {
-        const [clubsResponse, federationsResponse] = await Promise.all([
-          axios.get('/clubs'),
-          axios.get('/federations'),
-        ]);
-        setClubs(clubsResponse.data);
-        setFederations(federationsResponse.data);
-      } catch (err) {
-        setError('Failed to load data');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const fetchClubsAndFederations = async () => {
+    setIsLoading(true);
+    try {
+      const [clubsResponse, federationsResponse] = await Promise.all([
+        axios.get('/clubs'),
+        axios.get('/federations'),
+      ]);
+      setClubs(clubsResponse.data);
+      setFederations(federationsResponse.data);
+    } catch (err) {
+      setError('Failed to load data');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchClubsAndFederations();
   }, []);
 
@@ -86,10 +85,10 @@ const ManageClubs = () => {
   const handleDeleteConfirm = async () => {
     try {
       await axios.delete(`/clubs/${selectedClub.id}`);
-      setClubs(clubs.filter((club) => club.id !== selectedClub.id));
       setShowDeleteDialog(false);
       setSelectedClub(null);
       toast.success('Club deleted successfully');
+      fetchClubsAndFederations();
     } catch (err) {
       toast.error('Failed to delete club');
     }
@@ -204,34 +203,34 @@ const ManageClubs = () => {
                     <TableCell>{club.name}</TableCell>
                     <TableCell>{federations.find((fed) => fed.id === club.federationId)?.name}</TableCell>
                     <TableCell>{club.yearFounded}</TableCell>
-                    <TableCell className="flex gap-2">
+                    <TableCell className="flex gap-1">
                       <button
-                        className="p-2 hover:text-blue-500 focus:outline-none"
+                        className="p-1 rounded-lg hover:bg-gray-100"
                         onClick={() => handleViewDetails(club)}
                         title="View Details"
                       >
-                        <Eye className="w-5 h-5" />
+                        <Eye className="h-4 w-4" />
                       </button>
                       <button
-                        className="p-2 hover:text-green-500 focus:outline-none"
+                        className="p-1 rounded-lg hover:bg-gray-100"
                         onClick={() => handleEdit(club)}
                         title="Edit Club"
                       >
-                        <Edit className="w-5 h-5" />
+                        <Edit className="h-4 w-4" />
                       </button>
                       <button
-                        className="p-2 hover:text-red-500 focus:outline-none"
+                        className="p-1 rounded-lg hover:bg-red-50 text-red-600"
                         onClick={() => handleDeleteClick(club)}
                         title="Delete Club"
                       >
-                        <Trash2 className="w-5 h-5" />
+                        <Trash2 className="h-4 w-4" />
                       </button>
                       <button
-                        className="p-2 hover:text-purple-500 focus:outline-none"
+                        className="p-1 rounded-lg hover:bg-gray-100"
                         onClick={() => handleViewPlayers(club)}
                         title="View Players"
                       >
-                        <Users className="w-5 h-5" />
+                        <Users className="h-4 w-4" />
                       </button>
                     </TableCell>
                   </TableRow>
@@ -270,12 +269,14 @@ const ManageClubs = () => {
         isOpen={showEditModal}
         club={selectedClub}
         onClose={() => setShowEditModal(false)}
+        onSuccess={fetchClubsAndFederations}
       />
 
       {/* Add Club Modal */}
       <AddClubForm
         isOpen={showAddClubModal}
         onClose={() => setShowAddClubModal(false)}
+        onSuccess={fetchClubsAndFederations}
       />
 
       {/* Club Players Modal */}

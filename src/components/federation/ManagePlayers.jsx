@@ -3,8 +3,10 @@ import { Button, Modal, Table, TableHeader, TableRow, TableHead, TableBody, Tabl
 import { Plus, Search, Edit, Trash2, Eye } from 'react-icons/all';
 import AddPlayerForm from './AddPlayerForm';
 import ConfirmDialog from './ConfirmDialog';
+import axiosInstance from '../../utils/axiosInstance';
+import { toast } from 'react-hot-toast';
 
-const ManagePlayers = ({ playersData, federations, clubs, isLoading }) => {
+const ManagePlayers = ({ playersData, federations, clubs, isLoading, onDataChange }) => {
   const [showAddPlayerModal, setShowAddPlayerModal] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
@@ -39,10 +41,18 @@ const ManagePlayers = ({ playersData, federations, clubs, isLoading }) => {
     setShowConfirmDialog(true);
   };
 
-  const confirmDelete = () => {
-    // Logic to delete player
-    console.log('Deleted:', selectedPlayer);
-    setShowConfirmDialog(false);
+  const confirmDelete = async () => {
+    try {
+      await axiosInstance.delete(`/player-staff/${selectedPlayer.id}`);
+      onDataChange(); // Trigger data reload
+      setShowConfirmDialog(false);
+      setSelectedPlayer(null);
+      setFilteredPlayers(filteredPlayers.filter(p => p.id !== selectedPlayer.id)); // Update state
+      toast.success(`Successfully deleted ${selectedPlayer.name}`);
+    } catch (error) {
+      console.error('Error deleting player:', error);
+      toast.error('Failed to delete player. Please try again.');
+    }
   };
 
   const handleEdit = (player) => {
@@ -179,9 +189,16 @@ const ManagePlayers = ({ playersData, federations, clubs, isLoading }) => {
         title="Add Player/Staff"
       >
         <AddPlayerForm
-          onSubmit={(data) => {
-            console.log('New Player/Staff:', data);
-            setShowAddPlayerModal(false);
+          onSubmit={async (data) => {
+            try {
+              await axiosInstance.post('/player-staff', data);
+              onDataChange(); // Trigger data reload
+              setShowAddPlayerModal(false);
+              toast.success('Player added successfully');
+            } catch (error) {
+              console.error('Error adding player:', error);
+              toast.error('Failed to add player. Please try again.');
+            }
           }}
           onCancel={() => setShowAddPlayerModal(false)}
         />

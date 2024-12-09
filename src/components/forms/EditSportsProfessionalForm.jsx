@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button } from '../ui/button';
+import { Button } from '../ui/Button';
 import { Input } from '../ui/input';
 import { toast } from 'react-hot-toast';
 import axios from '../../utils/axiosInstance'; // Ensure this import points to the correct file

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { useTheme } from '../context/ThemeContext';
-import { Button } from '../components/ui/button';
+import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/input';
 import { Search, Plus, Eye, Edit, Trash2, AlertTriangle, X } from 'lucide-react';
 import { Dialog, Transition } from '@headlessui/react';
@@ -34,6 +34,8 @@ function Academies() {
     student: '',
     toSchool: ''
   });
+
+  const totalPages = Math.ceil(students.length / entriesPerPage);
 
   useEffect(() => {
     fetchAcademies();
@@ -150,6 +152,38 @@ function Academies() {
 
   const availableStudents = students.filter(student => student.schoolId === transferData.fromSchool);
 
+  const renderAcademyDetails = (academy) => {
+    if (!academy) return null;
+
+    const details = [
+      { label: 'School Name', value: academy.name },
+      { label: 'Domain', value: academy.domain || 'Sports' },
+      { label: 'Category', value: academy.category },
+      { label: 'Province', value: academy.location?.province || 'City of Kigali' },
+      { label: 'District', value: academy.location?.district || 'NYARUGENGE' },
+      { label: 'Secteur', value: academy.location?.sector || 'Nyarugenge' },
+      { label: 'Cellule', value: academy.location?.cell || 'Kiyovu' },
+      { label: 'Village', value: academy.location?.village || 'Cercle Sportif' },
+      { label: 'LR Name', value: academy.legalRepresentative?.name || 'N/A' },
+      { label: 'LR Gender', value: academy.legalRepresentative?.gender || 'N/A' },
+      { label: 'LR Email', value: academy.legalRepresentative?.email || 'N/A' },
+      { label: 'LR Phone', value: academy.legalRepresentative?.phone || 'N/A' }
+    ];
+
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 gap-4">
+          {details.map((detail, index) => (
+            <div key={index} className="grid grid-cols-2 gap-4 py-2 border-b last:border-b-0">
+              <div className="text-sm text-gray-500 font-medium">{detail.label}</div>
+              <div className="text-sm">{detail.value}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case 'manage':
@@ -198,6 +232,15 @@ function Academies() {
                           variant="outline"
                           onClick={() => {
                             setSelectedAcademy(academy);
+                            setIsViewModalOpen(true);
+                          }}
+                        >
+                          <Eye className="h-4 w-4 text-blue-600" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedAcademy(academy);
                             setIsEditModalOpen(true);
                           }}
                         >
@@ -224,34 +267,29 @@ function Academies() {
       case 'students':
         return (
           <>
-            <div className="flex justify-between items-center mb-6">
-              <div className="relative">
-                <Input
-                  type="text"
-                  placeholder="Search students..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-64 pl-10"
-                />
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              </div>
+            {/* Add Student Button */}
+            <div className="flex justify-end mb-6">
               <Button
                 onClick={() => setIsAddStudentModalOpen(true)}
                 className="bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Add Student
+                Add Academy Student
               </Button>
             </div>
 
+            {/* Students Table */}
             <div className="bg-white rounded-lg shadow overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Name</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Class</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Game</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">School</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Age/Date of Birth</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Nationality</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Gender</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Game</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Class</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Operation</th>
                   </tr>
                 </thead>
@@ -259,33 +297,76 @@ function Academies() {
                   {students.map((student) => (
                     <tr key={student.id} className="hover:bg-gray-50">
                       <td className="px-4 py-3 text-sm">{`${student.firstName} ${student.lastName}`}</td>
-                      <td className="px-4 py-3 text-sm">{student.class}</td>
-                      <td className="px-4 py-3 text-sm">{student.game}</td>
+                      <td className="px-4 py-3 text-sm">{student.schoolName}</td>
+                      <td className="px-4 py-3 text-sm">{new Date(student.dateOfBirth).toLocaleDateString()}</td>
+                      <td className="px-4 py-3 text-sm">{student.nationality}</td>
                       <td className="px-4 py-3 text-sm">{student.gender}</td>
-                      <td className="px-4 py-3 flex gap-2">
-                        <Button
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedStudent(student);
-                            setIsEditStudentModalOpen(true);
-                          }}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedStudent(student);
-                            setIsDeleteStudentModalOpen(true);
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4 text-red-600" />
-                        </Button>
+                      <td className="px-4 py-3 text-sm">{student.gameType}</td>
+                      <td className="px-4 py-3 text-sm">{student.class}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex space-x-2">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleViewStudent(student)}
+                            className="p-1 h-7 w-7"
+                            title="View Details"
+                          >
+                            <Eye className="h-4 w-4 text-blue-600" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleEditStudent(student)}
+                            className="p-1 h-7 w-7"
+                            title="Edit Student"
+                          >
+                            <Edit className="h-4 w-4 text-green-600" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleDeleteStudent(student)}
+                            className="p-1 h-7 w-7"
+                            title="Delete Student"
+                          >
+                            <Trash2 className="h-4 w-4 text-red-600" />
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Pagination */}
+            <div className="flex items-center justify-end mt-4 space-x-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1 text-sm border rounded-md"
+              >
+                Previous
+              </Button>
+
+              <div className="flex items-center">
+                <span className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md">
+                  {currentPage}
+                </span>
+              </div>
+
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 text-sm border rounded-md"
+              >
+                Next
+              </Button>
             </div>
           </>
         );
@@ -378,6 +459,64 @@ function Academies() {
     }
   };
 
+  const handleViewStudent = (student) => {
+    setSelectedStudent(student);
+    setIsViewStudentModalOpen(true);
+  };
+
+  const renderStudentDetails = (student) => {
+    if (!student) return null;
+
+    const details = [
+      { section: 'Personal Information', fields: [
+        { label: 'Full Name', value: `${student.firstName} ${student.lastName}` },
+        { label: 'Gender', value: student.gender },
+        { label: 'Date of Birth', value: new Date(student.dateOfBirth).toLocaleDateString() },
+        { label: 'Place of Birth', value: student.placeOfBirth },
+        { label: 'Place of Residence', value: student.placeOfResidence },
+        { label: 'Nationality', value: student.nationality },
+        { label: 'Other Nationality', value: student.otherNationality || 'N/A' }
+      ]},
+      { section: 'Academic Information', fields: [
+        { label: 'School/Academy', value: student.schoolName },
+        { label: 'Class', value: student.class },
+        { label: 'Game Type', value: student.gameType }
+      ]},
+      { section: 'Contact Information', fields: [
+        { label: 'Parents/Guardian', value: student.parentsGuardian },
+        { label: 'Contact', value: student.contact || 'N/A' }
+      ]}
+    ];
+
+    return (
+      <div className="space-y-6">
+        {student.passportPicture && (
+          <div className="flex justify-center mb-6">
+            <img 
+              src={URL.createObjectURL(student.passportPicture)}
+              alt="Student"
+              className="w-32 h-32 rounded-lg object-cover"
+            />
+          </div>
+        )}
+
+        {details.map((section, index) => (
+          <div key={index} className="border-b pb-4 last:border-b-0">
+            <h3 className="text-lg font-medium mb-4">{section.section}</h3>
+            <div className="grid grid-cols-2 gap-4">
+              {section.fields.map((field, fieldIndex) => (
+                <div key={fieldIndex}>
+                  <label className="text-sm text-gray-500">{field.label}</label>
+                  <p className="font-medium">{field.value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="p-6">
       <div className="mb-6">
@@ -468,7 +607,7 @@ function Academies() {
               <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
                 <div className="flex justify-between items-center mb-6">
                   <Dialog.Title className="text-xl font-bold">
-                    View Academy School
+                    View Academy Details
                   </Dialog.Title>
                   <button
                     onClick={() => setIsViewModalOpen(false)}
@@ -478,12 +617,10 @@ function Academies() {
                   </button>
                 </div>
 
-                {/* Render academy details here */}
+                {renderAcademyDetails(selectedAcademy)}
 
                 <div className="flex justify-end mt-6 pt-4 border-t">
-                  <Button
-                    onClick={() => setIsViewModalOpen(false)}
-                  >
+                  <Button onClick={() => setIsViewModalOpen(false)}>
                     Close
                   </Button>
                 </div>
@@ -666,7 +803,7 @@ function Academies() {
                   </button>
                 </div>
 
-                {/* Render student details here */}
+                {renderStudentDetails(selectedStudent)}
 
                 <div className="flex justify-end mt-6 pt-4 border-t">
                   <Button onClick={() => setIsViewStudentModalOpen(false)}>

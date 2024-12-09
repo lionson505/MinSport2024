@@ -21,6 +21,7 @@ import {
   Trash2,
   History,
   AlertCircle,
+  ArrowRight,
 } from 'lucide-react';
 import Modal from '../components/ui/Modal';
 import AddFederationForm from '../components/forms/AddFederationForm';
@@ -34,9 +35,89 @@ import Message from '../components/ui/Message';
 import { useDarkMode } from '../contexts/DarkModeContext';
 import ManageClubs from '../components/federation/ManageClubs';
 import AddClubForm from '../components/federation/AddClubForm';
-import { Button } from '../components/ui/button';
+import { Button } from '../components/ui/Button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 import PlayerStaffTransfer from '../components/federation/PlayerStaffTransfer';
+
+const TransferHistoryModal = ({ isOpen, onClose, player }) => {
+  // Sample transfer history data - replace with actual data from your API
+  const transferHistory = [
+    {
+      id: 1,
+      date: '2023-01-15',
+      fromClub: 'APR FC',
+      toClub: 'Rayon Sports',
+      type: 'Transfer',
+      status: 'Completed',
+      federation: 'Rwanda Football Federation',
+    },
+    {
+      id: 2,
+      date: '2022-06-30',
+      fromClub: 'Police FC',
+      toClub: 'APR FC',
+      type: 'Transfer',
+      status: 'Completed',
+      federation: 'Rwanda Football Federation',
+    },
+    // Add more history items as needed
+  ];
+
+  if (!isOpen || !player) return null;
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[600px]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <History className="h-5 w-5 text-blue-600" />
+            Transfer History - {player.name}
+          </DialogTitle>
+        </DialogHeader>
+        
+        <div className="mt-4">
+          <div className="space-y-4">
+            {transferHistory.map((transfer) => (
+              <div
+                key={transfer.id}
+                className="p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium">
+                    {new Date(transfer.date).toLocaleDateString()}
+                  </span>
+                  <span className={`text-sm px-2 py-1 rounded-full ${
+                    transfer.status === 'Completed' 
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {transfer.status}
+                  </span>
+                </div>
+                
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <span>{transfer.fromClub}</span>
+                  <ArrowRight className="h-4 w-4" />
+                  <span>{transfer.toClub}</span>
+                </div>
+                
+                <div className="mt-2 text-sm text-gray-500">
+                  <span>{transfer.federation}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex justify-end mt-4">
+          <Button variant="outline" onClick={onClose}>
+            Close
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 const Federations = () => {
   const { isDarkMode } = useDarkMode();
@@ -64,6 +145,8 @@ const Federations = () => {
   const [filteredFederations, setFilteredFederations] = useState([]);
   const [deletePlayerStaffDialogOpen, setDeletePlayerStaffDialogOpen] = useState(false);
   const [playerStaffToDelete, setPlayerStaffToDelete] = useState(null);
+  const [showTransferHistoryModal, setShowTransferHistoryModal] = useState(false);
+  const [selectedPlayer, setSelectedPlayer] = useState(null);
 
   const tabs = [
     'Manage Federations and associations',
@@ -79,7 +162,12 @@ const Federations = () => {
     location: ['Kigali', 'Eastern', 'Western', 'Northern', 'Southern'],
   };
 
- 
+  const handleViewTransferHistory = (player) => {
+    console.log('Opening transfer history for:', player);
+    setSelectedPlayer(player);
+    setShowTransferHistoryModal(true);
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -205,20 +293,27 @@ const Federations = () => {
     setActiveTab(tab);
     setSelectedItem(null);
     setShowAddModal(false);
-    setShowDeleteDialog(false);
+
+    // Show toast message if transfer was processed
+    if (tab === 'Player/Staff Transfer') {
+      const transferProcessed = true; // Replace this with your actual transfer status check
+      if (transferProcessed) {
+        toast.success('Transfer processed successfully!', {
+          description: 'The player/staff transfer has been completed.',
+          duration: 3000,
+        });
+      }
+    }
 
     switch (tab) {
       case 'Add Federation or association':
         setModalType('federation');
-        setShowAddModal(true);
         break;
       case 'Add Player/Staff':
         setModalType('playerStaff');
-        setShowAddModal(true);
         break;
       case 'Player/Staff Transfer':
         setModalType('transfer');
-        setShowAddModal(true);
         break;
       default:
         setModalType(null);
@@ -229,10 +324,13 @@ const Federations = () => {
     try {
       setIsSubmitting(true);
       const newClub = await federationApi.addClub(selectedFederation.id, clubData);
-      setClubs((prev) => [...prev, newClub]);
+      const updatedClubs = await federationApi.getClubs(selectedFederation.id);
+      setClubs(updatedClubs);
       setIsAddClubModalOpen(false);
+      toast.success('Club added successfully');
     } catch (error) {
       console.error('Failed to add club:', error);
+      toast.error('Failed to add club');
     } finally {
       setIsSubmitting(false);
     }
@@ -763,7 +861,11 @@ const Federations = () => {
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
-                          <button className="p-1 rounded-lg hover:bg-gray-100" title="View Transfer History">
+                          <button
+                            onClick={() => handleViewTransferHistory(person)}
+                            className="p-1 rounded-lg hover:bg-gray-100"
+                            title="View Transfer History"
+                          >
                             <History className="h-4 w-4" />
                           </button>
                         </div>
@@ -945,7 +1047,7 @@ const Federations = () => {
               <AlertCircle className="h-5 w-5" />
               Confirm Deletion
             </DialogTitle>
-            <DialogDescription className="py-4">
+            <DialogDescription>
               Are you sure you want to delete{' '}
               <span className="font-semibold">{federationToDelete?.name}</span>? This action cannot be undone and will
               remove all associated data.
@@ -969,7 +1071,7 @@ const Federations = () => {
               <AlertCircle className="h-5 w-5" />
               Confirm Bulk Deletion
             </DialogTitle>
-            <DialogDescription className="py-4">
+            <DialogDescription>
               Are you sure you want to delete {selectedRows.length} federations? This action cannot be undone and will
               remove all associated data.
             </DialogDescription>
@@ -992,7 +1094,7 @@ const Federations = () => {
               <AlertCircle className="h-5 w-5" />
               Confirm Deletion
             </DialogTitle>
-            <DialogDescription className="py-4">
+            <DialogDescription>
               Are you sure you want to delete{' '}
               <span className="font-semibold">
                 {playerStaffToDelete?.firstName} {playerStaffToDelete?.lastName}
@@ -1021,6 +1123,16 @@ const Federations = () => {
       >
         <AddPlayerStaffForm onSubmit={handleAddPlayerStaff} onCancel={() => setIsAddPlayerModalOpen(false)} />
       </Modal>
+
+      <TransferHistoryModal
+        isOpen={showTransferHistoryModal}
+        onClose={() => {
+          console.log('Closing modal');
+          setShowTransferHistoryModal(false);
+          setSelectedPlayer(null);
+        }}
+        player={selectedPlayer}
+      />
     </div>
   );
 };

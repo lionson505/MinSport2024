@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Input } from '../ui/input';
-import { Button } from '../ui/button';
+import { Button } from '../ui/Button';
 import axiosInstance from '../../utils/axiosInstance';
 
 const Toast = ({ message, onClose }) => {
@@ -96,12 +96,14 @@ const AddAppointmentForm = ({ onSubmit, onCancel }) => {
             <label className="mb-1 text-sm font-medium">
               Person to Meet
             </label>
-            <Input
-              type="text"
+            <select
               value={formData.person_to_meet}
               onChange={(e) => setFormData(prev => ({ ...prev, person_to_meet: e.target.value }))}
-              placeholder="Enter person to meet"
-            />
+              className="border rounded-lg p-2"
+            >
+              <option value="MINISTER">MINISTER</option>
+              <option value="PS">PS</option>
+            </select>
           </div>
 
           <div className="flex flex-col">

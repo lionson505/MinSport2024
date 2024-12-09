@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Button } from '../ui/button';
+import { Button } from '../ui/Button';
 import { Play, Pause, RotateCcw } from 'lucide-react';
 
 export function TimerDisplay({ initialTime = "00:00", isCountdown = false, onTimeUpdate, disabled = false }) {

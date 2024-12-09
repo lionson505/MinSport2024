@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { Button } from '../ui/button';
+import { Button } from '../ui/Button';
 import { Calendar, MapPin, Users, Phone, Mail, Info } from 'lucide-react';
 import BookingRequestModal from './BookingRequestModal';
 import { useInfrastructure } from '../../contexts/InfrastructureContext';

@@ -24,7 +24,7 @@ import Users from './pages/Users';
 import Contracts from './pages/Contracts';
 import Documents from './pages/Documents';
 import Academies from './pages/Academies';
-import { Toaster } from 'sonner';
+import { Toaster } from 'react-hot-toast';
 import Settings from './pages/Settings';
 import Reports from './pages/Reports';
 import Infrastructure from './pages/Infrastructure';
@@ -35,6 +35,8 @@ import AllSportsEvents from './pages/AllSportsEvents';
 import EventsPage from './pages/public/EventsPage';
 import NoPageFound from './pages/unauthorized';
 import { MatchOperatorDashboard, TeamManagement, MatchOperatorProvider } from './features/match-operator';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   const [accessibleLinks, setAccessibleLinks] = useState(null); // Initialize as null to differentiate between loading and empty state
@@ -81,7 +83,17 @@ function App() {
               <MatchOperatorProvider>
                 <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                   <AuthProvider>
-                    <Toaster position="top-right" richColors />
+                    <Toaster 
+                      position="top-right"
+                      toastOptions={{
+                        duration: 3000,  // Toast will be shown for 3 seconds
+                        style: {
+                          background: '#333',
+                          color: '#fff',
+                        },
+                      }}
+                    />
+                    <ToastContainer position="top-right" autoClose={3000} />
                     <Routes>
                       {/* Public Routes */}
                       <Route path="/login" element={<Login />} />

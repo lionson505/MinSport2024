@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button } from '../../../../components/ui/button';
+import { Button } from '../../../../components/ui/Button';
 import { TimerDisplay } from '../../../../components/scoreboards/TimerDisplay';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../../../../components/ui/dialog';
 import { Users } from 'lucide-react';

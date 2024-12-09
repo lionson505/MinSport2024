@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../utils/axiosInstance'; // Ensure this path is correct
-import { Button } from './ui/button';
+import { Button } from './ui/Button';
 import {
   Dialog,
   DialogContent,

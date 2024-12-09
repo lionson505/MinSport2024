@@ -1,7 +1,7 @@
 /* src/components/forms/AddFederationForm.jsx */
 import React, { useState, useEffect } from 'react';
 import { Input } from '../ui/input';
-import { Button } from '../ui/button';
+import { Button } from '../ui/Button';
 import toast from 'react-hot-toast';
 import axiosInstance from '../../utils/axiosInstance';
 
@@ -107,6 +107,7 @@ const AddFederationForm = ({ onSubmit, onCancel, initialData, isEditing }) => {
       toast.success(isEditing ? 'Federation updated successfully!' : 'Federation added successfully!');
       onSubmit(response.data);
       onCancel();
+      window.location.reload();
     } catch (error) {
       console.error('API Error:', error);
       toast.error(error.response?.data?.message || error.message || 'An error occurred while processing the request.');

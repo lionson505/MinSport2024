@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../utils/axiosInstance';
+import { toast } from 'react-toastify';
 
-const AddNationalTeamForm = ({ initialData = null, onSubmitSuccess }) => {
+const AddNationalTeamForm = ({ initialData = null, onCancel }) => {
   const [formData, setFormData] = useState({
     teamName: initialData?.teamName || 'Senior Men\'s National Team',
     teamMonth: initialData?.teamMonth || 'JUN',
@@ -59,30 +60,28 @@ const AddNationalTeamForm = ({ initialData = null, onSubmitSuccess }) => {
     setError(null);
 
     if (!validateFormData()) {
-      setError('Please fill in all required fields.');
+      toast.error('Please fill in all required fields.');
       return;
     }
 
     try {
       let response;
       if (initialData && initialData.id) {
-        console.log(formData)
         response = await axiosInstance.put(`/national-teams/${initialData.id}`, formData);
+        toast.success('Team updated successfully!');
       } else {
         response = await axiosInstance.post('/national-teams', formData);
+        toast.success('Team added successfully!');
       }
-      console.log('Form submitted successfully:', formData); // Log the updated form data
-      if (onSubmitSuccess) onSubmitSuccess(response.data);
+      onCancel();
     } catch (error) {
-      setError('An error occurred while submitting the form. Please try again.');
+      toast.error('An error occurred while submitting the form. Please try again.');
     }
   };
 
   return (
     <div className="max-w-lg mx-auto p-6 bg-white shadow-md rounded-lg" style={{ height: '80vh', overflowY: 'auto' }}>
       <form onSubmit={handleSubmit} className="space-y-6">
-        {error && <div className="text-red-500 mb-4">{error}</div>}
-
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Team Name <span className="text-red-500">*</span>
@@ -252,7 +251,7 @@ const AddNationalTeamForm = ({ initialData = null, onSubmitSuccess }) => {
         <div className="flex justify-end gap-4">
           <button
             type="button"
-            onClick={() => console.log('Cancel')}
+            onClick={onCancel}
             className="border border-gray-300 rounded-lg p-2 text-gray-700 hover:bg-gray-100"
           >
             Cancel

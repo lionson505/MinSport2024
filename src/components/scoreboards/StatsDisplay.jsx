@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Table } from '../../components/ui/table';
-import { Button } from '../../components/ui/button';
+import { Button } from '../../components/ui/Button';
 import { 
   BarChart, 
   Download,

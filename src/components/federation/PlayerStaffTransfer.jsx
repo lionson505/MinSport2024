@@ -1,7 +1,8 @@
 // PlayerStaffTransfer.jsx
 import React, { useState, useEffect } from 'react';
-import { Button } from '../../components/ui/button';
+import { Button } from '../../components/ui/Button';
 import axiosInstance from '../../utils/axiosInstance'; // Assuming this is your custom Axios instance
+import { toast } from 'react-hot-toast'; // Add this import
 
 const PlayerStaffTransfer = () => {
   const [federations, setFederations] = useState([]);
@@ -51,18 +52,35 @@ const PlayerStaffTransfer = () => {
     fetchPlayers();
   }, []);
 
-  const handleTransferSubmit = (e) => {
+  const handleTransferSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission logic
-    console.log({
-      selectedTransferFederation,
-      selectedFromClub,
-      selectedTransferPlayer,
-      selectedToClub,
-      transferMonth,
-      transferYear,
-      transferComments,
-    });
+    try {
+      // Format date as YYYY-MM-DD
+      const formattedDate = `${transferYear}-${transferMonth.padStart(2, '0')}-01`;
+
+      const transferData = {
+        playerStaffId: parseInt(selectedTransferPlayer),
+        fromClubId: parseInt(selectedFromClub),
+        toClubId: parseInt(selectedToClub),
+        transferDate: formattedDate,
+        additionalComments: transferComments
+      };
+
+      await axiosInstance.post('/transfers', transferData);
+      toast.success('Transfer processed successfully');
+      
+      // Optional: Reset form
+      setSelectedTransferFederation('');
+      setSelectedFromClub('');
+      setSelectedTransferPlayer('');
+      setSelectedToClub('');
+      setTransferMonth('');
+      setTransferYear('');
+      setTransferComments('');
+    } catch (error) {
+      console.error('Failed to process transfer:', error);
+      toast.error(error.response?.data?.message || 'Failed to process transfer');
+    }
   };
 
   const handleTransferFederationChange = (value) => {
