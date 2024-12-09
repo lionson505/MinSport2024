@@ -8,8 +8,6 @@ import { Button } from '../components/ui/Button'; // Assuming Button is a custom
 import { format } from 'date-fns';
 import { Clock } from 'lucide-react';
 import { useDarkMode } from '../contexts/DarkModeContext';
-import { FileText, Users, Award, Building2, Flag, Calendar as CalendarIcon } from 'lucide-react';
-import { Button } from '../components/ui/Button'; // Assuming Button is a custom component you have
 
 ChartJS.register(
   CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, LineElement, PointElement, Filler
