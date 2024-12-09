@@ -59,7 +59,7 @@ function NationalTeams() {
     name: '',
     team: '',
     federation: '',
-    appearances: ''
+    club: ''
   });
 
   const [teamPage, setTeamPage] = useState(0);
@@ -72,7 +72,7 @@ function NationalTeams() {
     { key: 'id', header: 'ID' },
     { key: 'teamName', header: 'TEAM NAME' },
     { key: 'month', header: 'MONTH' },
-    { key: 'status', header: 'STATUS' },
+    { key: 'teamYear', header: 'Year' },
     { key: 'federation', header: 'FEDERATION' },
     { key: 'players', header: 'PLAYERS' }
   ];
@@ -86,18 +86,47 @@ function NationalTeams() {
     { key: 'actions', header: 'Actions' }
   ];
 
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const [teamSearchFilters, setTeamSearchFilters] = useState({
+    teamName: '',
+    month: '',
+    year: '',
+    federation: ''
+  });
+
   useEffect(() => {
     async function fetchData() {
       try {
-        const [teamResponse, playerResponse, clubResponse, playerStaffResponse, federationResponse] = await Promise.all([
+        const [teamResponse, nationalTeamPlayerStaffResponse, clubResponse, playerStaffResponse, federationResponse] = await Promise.all([
           axiosInstance.get('/national-teams'),
           axiosInstance.get('/national-team-player-staff'),
           axiosInstance.get('/clubs'),
           axiosInstance.get('/player-staff'),
-          axiosInstance.get('/federations'), // Assuming this endpoint exists
+          axiosInstance.get('/federations'),
         ]);
+
+        // Map player staff data to national team player staff
+        const enrichedPlayers = await Promise.all(
+          nationalTeamPlayerStaffResponse.data.map(async (ntps) => {
+            const playerStaff = playerStaffResponse.data.find(ps => ps.id === ntps.playerStaffId);
+            const team = teamResponse.data.find(t => t.id === ntps.teamId);
+            const club = clubResponse.data.find(c => c.id === ntps.clubId);
+            const federation = federationResponse.data.find(f => f.id === ntps.federationId);
+
+            return {
+              ...ntps,
+              firstName: playerStaff?.firstName,
+              lastName: playerStaff?.lastName,
+              teamName: team?.teamName,
+              federation: federation,
+              club: club,
+            };
+          })
+        );
+
         setTeams(teamResponse.data);
-        setPlayers(playerResponse.data);
+        setPlayers(enrichedPlayers);
         setClubs(clubResponse.data);
         setPlayerStaffList(playerStaffResponse.data);
         setFederations(federationResponse.data);
@@ -109,7 +138,7 @@ function NationalTeams() {
     }
 
     fetchData();
-  }, []);
+  }, [refreshTrigger]);
 
   const handleView = (team) => {
     setViewTeam(team);
@@ -145,13 +174,14 @@ function NationalTeams() {
       } else {
         const response = await axiosInstance.post('/national-teams', {
           ...data,
-          status: 'Active'
+          teamYear: 'Active'
         });
         setTeams(prev => [...prev, response.data]);
         toast.success('Team added successfully');
       }
       setShowAddModal(false);
       setSelectedTeamData(null);
+      setRefreshTrigger(prev => prev + 1);
     } catch (error) {
       console.error('Error adding/updating team:', error.response || error); // Log the error response
       toast.error(error.response?.data?.message || 'Operation failed');
@@ -164,6 +194,7 @@ function NationalTeams() {
       setTeams(prev => prev.filter(team => team.id !== selectedTeamData.id));
       setShowDeleteDialog(false);
       toast.success('Team deleted successfully');
+      setRefreshTrigger(prev => prev + 1);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to delete team');
     }
@@ -172,11 +203,10 @@ function NationalTeams() {
   const handleAddPlayerSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-    const selectedTeam = teams.find(t => t.id === parseInt(selectedTeamForPlayer));
-    const selectedClubData = clubs.find(c => c.id === parseInt(selectedClub));
+    const federationId = parseInt(formData.get('federationId'));
 
     const playerData = {
-      federationId: selectedTeam?.federationId,
+      federationId: federationId,
       teamId: parseInt(selectedTeamForPlayer),
       clubId: parseInt(selectedClub),
       playerStaffId: parseInt(selectedPlayerStaff),
@@ -192,6 +222,7 @@ function NationalTeams() {
       setSelectedTeamForPlayer('');
       setSelectedClub('');
       setAvailableGames([]);
+      setRefreshTrigger(prev => prev + 1);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to add player');
     }
@@ -217,6 +248,7 @@ function NationalTeams() {
       toast.success('Player updated successfully');
       setShowPlayerEditModal(false);
       setSelectedPlayerData(null);
+      setRefreshTrigger(prev => prev + 1);
     } catch (error) {
       console.error('Error updating player:', error.response || error); // Log the error response
       toast.error(error.response?.data?.message || 'Failed to update player');
@@ -248,6 +280,7 @@ function NationalTeams() {
       setPlayers(prev => prev.filter(player => player.id !== selectedPlayerData.id));
       setShowPlayerDeleteDialog(false);
       toast.success('Player deleted successfully');
+      setRefreshTrigger(prev => prev + 1);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to delete player');
     }
@@ -259,7 +292,7 @@ function NationalTeams() {
     const details = [
       { label: 'Team Name', value: team.teamName },
       { label: 'Month', value: team.month },
-      { label: 'Status', value: team.status },
+      { label: 'teamYear', value: team.teamYear },
       { label: 'Federation', value: team.federation.name || team.federation },
       { label: 'Players', value: Array.isArray(team.players) ? team.players.length : team.players }
     ];
@@ -389,11 +422,84 @@ function NationalTeams() {
     }
 
     if (activeTab === 'Manage National Teams') {
-      const totalTeamPages = Math.ceil(teams.length / rowsPerPage);
-      const paginatedTeams = teams.slice(teamPage * rowsPerPage, (teamPage + 1) * rowsPerPage);
+      const filteredTeams = teams.filter(team => {
+        return (
+          (!teamSearchFilters.teamName || team.teamName.toLowerCase().includes(teamSearchFilters.teamName.toLowerCase())) &&
+          (!teamSearchFilters.month || team.teamMonth.toLowerCase().includes(teamSearchFilters.month.toLowerCase())) &&
+          (!teamSearchFilters.year || team.teamYear.toLowerCase().includes(teamSearchFilters.year.toLowerCase())) &&
+          (!teamSearchFilters.federation || team.federation.name.toLowerCase().includes(teamSearchFilters.federation.toLowerCase()))
+        );
+      });
+
+      const totalTeamPages = Math.ceil(filteredTeams.length / rowsPerPage);
+      const paginatedTeams = filteredTeams.slice(teamPage * rowsPerPage, (teamPage + 1) * rowsPerPage);
 
       return (
         <div className="transition-all duration-200 ease-in-out">
+          <div className="bg-white rounded-lg shadow p-4 mb-4">
+            <div className="grid grid-cols-4 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Team Name:</label>
+                <input
+                  type="text"
+                  value={teamSearchFilters.teamName}
+                  onChange={(e) => setTeamSearchFilters(prev => ({
+                    ...prev,
+                    teamName: e.target.value
+                  }))}
+                  className="w-full border rounded-lg p-2"
+                  placeholder="Search by team name"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Month:</label>
+                <input
+                  type="text"
+                  value={teamSearchFilters.month}
+                  onChange={(e) => setTeamSearchFilters(prev => ({
+                    ...prev,
+                    month: e.target.value
+                  }))}
+                  className="w-full border rounded-lg p-2"
+                  placeholder="Search by month"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Year:</label>
+                <select
+                  value={teamSearchFilters.year}
+                  onChange={(e) => setTeamSearchFilters(prev => ({
+                    ...prev,
+                    year: e.target.value
+                  }))}
+                  className="w-full border rounded-lg p-2"
+                >
+                  <option value="">All</option>
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Federation:</label>
+                <select
+                  value={teamSearchFilters.federation}
+                  onChange={(e) => setTeamSearchFilters(prev => ({
+                    ...prev,
+                    federation: e.target.value
+                  }))}
+                  className="w-full border rounded-lg p-2"
+                >
+                  <option value="">All Federations</option>
+                  {federations.map(federation => (
+                    <option key={federation.id} value={federation.name}>
+                      {federation.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
           <div className="bg-white rounded-lg shadow overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">
@@ -411,14 +517,14 @@ function NationalTeams() {
                   <tr key={team.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3">{team.id}</td>
                     <td className="px-4 py-3">{team.teamName}</td>
-                    <td className="px-4 py-3">{team.month}</td>
+                    <td className="px-4 py-3">{team.teamMonth}</td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-1 rounded-full text-xs ${
-                        team.status === 'Active' 
+                        team.teamYear === 'Active' 
                           ? 'bg-green-100 text-green-800' 
                           : 'bg-red-100 text-red-800'
                       }`}>
-                        {team.status}
+                        {team.teamYear}
                       </span>
                     </td>
                     <td className="px-4 py-3">{team.federation.name || team.federation}</td>
@@ -459,15 +565,101 @@ function NationalTeams() {
               </tbody>
             </table>
           </div>
-          {renderPaginationControls(teamPage, totalTeamPages, setTeamPage)}
         </div>
       );
     } else if (activeTab === 'Manage Players') {
-      const totalPlayerPages = Math.ceil(players.length / rowsPerPage);
-      const paginatedPlayers = players.slice(playerPage * rowsPerPage, (playerPage + 1) * rowsPerPage);
+      const filteredPlayers = players.filter(player => {
+        const playerFullName = `${player.firstName} ${player.lastName}`.toLowerCase();
+        return (
+          (!playerSearchFilters.name || playerFullName.includes(playerSearchFilters.name.toLowerCase())) &&
+          (!playerSearchFilters.team || player.teamName?.toLowerCase().includes(playerSearchFilters.team.toLowerCase())) &&
+          (!playerSearchFilters.federation || player.federation?.name?.toLowerCase().includes(playerSearchFilters.federation.toLowerCase())) &&
+          (!playerSearchFilters.club || (typeof player.club === 'object' ? player.club.name : player.club)?.toLowerCase().includes(playerSearchFilters.club.toLowerCase()))
+        );
+      });
+
+      const totalPlayerPages = Math.ceil(filteredPlayers.length / rowsPerPage);
+      const paginatedPlayers = filteredPlayers.slice(playerPage * rowsPerPage, (playerPage + 1) * rowsPerPage);
 
       return (
         <div className="transition-all duration-200 ease-in-out">
+          <div className="bg-white rounded-lg shadow p-4 mb-4">
+            <div className="grid grid-cols-4 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Player Name:</label>
+                <select
+                  value={playerSearchFilters.name}
+                  onChange={(e) => setPlayerSearchFilters(prev => ({
+                    ...prev,
+                    name: e.target.value
+                  }))}
+                  className="w-full border rounded-lg p-2"
+                >
+                  <option value="">All Players</option>
+                  {playerStaffList.map(staff => (
+                    <option key={staff.id} value={`${staff.firstName} ${staff.lastName}`}>
+                      {staff.firstName} {staff.lastName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Team:</label>
+                <select
+                  value={playerSearchFilters.team}
+                  onChange={(e) => setPlayerSearchFilters(prev => ({
+                    ...prev,
+                    team: e.target.value
+                  }))}
+                  className="w-full border rounded-lg p-2"
+                >
+                  <option value="">All Teams</option>
+                  {teams.map(team => (
+                    <option key={team.id} value={team.teamName}>
+                      {team.teamName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Federation:</label>
+                <select
+                  value={playerSearchFilters.federation}
+                  onChange={(e) => setPlayerSearchFilters(prev => ({
+                    ...prev,
+                    federation: e.target.value
+                  }))}
+                  className="w-full border rounded-lg p-2"
+                >
+                  <option value="">All Federations</option>
+                  {federations.map(federation => (
+                    <option key={federation.id} value={federation.name}>
+                      {federation.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Club:</label>
+                <select
+                  value={playerSearchFilters.club}
+                  onChange={(e) => setPlayerSearchFilters(prev => ({
+                    ...prev,
+                    club: e.target.value
+                  }))}
+                  className="w-full border rounded-lg p-2"
+                >
+                  <option value="">All Clubs</option>
+                  {clubs.map(club => (
+                    <option key={club.id} value={club.name}>
+                      {club.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
           <div className="mb-4">
             <Button
               onClick={() => setShowAddPlayerModal(true)}
@@ -491,31 +683,35 @@ function NationalTeams() {
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {paginatedPlayers.length > 0 ? (
-                  paginatedPlayers.map((player) => (
-                    <tr key={player.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3">{player.name}</td>
-                      <td className="px-4 py-3">{player.teamName}</td>
-                      <td className="px-4 py-3">
-                        {player.federation?.name || 
-                         (typeof player.federation === 'object' ? 
-                           JSON.stringify(player.federation) : 
-                           player.federation)}
-                      </td>
-                      <td className="px-4 py-3">
-                        {typeof player.club === 'object' ? player.club.name : player.club}
-                      </td>
-                      <td className="px-4 py-3">
-                        {Array.isArray(player.games) 
-                          ? player.games.map(game => 
-                              typeof game === 'object' ? game.stadium : game
-                            ).join(', ') 
-                          : player.games}
-                      </td>
-                      <td className="px-4 py-3">
-                        {renderPlayerActions(player)}
-                      </td>
-                    </tr>
-                  ))
+                  paginatedPlayers.map((player) => {
+                    console.log('Player data:', player);
+                    return (
+                      <tr key={player.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3">
+                          {player?.firstName && player?.lastName 
+                            ? `${player.firstName} ${player.lastName}`
+                            : player.name || 'N/A'}
+                        </td>
+                        <td className="px-4 py-3">{player.teamName}</td>
+                        <td className="px-4 py-3">
+                          {player.federation?.name || 'N/A'}
+                        </td>
+                        <td className="px-4 py-3">
+                          {typeof player.club === 'object' ? player.club.name : player.club}
+                        </td>
+                        <td className="px-4 py-3">
+                          {Array.isArray(player.games) 
+                            ? player.games.map(game => 
+                                typeof game === 'object' ? game.stadium : game
+                              ).join(', ') 
+                            : player.games}
+                        </td>
+                        <td className="px-4 py-3">
+                          {renderPlayerActions(player)}
+                        </td>
+                      </tr>
+                    );
+                  })
                 ) : (
                   <tr>
                     <td colSpan={playerColumns.length} className="px-4 py-3 text-center text-gray-500">
@@ -526,16 +722,16 @@ function NationalTeams() {
               </tbody>
             </table>
           </div>
-          {renderPaginationControls(playerPage, totalPlayerPages, setPlayerPage)}
         </div>
       );
     } else if (activeTab === 'Player Appearance') {
       const filteredPlayers = players.filter(player => {
+        const playerFullName = `${player.firstName} ${player.lastName}`.toLowerCase();
         return (
-          (playerSearchFilters.name ? player.name?.toLowerCase().includes(playerSearchFilters.name.toLowerCase()) : true) &&
+          (playerSearchFilters.name ? playerFullName.includes(playerSearchFilters.name.toLowerCase()) : true) &&
           (playerSearchFilters.team ? player.teamName?.toLowerCase().includes(playerSearchFilters.team.toLowerCase()) : true) &&
           (playerSearchFilters.federation ? player.federation?.name?.toLowerCase().includes(playerSearchFilters.federation.toLowerCase()) : true) &&
-          (playerSearchFilters.appearances ? player.appearances >= parseInt(playerSearchFilters.appearances) : true)
+          (playerSearchFilters.appearances ? (player.games?.length || 0) >= parseInt(playerSearchFilters.appearances) : true)
         );
       });
 
@@ -557,8 +753,8 @@ function NationalTeams() {
                 >
                   <option value="">Select Player/Staff</option>
                   {playerStaffList.map(staff => (
-                    <option key={staff.id} value={staff.type}>
-                      {staff.type}
+                    <option key={staff.id} value={`${staff.firstName} ${staff.lastName}`}>
+                      {staff.firstName} {staff.lastName}
                     </option>
                   ))}
                 </select>
@@ -629,7 +825,7 @@ function NationalTeams() {
                 {filteredPlayers.length > 0 ? (
                   filteredPlayers.map((player) => (
                     <tr key={player.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3">{player.name}</td>
+                      <td className="px-4 py-3">{player.firstName} {player.lastName}</td>
                       <td className="px-4 py-3">
                         <span className={`px-2 py-1 rounded-full text-xs ${
                           player.appearances > 0 
@@ -706,6 +902,7 @@ function NationalTeams() {
               setShowAddModal(false);
               setSelectedTeamData(null);
             }}
+            onSuccess={() => setRefreshTrigger(prev => prev + 1)}
           />
         </Modal>
 
@@ -725,17 +922,23 @@ function NationalTeams() {
                 toast.error(error.response?.data?.message || 'Failed to add player');
               }
             }} className="space-y-6">
+              
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Player Name <span className="text-red-500">*</span>
+                  Federation <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="Enter player name"
-                  required
+                <select
+                  name="federationId"
                   className="w-full border rounded-lg p-2"
-                />
+                  required
+                >
+                  <option value="">Select Federation</option>
+                  {federations.map(federation => (
+                    <option key={federation.id} value={federation.id}>
+                      {federation.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -751,7 +954,7 @@ function NationalTeams() {
                   <option value="">Select Player/Staff</option>
                   {playerStaffList.map(staff => (
                     <option key={staff.id} value={staff.id}>
-                      {staff.type}
+                      {`${staff.firstName} ${staff.lastName}`}
                     </option>
                   ))}
                 </select>
@@ -873,7 +1076,7 @@ function NationalTeams() {
                 <option value="">Select Player/Staff</option>
                 {playerStaffList.map(staff => (
                   <option key={staff.id} value={staff.id}>
-                    {staff.type}
+                    {staff.firstName} {staff.lastName}
                   </option>
                 ))}
               </select>

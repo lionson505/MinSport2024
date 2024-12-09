@@ -74,6 +74,7 @@ const AddNationalTeamForm = ({ initialData = null, onCancel }) => {
         toast.success('Team added successfully!');
       }
       onCancel();
+      window.location.reload();
     } catch (error) {
       toast.error('An error occurred while submitting the form. Please try again.');
     }
