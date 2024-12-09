@@ -53,7 +53,7 @@ const TransferHistoryModal = ({ isOpen, onClose, player }) => {
       setError(null);
       try {
         const response = await axiosInstance.get(`/transfers?playerStaffId=${player.id}`);
-        setTransferHistory(response.data);
+        setTransferHistory(response.data.filter(transfer => transfer.playerStaffId === player.id));
       } catch (err) {
         setError('Failed to load transfer history');
         console.error('Error fetching transfer history:', err);
@@ -64,8 +64,10 @@ const TransferHistoryModal = ({ isOpen, onClose, player }) => {
 
     if (isOpen) {
       fetchTransferHistory();
+    } else {
+      setTransferHistory([]); // Reset transfer history when modal is closed
     }
-  }, [isOpen, player?.id]);
+  }, [isOpen, player?.id]); // Depend on player ID and isOpen
 
   if (!isOpen || !player) return null;
 
@@ -91,7 +93,7 @@ const TransferHistoryModal = ({ isOpen, onClose, player }) => {
             </div>
           ) : transferHistory.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              No transfer history found
+              No transfer history found for {player.firstName} {player.lastName}
             </div>
           ) : (
             <div className="space-y-4">
@@ -242,7 +244,6 @@ const Federations = () => {
   };
 
   const handleViewTransferHistory = (player) => {
-    console.log('Opening transfer history for:', player);
     setSelectedPlayer(player);
     setShowTransferHistoryModal(true);
   };
