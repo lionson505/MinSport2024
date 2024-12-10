@@ -23,6 +23,11 @@ const PlayerTransferReport = () => {
   });
   const [entriesPerPage, setEntriesPerPage] = useState('100');
 
+  //Fetching players
+  // useEffect(() => {
+  //   if ()
+  // })
+
   // Sample transfer data
   const transferData = [
     {
@@ -50,6 +55,7 @@ const PlayerTransferReport = () => {
     federation: ['FERWAFA', 'FERWABA', 'Fédération Rwandaise de Cyclisme'],
     clubFrom: ['APR FC', 'ETINCELLES FC', 'RAYON SPORTS'],
     clubTo: ['APR FC', 'ETINCELLES FC', 'RAYON SPORTS'],
+    PlayerOrStaff:  ['Jihadi', 'Rwatubye', 'bakame'],
     month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
     year: ['2024', '2023', '2022', '2021', '2020', '2019', '2018', '2017', '2016']
   };
@@ -127,7 +133,9 @@ const PlayerTransferReport = () => {
               className={inputClasses}
             >
               <option value="">Select Player/Staff</option>
-              {/* Options would be populated based on selected club */}
+              {filterOptions.PlayerOrStaff.map(option => (
+                <option key={option} value={option}>{option}</option>
+              ))}
             </select>
           </div>
 

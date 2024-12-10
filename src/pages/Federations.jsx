@@ -672,7 +672,7 @@ const Federations = () => {
               </div>
             </div>
           </div>
-
+          
           <div className="bg-white rounded-lg shadow">
             <div className="overflow-x-auto">
               <Table>

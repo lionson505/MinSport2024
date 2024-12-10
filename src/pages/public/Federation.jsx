@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import HeaderTwo from '../../components/headerTwo';
 import { sportsEventService } from '../../services/sportsEventService';
 import { 
   Dialog, 
@@ -13,7 +12,7 @@ import { format } from 'date-fns';
 import { Loader2, MapPin, Calendar, Clock, Trophy, ClipboardList, Radio } from 'lucide-react';
 import PublicLayout from '../../components/layouts/PublicLayout';
 
-function EventsPage() {
+function Federation() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -302,7 +301,7 @@ function EventsPage() {
   return (
     <PublicLayout>
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-bold mb-8">Sports Events</h1>
+        <h1 className="text-4xl font-bold mb-8">FEDERATIONS</h1>
 
         <Tabs defaultValue="all" className="mb-8">
           <TabsList className="bg-white p-1 rounded-lg shadow-sm">
@@ -356,4 +355,4 @@ function EventsPage() {
   );
 }
 
-export default EventsPage; 
+export default Federation; 
