@@ -14,7 +14,7 @@ function LandingPage() {
   const [activeTab, setActiveTab] = useState('ALL');
   const [selectedSport, setSelectedSport] = useState('BASKETBALL');
   
-  const navigation = ['ALL', 'FERWAFA', 'FERWABA', 'FRVB', 'FERWACY'];
+  const navigation = ['HOME', 'FEDERATION', 'EVENTS', 'MATCHES', 'INFRASTRUCTURE'];
 
   const leagues = [
     { 

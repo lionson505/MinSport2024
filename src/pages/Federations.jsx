@@ -671,11 +671,7 @@ const Federations = () => {
               </div>
             </div>
           </div>
-<<<<<<< HEAD
           
-=======
-
->>>>>>> origin/main
           <div className="bg-white rounded-lg shadow">
             <div className="overflow-x-auto">
               <Table>
