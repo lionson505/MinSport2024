@@ -216,7 +216,7 @@ function LandingPage() {
               <div className="flex justify-between items-center mb-8">
                 <h2 className="text-3xl font-bold">Leagues To Browse</h2>
                 <Link 
-                  to="/federations" 
+                  to="/federation" 
                   className="text-gray-500 hover:text-gray-600 flex items-center text-base"
                 >
                   View all
