@@ -22,6 +22,8 @@ import {
   History,
   AlertCircle,
   ArrowRight,
+  Pencil,
+  PencilLine,
 } from 'lucide-react';
 import Modal from '../components/ui/Modal';
 import AddFederationForm from '../components/forms/AddFederationForm';
@@ -941,10 +943,10 @@ const Federations = () => {
                           </button>
                           <button
                             onClick={() => handleEditPlayerStaff(person)}
-                            className="p-1 rounded-lg hover:bg-gray-100"
+                            className="p-1 rounded-lg hover:bg-gray-100 text-gray-900"
                             title="Edit"
                           >
-                            <Edit className="h-4 w-4" />
+                            <PencilLine className="h-4 w-4 stroke-[1.5]" />
                           </button>
                           <button
                             onClick={() => handleDeletePlayerStaffClick(person)}

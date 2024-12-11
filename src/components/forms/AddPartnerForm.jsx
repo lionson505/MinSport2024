@@ -144,7 +144,7 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Club Name */}
           <div>
-            <label>Club Name</label>
+            <label>Name</label>
             <input
               type="text"
               name="name"
@@ -152,7 +152,7 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
               onChange={handleChange}
               required
               className="w-full border rounded"
-              placeholder="Enter club name"
+              placeholder="Enter  name"
             />
           </div>
 

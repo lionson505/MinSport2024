@@ -67,6 +67,7 @@ const InfrastructureList = () => {
 
   const provinces = ['Kigali City', 'Eastern', 'Western', 'Northern', 'Southern'];
   const statuses = ['Active', 'Under Construction', 'Under Maintenance', 'Inactive'];
+  const typeLevels = ['International', 'National', 'Provincial', 'District', 'Sector'];
 
   useEffect(() => {
     fetchInfrastructures();
@@ -633,14 +634,20 @@ const InfrastructureList = () => {
                     <label htmlFor="type_level" className="font-medium mb-1">
                       TYPE LEVEL:
                     </label>
-                    <input
-                      type="text"
+                    <select
                       id="type_level"
                       name="type_level"
                       value={editFormData.type_level}
                       onChange={handleEditChange}
                       className="border border-gray-300 rounded p-2"
-                    />
+                    >
+                      <option value="">Select Type Level</option>
+                      {typeLevels.map((level) => (
+                        <option key={level} value={level}>
+                          {level}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div className="flex flex-col">

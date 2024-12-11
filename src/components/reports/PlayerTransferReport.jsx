@@ -1,255 +1,377 @@
-// PlayerStaffTransfer.jsx
 import React, { useState, useEffect } from 'react';
-import { Button } from '../../components/ui/Button';
-import axiosInstance from '../../utils/axiosInstance'; // Assuming this is your custom Axios instance
-import { toast } from 'react-hot-toast'; // Add this import
+import { 
+  Table, 
+  TableHeader, 
+  TableBody, 
+  TableRow, 
+  TableHead, 
+  TableCell 
+} from '../ui/table';
+import { Search, Filter, X, Download, FileText } from 'lucide-react';
+import { useDarkMode } from '../../contexts/DarkModeContext';
+import axiosInstance from '../../utils/axiosInstance';
 
-const PlayerStaffTransfer = () => {
+const PlayerTransferReport = () => {
+  const { isDarkMode } = useDarkMode();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filters, setFilters] = useState({
+    federation: '',
+    clubFrom: '',
+    playerStaff: '',
+    clubTo: '',
+    month: '',
+    year: ''
+  });
+  const [entriesPerPage, setEntriesPerPage] = useState('100');
+  const [transferData, setTransferData] = useState([]);
   const [federations, setFederations] = useState([]);
   const [clubs, setClubs] = useState([]);
-  const [players, setPlayers] = useState([]);
-  const [selectedTransferFederation, setSelectedTransferFederation] = useState('');
-  const [selectedFromClub, setSelectedFromClub] = useState('');
-  const [selectedTransferPlayer, setSelectedTransferPlayer] = useState('');
-  const [selectedToClub, setSelectedToClub] = useState('');
-  const [transferMonth, setTransferMonth] = useState('');
-  const [transferYear, setTransferYear] = useState('');
-  const [transferComments, setTransferComments] = useState('');
+  const [filterOptions, setFilterOptions] = useState({
+    federation: [],
+    clubFrom: [],
+    clubTo: [],
+    month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    year: Array.from({ length: 9 }, (_, i) => (new Date().getFullYear() - i).toString())
+  });
+  const [playerStaffOptions, setPlayerStaffOptions] = useState([]);
 
+  // Fetch transfer data from API
   useEffect(() => {
-    // Fetch federations from the API
-    const fetchFederations = async () => {
+    const fetchTransferData = async () => {
       try {
-        const response = await axiosInstance.get('/federations');
-        setFederations(response.data);
+        const response = await axiosInstance.get('/transfers');
+        setTransferData(response.data);
       } catch (error) {
-        console.error('Failed to fetch federations:', error);
+        console.error('Error fetching transfer data:', error);
       }
     };
 
-    // Fetch clubs from the API
-    const fetchClubs = async () => {
-      try {
-        const response = await axiosInstance.get('/clubs');
-        setClubs(response.data);
-      } catch (error) {
-        console.error('Failed to fetch clubs:', error);
-      }
-    };
-
-    // Fetch all players and staff from the API
-    const fetchPlayers = async () => {
-      try {
-        const response = await axiosInstance.get('/player-staff');
-        setPlayers(response.data);
-      } catch (error) {
-        console.error('Failed to fetch players and staff:', error);
-      }
-    };
-
-    fetchFederations();
-    fetchClubs();
-    fetchPlayers();
+    fetchTransferData();
   }, []);
 
-  const handleTransferSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      // Format date as YYYY-MM-DD
-      const formattedDate = `${transferYear}-${transferMonth.padStart(2, '0')}-01`;
+  // Fetch federations and clubs data from API
+  useEffect(() => {
+    const fetchFilterOptions = async () => {
+      try {
+        const [federationResponse, clubResponse] = await Promise.all([
+          axiosInstance.get('/federations'),
+          axiosInstance.get('/clubs')
+        ]);
 
-      const transferData = {
-        playerStaffId: parseInt(selectedTransferPlayer),
-        fromClubId: parseInt(selectedFromClub),
-        toClubId: parseInt(selectedToClub),
-        transferDate: formattedDate,
-        additionalComments: transferComments
-      };
+        setFederations(federationResponse.data);
+        setClubs(clubResponse.data);
+        
+        // Update filter options with API data
+        setFilterOptions(prev => ({
+          ...prev,
+          federation: federationResponse.data.map(fed => fed.name),
+          clubFrom: clubResponse.data.map(club => club.name),
+          clubTo: clubResponse.data.map(club => club.name),
+        }));
+      } catch (error) {
+        console.error('Error fetching filter options:', error);
+      }
+    };
 
-      await axiosInstance.post('/transfers', transferData);
-      toast.success('Transfer processed successfully');
+    fetchFilterOptions();
+  }, []);
+
+  // Add useEffect for fetching player-staff data
+  useEffect(() => {
+    const fetchPlayerStaff = async () => {
+      try {
+        const response = await axiosInstance.get('/player-staff');
+        console.log('Player staff data:', response.data); // For debugging
+        setPlayerStaffOptions(response.data);
+      } catch (error) {
+        console.error('Error fetching player-staff data:', error);
+        setPlayerStaffOptions([]);
+      }
+    };
+
+    fetchPlayerStaff();
+  }, []);
+
+  const handleFilterChange = (field, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleExport = (format) => {
+    // Implement export functionality (CSV, PDF, etc.)
+    console.log(`Exporting in ${format} format`);
+  };
+
+  const inputClasses = `w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+    isDarkMode 
+      ? 'bg-gray-800 border-gray-700 text-gray-200' 
+      : 'bg-white border-gray-300 text-gray-900'
+  }`;
+
+  const labelClasses = `block text-sm font-medium mb-1 ${
+    isDarkMode ? 'text-gray-300' : 'text-gray-700'
+  }`;
+
+  // Helper functions to get names from IDs
+  const getFederationName = (federationId) => {
+    const federation = federations.find(f => f.id === federationId);
+    return federation ? federation.name : 'N/A';
+  };
+
+  const getClubName = (clubId) => {
+    const club = clubs.find(c => c.id === clubId);
+    return club ? club.name : 'N/A';
+  };
+
+  // Add this new function to filter the data
+  const getFilteredData = () => {
+    return transferData.filter(transfer => {
+      // Search term filter
+      const searchString = (
+        getFederationName(transfer.playerStaffId?.federationId) + ' ' +
+        getClubName(transfer.fromClubId) + ' ' +
+        (transfer.playerStaffId ? 
+          playerStaffOptions.find(p => p.id === transfer.playerStaffId)?.firstName + ' ' +
+          playerStaffOptions.find(p => p.id === transfer.playerStaffId)?.lastName 
+          : '') + ' ' +
+        getClubName(transfer.toClubId) + ' ' +
+        (transfer.transferDate ? new Date(transfer.transferDate).toLocaleDateString() : '')
+      ).toLowerCase();
+
+      const searchMatch = !searchTerm || searchString.includes(searchTerm.toLowerCase());
+
+      // Filters
+      const federationMatch = !filters.federation || getFederationName(transfer.playerStaffId?.federationId) === filters.federation;
+      const clubFromMatch = !filters.clubFrom || getClubName(transfer.fromClubId) === filters.clubFrom;
+      const clubToMatch = !filters.clubTo || getClubName(transfer.toClubId) === filters.clubTo;
+      const playerStaffMatch = !filters.playerStaff || transfer.playerStaffId?.toString() === filters.playerStaff?.toString();
       
-      // Optional: Reset form
-      setSelectedTransferFederation('');
-      setSelectedFromClub('');
-      setSelectedTransferPlayer('');
-      setSelectedToClub('');
-      setTransferMonth('');
-      setTransferYear('');
-      setTransferComments('');
-    } catch (error) {
-      console.error('Failed to process transfer:', error);
-      toast.error(error.response?.data?.message || 'Failed to process transfer');
-    }
-  };
+      // Date filters
+      const transferDate = transfer.transferDate ? new Date(transfer.transferDate) : null;
+      const monthMatch = !filters.month || 
+        (transferDate && filterOptions.month[transferDate.getMonth()] === filters.month);
+      const yearMatch = !filters.year || 
+        (transferDate && transferDate.getFullYear().toString() === filters.year);
 
-  const handleTransferFederationChange = (value) => {
-    setSelectedTransferFederation(value);
-  };
-
-  const handleFromClubChange = (value) => {
-    setSelectedFromClub(value);
-    setSelectedToClub('');
-  };
-
-  const handleToClubChange = (value) => {
-    setSelectedToClub(value);
+      return searchMatch && federationMatch && clubFromMatch && 
+             clubToMatch && playerStaffMatch && monthMatch && yearMatch;
+    });
   };
 
   return (
-    <form onSubmit={handleTransferSubmit} className="space-y-6">
-      {/* Federation Selection */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Federation
-        </label>
-        <select
-          className="w-full border rounded-lg px-3 py-2"
-          value={selectedTransferFederation}
-          onChange={(e) => handleTransferFederationChange(e.target.value)}
-          required
-        >
-          <option value="">Select Federation</option>
-          {federations.map((fed) => (
-            <option key={fed.id} value={fed.id}>
-              {fed.name}
-            </option>
-          ))}
-        </select>
-      </div>
+    <div className="space-y-6">
+      {/* Search and Filter Section */}
+      <div className={`p-6 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow`}>
+        <h2 className={`text-xl font-semibold mb-4 ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+          Search Transfers
+        </h2>
+        
+        <div className="grid grid-cols-3 gap-4">
+          {/* Federation */}
+          <div>
+            <label htmlFor="federation" className={labelClasses}>Federation:</label>
+            <select
+              id="federation"
+              value={filters.federation}
+              onChange={(e) => handleFilterChange('federation', e.target.value)}
+              className={inputClasses}
+            >
+              <option value="">Select Federation</option>
+              {filterOptions.federation.map(option => (
+                <option key={option} value={option}>{option}</option>
+              ))}
+            </select>
+          </div>
 
-      {/* Source Club Selection */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Club From
-          </label>
-          <select
-            className="w-full border rounded-lg px-3 py-2"
-            value={selectedFromClub}
-            onChange={(e) => handleFromClubChange(e.target.value)}
-            required
-          >
-            <option value="">Select Club</option>
-            {clubs.map((club) => (
-              <option key={club.id} value={club.id}>
-                {club.name}
-              </option>
-            ))}
-          </select>
-        </div>
+          {/* Club From */}
+          <div>
+            <label htmlFor="clubFrom" className={labelClasses}>Club From:</label>
+            <select
+              id="clubFrom"
+              value={filters.clubFrom}
+              onChange={(e) => handleFilterChange('clubFrom', e.target.value)}
+              className={inputClasses}
+            >
+              <option value="">Select Club</option>
+              {filterOptions.clubFrom.map(option => (
+                <option key={option} value={option}>{option}</option>
+              ))}
+            </select>
+          </div>
 
-        {/* Player/Staff Selection */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Player/Staff
-          </label>
-          <select
-            className="w-full border rounded-lg px-3 py-2"
-            value={selectedTransferPlayer}
-            onChange={(e) => setSelectedTransferPlayer(e.target.value)}
-            required
-          >
-            <option value="">Select Player/Staff</option>
-            {players.map((player) => (
-              <option key={player.id} value={player.id}>
-                {player.name} ({player.firstName} {player.lastName})
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Destination Club and Date */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Club To
-          </label>
-          <select
-            className="w-full border rounded-lg px-3 py-2"
-            value={selectedToClub}
-            onChange={(e) => handleToClubChange(e.target.value)}
-            required
-          >
-            <option value="">Select Club</option>
-            {clubs
-              .filter((club) => club.id.toString() !== selectedFromClub)
-              .map((club) => (
-                <option key={club.id} value={club.id}>
-                  {club.name}
+          {/* Player/Staff */}
+          <div>
+            <label htmlFor="playerStaff" className={labelClasses}>Player/Staff:</label>
+            <select
+              id="playerStaff"
+              value={filters.playerStaff}
+              onChange={(e) => handleFilterChange('playerStaff', e.target.value)}
+              className={inputClasses}
+            >
+              <option value="">Select Player/Staff</option>
+              {playerStaffOptions.map(person => (
+                <option key={person.id} value={person.id}>
+                  {`${person.firstName} ${person.lastName}`}
                 </option>
               ))}
-          </select>
+            </select>
+          </div>
+
+          {/* Club To */}
+          <div>
+            <label htmlFor="clubTo" className={labelClasses}>Club To:</label>
+            <select
+              id="clubTo"
+              value={filters.clubTo}
+              onChange={(e) => handleFilterChange('clubTo', e.target.value)}
+              className={inputClasses}
+            >
+              <option value="">Select Club</option>
+              {filterOptions.clubTo.map(option => (
+                <option key={option} value={option}>{option}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Month */}
+          <div>
+            <label htmlFor="month" className={labelClasses}>Month:</label>
+            <select
+              id="month"
+              value={filters.month}
+              onChange={(e) => handleFilterChange('month', e.target.value)}
+              className={inputClasses}
+            >
+              <option value="">Select Month</option>
+              {filterOptions.month.map(option => (
+                <option key={option} value={option}>{option}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Year */}
+          <div>
+            <label htmlFor="year" className={labelClasses}>Year:</label>
+            <select
+              id="year"
+              value={filters.year}
+              onChange={(e) => handleFilterChange('year', e.target.value)}
+              className={inputClasses}
+            >
+              <option value="">Select Year</option>
+              {filterOptions.year.map(option => (
+                <option key={option} value={option}>{option}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Month
-          </label>
-          <select
-            className="w-full border rounded-lg px-3 py-2"
-            value={transferMonth}
-            onChange={(e) => setTransferMonth(e.target.value)}
-            required
-          >
-            <option value="">Month</option>
-            {Array.from({ length: 12 }, (_, i) => {
-              const month = i + 1;
-              return (
-                <option key={month} value={month}>
-                  {new Date(2000, i).toLocaleString('default', { month: 'long' })}
-                </option>
-              );
-            })}
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Year
-          </label>
-          <select
-            className="w-full border rounded-lg px-3 py-2"
-            value={transferYear}
-            onChange={(e) => setTransferYear(e.target.value)}
-            required
-          >
-            <option value="">Year</option>
-            {Array.from({ length: 5 }, (_, i) => {
-              const year = new Date().getFullYear() - i;
-              return (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              );
-            })}
-          </select>
+        {/* Add search input to the JSX above the filters */}
+        <div className="mb-4">
+          <label htmlFor="search" className={labelClasses}>Search:</label>
+          <div className="relative">
+            <input
+              type="text"
+              id="search"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search transfers..."
+              className={inputClasses}
+            />
+            <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+          </div>
         </div>
       </div>
 
-      {/* Comments */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Additional Comments
-        </label>
-        <textarea
-          className="w-full border rounded-lg px-3 py-2"
-          rows={4}
-          value={transferComments}
-          onChange={(e) => setTransferComments(e.target.value)}
-          placeholder="Enter any additional comments about the transfer..."
-        />
-      </div>
+      {/* Report Section */}
+      <div className={`rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow`}>
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex justify-between items-center">
+            <h2 className={`text-xl font-semibold ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+              Player/Staff Transfer Report
+            </h2>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                  Show entries:
+                </span>
+                <select
+                  value={entriesPerPage}
+                  onChange={(e) => setEntriesPerPage(e.target.value)}
+                  className={`border rounded px-2 py-1 ${
+                    isDarkMode 
+                      ? 'bg-gray-700 border-gray-600 text-gray-200' 
+                      : 'bg-white border-gray-300'
+                  }`}
+                >
+                  <option value="10">10</option>
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => handleExport('csv')}
+                  className="flex items-center space-x-1 px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
+                >
+                  <FileText className="h-4 w-4" />
+                  <span>CSV</span>
+                </button>
+                <button
+                  onClick={() => handleExport('pdf')}
+                  className="flex items-center space-x-1 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                >
+                  <Download className="h-4 w-4" />
+                  <span>PDF</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
 
-      {/* Submit Button */}
-      <div className="flex justify-end">
-        <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
-          Process Transfer
-        </Button>
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Federation</TableHead>
+                <TableHead>Club From</TableHead>
+                <TableHead>Player/Staff</TableHead>
+                <TableHead>Club To</TableHead>
+                <TableHead>Month</TableHead>
+                <TableHead>Year</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {getFilteredData().map((transfer) => (
+                <TableRow key={transfer.id}>
+                  <TableCell>{getFederationName(transfer.playerStaffId?.federationId)}</TableCell>
+                  <TableCell>{getClubName(transfer.fromClubId)}</TableCell>
+                  <TableCell>
+                    {transfer.playerStaffId 
+                      ? `${playerStaffOptions.find(p => p.id === transfer.playerStaffId)?.firstName} ${playerStaffOptions.find(p => p.id === transfer.playerStaffId)?.lastName}`
+                      : 'N/A'
+                    }
+                  </TableCell>
+                  <TableCell>{transfer.playerStaffId?.type || 'N/A'}</TableCell>
+                  <TableCell>{getClubName(transfer.toClubId)}</TableCell>
+                  <TableCell>
+                    {transfer.transferDate 
+                      ? new Date(transfer.transferDate).toLocaleDateString()
+                      : 'N/A'
+                    }
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
-    </form>
+    </div>
   );
 };
 
-export default PlayerStaffTransfer;
+export default PlayerTransferReport;

@@ -1,15 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '../ui/Button';
 import axiosInstance from '../../utils/axiosInstance';
-
-// List of countries
-const countries = [
-  { value: 'AF', label: 'Afghanistan' },
-  { value: 'AL', label: 'Albania' },
-  { value: 'DZ', label: 'Algeria' },
-  // Add more countries as needed
-  { value: 'ZW', label: 'Zimbabwe' },
-];
+import { toast } from 'react-hot-toast';
+import { countries } from '../../data/countries';
 
 const maritalStatusOptions = [
   { value: 'SINGLE', label: 'Single' },
@@ -55,6 +48,10 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
   const [federations, setFederations] = useState([]);
   const [clubs, setClubs] = useState([]);
   const [disciplines, setDisciplines] = useState([]);
+  const [idError, setIdError] = useState('');
+  const [isLoadingID, setIsLoadingID] = useState(false);
+  const [idData, setIdData] = useState(null);
+  const [idType, setIdType] = useState('passport');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -75,6 +72,57 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
 
     fetchData();
   }, []);
+
+  const handleIDLookup = async () => {
+    setIdError('');
+    const idNumber = formData.idPassportNo;
+
+    // Validate ID format
+    if (idType === 'nid') {
+      if (!/^\d{16}$/.test(idNumber)) {
+        setIdError('National ID must be exactly 16 digits');
+        return;
+      }
+    } else {
+      // Passport validation
+      if (!/^[A-Z0-9]{6,9}$/.test(idNumber)) {
+        setIdError('Invalid passport format');
+        return;
+      }
+    }
+
+    setIsLoadingID(true);
+    try {
+      // Simulate ID API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Sample response
+      const response = {
+        documentNumber: formData.idPassportNo,
+        firstName: "Jean",
+        lastName: "Baptiste",
+        dateOfBirth: "1995-02-19",
+        nationality: "Rwandan",
+        placeOfBirth: "Kigali",
+      };
+
+      setIdData(response);
+      setFormData(prevState => ({
+        ...prevState,
+        firstName: response.firstName,
+        lastName: response.lastName,
+        dateOfBirth: response.dateOfBirth,
+        nationality: response.nationality,
+        placeOfBirth: response.placeOfBirth,
+      }));
+      toast.success(`${idType === 'nid' ? 'National ID' : 'Passport'} verified successfully`);
+    } catch (error) {
+      toast.error(`Failed to verify ${idType === 'nid' ? 'National ID' : 'Passport'}`);
+      setIdData(null);
+    } finally {
+      setIsLoadingID(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -128,14 +176,45 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">ID Passport No</label>
+          <label className="block text-sm font-medium text-gray-700">ID Type</label>
+          <select
+            value={idType}
+            onChange={(e) => {
+              setIdType(e.target.value);
+              setIdError('');
+              setFormData(prev => ({ ...prev, idPassportNo: '' }));
+            }}
+            className="mt-1 block w-full border rounded-md"
+          >
+            <option value="passport">Passport</option>
+            <option value="nid">National ID</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            {idType === 'nid' ? 'National ID' : 'Passport Number'}
+          </label>
           <input
             type="text"
             name="idPassportNo"
             value={formData.idPassportNo}
-            onChange={handleChange}
-            className="mt-1 block w-full border rounded-md"
+            onChange={(e) => {
+              handleChange(e);
+              setIdError('');
+            }}
+            placeholder={idType === 'nid' ? 'Enter 16 digit National ID' : 'Enter Passport Number'}
+            className={`mt-1 block w-full border rounded-md ${idError ? 'border-red-500' : ''}`}
           />
+          {idError && <p className="text-sm text-red-500 mt-1">{idError}</p>}
+        </div>
+        <div>
+          <Button
+            type="button"
+            onClick={handleIDLookup}
+            disabled={isLoadingID || !formData.idPassportNo}
+          >
+            {isLoadingID ? 'Verifying...' : `Verify ${idType === 'nid' ? 'National ID' : 'Passport'}`}
+          </Button>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Passport Picture</label>
@@ -178,13 +257,18 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Marital Status</label>
-          <input
-            type="text"
+          <select
             name="maritalStatus"
             value={formData.maritalStatus}
             onChange={handleChange}
             className="mt-1 block w-full border rounded-md"
-          />
+          >
+            {maritalStatusOptions.map((status) => (
+              <option key={status.value} value={status.value}>
+                {status.label}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Place of Residence</label>
@@ -219,22 +303,29 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
             onChange={handleChange}
             className="mt-1 block w-full border rounded-md"
           >
+            <option value="">Select Nationality</option>
             {countries.map((country) => (
-              <option key={country.value} value={country.value}>
-                {country.label}
+              <option key={country} value={country}>
+                {country}
               </option>
             ))}
           </select>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Other Nationality</label>
-          <input
-            type="text"
+          <select
             name="otherNationality"
             value={formData.otherNationality}
             onChange={handleChange}
             className="mt-1 block w-full border rounded-md"
-          />
+          >
+            <option value="">Select Other Nationality</option>
+            {countries.map((country) => (
+              <option key={country} value={country}>
+                {country}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Position in Club</label>
@@ -323,13 +414,18 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Level of Education</label>
-          <input
-            type="text"
+          <select
             name="levelOfEducation"
             value={formData.levelOfEducation}
             onChange={handleChange}
             className="mt-1 block w-full border rounded-md"
-          />
+          >
+            {educationLevelOptions.map((level) => (
+              <option key={level.value} value={level.value}>
+                {level.label}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">CV/Resume</label>

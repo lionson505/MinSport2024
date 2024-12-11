@@ -68,6 +68,31 @@ const AddEmployeeForm = ({ isEditing, onSuccess, onCancel }) => {
       if (typeof onSuccess === 'function') {
         onSuccess();
       }
+      setFormData({
+        photoPassport: '',
+        firstName: '',
+        lastName: '',
+        gender: '',
+        email: '',
+        phone: '',
+        maritalStatus: '',
+        province: '',
+        district: '',
+        sector: '',
+        cell: '',
+        village: '',
+        startDate: '',
+        employeeStatus: '',
+        employeeType: '',
+        departmentSupervisor: '',
+        contactFirstName: '',
+        contactLastName: '',
+        relationship: '',
+        contactPhone: '',
+      });
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (error) {
       console.error('Error:', error);
       const errorMessage = error.response?.data?.message || error.message || 'An error occurred';
@@ -76,150 +101,217 @@ const AddEmployeeForm = ({ isEditing, onSuccess, onCancel }) => {
   };
   
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Employee Details */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium border-b pb-2">Employee Details</h3>
-        <div>
-          <label htmlFor="photoPassport" className="block text-sm font-medium">Photo URL</label>
-          <input
-            id="photoPassport"
-            name="photoPassport"
-            value={formData.photoPassport}
-            onChange={handleChange}
-            className="w-full border rounded-md py-2 px-3 mt-1"
-            type="url"
-            required
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-4">
+    <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-x-8">
+      {/* Left Column */}
+      <div className="space-y-6">
+        {/* Employee Details */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium border-b pb-2">Employee Details</h3>
           <div>
-            <label htmlFor="firstName" className="block text-sm font-medium">First Name</label>
+            <label htmlFor="photoPassport" className="block text-sm font-medium">Photo URL</label>
             <input
-              id="firstName"
-              name="firstName"
-              value={formData.firstName}
+              id="photoPassport"
+              name="photoPassport"
+              value={formData.photoPassport}
+              onChange={handleChange}
+              className="w-full border rounded-md py-2 px-3 mt-1"
+              type="url"
+              required
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="firstName" className="block text-sm font-medium">First Name</label>
+              <input
+                id="firstName"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+                className="w-full border rounded-md py-2 px-3 mt-1"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="lastName" className="block text-sm font-medium">Last Name</label>
+              <input
+                id="lastName"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleChange}
+                className="w-full border rounded-md py-2 px-3 mt-1"
+                required
+              />
+            </div>
+          </div>
+          <div>
+            <label htmlFor="gender" className="block text-sm font-medium">Gender</label>
+            <select
+              id="gender"
+              name="gender"
+              value={formData.gender}
+              onChange={handleChange}
+              className="w-full border rounded-md py-2 px-3 mt-1"
+              required
+            >
+              <option value="">Select gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium">Email</label>
+            <input
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full border rounded-md py-2 px-3 mt-1"
+              type="email"
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="phone" className="block text-sm font-medium">Phone</label>
+            <input
+              id="phone"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              className="w-full border rounded-md py-2 px-3 mt-1"
+              type="tel"
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="maritalStatus" className="block text-sm font-medium">Marital Status</label>
+            <select
+              id="maritalStatus"
+              name="maritalStatus"
+              value={formData.maritalStatus}
+              onChange={handleChange}
+              className="w-full border rounded-md py-2 px-3 mt-1"
+            >
+              <option value="Single">Single</option>
+              <option value="Married">Married</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Emergency Contact Details */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium border-b pb-2">Emergency Contact</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="contactFirstName" className="block text-sm font-medium">Contact First Name</label>
+              <input
+                id="contactFirstName"
+                name="contactFirstName"
+                value={formData.contactFirstName}
+                onChange={handleChange}
+                className="w-full border rounded-md py-2 px-3 mt-1"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="contactLastName" className="block text-sm font-medium">Contact Last Name</label>
+              <input
+                id="contactLastName"
+                name="contactLastName"
+                value={formData.contactLastName}
+                onChange={handleChange}
+                className="w-full border rounded-md py-2 px-3 mt-1"
+                required
+              />
+            </div>
+          </div>
+          <div>
+            <label htmlFor="relationship" className="block text-sm font-medium">Relationship</label>
+            <input
+              id="relationship"
+              name="relationship"
+              value={formData.relationship}
               onChange={handleChange}
               className="w-full border rounded-md py-2 px-3 mt-1"
               required
             />
           </div>
           <div>
-            <label htmlFor="lastName" className="block text-sm font-medium">Last Name</label>
+            <label htmlFor="contactPhone" className="block text-sm font-medium">Contact Phone</label>
             <input
-              id="lastName"
-              name="lastName"
-              value={formData.lastName}
+              id="contactPhone"
+              name="contactPhone"
+              value={formData.contactPhone}
+              onChange={handleChange}
+              className="w-full border rounded-md py-2 px-3 mt-1"
+              type="tel"
+              required
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Right Column */}
+      <div className="space-y-6">
+        {/* Employee Status Details */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium border-b pb-2">Employee Status</h3>
+          <div>
+            <label htmlFor="startDate" className="block text-sm font-medium">Start Date</label>
+            <input
+              id="startDate"
+              name="startDate"
+              value={formData.startDate}
+              onChange={handleChange}
+              className="w-full border rounded-md py-2 px-3 mt-1"
+              type="date"
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="employeeStatus" className="block text-sm font-medium">Employee Status</label>
+            <select
+              id="employeeStatus"
+              name="employeeStatus"
+              value={formData.employeeStatus}
+              onChange={handleChange}
+              className="w-full border rounded-md py-2 px-3 mt-1"
+            >
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="employeeType" className="block text-sm font-medium">Employee Type</label>
+            <select
+              id="employeeType"
+              name="employeeType"
+              value={formData.employeeType}
+              onChange={handleChange}
+              className="w-full border rounded-md py-2 px-3 mt-1"
+            >
+              <option value="Full_time">Full-time</option>
+              <option value="Part_time">Part-time</option>
+              <option value="Contractor">Contractor</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="departmentSupervisor" className="block text-sm font-medium">Department Supervisor</label>
+            <input
+              id="departmentSupervisor"
+              name="departmentSupervisor"
+              value={formData.departmentSupervisor}
               onChange={handleChange}
               className="w-full border rounded-md py-2 px-3 mt-1"
               required
             />
           </div>
         </div>
-        <div>
-          <label htmlFor="gender" className="block text-sm font-medium">Gender</label>
-          <select
-            id="gender"
-            name="gender"
-            value={formData.gender}
-            onChange={handleChange}
-            className="w-full border rounded-md py-2 px-3 mt-1"
-            required
-          >
-            <option value="">Select gender</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-          </select>
-        </div>
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium">Email</label>
-          <input
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            className="w-full border rounded-md py-2 px-3 mt-1"
-            type="email"
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="phone" className="block text-sm font-medium">Phone</label>
-          <input
-            id="phone"
-            name="phone"
-            value={formData.phone}
-            onChange={handleChange}
-            className="w-full border rounded-md py-2 px-3 mt-1"
-            type="tel"
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="maritalStatus" className="block text-sm font-medium">Marital Status</label>
-          <select
-            id="maritalStatus"
-            name="maritalStatus"
-            value={formData.maritalStatus}
-            onChange={handleChange}
-            className="w-full border rounded-md py-2 px-3 mt-1"
-          >
-            <option value="Single">Single</option>
-            <option value="Married">Married</option>
-          </select>
-        </div>
-      </div>
 
-      {/* Start Date, Employee Status, and Type */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium border-b pb-2">Employee Details</h3>
-        <div>
-          <label htmlFor="startDate" className="block text-sm font-medium">Start Date</label>
-          <input
-            id="startDate"
-            name="startDate"
-            value={formData.startDate}
-            onChange={handleChange}
-            className="w-full border rounded-md py-2 px-3 mt-1"
-            type="date"
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="employeeStatus" className="block text-sm font-medium">Employee Status</label>
-          <select
-            id="employeeStatus"
-            name="employeeStatus"
-            value={formData.employeeStatus}
-            onChange={handleChange}
-            className="w-full border rounded-md py-2 px-3 mt-1"
-          >
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
-          </select>
-        </div>
-        <div>
-          <label htmlFor="employeeType" className="block text-sm font-medium">Employee Type</label>
-          <select
-            id="employeeType"
-            name="employeeType"
-            value={formData.employeeType}
-            onChange={handleChange}
-            className="w-full border rounded-md py-2 px-3 mt-1"
-          >
-            <option value="Full_time">Full-time</option>
-            <option value="Part_time">Part-time</option>
-            <option value="Contractor">Contractor</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Emergency Contact Details */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium border-b pb-2">Emergency Contact</h3>
-        <div className="grid grid-cols-2 gap-4">
+        {/* Address Details */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium border-b pb-2">Address Details</h3>
           <div>
-            <label htmlFor="contactFirstName" className="block text-sm font-medium">Contact First Name</label>
+            <label htmlFor="province" className="block text-sm font-medium">Province</label>
             <input
               id="contactFirstName"
               name="contactFirstName"
@@ -230,7 +322,7 @@ const AddEmployeeForm = ({ isEditing, onSuccess, onCancel }) => {
             />
           </div>
           <div>
-            <label htmlFor="contactLastName" className="block text-sm font-medium">Contact Last Name</label>
+            <label htmlFor="district" className="block text-sm font-medium">District</label>
             <input
               id="contactLastName"
               name="contactLastName"

@@ -25,6 +25,10 @@ import {
 } from '../components/ui/dialog';
 import InstitutionForm from '../components/forms/InstitutionForm';
 import StudentTransferForm from '../components/StudentTransferForm';
+import { countries } from '../data/countries';
+import { gameTypes } from '../data/gameTypes';
+import { institutionTypes } from '../data/institutionTypes';
+import { classOptions } from '../data/classOptions';
 
 const IsongaPrograms = () => {
   const { isDarkMode } = useDarkMode();
@@ -788,24 +792,32 @@ const IsongaPrograms = () => {
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Nationality</label>
-              <input
-                type="text"
+              <select
                 name="nationality"
                 value={studentFormData.nationality}
                 onChange={handleFormChange}
                 className="w-full border rounded-lg px-3 py-2"
                 required
-              />
+              >
+                <option value="">Select Nationality</option>
+                {countries.map((country) => (
+                  <option key={country} value={country}>{country}</option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Other Nationality</label>
-              <input
-                type="text"
+              <select
                 name="otherNationality"
                 value={studentFormData.otherNationality}
                 onChange={handleFormChange}
                 className="w-full border rounded-lg px-3 py-2"
-              />
+              >
+                <option value="">Select Other Nationality (Optional)</option>
+                {countries.map((country) => (
+                  <option key={country} value={country}>{country}</option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Parents/Guardian Names</label>
@@ -820,47 +832,65 @@ const IsongaPrograms = () => {
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">School/Academy/Center</label>
-              <input
-                type="text"
+              <select
                 name="nameOfSchoolAcademyTrainingCenter"
                 value={studentFormData.nameOfSchoolAcademyTrainingCenter}
                 onChange={handleFormChange}
                 className="w-full border rounded-lg px-3 py-2"
                 required
-              />
+              >
+                <option value="">Select Institution</option>
+                {programs.map((institution) => (
+                  <option key={institution.id} value={institution.name}>
+                    {institution.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Type of Institution</label>
-              <input
-                type="text"
+              <select
                 name="typeOfSchoolAcademyTrainingCenter"
                 value={studentFormData.typeOfSchoolAcademyTrainingCenter}
                 onChange={handleFormChange}
                 className="w-full border rounded-lg px-3 py-2"
                 required
-              />
+              >
+                <option value="">Select Institution Type</option>
+                {institutionTypes.map((type) => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Class</label>
-              <input
-                type="text"
+              <select
                 name="class"
                 value={studentFormData.class}
                 onChange={handleFormChange}
                 className="w-full border rounded-lg px-3 py-2"
                 required
-              />
+              >
+                <option value="">Select Class</option>
+                {classOptions.map((classOption) => (
+                  <option key={classOption} value={classOption}>{classOption}</option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Game Type</label>
-              <input
-                type="text"
+              <select
                 name="typeOfGame"
                 value={studentFormData.typeOfGame}
                 onChange={handleFormChange}
                 className="w-full border rounded-lg px-3 py-2"
                 required
-              />
+              >
+                <option value="">Select Game Type</option>
+                {gameTypes.map((game) => (
+                  <option key={game} value={game}>{game}</option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Contact</label>

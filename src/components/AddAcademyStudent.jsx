@@ -7,6 +7,10 @@ import { useTheme } from '../context/ThemeContext';
 import toast from 'react-hot-toast';
 import axiosInstance from '../utils/axiosInstance';
 import data from '../data/data.json';
+import { countries } from '../data/countries';
+import { institutionTypes } from '../data/institutionTypes';
+import { classOptions } from '../data/classOptions';
+import { gameTypes } from '../data/gameTypes';
 
 function AddAcademyStudent({ isOpen, onClose, onAdd, studentData = null, isEditing = false, handleAddStudent }) {
   const { isDarkMode } = useTheme();
@@ -309,25 +313,33 @@ function AddAcademyStudent({ isOpen, onClose, onAdd, studentData = null, isEditi
                     <label className="block mb-1 text-sm font-medium">
                       Nationality <span className="text-red-500">*</span>
                     </label>
-                    <Input
-                      type="text"
+                    <select
                       value={formData.nationality}
                       onChange={(e) => setFormData(prev => ({ ...prev, nationality: e.target.value }))}
                       required
-                      placeholder="Enter nationality"
-                    />
+                      className="w-full border rounded-lg p-2"
+                    >
+                      <option value="">Select Nationality</option>
+                      {countries.map(country => (
+                        <option key={country} value={country}>{country}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block mb-1 text-sm font-medium">Other Nationality</label>
-                    <Input
-                      type="text"
+                    <select
                       value={formData.otherNationality}
                       onChange={(e) => setFormData(prev => ({ ...prev, otherNationality: e.target.value }))}
-                      placeholder="Enter other nationality"
-                    />
+                      className="w-full border rounded-lg p-2"
+                    >
+                      <option value="">Select Other Nationality</option>
+                      {countries.map(country => (
+                        <option key={country} value={country}>{country}</option>
+                      ))}
+                    </select>
                   </div>
                   <div>
                     <label className="block mb-1 text-sm font-medium">
@@ -364,13 +376,17 @@ function AddAcademyStudent({ isOpen, onClose, onAdd, studentData = null, isEditi
                     <label className="block mb-1 text-sm font-medium">
                       Type of School/Academy <span className="text-red-500">*</span>
                     </label>
-                    <Input
-                      type="text"
+                    <select
                       value={formData.typeOfSchoolAcademyTrainingCenter}
                       onChange={(e) => setFormData(prev => ({ ...prev, typeOfSchoolAcademyTrainingCenter: e.target.value }))}
                       required
-                      placeholder="Enter type of school/academy"
-                    />
+                      className="w-full border rounded-lg p-2"
+                    >
+                      <option value="">Select Type</option>
+                      {institutionTypes.map(type => (
+                        <option key={type} value={type}>{type}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
@@ -379,25 +395,33 @@ function AddAcademyStudent({ isOpen, onClose, onAdd, studentData = null, isEditi
                     <label className="block mb-1 text-sm font-medium">
                       Class <span className="text-red-500">*</span>
                     </label>
-                    <Input
-                      type="text"
+                    <select
                       value={formData.class}
                       onChange={(e) => setFormData(prev => ({ ...prev, class: e.target.value }))}
                       required
-                      placeholder="Enter class"
-                    />
+                      className="w-full border rounded-lg p-2"
+                    >
+                      <option value="">Select Class</option>
+                      {classOptions.map(option => (
+                        <option key={option} value={option}>{option}</option>
+                      ))}
+                    </select>
                   </div>
                   <div>
                     <label className="block mb-1 text-sm font-medium">
                       Type of Game <span className="text-red-500">*</span>
                     </label>
-                    <Input
-                      type="text"
+                    <select
                       value={formData.typeOfGame}
                       onChange={(e) => setFormData(prev => ({ ...prev, typeOfGame: e.target.value }))}
                       required
-                      placeholder="Enter type of game"
-                    />
+                      className="w-full border rounded-lg p-2"
+                    >
+                      <option value="">Select Game Type</option>
+                      {gameTypes.map(type => (
+                        <option key={type} value={type}>{type}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 

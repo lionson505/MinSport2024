@@ -6,7 +6,7 @@ import { Input } from '../components/ui/input';
 import AddMassSportModal from '../components/AddMassSportModal';
 import toast from 'react-hot-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
-import { AlertCircle, Edit, Download, Trash2, AlertTriangle, Eye, X} from 'lucide-react';
+import { AlertCircle, Pencil, Download, Trash2, AlertTriangle, Eye, X} from 'lucide-react';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../components/ui/table';
 import { Search, Plus, Filter } from 'lucide-react';
 import PageLoading from '../components/ui/PageLoading';
@@ -208,7 +208,7 @@ function SportsForAll() {
                       className="p-1 rounded-lg hover:bg-gray-100"
                       title="Edit"
                     >
-                      <Edit className="h-4 w-4" />
+                      <Pencil className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => handleDeleteSport(sport.id)}

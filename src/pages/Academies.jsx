@@ -243,7 +243,7 @@ function Academies() {
                             setIsViewModalOpen(true);
                           }}
                         >
-                          <Eye className="h-4 w-4 text-blue-600" />
+                          <Eye className="h-4 w-4 text-black" />
                         </Button>
                         <Button
                           variant="ghost"
@@ -252,7 +252,7 @@ function Academies() {
                             setIsEditModalOpen(true);
                           }}
                         >
-                          <PencilIcon className="h-4 w-4 text-green-600" />
+                          <PencilIcon className="h-4 w-4 text-black" />
                         </Button>
                         <Button
                           variant="ghost"
@@ -366,7 +366,7 @@ function Academies() {
                             className="p-1 h-7 w-7"
                             title="View Details"
                           >
-                            <Eye className="h-4 w-4 text-blue-600" />
+                            <Eye className="h-4 w-4 text-black" />
                           </Button>
                           <Button
                             size="sm"
@@ -375,7 +375,7 @@ function Academies() {
                             className="p-1 h-7 w-7"
                             title="Edit Student"
                           >
-                            <PencilIcon className="h-4 w-4 text-green-600" />
+                            <PencilIcon className="h-4 w-4 text-black" />
                           </Button>
                           <Button
                             size="sm"
