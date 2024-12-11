@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import HeaderTwo from '../../components/headerTwo';
 import { sportsEventService } from '../../services/sportsEventService';
-import { 
-  Dialog, 
-  DialogContent, 
+import {
+  Dialog,
+  DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription
@@ -12,72 +11,75 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui/ta
 import { format } from 'date-fns';
 import { Loader2, MapPin, Calendar, Clock, Trophy, ClipboardList, Radio } from 'lucide-react';
 import PublicLayout from '../../components/layouts/PublicLayout';
+import logo from "../../components/liveMatch/image.png";
+import image1 from "../../components/liveMatch/a.jpg";
+import image2 from "../../components/liveMatch/b.jpg";
+import image3 from "../../components/liveMatch/c.jpg";
+import image4 from "../../components/liveMatch/d.jpeg";
+import image5 from "../../components/liveMatch/e.webp";
+import axiosInstance from '../../utils/axiosInstance';
+import { Form } from 'react-bootstrap';
+import federationImage from '../../components/liveMatch/federation.jpg';
 
-function EventsPage() {
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
+function Federation() {
+  const [loading, setLoading] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [showDialog, setShowDialog] = useState(false);
-  const [activeTab, setActiveTab] = useState('all');
+  // const [showDialog, setShowDialog] = useState(false);
+  // const [activeTab, setActiveTab] = useState('all');
   const [eventResults, setEventResults] = useState(null);
 
-  const tempEvents = [
-    {
-      id: 1,
-      title: 'BASKETBALL AFRICA LEAGUE 2024',
-      subtitle: 'The biggest show in basketball is coming to Kigali',
-      image: '/events/bal.jpg',
-      startDate: '2024-03-25T10:00:00',
-      endDate: '2024-04-10T18:00:00',
-      category: 'BASKETBALL AFRICA LEAGUE 2024',
-      status: 'UPCOMING',
-      time: '04:22'
-    },
-    {
-      id: 2,
-      title: 'VETERANS CLUB WORLD CUP 2024',
-      subtitle: '150 football legends live in Kigali',
-      image: '/events/vcwc.jpg',
-      startDate: '2024-03-15T14:00:00',
-      endDate: '2024-03-20T22:00:00',
-      category: 'VETERANS CLUB WORLD CUP 2024',
-      status: 'LIVE',
-      time: '04:22'
-    },
-    {
-      id: 3,
-      title: 'FIFA CONGRESS',
-      subtitle: '73rd fifa congress',
-      image: '/events/fifa.jpg',
-      startDate: '2024-05-17T09:00:00',
-      endDate: '2024-05-17T17:00:00',
-      category: 'FIFA CONGRESS',
-      status: 'UPCOMING',
-      time: '04:22'
-    },
-    {
-      id: 4,
-      title: 'RWANDA SUMMER GOLF',
-      subtitle: 'Falcon & Country club presents Rwanda summer golf',
-      image: '/events/golf.jpg',
-      startDate: '2024-06-01T09:00:00',
-      endDate: '2024-06-03T17:00:00',
-      category: 'RWANDA SUMMER GOLF',
-      status: 'UPCOMING',
-      time: '04:22'
-    },
-    {
-      id: 5,
-      title: 'WORLD TENNIS TOUR JUNIORS',
-      subtitle: 'IPRC Kigali ecology club',
-      image: '/events/tennis.jpg',
-      startDate: '2024-04-22T09:00:00',
-      endDate: '2024-04-24T17:00:00',
-      category: 'WORLD TENNIS TOUR JUNIORS',
-      status: 'PAST',
-      time: '04:22'
-    }
-  ];
+
+  const backgroundImages = [image1, image2, image3, image4, image5];
+  const [imageIndex, setImageIndex] = useState(0);
+  const [federations, setFederations] = useState([]);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchFederations = async () => {
+      try {
+
+        const response = await axiosInstance.get('/federations');
+        await setFederations(response.data);
+
+
+      } catch (err) {
+        setError('Error fetching federations');
+        console.error('Error fetching federations:', err);
+
+      }
+
+    };
+
+    fetchFederations();
+
+  }, []);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>{error}</p>;
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setImageIndex((prevIndex) => (prevIndex + 1) % backgroundImages.length)
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [backgroundImages.length])
+
+  const image = backgroundImages[imageIndex];
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toISOString().split('T')[0]; // Returns the date in YYYY-MM-DD format
+  };
+  const events = federations.map((federation) => ({
+    id: federation.id,
+    title: federation.name,
+    subtitle: federation.acronym || federation.address, // Provide meaningful fallback
+    // image: federation.logo || federationImage , // Assuming this is the correct path for the image
+    image: federationImage, // Assuming this is the correct path for the image
+    startDate: formatDate(federation.createdAt),  // Use a relevant date field
+    category: federation.name,                  // Placeholder (adjust based on data)
+  }));
+
+  console.log(events);
 
   useEffect(() => {
     fetchEvents();
@@ -103,42 +105,25 @@ function EventsPage() {
   };
 
   const renderEventCard = (event) => (
-    <div 
-      key={event.id} 
+    <div
+      key={event.id}
       className="relative group cursor-pointer"
-      onClick={() => setSelectedEvent(event)}
-     >
-      <div className="relative overflow-hidden rounded-lg">
-        <img 
-          src={event.image} 
-          alt={event.title} 
-          className="w-full aspect-[3/4] object-cover transition-transform duration-300 group-hover:scale-110"
-        />
+    >
+      <div className="h-80 relative overflow-hidden rounded-lg bg-blue-400 flex justify-center transform transition-all duration-300 hover:shadow-xl hover:shadow-black hover:scale-105 hover:bg-blue-500 hover:shadow-lg hover:opacity-80">
+        <div className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-white mt-10">
+          <img
+            src={event.image}
+            alt={event.title}
+            className="w-full h-full object-cover"
+          />
+        </div>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black opacity-90"></div>
-        
-        {/* Status badge */}
-        <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-medium ${
-          event.status === 'LIVE' ? 'bg-red-500 text-white' :
-          event.status === 'UPCOMING' ? 'bg-green-500 text-white' :
-          'bg-gray-500 text-white'
-        }`}>
-          {event.status}
-        </div>
-        
-        {/* Time badge */}
-        <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded text-xs flex items-center">
-          <svg className="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M12 6v6l4 2" />
-          </svg>
-          {event.time}
-        </div>
-        
+
         {/* Text content */}
         <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-          <div className="text-xs mb-2">{event.category}</div>
-          <h3 className="font-bold mb-1">{event.title}</h3>
-          <p className="text-sm text-gray-200">{event.subtitle}</p>
+          <div className="text-xs mb-2">{event.title}</div>
+          <h3 className="font-bold mb-1">{event.subtitle}</h3>
+          <p className="text-sm text-gray-200">{event.startDate}</p>
         </div>
       </div>
     </div>
@@ -149,7 +134,7 @@ function EventsPage() {
 
     return (
       <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader className="px-6 py-4 border-b">
+        {/* <DialogHeader className="px-6 py-4 border-b">
           <div className="flex items-center justify-between">
             <div>
               <DialogTitle className="text-2xl font-bold mb-1">{selectedEvent.title}</DialogTitle>
@@ -157,22 +142,21 @@ function EventsPage() {
                 {selectedEvent.category}
               </DialogDescription>
             </div>
-            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-              selectedEvent.status === 'LIVE' ? 'bg-red-500 text-white' :
+            <span className={`px-3 py-1 rounded-full text-xs font-medium ${selectedEvent.status === 'LIVE' ? 'bg-red-500 text-white' :
               selectedEvent.status === 'UPCOMING' ? 'bg-green-500 text-white' :
-              'bg-gray-500 text-white'
-            }`}>
+                'bg-gray-500 text-white'
+              }`}>
               {selectedEvent.status}
             </span>
           </div>
-        </DialogHeader>
-        
+        </DialogHeader> */}
+
         <div className="flex-1 overflow-y-auto">
           <div className="p-6">
             <div className="relative h-[400px] rounded-lg overflow-hidden mb-8">
-              <img 
-                src={selectedEvent.image} 
-                alt={selectedEvent.title} 
+              <img
+                src={selectedEvent.image}
+                alt={selectedEvent.title}
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
@@ -278,7 +262,7 @@ function EventsPage() {
                 <h3 className="font-semibold text-gray-900 mb-4">Event Description</h3>
                 <p className="text-gray-600 text-sm leading-relaxed">
                   {selectedEvent.subtitle}
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
                   Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
                 </p>
               </div>
@@ -299,61 +283,86 @@ function EventsPage() {
     );
   }
 
+
   return (
-    <PublicLayout>
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-bold mb-8">Sports Events</h1>
+    <>
+      <div
+        className="px-24"
+        style={{
+          backgroundImage: `url(${image})`, // Ensure the correct path to federation.png
+          backgroundSize: "100% 100%",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "center",
+          height: "50vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "white",
+          position: "relative",
+          marginBottom: "2rem"
+        }}
+      >
+        {/* Overlay for a slight dark effect */}
+        <div className="overlay" style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          backgroundColor: "rgba(0, 0, 0, 0.7)"
+        }}></div>
+        {/* Content Section */}
+        <div className="flex w-full mt-24 space-x-10" style={{ maxWidth: "100%", textAlign: "center", zIndex: 1 }}>
+          <div className=' w-4/5 text-start'>
+            <h1 style={{ fontSize: "3rem", fontWeight: "bold" }}>
+              Welcome to Rwanda Sports Federations
+            </h1>
+            <p style={{ fontSize: "1.2rem", margin: "20px 0", maxWidth: "700px" }}>
+              Explore all the sports federations in Rwanda, including FERWAFA,
+              FERWABA, and many more. Stay updated on events, news, and achievements.
+            </p>
+            <button
+              className='hover:bg-[#ffffff83] bg-[#ffffff3b]'
+              style={{
+                padding: "20px 40px",
+                fontSize: "1rem",
+                color: "#fff",
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              Read More
+            </button>
+          </div>
+          <div className="flex justify-end w-1/6 w-60 h-60">
+            <img src={logo} alt="rwandanLogo" className="w-full h-full" />
+          </div>
 
-        <Tabs defaultValue="all" className="mb-8">
-          <TabsList className="bg-white p-1 rounded-lg shadow-sm">
-            <TabsTrigger value="all" onClick={() => setActiveTab('all')}>
-              All Events
-            </TabsTrigger>
-            <TabsTrigger value="live" onClick={() => setActiveTab('LIVE')}>
-              Live
-            </TabsTrigger>
-            <TabsTrigger value="upcoming" onClick={() => setActiveTab('UPCOMING')}>
-              Upcoming
-            </TabsTrigger>
-            <TabsTrigger value="past" onClick={() => setActiveTab('PAST')}>
-              Past
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="all" className="mt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {filterEvents('all').map(renderEventCard)}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="live" className="mt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {filterEvents('LIVE').map(renderEventCard)}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="upcoming" className="mt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {filterEvents('UPCOMING').map(renderEventCard)}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="past" className="mt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {filterEvents('PAST').map(renderEventCard)}
-            </div>
-          </TabsContent>
-        </Tabs>
-
-        <Dialog 
-          open={!!selectedEvent} 
-          onOpenChange={(open) => !open && setSelectedEvent(null)}
-        >
-          {renderEventDetails()}
-        </Dialog>
+        </div>
       </div>
-    </PublicLayout>
+      <PublicLayout>
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-4xl font-bold mb-12">FEDERATIONS</h1>
+
+          <Tabs defaultValue="all" className="mb-8">
+            <TabsContent value="all" className="mt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {filterEvents('all').map(renderEventCard)}
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          <Dialog
+            open={!!selectedEvent}
+            onOpenChange={(open) => !open && setSelectedEvent(null)}
+          >
+            {renderEventDetails()}
+          </Dialog>
+        </div>
+      </PublicLayout>
+    </>
   );
+
 }
 
-export default EventsPage; 
+export default Federation; 

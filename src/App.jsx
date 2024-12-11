@@ -32,6 +32,8 @@ import { InfrastructureProvider } from './contexts/InfrastructureContext';
 import SportsTourism from './pages/SportsTourism';
 import { TourismProvider } from './contexts/TourismContext';
 import AllSportsEvents from './pages/AllSportsEvents';
+import LandingPageFederation from './pages/public/Federation';
+import LandingPageMatch from './pages/public/Match.jsx';
 import EventsPage from './pages/public/EventsPage';
 import NoPageFound from './pages/unauthorized';
 import { MatchOperatorDashboard, TeamManagement, MatchOperatorProvider } from './features/match-operator';
@@ -113,6 +115,9 @@ function App() {
                       <Route path="/notAuthorized" element={<NoPageFound />} />
                       <Route path="/sports-events" element={<AllSportsEvents />} />
                       <Route path="/events" element={<EventsPage />} />
+                      <Route path="/federation" element={<LandingPageFederation />} />
+                      <Route path="/match" element={<LandingPageMatch />} />
+                      LandingPageMatch
 
                       {/* Protected Routes */}
                       <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
