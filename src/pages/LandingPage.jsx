@@ -15,7 +15,7 @@ function LandingPage() {
   const [activeTab, setActiveTab] = useState('ALL');
   const [selectedSport, setSelectedSport] = useState('BASKETBALL');
   
-  const navigation = ['HOME', 'FEDERATION', 'EVENTS', 'MATCHES', 'INFRASTRUCTURE'];
+  // const navigation = ['HOME', 'FEDERATION', 'EVENTS', 'MATCHES', 'INFRASTRUCTURE'];
 
   const leagues = [
     { 
@@ -204,6 +204,13 @@ function LandingPage() {
       <main className="container mx-auto px-6 pt-24 pb-12">
         {/* Live Matches Section */}
         <div className="mb-16">
+                <Link 
+                    to="/match" 
+                    className="text-gray-500 hover:text-gray-600 flex items-center text-base justify-end"
+                  >
+                    View all
+                    <ChevronRight className="w-5 h-5 ml-2" />
+                </Link>
           <LiveMatches />
         </div>
 

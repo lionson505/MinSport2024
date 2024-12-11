@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 // import "./../assets/livematchmodal.css";
 
 const HeaderTwo = () => {
-    const navigation = ['HOME', 'FEDERATION', 'EVENTS', 'MATCHES', 'INFRASTRUCTURE'];
+    const navigation = ['HOME', 'FEDERATIONS', 'EVENTS', 'MATCHES', 'INFRASTRUCTURE'];
     const [activeTab, setActiveTab] = useState('ALL');
 
   return (

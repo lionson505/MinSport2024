@@ -107,7 +107,7 @@ function EventsPage() {
       key={event.id} 
       className="relative group cursor-pointer"
       onClick={() => setSelectedEvent(event)}
-    >
+     >
       <div className="relative overflow-hidden rounded-lg">
         <img 
           src={event.image} 
