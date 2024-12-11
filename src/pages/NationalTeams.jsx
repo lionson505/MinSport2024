@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import axiosInstance from '../utils/axiosInstance';
-import { Plus, Eye, Edit, Trash2, X } from 'lucide-react';
+import { Plus, Eye, Pencil, Trash2, X } from 'lucide-react';
 import { Dialog, Transition } from '@headlessui/react';
 import { Button } from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
@@ -350,7 +350,7 @@ function NationalTeams() {
         className="p-1 h-7 w-7"
         title="Edit Team"
       >
-        <Edit className="h-4 w-4 text-green-600" />
+        <Pencil className="h-4 w-4 text-green-600" />
       </Button>
       <Button
         size="sm"
@@ -382,7 +382,7 @@ function NationalTeams() {
         className="p-1 h-7 w-7"
         title="Edit Player"
       >
-        <Edit className="h-4 w-4 text-green-600" />
+        <Pencil className="h-4 w-4 text-green-600" />
       </Button>
       <Button
         size="sm"
@@ -547,7 +547,7 @@ function NationalTeams() {
                           className="p-1 h-7 w-7"
                           title="Edit Team"
                         >
-                          <Edit className="h-4 w-4 text-green-600" />
+                          <Pencil className="h-4 w-4 text-green-600" />
                         </Button>
                         <Button
                           size="sm"
@@ -943,25 +943,6 @@ function NationalTeams() {
 
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Player/Staff <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={selectedPlayerStaff}
-                  onChange={(e) => setSelectedPlayerStaff(e.target.value)}
-                  className="w-full border rounded-lg p-2"
-                  required
-                >
-                  <option value="">Select Player/Staff</option>
-                  {playerStaffList.map(staff => (
-                    <option key={staff.id} value={staff.id}>
-                      {`${staff.firstName} ${staff.lastName}`}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">
                   Team <span className="text-red-500">*</span>
                 </label>
                 <select
@@ -997,6 +978,25 @@ function NationalTeams() {
                   <option value="">Select Club</option>
                   {clubs.map(club => (
                     <option key={club.id} value={club.id}>{club.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Player/Staff <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={selectedPlayerStaff}
+                  onChange={(e) => setSelectedPlayerStaff(e.target.value)}
+                  className="w-full border rounded-lg p-2"
+                  required
+                >
+                  <option value="">Select Player/Staff</option>
+                  {playerStaffList.map(staff => (
+                    <option key={staff.id} value={staff.id}>
+                      {`${staff.firstName} ${staff.lastName}`}
+                    </option>
                   ))}
                 </select>
               </div>

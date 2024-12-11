@@ -202,8 +202,8 @@ const Partners = () => {
         <TableHead>Sector</TableHead>
         <TableHead>Representative Name</TableHead>
         <TableHead>Representative Gender</TableHead>
-        <TableHead>Representative Email</TableHead>
-        <TableHead>Representative Phone</TableHead>
+        {/* <TableHead>Representative Email</TableHead> */}
+        {/* <TableHead>Representative Phone</TableHead> */}
 
         <TableHead>Actions</TableHead>
       </TableRow>
@@ -219,8 +219,8 @@ const Partners = () => {
           <TableCell>{partner.location_sector || 'Not Available'}</TableCell>
           <TableCell>{partner.legal_representative_name || 'Not Available'}</TableCell>
           <TableCell>{partner.legal_representative_gender || 'Not Available'}</TableCell>
-          <TableCell>{partner.legal_representative_email || 'Not Available'}</TableCell>
-          <TableCell>{partner.legal_representative_phone || 'Not Available'}</TableCell>
+          {/* <TableCell>{partner.legal_representative_email || 'Not Available'}</TableCell>
+          <TableCell>{partner.legal_representative_phone || 'Not Available'}</TableCell> */}
 
           <TableCell>
             <ActionMenu

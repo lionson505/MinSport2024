@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
-import { Loader2, Edit, AlertCircle } from 'lucide-react';
+import { Loader2, Edit, Trash2, Pencil, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import AddUserModal from '../components/AddUserModal';
 import EditUserModal from '../components/EditUserModal'; 
@@ -243,22 +243,22 @@ function Users() {
                     <td className="border p-2">{getGroupName(user.groupId)}</td>
                     <td className="border p-2">{user.status}</td>
                     <td className="px-4 py-3">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleEditUser(user)}
-                      >
-                        <Edit className="h-4 w-4 mr-1" />
-                        Edit
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleDeleteUser(user)}
-                      >
-                        <AlertCircle className="h-4 w-4 mr-1" />
-                        Delete
-                      </Button>
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleEditUser(user)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleDeleteUser(user)}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -296,7 +296,7 @@ function Users() {
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-red-600">
-              <AlertCircle className="h-5 w-5" />
+              <AlertTriangle className="h-5 w-5" />
               Confirm Deletion
             </DialogTitle>
             <DialogDescription className="py-4">

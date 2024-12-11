@@ -201,11 +201,7 @@ function AddAcademyModal({ isOpen, onClose, onAdd, academyData = null }) {
         // Update existing academy
         await axiosInstance.put(`/academies/${academyData.id}`, transformedData);
         toast.success('Academy updated successfully');
-      } else {
-        // Add new academy
-        await axiosInstance.post('/academies', transformedData);
-        toast.success('Academy added successfully');
-      }
+      } 
 
       onAdd(transformedData);
       onClose();

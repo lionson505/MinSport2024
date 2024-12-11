@@ -9,7 +9,7 @@ import {
   TableHead,
   TableCell
 } from '../components/ui/table';
-import { Search, Plus, Edit, Trash2, AlertCircle, Eye, Users, Printer } from 'lucide-react';
+import { Search, Plus, Pencil, Trash2, AlertCircle, Eye, Users, Printer } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import PageLoading from '../components/ui/PageLoading';
 import Message from '../components/ui/Message';
@@ -234,19 +234,15 @@ const IsongaPrograms = () => {
     setIsSubmitting(true);
     try {
       await axiosInstance.delete(`/students/${studentToDelete.id}`);
-      const updatedStudents = students.filter(s => s.id !== studentToDelete.id);
-      setStudents(updatedStudents);
-      setFilteredStudents(updatedStudents);
-      setMessage({
-        type: 'success',
-        text: 'Student deleted successfully'
-      });
+      // Fetch fresh data after deletion
+      const response = await axiosInstance.get('/students');
+      setStudents(response?.data?.data || []);
+      setFilteredStudents(response?.data?.data || []);
+      
+      toast.success('Student deleted successfully');
       setShowDeleteStudentModal(false);
     } catch (error) {
-      setMessage({
-        type: 'error',
-        text: 'Failed to delete student'
-      });
+      toast.error('Failed to delete student');
     } finally {
       setIsSubmitting(false);
     }
@@ -267,21 +263,26 @@ const IsongaPrograms = () => {
       if (selectedStudent) {
         const { photo_passport, transfers, ...updateData } = studentFormData;
         await axiosInstance.put(`/students/${selectedStudent.id}`, updateData);
-        const updatedStudents = students.map(s => 
-          s.id === selectedStudent.id ? { ...s, ...updateData } : s
-        );
-        setStudents(updatedStudents);
-        setFilteredStudents(updatedStudents);
+        
+        // Fetch fresh data after update
+        const response = await axiosInstance.get('/students');
+        setStudents(response?.data?.data || []);
+        setFilteredStudents(response?.data?.data || []);
+        
         toast.success('Student updated successfully');
       } else {
-        const response = await axiosInstance.post('/students', studentFormData);
-        setStudents([...students, response.data]);
-        setFilteredStudents([...students, response.data]);
+        await axiosInstance.post('/students', studentFormData);
+        
+        // Fetch fresh data after creation
+        const response = await axiosInstance.get('/students');
+        setStudents(response?.data?.data || []);
+        setFilteredStudents(response?.data?.data || []);
+        
         toast.success('Student added successfully');
       }
       setShowStudentModal(false);
     } catch (error) {
-      toast.error('Failed to save student');
+      toast.error(error.response?.data?.message || 'Failed to save student');
     } finally {
       setIsSubmitting(false);
     }
@@ -352,8 +353,8 @@ const IsongaPrograms = () => {
                       <TableHead className="min-w-[200px] text-xs">Name</TableHead>
                       <TableHead className="min-w-[150px] text-xs">Domain</TableHead>
                       <TableHead className="min-w-[150px] text-xs">Category</TableHead>
-                      <TableHead className="min-w-[200px] text-xs">Location</TableHead>
-                      <TableHead className="min-w-[150px] text-xs">Legal Rep.</TableHead>
+                      {/* <TableHead className="min-w-[200px] text-xs">Location</TableHead> */}
+                      {/* <TableHead className="min-w-[150px] text-xs">Legal Rep.</TableHead> */}
                       <TableHead className="w-[150px] text-xs">Operation</TableHead>
                     </TableRow>
                   </TableHeader>  
@@ -364,9 +365,9 @@ const IsongaPrograms = () => {
                         <TableCell className="text-xs">{program.domain}</TableCell>
                         <TableCell className="text-xs">{program.category}</TableCell>
                         <TableCell className="text-xs">
-                          {`${program.location_province}, ${program.location_district}`}
+                          {/* {`${program.location_province}, ${program.location_district}`} */}
                         </TableCell>
-                        <TableCell className="text-xs">{program.legalRepresentativeName}</TableCell>
+                        {/* <TableCell className="text-xs">{program.legalRepresentativeName}</TableCell> */}
                         <TableCell>
                           <div className="flex items-center gap-1">
                             <button
@@ -381,7 +382,7 @@ const IsongaPrograms = () => {
                               className="p-1 rounded-lg hover:bg-gray-100"
                               title="Edit"
                             >
-                              <Edit className="h-4 w-4" />
+                              <Pencil className="h-4 w-4" />
                             </button>
                             <button
                               onClick={() => handleDeleteInstitution(program)}
@@ -458,15 +459,15 @@ const IsongaPrograms = () => {
                       <TableHead className="min-w-[150px] text-xs">First Name</TableHead>
                       <TableHead className="min-w-[150px] text-xs">Last Name</TableHead>
                       <TableHead className="min-w-[80px] text-xs">Gender</TableHead>
-                      <TableHead className="min-w-[120px] text-xs">Date of Birth</TableHead>
-                      <TableHead className="min-w-[150px] text-xs">Place of Birth</TableHead>
-                      <TableHead className="min-w-[150px] text-xs">Place of Residence</TableHead>
-                      <TableHead className="min-w-[150px] text-xs">ID/Passport No</TableHead>
-                      <TableHead className="min-w-[100px] text-xs">Nationality</TableHead>
+                      {/* <TableHead className="min-w-[120px] text-xs">Date of Birth</TableHead> */}
+                      {/* <TableHead className="min-w-[150px] text-xs">Place of Birth</TableHead> */}
+                      {/* <TableHead className="min-w-[150px] text-xs">Place of Residence</TableHead> */}
+                      {/* <TableHead className="min-w-[150px] text-xs">ID/Passport No</TableHead> */}
+                      {/* <TableHead className="min-w-[100px] text-xs">Nationality</TableHead>
                       <TableHead className="min-w-[150px] text-xs">Other Nationality</TableHead>
                       <TableHead className="min-w-[200px] text-xs">Parents/Guardian Names</TableHead>
                       <TableHead className="min-w-[200px] text-xs">School/Academy/Center</TableHead>
-                      <TableHead className="min-w-[150px] text-xs">Type of Institution</TableHead>
+                      <TableHead className="min-w-[150px] text-xs">Type of Institution</TableHead> */}
                       <TableHead className="min-w-[80px] text-xs">Class</TableHead>
                       <TableHead className="min-w-[100px] text-xs">Game Type</TableHead>
                       <TableHead className="min-w-[150px] text-xs">Contact</TableHead>
@@ -479,15 +480,15 @@ const IsongaPrograms = () => {
                         <TableCell className="text-xs font-medium">{student.firstName}</TableCell>
                         <TableCell className="text-xs">{student.lastName}</TableCell>
                         <TableCell className="text-xs">{student.gender}</TableCell>
-                        <TableCell className="text-xs">{student.dateOfBirth}</TableCell>
-                        <TableCell className="text-xs">{student.placeOfBirth}</TableCell>
-                        <TableCell className="text-xs">{student.placeOfResidence}</TableCell>
-                        <TableCell className="text-xs">{student.idPassportNo}</TableCell>
-                        <TableCell className="text-xs">{student.nationality}</TableCell>
+                        {/* <TableCell className="text-xs">{student.dateOfBirth}</TableCell> */}
+                        {/* <TableCell className="text-xs">{student.placeOfBirth}</TableCell> */}
+                        {/* <TableCell className="text-xs">{student.placeOfResidence}</TableCell> */}
+                        {/* <TableCell className="text-xs">{student.idPassportNo}</TableCell> */}
+                        {/* <TableCell className="text-xs">{student.nationality}</TableCell>
                         <TableCell className="text-xs">{student.otherNationality}</TableCell>
                         <TableCell className="text-xs">{student.namesOfParentsGuardian}</TableCell>
                         <TableCell className="text-xs">{student.nameOfSchoolAcademyTrainingCenter}</TableCell>
-                        <TableCell className="text-xs">{student.typeOfSchoolAcademyTrainingCenter}</TableCell>
+                        <TableCell className="text-xs">{student.typeOfSchoolAcademyTrainingCenter}</TableCell> */}
                         <TableCell className="text-xs">{student.class}</TableCell>
                         <TableCell className="text-xs">{student.typeOfGame}</TableCell>
                         <TableCell className="text-xs">{student.contact}</TableCell>
@@ -505,7 +506,7 @@ const IsongaPrograms = () => {
                               className="p-1 rounded-lg hover:bg-gray-100"
                               title="Edit"
                             >
-                              <Edit className="h-4 w-4" />
+                              <Pencil className="h-4 w-4" />
                             </button>
                             <button
                               onClick={() => handleDeleteStudent(student)}

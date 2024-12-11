@@ -10,7 +10,7 @@ import {
 import { Button } from '../ui/Button';
 import { Input } from '../ui/input';
 import { Select } from '../ui/select';
-import { Eye, Edit, Trash2, MapPin, Search, Filter, AlertTriangle } from 'lucide-react';
+import { Eye, Pencil, Trash2, MapPin, Search, Filter, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import ExportButton from './ExportButton';
 import axiosInstance from '../../utils/axiosInstance';
@@ -51,7 +51,18 @@ const InfrastructureList = () => {
     upi: '',
     plot_area: 0,
     construction_date: '',
-    owner: ''
+    owner: '',
+    main_users: '',
+    types_of_sports: '',
+    internet_connection: false,
+    electricity_connection: false,
+    water_connection: false,
+    access_road: false,
+    health_facility: false,
+    legal_representative_name: '',
+    legal_representative_gender: '',
+    legal_representative_email: '',
+    legal_representative_phone: ''
   });
 
   const provinces = ['Kigali City', 'Eastern', 'Western', 'Northern', 'Southern'];
@@ -66,9 +77,14 @@ const InfrastructureList = () => {
     try {
       const response = await axiosInstance.get('/infrastructures');
       setInfrastructures(response.data);
+      toast.success('Infrastructure list loaded', {
+        description: `Successfully loaded ${response.data.length} infrastructures`
+      });
     } catch (error) {
       console.error('Error fetching infrastructures:', error);
-      toast.error('Failed to fetch infrastructures');
+      toast.error('Failed to load infrastructures', {
+        description: 'Please check your connection and try refreshing the page'
+      });
     }
   };
 
@@ -76,9 +92,12 @@ const InfrastructureList = () => {
     try {
       const response = await axiosInstance.get('/infrastructure-categories');
       setCategories(response.data);
+      toast.success('Categories loaded successfully');
     } catch (error) {
       console.error('Error fetching categories:', error);
-      toast.error('Failed to fetch categories');
+      toast.error('Failed to load categories', {
+        description: 'Some features may be limited. Please refresh the page.'
+      });
     }
   };
 
@@ -86,46 +105,144 @@ const InfrastructureList = () => {
     try {
       const response = await axiosInstance.get(`/infrastructure-subcategories?category=${categoryId}`);
       setSubCategories(response.data);
+      toast.success('Subcategories loaded successfully');
     } catch (error) {
       console.error('Error fetching subcategories:', error);
-      toast.error('Failed to fetch subcategories');
+      toast.error('Failed to load subcategories', {
+        description: 'Please try selecting the category again'
+      });
     }
   };
 
   const handleDelete = async () => {
-    if (!selectedInfrastructure) return;
+    if (!selectedInfrastructure) {
+      toast.error('No infrastructure selected');
+      return;
+    }
+    
     try {
-      await axiosInstance.delete(`/infrastructures/${selectedInfrastructure.id}`);
-      setInfrastructures(prev => prev.filter(infra => infra.id !== selectedInfrastructure.id));
-      toast.success('Infrastructure deleted successfully');
-      setIsDeleteModalOpen(false);
+      const response = await axiosInstance.delete(`/infrastructures/${selectedInfrastructure.id}`);
+      
+      if (response.status === 200 || response.status === 204) {
+        // First update the state
+        setInfrastructures(prev => 
+          prev.filter(infra => infra.id !== selectedInfrastructure.id)
+        );
+        
+        // Then close the modal
+        setIsDeleteModalOpen(false);
+        
+        // Finally show the success toast
+        toast.success('Infrastructure deleted successfully', {
+          description: `"${selectedInfrastructure.name}" has been removed from the system`,
+          duration: 3000,
+        });
+      }
     } catch (error) {
       console.error('Failed to delete infrastructure:', error);
-      toast.error('Failed to delete infrastructure');
+      toast.error('Delete failed', {
+        description: error.response?.data?.message || 'Unable to delete infrastructure. Please try again.',
+        duration: 3000,
+      });
+    } finally {
+      setSelectedInfrastructure(null);
     }
   };
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
+    
+    const validationErrors = validateForm(editFormData);
+    
+    if (validationErrors.length > 0) {
+      validationErrors.forEach(error => {
+        toast.error('Validation Error', {
+          description: error,
+          duration: 3000,
+        });
+      });
+      return;
+    }
+
     try {
-      await axiosInstance.put(`/infrastructures/${selectedInfrastructure.id}`, editFormData);
-      setInfrastructures(prev => prev.map(infra => infra.id === selectedInfrastructure.id ? { ...infra, ...editFormData } : infra));
-      toast.success('Infrastructure updated successfully');
-      setIsEditModalOpen(false);
+      const response = await axiosInstance.put(
+        `/infrastructures/${selectedInfrastructure.id}`, 
+        editFormData
+      );
+      
+      if (response.status === 200) {
+        // First update the state
+        setInfrastructures(prevInfrastructures => 
+          prevInfrastructures.map(infra => 
+            infra.id === selectedInfrastructure.id ? response.data : infra
+          )
+        );
+        
+        // Then close the modal
+        setIsEditModalOpen(false);
+        
+        // Finally show the success toast
+        toast.success('Infrastructure updated successfully', {
+          description: `"${editFormData.name}" has been updated with the new information`,
+          duration: 3000,
+        });
+      }
     } catch (error) {
       console.error('Failed to update infrastructure:', error);
-      toast.error('Failed to update infrastructure');
+      toast.error('Update failed', {
+        description: error.response?.data?.message || 'Unable to update infrastructure. Please try again.',
+        duration: 3000,
+      });
+    } finally {
+      setSelectedInfrastructure(null);
+      setEditFormData({
+        name: '',
+        infra_category: 0,
+        infra_sub_category: 0,
+        type_level: '',
+        status: '',
+        capacity: 0,
+        description: '',
+        location_province: '',
+        location_district: '',
+        location_sector: '',
+        location_cell: '',
+        location_village: '',
+        latitude: 0,
+        longitude: 0,
+        upi: '',
+        plot_area: 0,
+        construction_date: '',
+        owner: '',
+        main_users: '',
+        types_of_sports: '',
+        internet_connection: false,
+        electricity_connection: false,
+        water_connection: false,
+        access_road: false,
+        health_facility: false,
+        legal_representative_name: '',
+        legal_representative_gender: '',
+        legal_representative_email: '',
+        legal_representative_phone: ''
+      });
     }
   };
 
   const openDeleteModal = (infrastructure) => {
     setSelectedInfrastructure(infrastructure);
     setIsDeleteModalOpen(true);
+    toast.warning('Confirm deletion', {
+      description: 'Please confirm if you want to permanently delete this infrastructure'
+    });
   };
 
   const openViewModal = (infrastructure) => {
     setSelectedInfrastructure(infrastructure);
     setIsViewModalOpen(true);
+    toast.info('Viewing details', {
+      description: `Showing details for "${infrastructure.name}"`
+    });
   };
 
   const openEditModal = (infrastructure) => {
@@ -148,10 +265,24 @@ const InfrastructureList = () => {
       upi: infrastructure.upi || '',
       plot_area: infrastructure.plot_area || 0,
       construction_date: infrastructure.construction_date || '',
-      owner: infrastructure.owner || ''
+      owner: infrastructure.owner || '',
+      main_users: infrastructure.main_users || '',
+      types_of_sports: infrastructure.types_of_sports || '',
+      internet_connection: infrastructure.internet_connection || false,
+      electricity_connection: infrastructure.electricity_connection || false,
+      water_connection: infrastructure.water_connection || false,
+      access_road: infrastructure.access_road || false,
+      health_facility: infrastructure.health_facility || false,
+      legal_representative_name: infrastructure.legal_representative_name || '',
+      legal_representative_gender: infrastructure.legal_representative_gender || '',
+      legal_representative_email: infrastructure.legal_representative_email || '',
+      legal_representative_phone: infrastructure.legal_representative_phone || ''
     });
     fetchSubCategories(infrastructure.infra_category);
     setIsEditModalOpen(true);
+    toast.info('Edit mode', {
+      description: `You are now editing "${infrastructure.name}"`
+    });
   };
 
   const handleEditChange = (e) => {
@@ -191,6 +322,10 @@ const InfrastructureList = () => {
         location_village: '',
       }),
     }));
+    
+    toast.info('Location updated', {
+      description: `${field.replace('location_', '').charAt(0).toUpperCase() + field.slice(11)} has been updated`
+    });
   };
 
   const filteredInfrastructures = infrastructures.filter(infra => {
@@ -215,6 +350,36 @@ const InfrastructureList = () => {
       Capacity: infra.capacity,
       Location: `${infra.location_province}, ${infra.location_district}`
     }));
+  };
+
+  const validateForm = (formData) => {
+    const errors = [];
+
+    // Required fields validation
+    if (!formData.name.trim()) errors.push("Name is required");
+    if (!formData.infra_category) errors.push("Infrastructure Category is required");
+    if (!formData.status) errors.push("Status is required");
+    if (!formData.location_province) errors.push("Province is required");
+    if (!formData.location_district) errors.push("District is required");
+
+    // Numeric validations
+    if (formData.capacity < 0) errors.push("Capacity cannot be negative");
+    if (formData.plot_area < 0) errors.push("Plot area cannot be negative");
+
+    // Coordinate validations
+    if (formData.latitude && (formData.latitude < -90 || formData.latitude > 90)) {
+      errors.push("Latitude must be between -90 and 90");
+    }
+    if (formData.longitude && (formData.longitude < -180 || formData.longitude > 180)) {
+      errors.push("Longitude must be between -180 and 180");
+    }
+
+    // UPI format validation (assuming it should be alphanumeric)
+    if (formData.upi && !/^[a-zA-Z0-9]+$/.test(formData.upi)) {
+      errors.push("UPI must contain only letters and numbers");
+    }
+
+    return errors;
   };
 
   return (
@@ -351,7 +516,7 @@ const InfrastructureList = () => {
                       <Eye className="h-4 w-4" />
                     </Button>
                     <Button size="sm" variant="ghost" title="Edit" onClick={() => openEditModal(infra)}>
-                      <Edit className="h-4 w-4" />
+                      <Pencil className="h-4 w-4" />
                     </Button>
                     <Button 
                       size="sm" 
@@ -396,7 +561,7 @@ const InfrastructureList = () => {
             <div className="flex min-h-full items-center justify-center p-4">
               <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
                 <div className="flex items-center gap-3 mb-4">
-                  <Edit className="h-6 w-6 text-blue-500" />
+                  <Pencil className="h-6 w-6 text-blue-500" />
                   <Dialog.Title className="text-lg font-medium">
                     Edit Infrastructure
                   </Dialog.Title>
@@ -405,7 +570,7 @@ const InfrastructureList = () => {
                 <form onSubmit={handleEditSubmit} className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col">
                     <label htmlFor="name" className="font-medium mb-1">
-                      NAME:
+                      NAME: <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -413,20 +578,23 @@ const InfrastructureList = () => {
                       name="name"
                       value={editFormData.name}
                       onChange={handleEditChange}
-                      className="border border-gray-300 rounded p-2"
+                      className={`border ${!editFormData.name.trim() ? 'border-red-500' : 'border-gray-300'} rounded p-2`}
                     />
+                    {!editFormData.name.trim() && (
+                      <span className="text-red-500 text-xs mt-1">Name is required</span>
+                    )}
                   </div>
 
                   <div className="flex flex-col">
                     <label htmlFor="infra_category" className="font-medium mb-1">
-                      INFRASTRUCTURE CATEGORY:
+                      INFRASTRUCTURE CATEGORY: <span className="text-red-500">*</span>
                     </label>
                     <select
                       id="infra_category"
                       name="infra_category"
                       value={editFormData.infra_category}
                       onChange={handleEditChange}
-                      className="border border-gray-300 rounded p-2"
+                      className={`border ${!editFormData.infra_category ? 'border-red-500' : 'border-gray-300'} rounded p-2`}
                     >
                       <option value="">Select Category</option>
                       {categories.map((category) => (
@@ -435,6 +603,9 @@ const InfrastructureList = () => {
                         </option>
                       ))}
                     </select>
+                    {!editFormData.infra_category && (
+                      <span className="text-red-500 text-xs mt-1">Category is required</span>
+                    )}
                   </div>
 
                   <div className="flex flex-col">
@@ -501,8 +672,11 @@ const InfrastructureList = () => {
                       name="capacity"
                       value={editFormData.capacity}
                       onChange={handleEditChange}
-                      className="border border-gray-300 rounded p-2"
+                      className={`border ${editFormData.capacity < 0 ? 'border-red-500' : 'border-gray-300'} rounded p-2`}
                     />
+                    {editFormData.capacity < 0 && (
+                      <span className="text-red-500 text-xs mt-1">Capacity cannot be negative</span>
+                    )}
                   </div>
 
                   <div className="flex flex-col">
@@ -707,6 +881,183 @@ const InfrastructureList = () => {
                     />
                   </div>
 
+                  {/* Facility Information */}
+                  <div className="flex flex-col">
+                    <label htmlFor="main_users" className="font-medium mb-1">
+                      MAIN USERS:
+                    </label>
+                    <input
+                      type="text"
+                      id="main_users"
+                      name="main_users"
+                      value={editFormData.main_users}
+                      onChange={handleEditChange}
+                      className="border border-gray-300 rounded p-2"
+                    />
+                  </div>
+
+                  <div className="flex flex-col">
+                    <label htmlFor="types_of_sports" className="font-medium mb-1">
+                      TYPES OF SPORTS:
+                    </label>
+                    <input
+                      type="text"
+                      id="types_of_sports"
+                      name="types_of_sports"
+                      value={editFormData.types_of_sports}
+                      onChange={handleEditChange}
+                      className="border border-gray-300 rounded p-2"
+                    />
+                  </div>
+
+                  {/* Utility Connections */}
+                  <div className="col-span-2 grid grid-cols-2 gap-4">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="internet_connection"
+                        name="internet_connection"
+                        checked={editFormData.internet_connection}
+                        onChange={(e) => handleEditChange({
+                          target: {
+                            name: 'internet_connection',
+                            value: e.target.checked
+                          }
+                        })}
+                        className="rounded border-gray-300"
+                      />
+                      <label htmlFor="internet_connection">Internet Connection</label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="electricity_connection"
+                        name="electricity_connection"
+                        checked={editFormData.electricity_connection}
+                        onChange={(e) => handleEditChange({
+                          target: {
+                            name: 'electricity_connection',
+                            value: e.target.checked
+                          }
+                        })}
+                        className="rounded border-gray-300"
+                      />
+                      <label htmlFor="electricity_connection">Electricity Connection</label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="water_connection"
+                        name="water_connection"
+                        checked={editFormData.water_connection}
+                        onChange={(e) => handleEditChange({
+                          target: {
+                            name: 'water_connection',
+                            value: e.target.checked
+                          }
+                        })}
+                        className="rounded border-gray-300"
+                      />
+                      <label htmlFor="water_connection">Water Connection</label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="access_road"
+                        name="access_road"
+                        checked={editFormData.access_road}
+                        onChange={(e) => handleEditChange({
+                          target: {
+                            name: 'access_road',
+                            value: e.target.checked
+                          }
+                        })}
+                        className="rounded border-gray-300"
+                      />
+                      <label htmlFor="access_road">Access Road</label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="health_facility"
+                        name="health_facility"
+                        checked={editFormData.health_facility}
+                        onChange={(e) => handleEditChange({
+                          target: {
+                            name: 'health_facility',
+                            value: e.target.checked
+                          }
+                        })}
+                        className="rounded border-gray-300"
+                      />
+                      <label htmlFor="health_facility">Health Facility</label>
+                    </div>
+                  </div>
+
+                  {/* Legal Representative Information */}
+                  <div className="flex flex-col">
+                    <label htmlFor="legal_representative_name" className="font-medium mb-1">
+                      LEGAL REPRESENTATIVE NAME:
+                    </label>
+                    <input
+                      type="text"
+                      id="legal_representative_name"
+                      name="legal_representative_name"
+                      value={editFormData.legal_representative_name}
+                      onChange={handleEditChange}
+                      className="border border-gray-300 rounded p-2"
+                    />
+                  </div>
+
+                  <div className="flex flex-col">
+                    <label htmlFor="legal_representative_gender" className="font-medium mb-1">
+                      LEGAL REPRESENTATIVE GENDER:
+                    </label>
+                    <select
+                      id="legal_representative_gender"
+                      name="legal_representative_gender"
+                      value={editFormData.legal_representative_gender}
+                      onChange={handleEditChange}
+                      className="border border-gray-300 rounded p-2"
+                    >
+                      <option value="">Select Gender</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col">
+                    <label htmlFor="legal_representative_email" className="font-medium mb-1">
+                      LEGAL REPRESENTATIVE EMAIL:
+                    </label>
+                    <input
+                      type="email"
+                      id="legal_representative_email"
+                      name="legal_representative_email"
+                      value={editFormData.legal_representative_email}
+                      onChange={handleEditChange}
+                      className="border border-gray-300 rounded p-2"
+                    />
+                  </div>
+
+                  <div className="flex flex-col">
+                    <label htmlFor="legal_representative_phone" className="font-medium mb-1">
+                      LEGAL REPRESENTATIVE PHONE:
+                    </label>
+                    <input
+                      type="tel"
+                      id="legal_representative_phone"
+                      name="legal_representative_phone"
+                      value={editFormData.legal_representative_phone}
+                      onChange={handleEditChange}
+                      className="border border-gray-300 rounded p-2"
+                    />
+                  </div>
+
                   <div className="flex justify-end col-span-2">
                     <Button
                       variant="outline"
@@ -749,20 +1100,106 @@ const InfrastructureList = () => {
 
           <div className="fixed inset-0 overflow-y-auto">
             <div className="flex min-h-full items-center justify-center p-4">
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
+              <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
                 <div className="flex items-center gap-3 mb-4">
                   <Eye className="h-6 w-6 text-blue-500" />
                   <Dialog.Title className="text-lg font-medium">
-                    View Infrastructure Details
+                    Infrastructure Details
                   </Dialog.Title>
                 </div>
 
-                <div className="text-sm text-gray-500 mb-4">
-                  <p><strong>Name:</strong> {selectedInfrastructure?.name}</p>
-                  <p><strong>Category:</strong> {selectedInfrastructure?.infra_category}</p>
-                  <p><strong>Status:</strong> {selectedInfrastructure?.status}</p>
-                  <p><strong>Capacity:</strong> {selectedInfrastructure?.capacity}</p>
-                  <p><strong>Location:</strong> {`${selectedInfrastructure?.location_province}, ${selectedInfrastructure?.location_district}`}</p>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  {/* Basic Information */}
+                  <div className="col-span-2 bg-gray-50 p-4 rounded-lg">
+                    <h3 className="font-semibold mb-2 text-blue-600">Basic Information</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <p><span className="font-medium">Name:</span> {selectedInfrastructure?.name}</p>
+                      <p><span className="font-medium">Category:</span> {selectedInfrastructure?.infra_category}</p>
+                      <p><span className="font-medium">Sub Category:</span> {selectedInfrastructure?.infra_sub_category}</p>
+                      <p><span className="font-medium">Type Level:</span> {selectedInfrastructure?.type_level}</p>
+                      <p><span className="font-medium">Status:</span> 
+                        <span className={`ml-2 px-2 py-1 rounded-full text-xs ${
+                          selectedInfrastructure?.status === 'Active' ? 'bg-green-100 text-green-800' :
+                          selectedInfrastructure?.status === 'Under Construction' ? 'bg-yellow-100 text-yellow-800' :
+                          selectedInfrastructure?.status === 'Under Maintenance' ? 'bg-blue-100 text-blue-800' :
+                          'bg-red-100 text-red-800'
+                        }`}>
+                          {selectedInfrastructure?.status}
+                        </span>
+                      </p>
+                      <p><span className="font-medium">Capacity:</span> {selectedInfrastructure?.capacity}</p>
+                    </div>
+                  </div>
+
+                  {/* Location Information */}
+                  <div className="col-span-2 bg-gray-50 p-4 rounded-lg">
+                    <h3 className="font-semibold mb-2 text-blue-600">Location Details</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <p><span className="font-medium">Province:</span> {selectedInfrastructure?.location_province}</p>
+                      <p><span className="font-medium">District:</span> {selectedInfrastructure?.location_district}</p>
+                      <p><span className="font-medium">Sector:</span> {selectedInfrastructure?.location_sector}</p>
+                      <p><span className="font-medium">Cell:</span> {selectedInfrastructure?.location_cell}</p>
+                      <p><span className="font-medium">Village:</span> {selectedInfrastructure?.location_village}</p>
+                      <p><span className="font-medium">UPI:</span> {selectedInfrastructure?.upi}</p>
+                      <p><span className="font-medium">Coordinates:</span> {selectedInfrastructure?.latitude}, {selectedInfrastructure?.longitude}</p>
+                      <p><span className="font-medium">Plot Area:</span> {selectedInfrastructure?.plot_area} m²</p>
+                    </div>
+                  </div>
+
+                  {/* Facility Information */}
+                  <div className="col-span-2 bg-gray-50 p-4 rounded-lg">
+                    <h3 className="font-semibold mb-2 text-blue-600">Facility Details</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <p><span className="font-medium">Main Users:</span> {selectedInfrastructure?.main_users}</p>
+                      <p><span className="font-medium">Types of Sports:</span> {selectedInfrastructure?.types_of_sports}</p>
+                      <p><span className="font-medium">Construction Date:</span> {selectedInfrastructure?.construction_date}</p>
+                      <p><span className="font-medium">Owner:</span> {selectedInfrastructure?.owner}</p>
+                      <div className="col-span-2 grid grid-cols-2 gap-4">
+                        <p><span className="font-medium">Internet Connection:</span> 
+                          <span className={selectedInfrastructure?.internet_connection ? 'text-green-600' : 'text-red-600'}>
+                            {selectedInfrastructure?.internet_connection ? ' Yes' : ' No'}
+                          </span>
+                        </p>
+                        <p><span className="font-medium">Electricity Connection:</span> 
+                          <span className={selectedInfrastructure?.electricity_connection ? 'text-green-600' : 'text-red-600'}>
+                            {selectedInfrastructure?.electricity_connection ? ' Yes' : ' No'}
+                          </span>
+                        </p>
+                        <p><span className="font-medium">Water Connection:</span> 
+                          <span className={selectedInfrastructure?.water_connection ? 'text-green-600' : 'text-red-600'}>
+                            {selectedInfrastructure?.water_connection ? ' Yes' : ' No'}
+                          </span>
+                        </p>
+                        <p><span className="font-medium">Access Road:</span> 
+                          <span className={selectedInfrastructure?.access_road ? 'text-green-600' : 'text-red-600'}>
+                            {selectedInfrastructure?.access_road ? ' Yes' : ' No'}
+                          </span>
+                        </p>
+                        <p><span className="font-medium">Health Facility:</span> 
+                          <span className={selectedInfrastructure?.health_facility ? 'text-green-600' : 'text-red-600'}>
+                            {selectedInfrastructure?.health_facility ? ' Yes' : ' No'}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Legal Representative Information */}
+                  <div className="col-span-2 bg-gray-50 p-4 rounded-lg">
+                    <h3 className="font-semibold mb-2 text-blue-600">Legal Representative</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <p><span className="font-medium">Name:</span> {selectedInfrastructure?.legal_representative_name}</p>
+                      <p><span className="font-medium">Gender:</span> {selectedInfrastructure?.legal_representative_gender}</p>
+                      <p><span className="font-medium">Email:</span> {selectedInfrastructure?.legal_representative_email}</p>
+                      <p><span className="font-medium">Phone:</span> {selectedInfrastructure?.legal_representative_phone}</p>
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  <div className="col-span-2 bg-gray-50 p-4 rounded-lg">
+                    <h3 className="font-semibold mb-2 text-blue-600">Description</h3>
+                    <p className="whitespace-pre-wrap">{selectedInfrastructure?.description}</p>
+                  </div>
                 </div>
 
                 <div className="flex justify-end gap-3">

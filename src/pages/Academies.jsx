@@ -2,7 +2,7 @@ import React, { useState, useEffect, Fragment } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/input';
-import { Search, Plus, Eye, Edit, Trash2, AlertTriangle, X } from 'lucide-react';
+import { Search, Plus, Eye, Edit, Trash2, AlertTriangle, X, PencilIcon } from 'lucide-react';
 import { Dialog, Transition } from '@headlessui/react';
 import toast from 'react-hot-toast';
 import AddAcademyModal from '../components/AddAcademyModal';
@@ -13,8 +13,10 @@ import axiosInstance from '../utils/axiosInstance';
 function Academies() {
   const [activeTab, setActiveTab] = useState('manage');
   const [searchTerm, setSearchTerm] = useState('');
-  const [entriesPerPage] = useState(100);
+  const [studentSearchTerm, setStudentSearchTerm] = useState('');
+  const [entriesPerPage] = useState(5); // Set entries per page to 5
   const [currentPage, setCurrentPage] = useState(1);
+  const [studentCurrentPage, setStudentCurrentPage] = useState(1);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -35,7 +37,8 @@ function Academies() {
     toSchool: ''
   });
 
-  const totalPages = Math.ceil(students.length / entriesPerPage);
+  const totalPages = Math.ceil(academies.length / entriesPerPage);
+  const studentTotalPages = Math.ceil(students.length / entriesPerPage);
 
   useEffect(() => {
     fetchAcademies();
@@ -65,9 +68,9 @@ function Academies() {
   const handleDeleteConfirm = async () => {
     try {
       await axiosInstance.delete(`/academies/${selectedAcademy.id}`);
-      setAcademies(prev => prev.filter(a => a.id !== selectedAcademy.id));
       setIsDeleteModalOpen(false);
       toast.success('Academy deleted successfully');
+      fetchAcademies();
     } catch (error) {
       console.error('Error deleting academy:', error);
       toast.error('Failed to delete academy');
@@ -83,11 +86,9 @@ function Academies() {
       const response = await axiosInstance.put(`/academies/${updatedAcademy.id}`, updatedAcademy);
 
       if (response.status === 200) {
-        setAcademies(prev => prev.map(academy => 
-          academy.id === updatedAcademy.id ? updatedAcademy : academy
-        ));
         setIsEditModalOpen(false);
         toast.success('Academy updated successfully');
+        fetchAcademies();
       } else {
         throw new Error('Failed to update academy');
       }
@@ -100,9 +101,9 @@ function Academies() {
   const handleDeleteStudentConfirm = async () => {
     try {
       await axiosInstance.delete(`/academy-students/${selectedStudent.id}`);
-      setStudents(prev => prev.filter(s => s.id !== selectedStudent.id));
       setIsDeleteStudentModalOpen(false);
       toast.success('Student deleted successfully');
+      fetchStudents();
     } catch (error) {
       console.error('Error deleting student:', error);
       toast.error('Failed to delete student');
@@ -118,11 +119,9 @@ function Academies() {
       const response = await axiosInstance.put(`/academy-students/${updatedStudent.id}`, updatedStudent);
 
       if (response.status === 200) {
-        setStudents(prev => prev.map(student => 
-          student.id === updatedStudent.id ? updatedStudent : student
-        ));
         setIsEditStudentModalOpen(false);
         toast.success('Student updated successfully');
+        fetchStudents();
       } else {
         throw new Error('Failed to update student');
       }
@@ -187,6 +186,15 @@ function Academies() {
   const renderContent = () => {
     switch (activeTab) {
       case 'manage':
+        // Filter academies based on search term
+        const filteredAcademies = academies.filter(academy =>
+          academy.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+
+        // Calculate the academies to display based on pagination
+        const startIndex = (currentPage - 1) * entriesPerPage;
+        const paginatedAcademies = filteredAcademies.slice(startIndex, startIndex + entriesPerPage);
+
         return (
           <>
             <div className="flex justify-between items-center mb-6">
@@ -221,7 +229,7 @@ function Academies() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {academies.map((academy) => (
+                  {paginatedAcademies.map((academy) => (
                     <tr key={academy.id} className="hover:bg-gray-50">
                       <td className="px-4 py-3 text-sm">{academy.name}</td>
                       <td className="px-4 py-3 text-sm">{academy.location}</td>
@@ -229,7 +237,7 @@ function Academies() {
                       <td className="px-4 py-3 text-sm">{academy.students || '-'}</td>
                       <td className="px-4 py-3 flex gap-2">
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           onClick={() => {
                             setSelectedAcademy(academy);
                             setIsViewModalOpen(true);
@@ -238,16 +246,16 @@ function Academies() {
                           <Eye className="h-4 w-4 text-blue-600" />
                         </Button>
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           onClick={() => {
                             setSelectedAcademy(academy);
                             setIsEditModalOpen(true);
                           }}
                         >
-                          <Edit className="h-4 w-4" />
+                          <PencilIcon className="h-4 w-4 text-green-600" />
                         </Button>
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           onClick={() => {
                             setSelectedAcademy(academy);
                             setIsDeleteModalOpen(true);
@@ -255,84 +263,6 @@ function Academies() {
                         >
                           <Trash2 className="h-4 w-4 text-red-600" />
                         </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </>
-        );
-
-      case 'students':
-        return (
-          <>
-            {/* Add Student Button */}
-            <div className="flex justify-end mb-6">
-              <Button
-                onClick={() => setIsAddStudentModalOpen(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Academy Student
-              </Button>
-            </div>
-
-            {/* Students Table */}
-            <div className="bg-white rounded-lg shadow overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Name</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">School</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Age/Date of Birth</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Nationality</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Gender</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Game</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Class</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Operation</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {students.map((student) => (
-                    <tr key={student.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm">{`${student.firstName} ${student.lastName}`}</td>
-                      <td className="px-4 py-3 text-sm">{student.schoolName}</td>
-                      <td className="px-4 py-3 text-sm">{new Date(student.dateOfBirth).toLocaleDateString()}</td>
-                      <td className="px-4 py-3 text-sm">{student.nationality}</td>
-                      <td className="px-4 py-3 text-sm">{student.gender}</td>
-                      <td className="px-4 py-3 text-sm">{student.gameType}</td>
-                      <td className="px-4 py-3 text-sm">{student.class}</td>
-                      <td className="px-4 py-3">
-                        <div className="flex space-x-2">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleViewStudent(student)}
-                            className="p-1 h-7 w-7"
-                            title="View Details"
-                          >
-                            <Eye className="h-4 w-4 text-blue-600" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleEditStudent(student)}
-                            className="p-1 h-7 w-7"
-                            title="Edit Student"
-                          >
-                            <Edit className="h-4 w-4 text-green-600" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleDeleteStudent(student)}
-                            className="p-1 h-7 w-7"
-                            title="Delete Student"
-                          >
-                            <Trash2 className="h-4 w-4 text-red-600" />
-                          </Button>
-                        </div>
                       </td>
                     </tr>
                   ))}
@@ -363,6 +293,130 @@ function Academies() {
                 size="sm"
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
+                className="px-3 py-1 text-sm border rounded-md"
+              >
+                Next
+              </Button>
+            </div>
+          </>
+        );
+
+      case 'students':
+        // Filter students based on search term
+        const filteredStudents = students.filter(student =>
+          `${student.firstName} ${student.lastName}`.toLowerCase().includes(studentSearchTerm.toLowerCase())
+        );
+
+        // Calculate the students to display based on pagination
+        const studentStartIndex = (studentCurrentPage - 1) * entriesPerPage;
+        const paginatedStudents = filteredStudents.slice(studentStartIndex, studentStartIndex + entriesPerPage);
+
+        return (
+          <>
+            <div className="flex justify-between items-center mb-6">
+              <div className="relative">
+                <Input
+                  type="text"
+                  placeholder="Search students..."
+                  value={studentSearchTerm}
+                  onChange={(e) => setStudentSearchTerm(e.target.value)}
+                  className="w-64 pl-10"
+                />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              </div>
+              <Button
+                onClick={() => setIsAddStudentModalOpen(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Academy Student
+              </Button>
+            </div>
+
+            <div className="bg-white rounded-lg shadow overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Name</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">School</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Age/Date of Birth</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Nationality</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Gender</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Game</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Class</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Operation</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {paginatedStudents.map((student) => (
+                    <tr key={student.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 text-sm">{`${student.firstName} ${student.lastName}`}</td>
+                      <td className="px-4 py-3 text-sm">{student.schoolName}</td>
+                      <td className="px-4 py-3 text-sm">{new Date(student.dateOfBirth).toLocaleDateString()}</td>
+                      <td className="px-4 py-3 text-sm">{student.nationality}</td>
+                      <td className="px-4 py-3 text-sm">{student.gender}</td>
+                      <td className="px-4 py-3 text-sm">{student.gameType}</td>
+                      <td className="px-4 py-3 text-sm">{student.class}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex space-x-2">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleViewStudent(student)}
+                            className="p-1 h-7 w-7"
+                            title="View Details"
+                          >
+                            <Eye className="h-4 w-4 text-blue-600" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleEditStudent(student)}
+                            className="p-1 h-7 w-7"
+                            title="Edit Student"
+                          >
+                            <PencilIcon className="h-4 w-4 text-green-600" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleDeleteStudent(student)}
+                            className="p-1 h-7 w-7"
+                            title="Delete Student"
+                          >
+                            <Trash2 className="h-4 w-4 text-red-600" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            <div className="flex items-center justify-end mt-4 space-x-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setStudentCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={studentCurrentPage === 1}
+                className="px-3 py-1 text-sm border rounded-md"
+              >
+                Previous
+              </Button>
+
+              <div className="flex items-center">
+                <span className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md">
+                  {studentCurrentPage}
+                </span>
+              </div>
+
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setStudentCurrentPage(prev => Math.min(prev + 1, studentTotalPages))}
+                disabled={studentCurrentPage === studentTotalPages}
                 className="px-3 py-1 text-sm border rounded-md"
               >
                 Next
@@ -517,6 +571,45 @@ function Academies() {
     );
   };
 
+  const handleAddAcademy = async (data) => {
+    try {
+      await axiosInstance.post('/academies', data);
+      toast.success('Academy added successfully');
+      fetchAcademies(); // Refresh academies data
+      setIsAddModalOpen(false); // Close the modal after successful addition
+    } catch (error) {
+      console.error('Error adding academy:', error);
+      toast.error('Failed to add academy');
+    }
+  };
+
+  const handleAddStudent = async (formData) => {
+    try {
+      const response = await axiosInstance.post('/academy-students', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      toast.success('Student added successfully');
+      fetchStudents(); // Refresh the students list
+      return response;
+    } catch (error) {
+      console.error('Error adding student:', error);
+      // toast.error('Failed to add student');
+      throw error;
+    }
+  };
+
+  const handleDeleteStudent = (student) => {
+    setSelectedStudent(student);
+    setIsDeleteStudentModalOpen(true);
+  };
+
+  const handleEditStudent = (student) => {
+    setSelectedStudent(student);
+    setIsEditStudentModalOpen(true);
+  };
+
   return (
     <div className="p-6">
       <div className="mb-6">
@@ -563,24 +656,17 @@ function Academies() {
       <AddAcademyModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        onAdd={(data) => {
-          // Handle adding new academy
-          console.log('New academy:', data);
-          setIsAddModalOpen(false);
-          toast.success('Academy added successfully');
-        }}
+        onAdd={handleAddAcademy}
       />
 
       {/* Add Student Modal */}
       <AddAcademyStudent
         isOpen={isAddStudentModalOpen}
         onClose={() => setIsAddStudentModalOpen(false)}
-        onAdd={(studentData) => {
-          // Handle adding new student
-          console.log('New student:', studentData);
-          setIsAddStudentModalOpen(false);
-          toast.success('Student added successfully');
-        }}
+        onAdd={handleAddStudent}
+        studentData={null}
+        isEditing={false}
+        handleAddStudent={handleAddStudent}
       />
 
       {/* View Academy Modal */}
@@ -851,6 +937,7 @@ function Academies() {
                 </p>
 
                 <div className="flex justify-end gap-3">
+            
                   <Button
                     variant="outline"
                     onClick={() => setIsDeleteStudentModalOpen(false)}

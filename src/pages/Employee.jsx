@@ -2,7 +2,7 @@ import React, { useState, useEffect, Fragment } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/input';
-import { Loader2, Edit, Download, Trash2, AlertTriangle, Eye, X } from 'lucide-react';
+import { Loader2, Pencil, Download, Trash2, AlertTriangle, Eye, X } from 'lucide-react';
 import AddEmployeeModal from '../components/AddEmployeeModal';
 import EditEmployeeModal from '../components/EditEmployeeModal';
 import toast from 'react-hot-toast';
@@ -371,36 +371,32 @@ function Employee() {
                         <td className="px-4 py-3">
                           <div className="flex space-x-2">
                             <Button
-                              size="sm"
-                              variant="outline"
+                              size="icon"
+                              variant="ghost"
                               onClick={() => handleView(employee)}
                             >
-                              <Eye className="h-4 w-4 mr-1" />
-                              View
+                              <Eye className="h-4 w-4" />
                             </Button>
                             <Button
-                              size="sm"
-                              variant="outline"
+                              size="icon"
+                              variant="ghost"
                               onClick={() => handleEdit(employee)}
                             >
-                              <Edit className="h-4 w-4 mr-1" />
-                              Edit
+                              <Pencil className="h-4 w-4" />
                             </Button>
                             <Button
-                              size="sm"
-                              variant="outline"
+                              size="icon"
+                              variant="ghost"
                               onClick={() => handleDownload(employee)}
                             >
-                              <Download className="h-4 w-4 mr-1" />
-                              Download
+                              <Download className="h-4 w-4" />
                             </Button>
                             <Button
-                              size="sm"
-                              variant="destructive"
+                              size="icon"
+                              variant="ghost"
                               onClick={() => handleDelete(employee)}
                             >
-                              <Trash2 className="h-4 w-4 mr-1" />
-                              Delete
+                              <Trash2 className="h-4 w-4 text-red-500" />
                             </Button>
                           </div>
                         </td>

@@ -12,6 +12,8 @@ const CategoryManagementModal = ({ isOpen, onClose }) => {
   const [newSubCategory, setNewSubCategory] = useState('')
   const [subCategoryDescription, setSubCategoryDescription] = useState('')
   const [selectedCategory, setSelectedCategory] = useState(null)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState(null);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -111,63 +113,64 @@ const CategoryManagementModal = ({ isOpen, onClose }) => {
     }
   };
   
-  const handleDeleteCategory = async (categoryId) => {
-    toast.custom((t) => (
-      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg">
-        <h3 className="font-medium mb-2 dark:text-white">Delete Category</h3>
-        <p className="text-sm mb-4 text-gray-600 dark:text-gray-300">
-          Are you sure you want to delete this category? This will also delete all its subcategories.
-        </p>
-        <div className="flex justify-end space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => toast.dismiss(t)}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={async () => {
-              try {
-                await axiosInstance.delete(`/sports-tourism-categories/${categoryId}`)
-                setCategories(prevCategories => {
-                  const newCategories = { ...prevCategories }
-                  delete newCategories[categoryId]
-                  return newCategories
-                })
-                toast.dismiss(t)
-                toast.success('Category deleted successfully')
-              } catch (error) {
-                console.error('Error deleting category:', error.response || error.message)
-                toast.error('Failed to delete category')
-              }
-            }}
-          >
-            Delete
-          </Button>
-        </div>
-      </div>
-    ))
-  }
+  const handleDeleteCategory = async () => {
+    if (!categoryToDelete) return;
+
+    try {
+      const response = await axiosInstance.delete(`/sports-tourism-categories/${categoryToDelete}`);
+      console.log('Delete response:', response);
+
+      setCategories(prevCategories => {
+        const newCategories = { ...prevCategories };
+        delete newCategories[categoryToDelete];
+        console.log('Updated categories:', newCategories);
+        return newCategories;
+      });
+      setIsDeleteModalOpen(false);
+      setCategoryToDelete(null);
+      toast.success('Category deleted successfully');
+    } catch (error) {
+      console.error('Error deleting category:', error.response?.data || error.message);
+      if (error.response) {
+        console.error('Server responded with:', error.response.status, error.response.data);
+      }
+      toast.error('Failed to delete category');
+    }
+  };
 
   const handleDeleteSubCategory = async (categoryId, subCategoryId) => {
+    console.log('Attempting to delete subcategory:', { categoryId, subCategoryId });
     try {
-      await axiosInstance.delete(`/sports-tourism-subcategories/${subCategoryId}`)
-      setCategories(prevCategories => ({
-        ...prevCategories,
-        [categoryId]: {
-          ...prevCategories[categoryId],
-          subCategories: prevCategories[categoryId].subCategories.filter(sub => sub.id !== subCategoryId),
-        },
-      }))
-      toast.success('Subcategory deleted successfully')
+      const response = await axiosInstance.delete(`/sports-tourism-subcategories/${subCategoryId}`);
+      console.log('Delete response:', response);
+
+      // Log the previous state
+      console.log('Previous categories:', categories);
+
+      setCategories(prevCategories => {
+        const updatedCategories = {
+          ...prevCategories,
+          [categoryId]: {
+            ...prevCategories[categoryId],
+            subCategories: prevCategories[categoryId].subCategories.filter(sub => {
+              console.log('Checking subcategory:', sub.id, 'against:', subCategoryId);
+              return sub.id !== subCategoryId;
+            }),
+          },
+        };
+        console.log('Updated categories:', updatedCategories);
+        return updatedCategories;
+      });
+      toast.success('Subcategory deleted successfully');
     } catch (error) {
-      console.error('Error deleting subcategory:', error.response || error.message)
-      toast.error('Failed to delete subcategory')
+      console.error('Detailed error:', {
+        response: error.response?.data,
+        status: error.response?.status,
+        message: error.message
+      });
+      toast.error('Failed to delete subcategory');
     }
-  }
+  };
 
   return (
     <Modal
@@ -254,7 +257,10 @@ const CategoryManagementModal = ({ isOpen, onClose }) => {
                         variant="ghost"
                         size="sm"
                         className="text-red-600"
-                        onClick={() => handleDeleteCategory(categoryId)}
+                        onClick={() => {
+                          setCategoryToDelete(categoryId);
+                          setIsDeleteModalOpen(true);
+                        }}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -300,6 +306,27 @@ const CategoryManagementModal = ({ isOpen, onClose }) => {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <Modal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          title="Confirm Delete"
+        >
+          <div className="p-4">
+            <p>Are you sure you want to delete this category? This will also delete all its subcategories.</p>
+            <div className="flex justify-end space-x-2 mt-4">
+              <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={handleDeleteCategory}>
+                Delete
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </Modal>
   )
 }

@@ -2,7 +2,7 @@ import React, { useState, useEffect, Fragment } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/input';
-import { Search, Plus, Eye, Edit, Trash2, AlertTriangle, Download, X } from 'lucide-react';
+import { Search, Plus, Eye, Pencil, Trash2, AlertTriangle, Download, X } from 'lucide-react';
 import { Dialog, Transition } from '@headlessui/react';
 import toast from 'react-hot-toast';
 import axiosInstance from '../utils/axiosInstance';
@@ -208,7 +208,7 @@ function Contracts() {
         <Eye className="h-4 w-4" />
       </Button>
       <Button size="icon" variant="ghost" onClick={() => handleEdit(contract)}>
-        <Edit className="h-4 w-4" />
+        <Pencil className="h-4 w-4" />
       </Button>
       <Button size="icon" variant="ghost" onClick={() => handleDelete(contract)}>
         <Trash2 className="h-4 w-4 text-red-500" />
@@ -256,12 +256,12 @@ function Contracts() {
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Contract No</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Title</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Supplier</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Email</th>
+                {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Email</th> */}
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Amount</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Currency</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Contract Admin</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Start Date</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">End Date</th>
+                {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Start Date</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">End Date</th> */}
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Progress</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Actions</th>
               </tr>
@@ -274,12 +274,12 @@ function Contracts() {
                     <td className="px-4 py-3">{contract.contract_no}</td>
                     <td className="px-4 py-3">{contract.contract_title}</td>
                     <td className="px-4 py-3">{contract.supplier}</td>
-                    <td className="px-4 py-3">{contract.email}</td>
+                    {/* <td className="px-4 py-3">{contract.email}</td> */}
                     <td className="px-4 py-3">{contract.amount}</td>
                     <td className="px-4 py-3">{contract.currency}</td>
                     <td className="px-4 py-3">{contract.contract_administrator}</td>
-                    <td className="px-4 py-3">{contract.start_date}</td>
-                    <td className="px-4 py-3">{contract.contract_end_date}</td>
+                    {/* <td className="px-4 py-3">{contract.start_date}</td>
+                    <td className="px-4 py-3">{contract.contract_end_date}</td> */}
                     <td className="px-4 py-3">
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div

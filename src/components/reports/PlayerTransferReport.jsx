@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Table, 
   TableHeader, 
@@ -9,6 +9,7 @@ import {
 } from '../ui/table';
 import { Search, Filter, X, Download, FileText } from 'lucide-react';
 import { useDarkMode } from '../../contexts/DarkModeContext';
+import axiosInstance from '../../utils/axiosInstance';
 
 const PlayerTransferReport = () => {
   const { isDarkMode } = useDarkMode();
@@ -22,37 +23,74 @@ const PlayerTransferReport = () => {
     year: ''
   });
   const [entriesPerPage, setEntriesPerPage] = useState('100');
-
-  // Sample transfer data
-  const transferData = [
-    {
-      id: 1,
-      federation: 'Fédération Rwandaise de Cyclisme',
-      clubFrom: 'ETINCELLES FC',
-      playerStaff: 'Club1 Player2',
-      clubTo: '',
-      month: 'Sep',
-      year: '2016'
-    },
-    {
-      id: 2,
-      federation: 'Fédération Rwandaise de Cyclisme',
-      clubFrom: 'ETINCELLES FC',
-      playerStaff: 'CLub1 Player1',
-      clubTo: '',
-      month: 'Sep',
-      year: '2016'
-    }
-  ];
-
-  // Filter options
-  const filterOptions = {
-    federation: ['FERWAFA', 'FERWABA', 'Fédération Rwandaise de Cyclisme'],
-    clubFrom: ['APR FC', 'ETINCELLES FC', 'RAYON SPORTS'],
-    clubTo: ['APR FC', 'ETINCELLES FC', 'RAYON SPORTS'],
+  const [transferData, setTransferData] = useState([]);
+  const [federations, setFederations] = useState([]);
+  const [clubs, setClubs] = useState([]);
+  const [filterOptions, setFilterOptions] = useState({
+    federation: [],
+    clubFrom: [],
+    clubTo: [],
     month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-    year: ['2024', '2023', '2022', '2021', '2020', '2019', '2018', '2017', '2016']
-  };
+    year: Array.from({ length: 9 }, (_, i) => (new Date().getFullYear() - i).toString())
+  });
+  const [playerStaffOptions, setPlayerStaffOptions] = useState([]);
+
+  // Fetch transfer data from API
+  useEffect(() => {
+    const fetchTransferData = async () => {
+      try {
+        const response = await axiosInstance.get('/transfers');
+        setTransferData(response.data);
+      } catch (error) {
+        console.error('Error fetching transfer data:', error);
+      }
+    };
+
+    fetchTransferData();
+  }, []);
+
+  // Fetch federations and clubs data from API
+  useEffect(() => {
+    const fetchFilterOptions = async () => {
+      try {
+        const [federationResponse, clubResponse] = await Promise.all([
+          axiosInstance.get('/federations'),
+          axiosInstance.get('/clubs')
+        ]);
+
+        setFederations(federationResponse.data);
+        setClubs(clubResponse.data);
+        
+        // Update filter options with API data
+        setFilterOptions(prev => ({
+          ...prev,
+          federation: federationResponse.data.map(fed => fed.name),
+          clubFrom: clubResponse.data.map(club => club.name),
+          clubTo: clubResponse.data.map(club => club.name),
+        }));
+      } catch (error) {
+        console.error('Error fetching filter options:', error);
+      }
+    };
+
+    fetchFilterOptions();
+  }, []);
+
+  // Add useEffect for fetching player-staff data
+  useEffect(() => {
+    const fetchPlayerStaff = async () => {
+      try {
+        const response = await axiosInstance.get('/player-staff');
+        console.log('Player staff data:', response.data); // For debugging
+        setPlayerStaffOptions(response.data);
+      } catch (error) {
+        console.error('Error fetching player-staff data:', error);
+        setPlayerStaffOptions([]);
+      }
+    };
+
+    fetchPlayerStaff();
+  }, []);
 
   const handleFilterChange = (field, value) => {
     setFilters(prev => ({
@@ -75,6 +113,52 @@ const PlayerTransferReport = () => {
   const labelClasses = `block text-sm font-medium mb-1 ${
     isDarkMode ? 'text-gray-300' : 'text-gray-700'
   }`;
+
+  // Helper functions to get names from IDs
+  const getFederationName = (federationId) => {
+    const federation = federations.find(f => f.id === federationId);
+    return federation ? federation.name : 'N/A';
+  };
+
+  const getClubName = (clubId) => {
+    const club = clubs.find(c => c.id === clubId);
+    return club ? club.name : 'N/A';
+  };
+
+  // Add this new function to filter the data
+  const getFilteredData = () => {
+    return transferData.filter(transfer => {
+      // Search term filter
+      const searchString = (
+        getFederationName(transfer.playerStaffId?.federationId) + ' ' +
+        getClubName(transfer.fromClubId) + ' ' +
+        (transfer.playerStaffId ? 
+          playerStaffOptions.find(p => p.id === transfer.playerStaffId)?.firstName + ' ' +
+          playerStaffOptions.find(p => p.id === transfer.playerStaffId)?.lastName 
+          : '') + ' ' +
+        getClubName(transfer.toClubId) + ' ' +
+        (transfer.transferDate ? new Date(transfer.transferDate).toLocaleDateString() : '')
+      ).toLowerCase();
+
+      const searchMatch = !searchTerm || searchString.includes(searchTerm.toLowerCase());
+
+      // Filters
+      const federationMatch = !filters.federation || getFederationName(transfer.playerStaffId?.federationId) === filters.federation;
+      const clubFromMatch = !filters.clubFrom || getClubName(transfer.fromClubId) === filters.clubFrom;
+      const clubToMatch = !filters.clubTo || getClubName(transfer.toClubId) === filters.clubTo;
+      const playerStaffMatch = !filters.playerStaff || transfer.playerStaffId?.toString() === filters.playerStaff?.toString();
+      
+      // Date filters
+      const transferDate = transfer.transferDate ? new Date(transfer.transferDate) : null;
+      const monthMatch = !filters.month || 
+        (transferDate && filterOptions.month[transferDate.getMonth()] === filters.month);
+      const yearMatch = !filters.year || 
+        (transferDate && transferDate.getFullYear().toString() === filters.year);
+
+      return searchMatch && federationMatch && clubFromMatch && 
+             clubToMatch && playerStaffMatch && monthMatch && yearMatch;
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -127,7 +211,11 @@ const PlayerTransferReport = () => {
               className={inputClasses}
             >
               <option value="">Select Player/Staff</option>
-              {/* Options would be populated based on selected club */}
+              {playerStaffOptions.map(person => (
+                <option key={person.id} value={person.id}>
+                  {`${person.firstName} ${person.lastName}`}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -177,6 +265,22 @@ const PlayerTransferReport = () => {
                 <option key={option} value={option}>{option}</option>
               ))}
             </select>
+          </div>
+        </div>
+
+        {/* Add search input to the JSX above the filters */}
+        <div className="mb-4">
+          <label htmlFor="search" className={labelClasses}>Search:</label>
+          <div className="relative">
+            <input
+              type="text"
+              id="search"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search transfers..."
+              className={inputClasses}
+            />
+            <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
           </div>
         </div>
       </div>
@@ -242,14 +346,24 @@ const PlayerTransferReport = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {transferData.map((transfer) => (
+              {getFilteredData().map((transfer) => (
                 <TableRow key={transfer.id}>
-                  <TableCell>{transfer.federation}</TableCell>
-                  <TableCell>{transfer.clubFrom}</TableCell>
-                  <TableCell>{transfer.playerStaff}</TableCell>
-                  <TableCell>{transfer.clubTo}</TableCell>
-                  <TableCell>{transfer.month}</TableCell>
-                  <TableCell>{transfer.year}</TableCell>
+                  <TableCell>{getFederationName(transfer.playerStaffId?.federationId)}</TableCell>
+                  <TableCell>{getClubName(transfer.fromClubId)}</TableCell>
+                  <TableCell>
+                    {transfer.playerStaffId 
+                      ? `${playerStaffOptions.find(p => p.id === transfer.playerStaffId)?.firstName} ${playerStaffOptions.find(p => p.id === transfer.playerStaffId)?.lastName}`
+                      : 'N/A'
+                    }
+                  </TableCell>
+                  <TableCell>{transfer.playerStaffId?.type || 'N/A'}</TableCell>
+                  <TableCell>{getClubName(transfer.toClubId)}</TableCell>
+                  <TableCell>
+                    {transfer.transferDate 
+                      ? new Date(transfer.transferDate).toLocaleDateString()
+                      : 'N/A'
+                    }
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -260,4 +374,4 @@ const PlayerTransferReport = () => {
   );
 };
 
-export default PlayerTransferReport; 
+export default PlayerTransferReport;
