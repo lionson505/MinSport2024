@@ -158,8 +158,19 @@ const  Sidebar = () => {
           </nav>
         </div>
 
+
+            {/* this is for placeholder  */}
+
+            <div className={`p-1 ${
+            isDarkMode ? "border-gray-700" : "border-gray-200"
+              } border-t`}
+            > 
+
+
+            </div>
+
         {/* Settings */}
-        <div
+        {/* <div
           className={`p-4 ${
             isDarkMode ? "border-gray-700" : "border-gray-200"
           } border-t`}
@@ -172,9 +183,9 @@ const  Sidebar = () => {
                 : "text-gray-600 hover:bg-gray-100"
             }`}
           >
-            {/* <span className="text-sm">Dark Mode</span> */}
+            <span className="text-sm">Dark Mode</span>
           </button>
-        </div>
+        </div> */}
       </div>
     </aside>
   );

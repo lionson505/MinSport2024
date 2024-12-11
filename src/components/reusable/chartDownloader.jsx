@@ -136,7 +136,7 @@ const ChartDownloadWrapper = ({ children, chartData, fileName }) => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
-                className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10"
+                className="absolute right-0 mt-2 w-48 bg-white rounded-md "
               >
                 <div className="py-1">
                   <button

@@ -30,9 +30,9 @@ import {
 } from "lucide-react";
 
 const sidebarLinks = [
-  { title: "Dashboard", icon: LayoutGrid, label: "Dashboard", path: "/dashboard" },
-  { title: "National Teams", path: "/national-teams", icon: Flag },
-  { title: "Federations", icon: Award, label: "Federations", path: "/federations" },
+{ title: "Dashboard", icon: LayoutGrid, label: "Dashboard", path: "/dashboard" },
+{ title: "National Teams", path: "/national-teams", icon: Flag },
+{ title: "Federations", icon: Award, label: "Federations", path: "/federations" },
 { title: "Sports professionals", icon: Users, label: "Sports professionals", path: "/sports-professionals" },
 { title: "Trainings", icon: GraduationCap, label: "Trainings", path: "/trainings" },
 { title: "Isonga Programs", icon: School, label: "Isonga Programs", path: "/isonga-programs" },
@@ -145,7 +145,7 @@ const Sidebar = () => {
           </div>
 
           {/* Settings */}
-          <div
+          {/* <div
               className={`p-4 ${
                   isDarkMode ? "border-gray-700" : "border-gray-200"
               } border-t`}
@@ -159,9 +159,9 @@ const Sidebar = () => {
                 }`}
             >
               {isDarkMode ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-              <span className="text-sm">Toggle Dark Mode</span>
+              <span className="text-sm TEXT-BLACK">Toggle Dark Mode</span>
             </button>
-          </div>
+          </div> */}
         </div>
       </aside>
   );
