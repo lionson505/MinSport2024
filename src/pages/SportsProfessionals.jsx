@@ -289,7 +289,7 @@ const SportsProfessionals = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setViewingDiscipline(discipline)}
-            className="p-2 text-gray-500 hover:bg-gray-100 rounded-md focus:outline-none"
+            className="p-2 text-gray-900 hover:bg-gray-100 rounded-md focus:outline-none"
             title="View Discipline"
           >
             <Eye className="w-4 h-4" />
@@ -299,7 +299,7 @@ const SportsProfessionals = () => {
               setEditingDiscipline(discipline);
               setDisciplineForm({ name: discipline.name, type: discipline.type });
             }}
-            className="p-2 text-blue-500 hover:bg-blue-100 rounded-md focus:outline-none"
+            className="p-2 text-gray-900 hover:bg-gray-100 rounded-md focus:outline-none"
             title="Edit Discipline"
           >
             <PencilLine className="w-4 h-4" />
@@ -327,7 +327,7 @@ const SportsProfessionals = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setViewingFunction(func)}
-            className="p-2 text-gray-500 hover:bg-gray-100 rounded-md focus:outline-none"
+            className="p-2 text-gray-900 hover:bg-gray-100 rounded-md focus:outline-none"
             title="View Function"
           >
             <Eye className="w-4 h-4" />
@@ -337,7 +337,7 @@ const SportsProfessionals = () => {
               setEditingFunction(func);
               setFunctionForm({ name: func.name, disciplineId: func.disciplineId });
             }}
-            className="p-2 text-blue-500 hover:bg-blue-100 rounded-md focus:outline-none"
+            className="p-2 text-gray-900 hover:bg-gray-100 rounded-md focus:outline-none"
             title="Edit Function"
           >
             <PencilLine className="w-4 h-4" />
@@ -369,7 +369,7 @@ const SportsProfessionals = () => {
             onClick={() => {
               setViewingProfessional(professional);
             }}
-            className="p-2 text-gray-500 hover:bg-gray-100 rounded-md focus:outline-none"
+            className="p-2 text-gray-900 hover:bg-gray-100 rounded-md focus:outline-none"
             title="View Professional"
           >
             <Eye className="w-4 h-4" />
@@ -379,7 +379,7 @@ const SportsProfessionals = () => {
               setEditingProfessional(professional);
               setAddingProfessional(true);
             }}
-            className="p-2 text-blue-500 hover:bg-blue-100 rounded-md focus:outline-none"
+            className="p-2 text-gray-900 hover:bg-gray-100 rounded-md focus:outline-none"
             title="Edit Professional"
           >
             <PencilLine className="w-4 h-4" />

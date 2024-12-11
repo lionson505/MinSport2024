@@ -331,18 +331,29 @@ function Appointments() {
           </Transition.Child>
           <div className="fixed inset-0 overflow-y-auto">
             <div className="flex min-h-full items-center justify-center p-4">
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
-                <Dialog.Title className="text-lg font-medium text-gray-900">Appointment Details</Dialog.Title>
-                <div className="mt-4">
-                  <div className="mb-2"><strong>Person to Meet:</strong> {appointmentDetails?.person_to_meet}</div>
-                  <div className="mb-2"><strong>Names:</strong> {appointmentDetails?.names}</div>
-                  <div className="mb-2"><strong>Email:</strong> {appointmentDetails?.email}</div>
-                  <div className="mb-2"><strong>Phone:</strong> {appointmentDetails?.cellphone}</div>
-                  <div className="mb-2"><strong>Purpose:</strong> {appointmentDetails?.purpose}</div>
-                  <div className="mb-2"><strong>Institution:</strong> {appointmentDetails?.institution}</div>
-                  <div className="mb-2"><strong>Function:</strong> {appointmentDetails?.function}</div>
+              <Dialog.Panel className="w-full max-w-3xl transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
+                <Dialog.Title className="text-lg font-medium text-gray-900 mb-4">Appointment Details</Dialog.Title>
+                <div className="mt-4 grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <div><strong>Person to Meet:</strong> {appointmentDetails?.person_to_meet}</div>
+                    <div><strong>Names:</strong> {appointmentDetails?.names}</div>
+                    <div><strong>Gender:</strong> {appointmentDetails?.gender}</div>
+                    <div><strong>Email:</strong> {appointmentDetails?.email}</div>
+                    <div><strong>Phone:</strong> {appointmentDetails?.cellphone}</div>
+                    <div><strong>Purpose:</strong> {appointmentDetails?.purpose}</div>
+                    <div><strong>Institution:</strong> {appointmentDetails?.institution}</div>
+                  </div>
+                  <div className="space-y-2">
+                    <div><strong>Function:</strong> {appointmentDetails?.function}</div>
+                    <div><strong>Request Date:</strong> {new Date(appointmentDetails?.request_date).toLocaleDateString()}</div>
+                    <div><strong>Request Time:</strong> {new Date(appointmentDetails?.request_time).toLocaleTimeString()}</div>
+                    <div><strong>Other Attendees:</strong> {appointmentDetails?.other_people_to_attend}</div>
+                    <div><strong>Other Ministry Staff:</strong> {appointmentDetails?.other_ministry_staff}</div>
+                    <div><strong>Created:</strong> {new Date(appointmentDetails?.createdAt).toLocaleString()}</div>
+                    <div><strong>Last Updated:</strong> {new Date(appointmentDetails?.updatedAt).toLocaleString()}</div>
+                  </div>
                 </div>
-                <div className="flex justify-end mt-4">
+                <div className="flex justify-end mt-6">
                   <Button variant="outline" onClick={() => setViewModalOpen(false)}>
                     Close
                   </Button>

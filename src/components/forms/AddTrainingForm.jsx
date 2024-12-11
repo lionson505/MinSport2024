@@ -41,7 +41,7 @@ const AddTrainingForm = ({ onSubmit, onCancel, isSubmitting, initialData }) => {
     fromDate: initialData?.fromDate || '',
     toDate: initialData?.toDate || '',
     organiser: initialData?.organiser || '',
-    participants: initialData?.participants || [],
+    participants: initialData?.participants?.map(id => ({ value: id, label: '' })) || [],
   });
 
   // Update form data when initialData changes
@@ -52,10 +52,23 @@ const AddTrainingForm = ({ onSubmit, onCancel, isSubmitting, initialData }) => {
         fromDate: initialData.fromDate || '',
         toDate: initialData.toDate || '',
         organiser: initialData.organiser || '',
-        participants: initialData.participants || [],
+        participants: initialData.participants?.map(id => ({ value: id, label: '' })) || [],
       });
     }
   }, [initialData]);
+
+  // Add this new effect to update participant labels once we have the available professionals
+  useEffect(() => {
+    if (availableProfessionals.length > 0 && formData.participants.length > 0) {
+      setFormData(prev => ({
+        ...prev,
+        participants: prev.participants.map(participant => {
+          const professional = availableProfessionals.find(p => p.value === participant.value);
+          return professional || participant;
+        })
+      }));
+    }
+  }, [availableProfessionals]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -226,7 +239,7 @@ const AddTrainingForm = ({ onSubmit, onCancel, isSubmitting, initialData }) => {
           options={availableProfessionals}
           className="basic-multi-select"
           classNamePrefix="select"
-          value={formData.participants.map(id => availableProfessionals.find(p => p.value === id))}
+          value={formData.participants}
           onChange={handleParticipantChange}
           placeholder="Select participants..."
           isDisabled={loading}

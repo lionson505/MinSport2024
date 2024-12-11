@@ -76,9 +76,10 @@ function Employee() {
 
   const handleAddEmployee = async (newEmployee) => {
     try {
-      const addedEmployee = await createEmployee(newEmployee);
-      setEmployeesData(prev => [...prev, addedEmployee]);
       setIsAddModalOpen(false);
+      const addedEmployee = await createEmployee(newEmployee);
+      const freshEmployees = await fetchEmployees();
+      setEmployeesData(freshEmployees);
       toast.success('Employee added successfully');
     } catch (error) {
       toast.error('Failed to add employee');

@@ -11,7 +11,7 @@ import {
 import { Button } from '../ui/Button';
 import { Input } from '../ui/input';
 import { Select } from '../ui/select';
-import { Eye, Edit, Trash2, Search, Filter, Calendar, AlertTriangle } from 'lucide-react';
+import { Eye, Pencil, Trash2, Search, Filter, Calendar, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, isValid } from 'date-fns';
 import axiosInstance from '../../utils/axiosInstance';
@@ -234,7 +234,7 @@ const TourismEventsList = () => {
                         setIsEditModalOpen(true);
                       }}
                     >
-                      <Edit className="h-4 w-4" />
+                      <Pencil className="h-4 w-4 text-black" />
                     </Button>
                     <Button
                       size="sm"
@@ -294,17 +294,70 @@ const TourismEventsList = () => {
 
           <div className="fixed inset-0 overflow-y-auto">
             <div className="flex min-h-full items-center justify-center p-4">
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
-                <Dialog.Title className="text-lg font-medium mb-4">Event Details</Dialog.Title>
-                <div className="space-y-2">
-                  <p><strong>Name:</strong> {selectedEvent?.name}</p>
-                  <p><strong>Category:</strong> {selectedEvent?.categoryId}</p>
-                  <p><strong>Start Date:</strong> {isValid(new Date(selectedEvent?.startDate)) ? format(new Date(selectedEvent?.startDate), 'MMM dd, yyyy') : 'Invalid Date'}</p>
-                  <p><strong>Location:</strong> {`${selectedEvent?.province}, ${selectedEvent?.district}`}</p>
-                  <p><strong>Status:</strong> {selectedEvent?.status}</p>
-                  <p><strong>Description:</strong> {selectedEvent?.description}</p>
+              <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
+                <Dialog.Title className="text-xl font-semibold mb-4">Event Details</Dialog.Title>
+                
+                {selectedEvent?.banner && (
+                  <div className="mb-4">
+                    <img src={selectedEvent.banner} alt="Event Banner" className="w-full h-48 object-cover rounded-lg" />
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <p><strong>Name:</strong> {selectedEvent?.name}</p>
+                    <p><strong>Category:</strong> {selectedEvent?.category}</p>
+                    <p><strong>Sub Category:</strong> {selectedEvent?.subCategory}</p>
+                    <p><strong>Start Date:</strong> {isValid(new Date(selectedEvent?.startDate)) ? 
+                      format(new Date(selectedEvent?.startDate), 'MMM dd, yyyy') : 'Invalid Date'}</p>
+                    <p><strong>End Date:</strong> {isValid(new Date(selectedEvent?.endDate)) ? 
+                      format(new Date(selectedEvent?.endDate), 'MMM dd, yyyy') : 'Invalid Date'}</p>
+                    <p><strong>Time:</strong> {selectedEvent?.timeFrom} - {selectedEvent?.timeTo}</p>
+                    <p><strong>Status:</strong> {selectedEvent?.isPublished ? 'Published' : 'Draft'}</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p><strong>Location:</strong></p>
+                    <p className="ml-4">Province: {selectedEvent?.province}</p>
+                    <p className="ml-4">District: {selectedEvent?.district}</p>
+                    <p className="ml-4">Sector: {selectedEvent?.sector}</p>
+                    <p className="ml-4">Cell: {selectedEvent?.cell}</p>
+                    <p className="ml-4">Village: {selectedEvent?.village}</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p><strong>Participants:</strong></p>
+                    <p className="ml-4">Male: {selectedEvent?.maleParticipants}</p>
+                    <p className="ml-4">Female: {selectedEvent?.femaleParticipants}</p>
+                    <p className="ml-4">Total: {(selectedEvent?.maleParticipants || 0) + (selectedEvent?.femaleParticipants || 0)}</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p><strong>Financial:</strong></p>
+                    <p className="ml-4">Participant Fee: ${selectedEvent?.participantsFee}</p>
+                    <p className="ml-4">Amount Generated: ${selectedEvent?.amountGenerated}</p>
+                  </div>
                 </div>
-                <div className="flex justify-end mt-4">
+
+                <div className="mt-4">
+                  <p><strong>Description:</strong></p>
+                  <p className="mt-1 text-gray-600">{selectedEvent?.description}</p>
+                </div>
+
+                {selectedEvent?.video && (
+                  <div className="mt-4">
+                    <p><strong>Event Video:</strong></p>
+                    <video 
+                      src={selectedEvent.video} 
+                      controls 
+                      className="mt-2 w-full rounded-lg"
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                  </div>
+                )}
+
+                <div className="flex justify-end mt-6">
                   <Button variant="outline" onClick={() => setIsViewModalOpen(false)}>
                     Close
                   </Button>
