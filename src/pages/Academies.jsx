@@ -9,6 +9,8 @@ import AddAcademyModal from '../components/AddAcademyModal';
 import AddAcademyStudent from '../components/AddAcademyStudent';
 import EditAcademyModal from '../components/EditAcademyModal';
 import axiosInstance from '../utils/axiosInstance';
+import PrintButton from "../components/reusable/Print"
+
 
 function Academies() {
   const [activeTab, setActiveTab] = useState('manage');
@@ -218,6 +220,7 @@ function Academies() {
             </div>
 
             <div className="bg-white rounded-lg shadow overflow-x-auto">
+            <PrintButton title='ACCADEMIES REPORT'>
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
@@ -225,7 +228,7 @@ function Academies() {
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Location</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Category</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Students</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Operation</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 operation">Operation</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -235,7 +238,7 @@ function Academies() {
                       <td className="px-4 py-3 text-sm">{academy.location}</td>
                       <td className="px-4 py-3 text-sm">{academy.category}</td>
                       <td className="px-4 py-3 text-sm">{academy.students || '-'}</td>
-                      <td className="px-4 py-3 flex gap-2">
+                      <td className="px-4 py-3 flex gap-2 operation">
                         <Button
                           variant="ghost"
                           onClick={() => {
@@ -268,6 +271,8 @@ function Academies() {
                   ))}
                 </tbody>
               </table>
+              </PrintButton>
+
             </div>
 
             {/* Pagination */}
@@ -334,6 +339,7 @@ function Academies() {
             </div>
 
             <div className="bg-white rounded-lg shadow overflow-x-auto">
+              <PrintButton title="ACCADEMY STUDENTS">
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
@@ -344,7 +350,7 @@ function Academies() {
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Gender</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Game</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Class</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Operation</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 operation">Operation</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -357,7 +363,7 @@ function Academies() {
                       <td className="px-4 py-3 text-sm">{student.gender}</td>
                       <td className="px-4 py-3 text-sm">{student.gameType}</td>
                       <td className="px-4 py-3 text-sm">{student.class}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 operation">
                         <div className="flex space-x-2">
                           <Button
                             size="sm"
@@ -392,6 +398,8 @@ function Academies() {
                   ))}
                 </tbody>
               </table>
+              </PrintButton>
+
             </div>
 
             {/* Pagination */}
@@ -817,6 +825,7 @@ function Academies() {
 
                 {selectedAcademyStudents.length > 0 ? (
                   <div className="overflow-x-auto">
+                    
                     <table className="w-full">
                       <thead className="bg-gray-50">
                         <tr>

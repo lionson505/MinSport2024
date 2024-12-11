@@ -10,6 +10,7 @@ import { Dialog, Transition } from '@headlessui/react';
 import AddEmployeeVoting from '../components/AddEmployeeVoting';
 import ManageEmployeeVoting from '../components/ManageEmployeeVoting';
 import { fetchEmployees, createEmployee, updateEmployee, deleteEmployee } from '../services/employee';
+import PrintButton from '../components/reusable/Print';
 
 function Employee() {
   const [loading, setLoading] = useState(true);
@@ -337,6 +338,7 @@ function Employee() {
             {/* Employee Table */}
             <div className="bg-white rounded-lg shadow overflow-x-auto">
               {paginatedData.length > 0 ? (
+                <PrintButton>
                 <table className="w-full">
                   <thead className="bg-gray-50">
                     <tr>
@@ -345,9 +347,9 @@ function Employee() {
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Start Date</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Employee Status</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Employee Type</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Department</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase ">Department</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Supervisor</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500  operation uppercase">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
@@ -368,7 +370,7 @@ function Employee() {
                         <td className="px-4 py-3 text-sm">{employee.employee_type}</td>
                         <td className="px-4 py-3 text-sm">{employee.department}</td>
                         <td className="px-4 py-3 text-sm">{employee.department_supervisor}</td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 operation">
                           <div className="flex space-x-2">
                             <Button
                               size="icon"
@@ -404,6 +406,7 @@ function Employee() {
                     ))}
                   </tbody>
                 </table>
+                </PrintButton>
               ) : (
                 <div className="flex flex-col items-center justify-center py-12">
                   <div className="text-6xl mb-4">🔍</div>

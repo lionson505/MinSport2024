@@ -6,6 +6,7 @@ import { Input } from "../components/ui/input";
 import { Search } from "react-feather";
 import { Calendar, Eye, Trash2, XIcon, Check, X } from 'lucide-react';
 import AddAppointmentForm from "../components/forms/AddAppointmentForm"; // Import the form
+import PrintButton from "../components/reusable/Print"
 
 const Toast = ({ message, onClose }) => {
   useEffect(() => {
@@ -205,6 +206,7 @@ function Appointments() {
       </div>
 
       <div className="bg-white rounded-lg shadow">
+        <PrintButton title="APPOINTMENTS REPORT">
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
@@ -223,12 +225,12 @@ function Appointments() {
               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Gender</th>
               {/* <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Email</th> */}
               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Cellphone</th>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Purpose</th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 operation">Purpose</th>
               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Institution</th>
               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Function</th>
               {/* <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Other People to Attend</th> */}
               {/* <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Other Ministry Staff</th> */}
-              <th className="w-24 px-3 py-2 text-left text-xs font-medium text-gray-500">Actions</th>
+              <th className="w-24 px-3 py-2 text-left text-xs font-medium operation text-gray-500">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -253,14 +255,14 @@ function Appointments() {
                 </td>
                 <td className="px-3 py-2 text-sm">{appointment.names}</td>
                 {/* <td className="px-3 py-2 text-sm">{appointment.gender}</td> */}
-                <td className="px-3 py-2 text-sm">{appointment.email}</td>
+                <td className="px-3 py-2 text-sm ">{appointment.gender}</td>
                 <td className="px-3 py-2 text-sm">{appointment.cellphone}</td>
-                <td className="px-3 py-2 text-sm">{appointment.purpose}</td>
+                <td className="px-3 py-2 text-sm operation">{appointment.purpose}</td>
                 <td className="px-3 py-2 text-sm">{appointment.institution}</td>
                 <td className="px-3 py-2 text-sm">{appointment.function}</td>
                 {/* <td className="px-3 py-2 text-sm">{appointment.other_people_to_attend}</td> */}
                 {/* <td className="px-3 py-2 text-sm">{appointment.other_ministry_staff}</td> */}
-                <td className="px-3 py-2 flex space-x-2">
+                <td className="px-3 py-2 flex space-x-2 operation" >
                   <button onClick={() => handleView(appointment)}>
                     <Eye className="h-4 w-4" />
                   </button>
@@ -293,6 +295,7 @@ function Appointments() {
             ))}
           </tbody>
         </table>
+        </PrintButton>
       </div>
 
       <div className="flex justify-between items-center mt-4">

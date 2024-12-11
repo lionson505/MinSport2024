@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import axiosInstance from '../utils/axiosInstance';
 import AddContractModal from '../components/AddContractModal';
 import EditContractModal from '../components/EditContractModal';
+import PrintButton from "../components/reusable/Print"
 
 function Contracts() {
   const [contracts, setContracts] = useState([]);
@@ -250,6 +251,7 @@ function Contracts() {
 
         {/* Contracts Table */}
         <div className="bg-white rounded-lg shadow overflow-x-auto">
+          <PrintButton title="">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
@@ -258,12 +260,12 @@ function Contracts() {
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Supplier</th>
                 {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Email</th> */}
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Amount</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Currency</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 operation">Currency</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Contract Admin</th>
                 {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Start Date</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">End Date</th> */}
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Progress</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Actions</th>
+                <th className="px-4 py-3 text-left text-xs font-medium operation  text-gray-500">Progress</th>
+                <th className="px-4 py-3 text-left text-xs font-medium operation  text-gray-500">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -276,20 +278,20 @@ function Contracts() {
                     <td className="px-4 py-3">{contract.supplier}</td>
                     {/* <td className="px-4 py-3">{contract.email}</td> */}
                     <td className="px-4 py-3">{contract.amount}</td>
-                    <td className="px-4 py-3">{contract.currency}</td>
+                    <td className="px-4 py-3 operation ">{contract.currency}</td>
                     <td className="px-4 py-3">{contract.contract_administrator}</td>
                     {/* <td className="px-4 py-3">{contract.start_date}</td>
                     <td className="px-4 py-3">{contract.contract_end_date}</td> */}
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 operation " >
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
                           className="bg-blue-600 h-2 rounded-full"
                           style={{ width: `${progress}%` }}
                         ></div>
                       </div>
-                      <span className="text-xs text-gray-500 ml-2">{progress}%</span>
+                      <span className="text-xs text-gray-500  ml-2">{progress}%</span>
                     </td>
-                    <td className="px-4 py-3 flex items-center space-x-1">
+                    <td className="px-4 py-3 flex items-center operation space-x-1">
                       {renderActions(contract)}
                     </td>
                   </tr>
@@ -297,6 +299,7 @@ function Contracts() {
               })}
             </tbody>
           </table>
+          </PrintButton>
         </div>
       </div>
 
