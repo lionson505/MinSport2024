@@ -4,8 +4,14 @@ import { Link } from 'react-router-dom';
 // import "./../assets/livematchmodal.css";
 
 const HeaderTwo = () => {
-    const navigation = ['HOME', 'FEDERATIONS', 'EVENTS', 'MATCHES', 'INFRASTRUCTURE'];
-    const [activeTab, setActiveTab] = useState('ALL');
+  const navigation = [
+    { name: 'HOME', path: '/landing' },
+    { name: 'FEDERATIONS', path: '/federation' },
+    { name: 'EVENTS', path: '/events' },
+    { name: 'MATCHES', path: '/match' },
+    { name: 'INFRASTRUCTURE', path: '/infrastructures' },
+  ];
+    const [activeTab, setActiveTab] = useState('HOME');
 
   return (
     <div>
@@ -18,20 +24,21 @@ const HeaderTwo = () => {
             <img src="/logo/logo.svg" alt="MINISPORTS" className="h-12 w-auto" />
             </Link>
             <nav className="hidden md:flex space-x-10">
-              {navigation.map((item) => (
-                <button
-                  key={item}
-                  className={`px-6 py-2.5 rounded-lg text-base ${
-                    activeTab === item 
-                      ? 'bg-blue-600 text-white' 
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                  onClick={() => setActiveTab(item)}
-                >
-                  {item}
-                </button>
-              ))}
-            </nav>
+      {navigation.map((item) => (
+        <Link
+          to={item.path}
+          key={item.name}
+          className={`px-6 py-2.5 rounded-lg text-base ${
+            activeTab === item.name
+              ? 'bg-blue-600 text-white'
+              : 'text-gray-600 hover:bg-gray-100'
+          }`}
+          onClick={() => setActiveTab(item.name)}
+        >
+          {item.name}
+        </Link>
+      ))}
+    </nav>
 
             <Link
               to="/login"

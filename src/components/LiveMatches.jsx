@@ -91,7 +91,20 @@ const LiveMatches = () => {
   const tabs = ['Info', 'Summary', 'Line-Up'];
 
   return (
-    <div>
+    <div className="relative">
+      {/* Scroll Buttons */}
+      <button 
+        onClick={() => scrollContainer('left')}
+        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 -ml-4"
+      >
+        <ChevronLeft className="h-6 w-6" />
+      </button>
+      <button 
+        onClick={() => scrollContainer('right')}
+        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 -mr-4"
+      >
+        <ChevronRight className="h-6 w-6" />
+      </button>
       {/* Matches Container */}
       <div
         id="matches-container"
