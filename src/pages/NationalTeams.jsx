@@ -6,6 +6,7 @@ import { Button } from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import AddNationalTeamForm from '../components/forms/AddNationalTeamForm';
 import toast from 'react-hot-toast';
+import PrintButton from '../components/reusable/Print';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -78,12 +79,12 @@ function NationalTeams() {
   ];
 
   const playerColumns = [
-    { key: 'name', header: 'Player Name' },
-    { key: 'teamName', header: 'Team' },
-    { key: 'federation', header: 'Federation' },
-    { key: 'club', header: 'Club' },
-    { key: 'games', header: 'Games' },
-    { key: 'actions', header: 'Actions' }
+    { key: 'name', header: 'Player Name' , class: ""},
+    { key: 'teamName', header: 'Team', class: "" },
+    { key: 'federation', header: 'Federation', class: ""},
+    { key: 'club', header: 'Club' , class: ""},
+    { key: 'games', header: 'Games' , class: ""},
+    { key: 'actions', header: 'Actions', class: "operation" }
   ];
 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -501,6 +502,7 @@ function NationalTeams() {
           </div>
 
           <div className="bg-white rounded-lg shadow overflow-x-auto">
+            <PrintButton title='TEAM MANAGEMENT REPORT'>
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
@@ -509,7 +511,7 @@ function NationalTeams() {
                       {col.header}
                     </th>
                   ))}
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Operation</th>
+                  <th className="px-4 py-3 text-left text-xs operation font-medium text-gray-500">Operation</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -529,8 +531,8 @@ function NationalTeams() {
                     </td>
                     <td className="px-4 py-3">{team.federation.name || team.federation}</td>
                     <td className="px-4 py-3">{Array.isArray(team.players) ? team.players.length : team.players}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center space-x-2">
+                    <td className="px-4 py-3 operation">
+                      <div className="flex items-center space-x-2 ">
                         <Button
                           size="sm"
                           variant="ghost"
@@ -564,6 +566,7 @@ function NationalTeams() {
                 ))}
               </tbody>
             </table>
+            </PrintButton>
           </div>
         </div>
       );
@@ -671,11 +674,12 @@ function NationalTeams() {
           </div>
 
           <div className="bg-white rounded-lg shadow overflow-x-auto">
+            <PrintButton>
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
                   {playerColumns.map(col => (
-                    <th key={col.key} className="px-4 py-3 text-left text-xs font-medium text-gray-500">
+                    <th key={col.key} className={`${col.class} px-4 py-3 text-left text-xs font-medium text-gray-500`}>
                       {col.header}
                     </th>
                   ))}
@@ -706,7 +710,7 @@ function NationalTeams() {
                               ).join(', ') 
                             : player.games}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 operation">
                           {renderPlayerActions(player)}
                         </td>
                       </tr>
@@ -721,6 +725,7 @@ function NationalTeams() {
                 )}
               </tbody>
             </table>
+            </PrintButton>
           </div>
         </div>
       );

@@ -18,6 +18,7 @@ import Message from '../components/ui/Message';
 import { useDarkMode } from '../contexts/DarkModeContext';
 import AddPartnerForm from '../components/forms/AddPartnerForm';
 import { getPartners, addPartner, deletePartner, editPartner } from '../services/patern';
+import PrintButton from '../components/reusable/Print';
 
 const Partners = () => {
   const { isDarkMode } = useDarkMode();
@@ -191,6 +192,7 @@ const Partners = () => {
       </div>
 
       <div className="rounded-lg bg-white shadow">
+        <PrintButton title='Partners Report'>
   <Table>
     <TableHeader>
       <TableRow>
@@ -238,6 +240,7 @@ const Partners = () => {
       ))}
     </TableBody>
   </Table>
+  </PrintButton>
 </div>
 
 

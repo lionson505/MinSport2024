@@ -16,6 +16,7 @@ import {
   Pen,
   Trash2
 } from 'lucide-react';
+import PrintButton from '../reusable/Print';
 
 const ManageClubs = ({ onAdd, onEdit, onDelete, federations, isLoading, actionIcons }) => {
   const { isDarkMode } = useDarkMode();
@@ -260,6 +261,7 @@ const ManageClubs = ({ onAdd, onEdit, onDelete, federations, isLoading, actionIc
           <p>No clubs found for this federation or search criteria.</p>
         ) : (
           <>
+          <PrintButton title='CLUBS REPORT'>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -267,7 +269,7 @@ const ManageClubs = ({ onAdd, onEdit, onDelete, federations, isLoading, actionIc
                   <TableHead>Club Name</TableHead>
                   <TableHead>Federation</TableHead>
                   <TableHead>Year Founded</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead className="operation"> Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -279,7 +281,7 @@ const ManageClubs = ({ onAdd, onEdit, onDelete, federations, isLoading, actionIc
                     <TableCell>{club.name}</TableCell>
                     <TableCell>{federations.find((fed) => fed.id === club.federationId)?.name}</TableCell>
                     <TableCell>{club.yearFounded}</TableCell>
-                    <TableCell>
+                    <TableCell className="operation">
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => handleViewDetails(club)}
@@ -315,6 +317,7 @@ const ManageClubs = ({ onAdd, onEdit, onDelete, federations, isLoading, actionIc
                 ))}
               </TableBody>
             </Table>
+            </PrintButton>
             <div className="flex justify-between mt-4">
               <Button
                 onClick={() => paginate(currentPage - 1)}

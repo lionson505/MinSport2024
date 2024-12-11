@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import EditGroupModal from '../components/EditGroupModal';
 import AddGroupModal from '../components/AddGroupModal';  // Import AddGroupModal
 import axiosInstance from '../utils/axiosInstance'; // Import the axios instance
+import PrintButton from '../components/reusable/Print';
 
 function ManageGroups() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -201,13 +202,14 @@ function ManageGroups() {
             <div className="text-red-500 p-4">{error}</div>
           ) : (
             paginatedData.length > 0 ? (
+              <PrintButton title='Manage Groups Report'>
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Group Name</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Modules</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Users</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Operation</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium operation text-gray-500 uppercase">Operation</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -216,7 +218,7 @@ function ManageGroups() {
                       <td className="px-4 py-3">{group.name}</td>
                       <td className="px-4 py-3">{group.accessibleModules}</td>
                       <td className="px-4 py-3">{group.users}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 operation" >
                         <div className="flex items-center space-x-2">
                           <Button
                             size="icon"
@@ -238,6 +240,7 @@ function ManageGroups() {
                   ))}
                 </tbody>
               </table>
+              </PrintButton>
             ) : (
               <div className="flex flex-col items-center justify-center py-12">
                 <div className="text-6xl mb-4">🔍</div>

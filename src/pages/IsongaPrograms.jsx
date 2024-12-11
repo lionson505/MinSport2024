@@ -25,10 +25,14 @@ import {
 } from '../components/ui/dialog';
 import InstitutionForm from '../components/forms/InstitutionForm';
 import StudentTransferForm from '../components/StudentTransferForm';
+
+import PrintButton from '../components/reusable/Print';
+
 import { countries } from '../data/countries';
 import { gameTypes } from '../data/gameTypes';
 import { institutionTypes } from '../data/institutionTypes';
 import { classOptions } from '../data/classOptions';
+
 
 const IsongaPrograms = () => {
   const { isDarkMode } = useDarkMode();
@@ -351,6 +355,7 @@ const IsongaPrograms = () => {
 
               {/* Table */}
               <div className={`rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow'}`}>
+                <PrintButton title='Instutitions Report'>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -408,6 +413,7 @@ const IsongaPrograms = () => {
                     ))}
                   </TableBody>
                 </Table>
+                </PrintButton>
               </div>
             </div>
           </div>
@@ -457,6 +463,7 @@ const IsongaPrograms = () => {
 
               {/* Students Table */}
               <div className={`rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow'}`}>
+                <PrintButton title='Students Report'>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -525,6 +532,7 @@ const IsongaPrograms = () => {
                     ))}
                   </TableBody>
                 </Table>
+                </PrintButton>
               </div>
             </div>
           </div>

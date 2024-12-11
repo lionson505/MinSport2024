@@ -19,6 +19,7 @@ import { useDarkMode } from '../contexts/DarkModeContext';
 import { Button } from '../components/ui/Button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 import axiosInstance from '../utils/axiosInstance';
+import PrintButton from '../components/reusable/Print';
 
 const Training = () => {
   const { isDarkMode } = useDarkMode();
@@ -176,6 +177,7 @@ const Training = () => {
 
       {/* Trainings Table */}
       <div className="overflow-x-auto bg-white rounded-lg shadow">
+        <PrintButton>
         <Table>
           <TableHeader>
             <TableRow>
@@ -189,7 +191,7 @@ const Training = () => {
               <TableHead className="min-w-[140px] text-[11px]">TRAINING ORGANISER</TableHead>
               {/* <TableHead className="min-w-[120px] text-[11px]">VENUE</TableHead> */}
               <TableHead className="w-[80px] text-[11px]">PARTICIPANTS</TableHead>
-              <TableHead className="w-[70px] text-[11px]">ACTION</TableHead>
+              <TableHead className="operation w-[70px] text-[11px]">ACTION</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -211,7 +213,7 @@ const Training = () => {
                 <TableCell>{training.organiser}</TableCell>
                 {/* <TableCell>{training.venue}</TableCell> */}
                 <TableCell>{training.participants ? training.participants.join(', ') : 'N/A'}</TableCell>
-                <TableCell>
+                <TableCell className="operation">
                   <ActionMenu
                     onDelete={() => {
                       setTrainingToDelete(training);
@@ -227,6 +229,7 @@ const Training = () => {
             ))}
           </TableBody>
         </Table>
+        </PrintButton>
       </div>
 
       {/* Pagination */}

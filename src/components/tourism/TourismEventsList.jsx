@@ -17,6 +17,7 @@ import { format, isValid } from 'date-fns';
 import axiosInstance from '../../utils/axiosInstance';
 import { Dialog, Transition } from '@headlessui/react';
 import EditEventModal from '../../components/tourism/EditEventModal'; // Import the EditEventModal component
+import PrintButton from '../reusable/Print';
 
 const TourismEventsList = () => {
   const [events, setEvents] = useState([]);
@@ -173,15 +174,16 @@ const TourismEventsList = () => {
 
       {/* Events Table */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-        <Table>
+        <PrintButton title='SPORTS TOURISM'>
+          <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Event Name</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Start Date</TableHead>
               <TableHead>Location</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead className="operation" >Status</TableHead>
+              <TableHead className="operation">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -195,7 +197,7 @@ const TourismEventsList = () => {
                     : 'Invalid Date'}
                 </TableCell>
                 <TableCell>{`${event.province}, ${event.district}`}</TableCell>
-                <TableCell>
+                <TableCell className="operation"  >
                   <span
                     className={`px-2 py-1 rounded-full text-xs ${
                       event.status === 'Upcoming'
@@ -210,7 +212,7 @@ const TourismEventsList = () => {
                     {event.status}
                   </span>
                 </TableCell>
-                <TableCell>
+                <TableCell className="operation" >
                   <div className="flex space-x-2">
                     <Button
                       size="sm"
@@ -263,6 +265,8 @@ const TourismEventsList = () => {
             ))}
           </TableBody>
         </Table>
+        </PrintButton>
+       
 
         {/* Pagination */}
         <TablePagination

@@ -16,6 +16,7 @@ import ExportButton from './ExportButton';
 import axiosInstance from '../../utils/axiosInstance';
 import { Dialog, Transition } from '@headlessui/react';
 import { locations } from '../../data/locations';
+import PrintButton from '../reusable/Print';
 
 const InfrastructureList = () => {
   const [infrastructures, setInfrastructures] = useState([]);
@@ -397,16 +398,8 @@ const InfrastructureList = () => {
           />
         </div>
         <div className="flex items-center space-x-2">
-          <ExportButton 
-            data={prepareExportData()} 
-            filename="infrastructure-list" 
-            type="xlsx" 
-          />
-          <ExportButton 
-            data={prepareExportData()} 
-            filename="infrastructure-list" 
-            type="csv" 
-          />
+          
+         
           <Button
             variant="outline"
             onClick={() => setShowFilters(!showFilters)}
@@ -478,6 +471,7 @@ const InfrastructureList = () => {
 
       {/* Infrastructure Table */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+        <PrintButton title='Infrastructures Report'>
         <Table>
           <TableHeader>
             <TableRow>
@@ -537,6 +531,7 @@ const InfrastructureList = () => {
             ))}
           </TableBody>
         </Table>
+        </PrintButton>
       </div>
 
       {/* Edit Infrastructure Modal */}

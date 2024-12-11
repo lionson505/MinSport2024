@@ -11,6 +11,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '.
 import { Search, Plus, Filter } from 'lucide-react';
 import PageLoading from '../components/ui/PageLoading';
 import Message from '../components/ui/Message';
+import PrintButton from '../components/reusable/Print';
 
 function SportsForAll() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -174,6 +175,7 @@ function SportsForAll() {
 
         {/* Sports Table */}
         <div className="bg-white rounded-lg shadow">
+          <PrintButton title='Sports For All Reports' >
           <Table>
             <TableHeader>
               <TableRow>
@@ -185,7 +187,7 @@ function SportsForAll() {
                 <th className="px-4 py-2 text-left">Purpose/Theme</th>
                 <th className="px-4 py-2 text-left">Female Participants</th>
                 <th className="px-4 py-2 text-left">Male Participants</th>
-                <th className="px-4 py-2 text-left">Operation</th>
+                <th className="px-4 py-2 text-left operation">Operation</th>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -199,7 +201,7 @@ function SportsForAll() {
                   <td className="px-4 py-2">{sport.purposeTheam}</td>
                   <td className="px-4 py-2">{sport.numberFemaleParticipants}</td>
                   <td className="px-4 py-2">{sport.numberMaleParticipants}</td>
-                  <td className="px-4 py-2 flex gap-1">
+                  <td className="px-4 py-2 flex gap-1 operation">
                     <button
                       onClick={() => {
                         setSportToEdit(sport);
@@ -229,6 +231,7 @@ function SportsForAll() {
               ))}
             </TableBody>
           </Table>
+          </PrintButton>
 
           {/* Pagination */}
           <div className="flex items-center justify-between px-4 py-3 border-t">
