@@ -9,7 +9,7 @@ import {
 } from '../ui/table';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/input';
-import { Select } from '../ui/select';
+import { Select,SelectContent,SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Eye, Pencil, Trash2, MapPin, Search, Filter, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import ExportButton from './ExportButton';
@@ -65,10 +65,17 @@ const InfrastructureList = () => {
     legal_representative_email: '',
     legal_representative_phone: ''
   });
-
   const provinces = ['Kigali City', 'Eastern', 'Western', 'Northern', 'Southern'];
   const statuses = ['Active', 'Under Construction', 'Under Maintenance', 'Inactive'];
   const typeLevels = ['International', 'National', 'Provincial', 'District', 'Sector'];
+  
+  const districts = {
+    'Kigali City': ['Gasabo', 'Kicukiro', 'Nyarugenge'],
+    'Eastern': ['Nyagatare', 'Gatsibo', 'Kayonza', 'Rwamagana', 'Kirehe', 'Ngoma', 'Bugesera'],
+    'Western': ['Rubavu', 'Nyabihu', 'Rutsiro', 'Karongi', 'Ngororero', 'Rusizi', 'Nyamasheke'],
+    'Northern': ['Musanze', 'Burera', 'Gicumbi', 'Rulindo', 'Gakenke'],
+    'Southern': ['Huye', 'Gisagara', 'Nyanza', 'Nyaruguru', 'Muhanga', 'Ruhango', 'Kamonyi']
+  };
 
   useEffect(() => {
     fetchInfrastructures();
@@ -415,53 +422,84 @@ const InfrastructureList = () => {
       {/* Filters Panel */}
       {showFilters && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <div>
-            <label className="block text-sm font-medium mb-1">Category</label>
-            <Select
-              value={filters.category}
-              onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-            >
-              <option value="">All Categories</option>
-              {categories.map(category => (
-                <option key={category.id} value={category.id}>{category.name}</option>
-              ))}
-            </Select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Status</label>
-            <Select
-              value={filters.status}
-              onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-            >
-              <option value="">All Statuses</option>
-              {statuses.map(status => (
-                <option key={status} value={status}>{status}</option>
-              ))}
-            </Select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Province</label>
-            <Select
-              value={filters.province}
-              onChange={(e) => setFilters({ ...filters, province: e.target.value })}
-            >
-              <option value="">All Provinces</option>
-              {provinces.map(province => (
-                <option key={province} value={province}>{province}</option>
-              ))}
-            </Select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">District</label>
-            <Select
-              value={filters.district}
-              onChange={(e) => setFilters({ ...filters, district: e.target.value })}
-              disabled={!filters.province}
-            >
-              <option value="">All Districts</option>
-              {/* Add districts based on selected province */}
-            </Select>
-          </div>
+         <div>
+         <label className="block text-sm font-medium mb-1">Category</label>
+         <Select
+  defaultValue={filters.category}
+  onValueChange={(value) => setFilters({ ...filters, category: value })}
+>
+  <SelectTrigger>
+    <SelectValue placeholder="All Categories" />
+  </SelectTrigger>
+  <SelectContent>
+    {categories.map(category => (
+      <SelectItem key={category.id} value={category.id}>
+        {category.name}
+      </SelectItem>
+    ))}
+  </SelectContent>
+</Select>
+</div>
+<div>
+  <label className="block text-sm font-medium mb-1">Status</label>
+  <Select
+    defaultValue={filters.status}
+    onValueChange={(value) => setFilters({ ...filters, status: value })}
+  >
+    <SelectTrigger>
+      <SelectValue placeholder="All Statuses" />
+    </SelectTrigger>
+    <SelectContent>
+      {statuses.map(status => (
+        <SelectItem key={status} value={status}>
+          {status}
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+</div>
+
+<div>
+  <label className="block text-sm font-medium mb-1">Province</label>
+  <Select
+    value={filters.province}
+    onValueChange={(value) => setFilters({ ...filters, province: value })}
+  >
+    <SelectTrigger>
+      <SelectValue placeholder="All Provinces" />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="all_provinces">All Provinces</SelectItem>
+      {provinces.map(province => (
+        <SelectItem key={province} value={province}>
+          {province}
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+</div>
+
+<div>
+  <label className="block text-sm font-medium mb-1">District</label>
+  <Select
+    value={filters.district}
+    onValueChange={(value) => setFilters({ ...filters, district: value })}
+    disabled={!filters.province}
+  >
+    <SelectTrigger>
+      <SelectValue placeholder="All Districts" />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="all_districts">All Districts</SelectItem>
+      {filters.province &&
+        districts[filters.province]?.map(district => (
+          <SelectItem key={district} value={district}>
+            {district}
+          </SelectItem>
+        ))}
+    </SelectContent>
+  </Select>
+</div>
         </div>
       )}
 
