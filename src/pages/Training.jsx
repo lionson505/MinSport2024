@@ -171,16 +171,6 @@ const Training = () => {
 
       {/* Trainings Table */}
       <div className="overflow-x-auto bg-white rounded-lg shadow">
-        
-        <PrintButton>
-        <Button
-          onClick={() => setShowAddModal(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 w-full sm:w-auto"
-          disabled={isSubmitting}
-        >
-          <Plus className="h-5 w-5" />
-          <span>Add Training</span>
-        </Button>
         <Table>
           <TableHeader>
             <TableRow>
