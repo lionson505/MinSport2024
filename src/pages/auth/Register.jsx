@@ -26,7 +26,7 @@ function Register() {
   const [verifying, setVerifying] = useState(false);
   const [verified, setVerified] = useState(false);
   const [showOtpModal, setShowOtpModal] = useState(false);
-  const [otp, setOtp] = useState('');
+  const [otp, setOtp] = useState(Array(6).fill(''));
   const staticOtp = '123456'; // Static OTP for demonstration
 
   const { register } = useAuth();
@@ -66,13 +66,31 @@ function Register() {
     }
   };
 
-  const handleOtpSubmit = () => {
-    if (otp.length !== 6) {
-      setErrorMessage('OTP must be 6 digits.');
-      return;
-    }
+  const handleInputChange = (index, digit) => {
+    if (digit.length <= 1 && /^\d*$/.test(digit)) {
+      const newOtp = [...otp];
+      newOtp[index] = digit;
+      setOtp(newOtp);
 
-    if (otp === staticOtp) {
+      // Move focus to the next input
+      if (digit !== "" && index < 5) {
+        const nextInput = document.getElementById(`otp-${index + 1}`);
+        nextInput?.focus();
+      }
+    }
+  };
+
+  const handleKeyDown = (index, e) => {
+    if (e.key === "Backspace" && otp[index] === "" && index > 0) {
+      // Move focus to the previous input on backspace
+      const prevInput = document.getElementById(`otp-${index - 1}`);
+      prevInput?.focus();
+    }
+  };
+
+  const handleOtpSubmit = () => {
+    const enteredOtp = otp.join('');
+    if (enteredOtp === staticOtp) {
       navigate('/login');
     } else {
       setErrorMessage('Invalid OTP. Please try again.');
@@ -379,20 +397,30 @@ function Register() {
       {showOtpModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h3 className="text-lg font-semibold mb-4">Enter OTP</h3>
-            <input
-              type="text"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 mb-4"
-              placeholder="Enter 6-digit OTP"
-              maxLength={6}
-            />
+            <h3 className="text-lg font-semibold mb-4">Verification Code</h3>
+            <p className="text-sm text-gray-500 mb-4">
+              We have sent the verification code to your email address
+            </p>
+            <div className="flex justify-center gap-3 mb-4">
+              {otp.map((digit, index) => (
+                <input
+                  key={index}
+                  id={`otp-${index}`}
+                  type="text"
+                  inputMode="numeric"
+                  value={digit}
+                  onChange={(e) => handleInputChange(index, e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(index, e)}
+                  className="w-12 h-12 text-2xl text-center border-2 rounded-xl focus:border-orange-400 focus:ring-orange-400"
+                  maxLength={1}
+                />
+              ))}
+            </div>
             <button
               onClick={handleOtpSubmit}
-              className="w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="w-full py-2 px-4 bg-blue-400 text-white rounded-full hover:bg-blue-500"
             >
-              Submit OTP
+              Confirm
             </button>
           </div>
         </div>
