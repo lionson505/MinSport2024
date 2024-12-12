@@ -111,13 +111,20 @@ const Sidebar = () => {
             } border-r`}
         >
           {/* Logo */}
+          {/* <NavLink
+            to={"/"}
+
+          >
           <div
               className={`flex items-center justify-center h-16 px-4 ${
                   isDarkMode ? "border-gray-700" : "border-gray-200"
               } border-b`}
           >
+           
             <img src="/logo/logo.svg" alt="Logo" className="h-10 w-auto" />
+            
           </div>
+          </NavLink> */}
 
           {/* Navigation */}
           <div className="flex-1 overflow-y-auto">

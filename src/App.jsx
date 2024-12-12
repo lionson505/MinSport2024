@@ -39,6 +39,7 @@ import NoPageFound from './pages/unauthorized';
 import { MatchOperatorDashboard, TeamManagement, MatchOperatorProvider } from './features/match-operator';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import MyMap from './pages/Map.jsx';
 
 function App() {
   const [accessibleLinks, setAccessibleLinks] = useState(null); // Initialize as null to differentiate between loading and empty state
@@ -117,7 +118,7 @@ function App() {
                       <Route path="/events" element={<EventsPage />} />
                       <Route path="/federation" element={<LandingPageFederation />} />
                       <Route path="/match" element={<LandingPageMatch />} />
-                      LandingPageMatch
+                      <Route path="/map" element={<MyMap/>} />
 
                       {/* Protected Routes */}
                       <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>

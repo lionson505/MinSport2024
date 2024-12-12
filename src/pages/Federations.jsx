@@ -283,8 +283,8 @@ const Federations = () => {
     fetchData();
   }, [currentPage, itemsPerPage]);
 
-  const handleEditPlayerStaff = (staff) => {
-    setPlayerToEdit(staff);
+  const handleEditPlayerStaff = (person) => {
+    setPlayerToEdit(person);
     setIsAddPlayerModalOpen(true);
   };
 
