@@ -10,16 +10,40 @@ const HeaderTwo = () => {
     { name: 'INFRASTRUCTURE', path: '/infrastructures' },
   ];
 
-  const [activeTab, setActiveTab] = useState('HOME');
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [iSactiveTab, setIsActiveTab] = useState('HOME');
+
+  const handleTabClick = (name) => {
+    setIsActiveTab(name);
+  };
 
   return (
-    <header className="bg-white shadow fixed top-0 w-full z-50">
-      <div className="container mx-auto px-6">
-        <div className="flex items-center justify-between h-20">
-          <Link to="/landing">
-            <img src="/logo/logo.svg" alt="MINISPORTS" className="h-12 w-auto" />
-          </Link>
+    <div>
+      <header className="bg-white shadow fixed top-0 w-full z-50">
+        <div className="container mx-auto px-6">
+          <div className="flex items-center justify-between h-20">
+            <Link to="/landing">
+              <img src="/logo/logo.svg" alt="MINISPORTS" className="h-12 w-auto" />
+            </Link>
+            <nav className="hidden md:flex space-x-10">
+              {navigation.map((item) => {
+                const isActiveTab = location.pathname === item.path;
+                return(
+                <Link
+                  to={item.path}
+                  key={item.name}
+                  className={`px-6 py-2.5 rounded-lg text-base ${
+                    isActiveTab
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                  onClick={() => {
+                    handleTabClick(item.name);
+                  }}
+                >
+                  {item.name}
+                </Link>
+                )})}
+            </nav>
 
           {/* Mobile Menu Button */}
           <button
