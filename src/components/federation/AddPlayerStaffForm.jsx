@@ -21,6 +21,8 @@ const educationLevelOptions = [
   { value: 'OTHER', label: 'Other' }
 ];
 
+const inputClassName = "h-14 w-full px-6 border border-gray-300 rounded-md text-base";
+
 const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
   const [formData, setFormData] = useState({
     type: initialData.type || 'PLAYER',
@@ -169,8 +171,9 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
             name="type"
             value={formData.type}
             onChange={handleChange}
-            className="mt-1 block w-full border rounded-md"
+            className={inputClassName}
           >
+            <option value="">Select Type</option>
             <option value="PLAYER">Player</option>
             <option value="STAFF">Staff</option>
           </select>
@@ -184,7 +187,7 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
               setIdError('');
               setFormData(prev => ({ ...prev, idPassportNo: '' }));
             }}
-            className="mt-1 block w-full border rounded-md"
+            className={`${inputClassName} mt-1 block w-full border rounded-md`}
           >
             <option value="passport">Passport</option>
             <option value="nid">National ID</option>
@@ -203,7 +206,7 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
               setIdError('');
             }}
             placeholder={idType === 'nid' ? 'Enter 16 digit National ID' : 'Enter Passport Number'}
-            className={`mt-1 block w-full border rounded-md ${idError ? 'border-red-500' : ''}`}
+            className={`${inputClassName} mt-1 block w-full border rounded-md ${idError ? 'border-red-500' : ''}`}
           />
           {idError && <p className="text-sm text-red-500 mt-1">{idError}</p>}
         </div>
@@ -222,7 +225,7 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
             type="file"
             accept="image/*"
             name="passportPicture"
-            className="mt-1 block w-full border rounded-md"
+            className={`${inputClassName} mt-1 block w-full border rounded-md`}
           />
         </div>
         <div>
@@ -232,7 +235,7 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
             name="firstName"
             value={formData.firstName}
             onChange={handleChange}
-            className="mt-1 block w-full border rounded-md"
+            className={`${inputClassName} mt-1 block w-full border rounded-md`}
           />
         </div>
         <div>
@@ -242,7 +245,7 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
             name="lastName"
             value={formData.lastName}
             onChange={handleChange}
-            className="mt-1 block w-full border rounded-md"
+            className={`${inputClassName} mt-1 block w-full border rounded-md`}
           />
         </div>
         <div>
@@ -252,7 +255,7 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
             name="dateOfBirth"
             value={formData.dateOfBirth}
             onChange={handleChange}
-            className="mt-1 block w-full border rounded-md"
+            className={`${inputClassName} mt-1 block w-full border rounded-md`}
           />
         </div>
         <div>
@@ -261,8 +264,9 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
             name="maritalStatus"
             value={formData.maritalStatus}
             onChange={handleChange}
-            className="mt-1 block w-full border rounded-md"
+            className={inputClassName}
           >
+            <option value="">Select Marital Status</option>
             {maritalStatusOptions.map((status) => (
               <option key={status.value} value={status.value}>
                 {status.label}
@@ -277,7 +281,7 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
             name="placeOfResidence"
             value={formData.placeOfResidence}
             onChange={handleChange}
-            className="mt-1 block w-full border rounded-md"
+            className={`${inputClassName} mt-1 block w-full border rounded-md`}
           />
         </div>
         <div>
@@ -286,8 +290,9 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
             name="discipline"
             value={formData.discipline}
             onChange={handleChange}
-            className="mt-1 block w-full border rounded-md"
+            className={inputClassName}
           >
+            <option value="">Select Discipline</option>
             {disciplines.map((discipline) => (
               <option key={discipline.value} value={discipline.value}>
                 {discipline.label}
@@ -301,7 +306,7 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
             name="nationality"
             value={formData.nationality}
             onChange={handleChange}
-            className="mt-1 block w-full border rounded-md"
+            className={inputClassName}
           >
             <option value="">Select Nationality</option>
             {countries.map((country) => (
@@ -317,7 +322,7 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
             name="otherNationality"
             value={formData.otherNationality}
             onChange={handleChange}
-            className="mt-1 block w-full border rounded-md"
+            className={`${inputClassName} mt-1 block w-full border rounded-md`}
           >
             <option value="">Select Other Nationality</option>
             {countries.map((country) => (
@@ -334,7 +339,7 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
             name="positionInClub"
             value={formData.positionInClub}
             onChange={handleChange}
-            className="mt-1 block w-full border rounded-md"
+            className={`${inputClassName} mt-1 block w-full border rounded-md`}
           />
         </div>
         <div>
@@ -343,8 +348,9 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
             name="federationId"
             value={formData.federationId}
             onChange={handleChange}
-            className="mt-1 block w-full border rounded-md"
+            className={inputClassName}
           >
+            <option value="">Select Federation</option>
             {federations.map((federation) => (
               <option key={federation.value} value={federation.value}>
                 {federation.label}
@@ -358,8 +364,9 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
             name="currentClubId"
             value={formData.currentClubId}
             onChange={handleChange}
-            className="mt-1 block w-full border rounded-md"
+            className={inputClassName}
           >
+            <option value="">Select Current Club</option>
             {clubs.map((club) => (
               <option key={club.value} value={club.value}>
                 {club.label}
@@ -373,8 +380,9 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
             name="originClubId"
             value={formData.originClubId}
             onChange={handleChange}
-            className="mt-1 block w-full border rounded-md"
+            className={inputClassName}
           >
+            <option value="">Select Origin Club</option>
             {clubs.map((club) => (
               <option key={club.value} value={club.value}>
                 {club.label}
@@ -389,7 +397,7 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
             name="joinDate"
             value={formData.joinDate}
             onChange={handleChange}
-            className="mt-1 block w-full border rounded-md"
+            className={`${inputClassName} mt-1 block w-full border rounded-md`}
           />
         </div>
         <div>
@@ -399,7 +407,7 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
             name="placeOfBirth"
             value={formData.placeOfBirth}
             onChange={handleChange}
-            className="mt-1 block w-full border rounded-md"
+            className={`${inputClassName} mt-1 block w-full border rounded-md`}
           />
         </div>
         <div>
@@ -409,7 +417,7 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
             name="fitnessStatus"
             value={formData.fitnessStatus}
             onChange={handleChange}
-            className="mt-1 block w-full border rounded-md"
+            className={`${inputClassName} mt-1 block w-full border rounded-md`}
           />
         </div>
         <div>
@@ -418,8 +426,9 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
             name="levelOfEducation"
             value={formData.levelOfEducation}
             onChange={handleChange}
-            className="mt-1 block w-full border rounded-md"
+            className={inputClassName}
           >
+            <option value="">Select Education Level</option>
             {educationLevelOptions.map((level) => (
               <option key={level.value} value={level.value}>
                 {level.label}
@@ -433,7 +442,7 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
             type="file"
             accept=".pdf,.doc,.docx"
             name="cvResume"
-            className="mt-1 block w-full border rounded-md"
+            className={`${inputClassName} mt-1 block w-full border rounded-md`}
           />
         </div>
       </div>

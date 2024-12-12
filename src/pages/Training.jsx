@@ -19,6 +19,7 @@ import { useDarkMode } from '../contexts/DarkModeContext';
 import { Button } from '../components/ui/Button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 import axiosInstance from '../utils/axiosInstance';
+import PrintButton from '../components/reusable/Print';
 
 const Training = () => {
   const { isDarkMode } = useDarkMode();
@@ -138,14 +139,8 @@ const Training = () => {
 
       {/* Search Bar */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <Button
-          onClick={() => setShowAddModal(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 w-full sm:w-auto"
-          disabled={isSubmitting}
-        >
-          <Plus className="h-5 w-5" />
-          <span>Add Training</span>
-        </Button>
+        <h1 className={`text-2xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Trainings</h1>
+     
         
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto">
           <div className="relative flex-grow sm:flex-grow-0">
@@ -176,6 +171,16 @@ const Training = () => {
 
       {/* Trainings Table */}
       <div className="overflow-x-auto bg-white rounded-lg shadow">
+        
+        <PrintButton>
+        <Button
+          onClick={() => setShowAddModal(true)}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 w-full sm:w-auto"
+          disabled={isSubmitting}
+        >
+          <Plus className="h-5 w-5" />
+          <span>Add Training</span>
+        </Button>
         <Table>
           <TableHeader>
             <TableRow>
@@ -189,7 +194,7 @@ const Training = () => {
               <TableHead className="min-w-[140px] text-[11px]">TRAINING ORGANISER</TableHead>
               {/* <TableHead className="min-w-[120px] text-[11px]">VENUE</TableHead> */}
               <TableHead className="w-[80px] text-[11px]">PARTICIPANTS</TableHead>
-              <TableHead className="w-[70px] text-[11px]">ACTION</TableHead>
+              <TableHead className="operation w-[70px] text-[11px]">ACTION</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -211,7 +216,7 @@ const Training = () => {
                 <TableCell>{training.organiser}</TableCell>
                 {/* <TableCell>{training.venue}</TableCell> */}
                 <TableCell>{training.participants ? training.participants.join(', ') : 'N/A'}</TableCell>
-                <TableCell>
+                <TableCell className="operation">
                   <ActionMenu
                     onDelete={() => {
                       setTrainingToDelete(training);
@@ -227,6 +232,7 @@ const Training = () => {
             ))}
           </TableBody>
         </Table>
+        </PrintButton>
       </div>
 
       {/* Pagination */}

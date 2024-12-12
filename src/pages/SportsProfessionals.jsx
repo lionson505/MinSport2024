@@ -9,6 +9,7 @@ import axiosInstance from '../utils/axiosInstance';
 import Modal from '../components/ui/Modal';
 import AddSportsProfessionalForm from '../components/forms/AddSportsProfessionalForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
+import PrintButton from '../components/reusable/Print';
 
 const SportsProfessionals = () => {
   const [professionals, setProfessionals] = useState([]);
@@ -284,7 +285,7 @@ const SportsProfessionals = () => {
     <TableRow key={discipline.id}>
       <TableCell>{discipline.name}</TableCell>
       <TableCell>{discipline.type}</TableCell>
-      <TableCell>
+      <TableCell className="operation">
         <div className="flex items-center gap-2">
           <button
             onClick={() => setViewingDiscipline(discipline)}
@@ -322,7 +323,7 @@ const SportsProfessionals = () => {
     <TableRow key={func.id}>
       <TableCell>{func.name}</TableCell>
       <TableCell>{disciplines.find((d) => d.id === func.disciplineId)?.name}</TableCell>
-      <TableCell>
+      <TableCell className="operation">
         <div className="flex items-center gap-2">
           <button
             onClick={() => setViewingFunction(func)}
@@ -362,7 +363,7 @@ const SportsProfessionals = () => {
       <TableCell>{professional.lastName}</TableCell>
       <TableCell>{professional.function}</TableCell>
       <TableCell>{professional.nationality}</TableCell>
-      <TableCell>
+      <TableCell className="operation">
         <div className="flex items-center gap-2">
           <button
             onClick={() => {
@@ -469,6 +470,7 @@ const SportsProfessionals = () => {
 
       {/* Table Section */}
       <div className="bg-white rounded-lg shadow">
+        <PrintButton>
         <Table>
           <TableHeader>
             <TableRow>
@@ -478,19 +480,19 @@ const SportsProfessionals = () => {
                   <TableHead>Last Name</TableHead>
                   <TableHead>Function</TableHead>
                   <TableHead>Nationality</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead className="operation">Actions</TableHead>
                 </>
               ) : activeTab === 'Disciplines' ? (
                 <>
                   <TableHead>Name</TableHead>
                   <TableHead>Type</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead className="operation">Actions</TableHead>
                 </>
               ) : (
                 <>
                   <TableHead>Name</TableHead>
                   <TableHead>Discipline</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead className="operation">Actions</TableHead>
                 </>
               )}
             </TableRow>
@@ -503,6 +505,8 @@ const SportsProfessionals = () => {
               : getCurrentPageData(filteredFunctions).map(renderFunctionRow)}
           </TableBody>
         </Table>
+        </PrintButton>
+
 
         {/* Pagination */}
         <div className="flex justify-between items-center px-4 py-3 border-t">
@@ -630,7 +634,7 @@ const SportsProfessionals = () => {
                 <label className="block font-semibold">Name</label>
                 <input
                   type="text"
-                  className="input"
+                  className="h-12 w-full px-4 border border-gray-300 rounded-md"
                   value={functionForm.name}
                   onChange={(e) => setFunctionForm({ ...functionForm, name: e.target.value })}
                   required
@@ -639,7 +643,7 @@ const SportsProfessionals = () => {
               <div className="space-y-2">
                 <label className="block font-semibold">Discipline</label>
                 <select
-                  className="input"
+                  className="h-12 w-full px-4 border border-gray-300 rounded-md"
                   value={functionForm.disciplineId}
                   onChange={(e) => setFunctionForm({ ...functionForm, disciplineId: e.target.value })}
                   required

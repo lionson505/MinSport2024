@@ -10,6 +10,7 @@ import {
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import LiveMatches from '../components/LiveMatches';
 import HeaderTwo from '../components/headerTwo';
+import MyMap from './public/MyMap';
 
 function LandingPage() {
   const [activeTab, setActiveTab] = useState('ALL');
@@ -293,6 +294,13 @@ function LandingPage() {
                 ))}
               </div>
             </section>
+            <section className="mb-16">
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-3xl font-bold">Sports Facilities</h2>
+              </div>
+              <MyMap />
+            </section>
+
           </div>
 
           {/* Right Sidebar - Matches Section */}
@@ -392,6 +400,7 @@ function LandingPage() {
                     </div>
                   </div>
                 ))}
+
               </div>
             </div>
           </div>

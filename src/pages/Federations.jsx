@@ -41,6 +41,7 @@ import { Button } from '../components/ui/Button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 import PlayerStaffTransfer from '../components/federation/PlayerStaffTransfer';
 import axiosInstance from '../utils/axiosInstance';
+import PrintButton from '../components/reusable/Print';
 
 const TransferHistoryModal = ({ isOpen, onClose, player }) => {
   const [transferHistory, setTransferHistory] = useState([]);
@@ -236,7 +237,7 @@ const Federations = () => {
     'Manage Clubs',
     'Manage Players/Staff',
     'Player/Staff Transfer',
-    'Players Map',
+    // 'Players Map',
   ];
 
   const filterConfig = {
@@ -282,8 +283,8 @@ const Federations = () => {
     fetchData();
   }, [currentPage, itemsPerPage]);
 
-  const handleEditPlayerStaff = (staff) => {
-    setPlayerToEdit(staff);
+  const handleEditPlayerStaff = (person) => {
+    setPlayerToEdit(person);
     setIsAddPlayerModalOpen(true);
   };
 
@@ -677,6 +678,7 @@ const Federations = () => {
           
           <div className="bg-white rounded-lg shadow">
             <div className="overflow-x-auto">
+              <PrintButton>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -693,7 +695,7 @@ const Federations = () => {
                     <TableHead className="w-[100px] text-xs">Year Founded</TableHead>
                     <TableHead className="min-w-[180px] text-xs">Legal Representative</TableHead>
                     <TableHead className="min-w-[120px] text-xs">Address</TableHead>
-                    <TableHead className="w-[80px] text-xs">Operation</TableHead>
+                    <TableHead className="w-[80px] text-xs operation">Operation</TableHead>
                   </TableRow>
                 </TableHeader>
               <TableBody>
@@ -718,7 +720,7 @@ const Federations = () => {
                     <TableCell className="text-xs">{federation.yearFounded}</TableCell>
                     <TableCell className="text-xs">{federation.legalRepresentativeName}</TableCell>
                     <TableCell className="text-xs">{federation.address}</TableCell>
-                    <TableCell>
+                    <TableCell className="operation">
                       <div className="flex items-center gap-0.5">
                         <ActionMenu
                           onEdit={() => handleEdit(federation)}
@@ -730,6 +732,7 @@ const Federations = () => {
                 ))}
               </TableBody>
             </Table>
+            </PrintButton>
             </div>
 
             <div className="flex items-center justify-between px-4 py-3 border-t">
@@ -905,6 +908,7 @@ const Federations = () => {
             </div>
 
             <div className="bg-white rounded-lg shadow">
+              <PrintButton>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -917,7 +921,7 @@ const Federations = () => {
                     <TableHead className="w-[120px] text-xs">Club</TableHead>
                     <TableHead className="w-[120px] text-xs">Age/Date of birth</TableHead>
                     <TableHead className="w-[100px] text-xs">Nationality</TableHead>
-                    <TableHead className="w-[120px] text-xs">Operation</TableHead>
+                    <TableHead className="w-[120px] operation text-xs">Operation</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -932,7 +936,7 @@ const Federations = () => {
                       <TableCell>{person.currentClub.name}</TableCell>
                       <TableCell>{new Date(person.dateOfBirth).toLocaleDateString()}</TableCell>
                       <TableCell>{person.nationality}</TableCell>
-                      <TableCell>
+                      <TableCell className="operation"> 
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => handleViewPlayerDetails(person)}
@@ -968,6 +972,7 @@ const Federations = () => {
                   ))}
                 </TableBody>
               </Table>
+              </PrintButton>
               <div className="flex items-center justify-between px-4 py-3 border-t">
                 <div className="flex items-center text-sm text-gray-500">
                   Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredPlayersStaff.length)} of{' '}

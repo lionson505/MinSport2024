@@ -17,6 +17,7 @@ import { format, isValid } from 'date-fns';
 import axiosInstance from '../../utils/axiosInstance';
 import { Dialog, Transition } from '@headlessui/react';
 import EditEventModal from '../../components/tourism/EditEventModal'; // Import the EditEventModal component
+import PrintButton from '../reusable/Print';
 
 const TourismEventsList = () => {
   const [events, setEvents] = useState([]);
@@ -173,15 +174,16 @@ const TourismEventsList = () => {
 
       {/* Events Table */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-        <Table>
+        <PrintButton title='SPORTS TOURISM'>
+          <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Event Name</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Start Date</TableHead>
               <TableHead>Location</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead className="operation" >Status</TableHead>
+              <TableHead className="operation">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -195,7 +197,7 @@ const TourismEventsList = () => {
                     : 'Invalid Date'}
                 </TableCell>
                 <TableCell>{`${event.province}, ${event.district}`}</TableCell>
-                <TableCell>
+                <TableCell className="operation"  >
                   <span
                     className={`px-2 py-1 rounded-full text-xs ${
                       event.status === 'Upcoming'
@@ -210,7 +212,7 @@ const TourismEventsList = () => {
                     {event.status}
                   </span>
                 </TableCell>
-                <TableCell>
+                <TableCell className="operation" >
                   <div className="flex space-x-2">
                     <Button
                       size="sm"
@@ -263,6 +265,8 @@ const TourismEventsList = () => {
             ))}
           </TableBody>
         </Table>
+        </PrintButton>
+       
 
         {/* Pagination */}
         <TablePagination
@@ -293,9 +297,18 @@ const TourismEventsList = () => {
               <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
                 <Dialog.Title className="text-xl font-semibold mb-4">Event Details</Dialog.Title>
                 
-                {selectedEvent?.banner && (
+                {/* Banner Section */}
+                {selectedEvent?.banner ? (
                   <div className="mb-4">
-                    <img src={selectedEvent.banner} alt="Event Banner" className="w-full h-48 object-cover rounded-lg" />
+                    <img 
+                      src={`/uploads/banners/${selectedEvent.banner}`} 
+                      alt="Event Banner" 
+                      className="w-full h-48 object-cover rounded-lg" 
+                    />
+                  </div>
+                ) : (
+                  <div className="mb-4 p-4 bg-gray-100 rounded-lg text-gray-500 text-center">
+                    No banner image available
                   </div>
                 )}
 
@@ -340,16 +353,21 @@ const TourismEventsList = () => {
                   <p className="mt-1 text-gray-600">{selectedEvent?.description}</p>
                 </div>
 
-                {selectedEvent?.video && (
+                {/* Video Section */}
+                {selectedEvent?.video ? (
                   <div className="mt-4">
                     <p><strong>Event Video:</strong></p>
                     <video 
-                      src={selectedEvent.video} 
+                      src={`/uploads/video/${selectedEvent.video}`} 
                       controls 
                       className="mt-2 w-full rounded-lg"
                     >
                       Your browser does not support the video tag.
                     </video>
+                  </div>
+                ) : (
+                  <div className="mt-4 p-4 bg-gray-100 rounded-lg text-gray-500 text-center">
+                    No event video available
                   </div>
                 )}
 
