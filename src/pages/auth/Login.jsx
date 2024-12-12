@@ -237,7 +237,7 @@ function Login() {
             </div>
             <button
               onClick={handleOtpSubmit}
-              className="w-full py-2 px-4 bg-blue-400 text-white rounded-full hover:bg-orange-500"
+              className="w-full py-2 px-4 bg-blue-400 text-white rounded-full hover:bg-blue-500"
             >
               Confirm
             </button>
