@@ -18,6 +18,7 @@ import Message from '../components/ui/Message';
 import { useDarkMode } from '../contexts/DarkModeContext';
 import AddPartnerForm from '../components/forms/AddPartnerForm';
 import { getPartners, addPartner, deletePartner, editPartner } from '../services/patern';
+import PrintButton from '../components/reusable/Print';
 
 const Partners = () => {
   const { isDarkMode } = useDarkMode();
@@ -191,6 +192,7 @@ const Partners = () => {
       </div>
 
       <div className="rounded-lg bg-white shadow">
+        <PrintButton title='Partners Report'>
   <Table>
     <TableHeader>
       <TableRow>
@@ -202,8 +204,8 @@ const Partners = () => {
         <TableHead>Sector</TableHead>
         <TableHead>Representative Name</TableHead>
         <TableHead>Representative Gender</TableHead>
-        <TableHead>Representative Email</TableHead>
-        <TableHead>Representative Phone</TableHead>
+        {/* <TableHead>Representative Email</TableHead> */}
+        {/* <TableHead>Representative Phone</TableHead> */}
 
         <TableHead>Actions</TableHead>
       </TableRow>
@@ -219,8 +221,8 @@ const Partners = () => {
           <TableCell>{partner.location_sector || 'Not Available'}</TableCell>
           <TableCell>{partner.legal_representative_name || 'Not Available'}</TableCell>
           <TableCell>{partner.legal_representative_gender || 'Not Available'}</TableCell>
-          <TableCell>{partner.legal_representative_email || 'Not Available'}</TableCell>
-          <TableCell>{partner.legal_representative_phone || 'Not Available'}</TableCell>
+          {/* <TableCell>{partner.legal_representative_email || 'Not Available'}</TableCell>
+          <TableCell>{partner.legal_representative_phone || 'Not Available'}</TableCell> */}
 
           <TableCell>
             <ActionMenu
@@ -238,6 +240,7 @@ const Partners = () => {
       ))}
     </TableBody>
   </Table>
+  </PrintButton>
 </div>
 
 

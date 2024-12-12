@@ -1,0 +1,20 @@
+export const classOptions = [
+  "Primary 1",
+  "Primary 2",
+  "Primary 3",
+  "Primary 4",
+  "Primary 5",
+  "Primary 6",
+  "Secondary 1",
+  "Secondary 2",
+  "Secondary 3",
+  "Secondary 4",
+  "Secondary 5",
+  "Secondary 6",
+  "University Year 1",
+  "University Year 2",
+  "University Year 3",
+  "University Year 4",
+  "Professional",
+  "Other"
+]; 

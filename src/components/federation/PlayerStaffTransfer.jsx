@@ -153,7 +153,7 @@ const PlayerStaffTransfer = () => {
             <option value="">Select Player/Staff</option>
             {players.map((player) => (
               <option key={player.id} value={player.id}>
-                {player.name} ({player.type})
+                {player.name} ({player.firstName} {player.lastName})
               </option>
             ))}
           </select>

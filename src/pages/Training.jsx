@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit } from 'lucide-react';
+import { 
+  Table, 
+  TableHeader, 
+  TableBody, 
+  TableRow, 
+  TableHead, 
+  TableCell 
+} from '../components/ui/table';
+import { Search, Plus, Filter, X, AlertCircle, Edit } from 'lucide-react';
 import Modal from '../components/ui/Modal';
 import AddTrainingForm from '../components/forms/AddTrainingForm';
 import ActionMenu from '../components/ui/ActionMenu';
@@ -11,14 +19,7 @@ import { useDarkMode } from '../contexts/DarkModeContext';
 import { Button } from '../components/ui/Button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 import axiosInstance from '../utils/axiosInstance';
-
-// Define the Table components
-const Table = ({ children }) => <table className="min-w-full table-auto">{children}</table>;
-const TableHeader = ({ children }) => <thead className="bg-gray-200">{children}</thead>;
-const TableRow = ({ children }) => <tr className="hover:bg-gray-100">{children}</tr>;
-const TableHead = ({ children }) => <th className="px-4 py-2 text-left">{children}</th>;
-const TableBody = ({ children }) => <tbody>{children}</tbody>;
-const TableCell = ({ children }) => <td className="px-4 py-2">{children}</td>;
+import PrintButton from '../components/reusable/Print';
 
 const Training = () => {
   const { isDarkMode } = useDarkMode();
@@ -137,61 +138,99 @@ const Training = () => {
       )}
 
       {/* Search Bar */}
-      <div className="mb-4">
-        <input
-          type="text"
-          placeholder="Search trainings..."
-          className="border p-2 rounded-md w-full"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <Button
+          onClick={() => setShowAddModal(true)}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 w-full sm:w-auto"
+          disabled={isSubmitting}
+        >
+          <Plus className="h-5 w-5" />
+          <span>Add Training</span>
+        </Button>
+        
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto">
+          <div className="relative flex-grow sm:flex-grow-0">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search trainings..."
+              className="pl-10 pr-4 py-2 border rounded-lg w-full sm:w-64"
+            />
+          </div>
+          <div className="flex items-center gap-2 whitespace-nowrap">
+            <span className="text-sm text-gray-600">Show:</span>
+            <select
+              className="border rounded px-2 py-1"
+              value={itemsPerPage}
+              onChange={(e) => setItemsPerPage(Number(e.target.value))}
+            >
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+          </div>
+        </div>
       </div>
 
-      {/* Add Training Button */}
-      <Button
-        variant="default"
-        onClick={() => setShowAddModal(true)}
-      >
-        <Plus className="h-4 w-4 mr-2" />
-        Add Training
-      </Button>
-
       {/* Trainings Table */}
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Title</TableHead>
-            <TableHead>From Date</TableHead>
-            <TableHead>To Date</TableHead>
-            <TableHead>Organiser</TableHead>
-            <TableHead>Participants</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {currentItems.map((training) => (
-            <TableRow key={training.id}>
-              <TableCell>{training.title}</TableCell>
-              <TableCell>{training.fromDate ? new Date(training.fromDate).toLocaleDateString() : 'N/A'}</TableCell>
-              <TableCell>{training.toDate ? new Date(training.toDate).toLocaleDateString() : 'N/A'}</TableCell>
-              <TableCell>{training.organiser}</TableCell>
-              <TableCell>{training.participants ? training.participants.join(', ') : 'N/A'}</TableCell>
-              <TableCell>
-                <ActionMenu
-                  onDelete={() => {
-                    setTrainingToDelete(training);
-                    setShowDeleteDialog(true);
-                  }}
-                  onEdit={() => {
-                    setTrainingToEdit(training);
-                    setShowAddModal(true);
-                  }}
-                />
-              </TableCell>
+      <div className="overflow-x-auto bg-white rounded-lg shadow">
+        <PrintButton>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[20px] text-[11px]">
+                <input type="checkbox" className="rounded border-gray-300 w-3 h-3" />
+              </TableHead>
+              <TableHead className="w-[60px] text-[11px]">ID</TableHead>
+              <TableHead className="min-w-[150px] text-[11px]">TRAINING TITLE</TableHead>
+              <TableHead className="min-w-[120px] text-[11px]">TRAINING PERIOD</TableHead>
+              <TableHead className="w-[80px] text-[11px]">STATUS</TableHead>
+              <TableHead className="min-w-[140px] text-[11px]">TRAINING ORGANISER</TableHead>
+              {/* <TableHead className="min-w-[120px] text-[11px]">VENUE</TableHead> */}
+              <TableHead className="w-[80px] text-[11px]">PARTICIPANTS</TableHead>
+              <TableHead className="operation w-[70px] text-[11px]">ACTION</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {currentItems.map((training) => (
+              <TableRow key={training.id}>
+                <TableCell>
+                  <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${
+                    training.status === 'On going' 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-blue-100 text-blue-800'
+                  }`}>
+                    {training.status}
+                  </span>
+                </TableCell>
+                <TableCell>{training.id}</TableCell>
+                <TableCell>{training.title}</TableCell>
+                <TableCell>{training.fromDate ? new Date(training.fromDate).toLocaleDateString() : 'N/A'}</TableCell>
+                <TableCell>{training.toDate ? new Date(training.toDate).toLocaleDateString() : 'N/A'}</TableCell>
+                <TableCell>{training.organiser}</TableCell>
+                {/* <TableCell>{training.venue}</TableCell> */}
+                <TableCell>{training.participants ? training.participants.join(', ') : 'N/A'}</TableCell>
+                <TableCell className="operation">
+                  <ActionMenu
+                    onDelete={() => {
+                      setTrainingToDelete(training);
+                      setShowDeleteDialog(true);
+                    }}
+                    onEdit={() => {
+                      setTrainingToEdit(training);
+                      setShowAddModal(true);
+                    }}
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+        </PrintButton>
+      </div>
 
       {/* Pagination */}
       <div className="flex justify-between mt-6">

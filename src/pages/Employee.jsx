@@ -2,7 +2,7 @@ import React, { useState, useEffect, Fragment } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/input';
-import { Loader2, Edit, Download, Trash2, AlertTriangle, Eye, X } from 'lucide-react';
+import { Loader2, Pencil, Download, Trash2, AlertTriangle, Eye, X } from 'lucide-react';
 import AddEmployeeModal from '../components/AddEmployeeModal';
 import EditEmployeeModal from '../components/EditEmployeeModal';
 import toast from 'react-hot-toast';
@@ -10,6 +10,7 @@ import { Dialog, Transition } from '@headlessui/react';
 import AddEmployeeVoting from '../components/AddEmployeeVoting';
 import ManageEmployeeVoting from '../components/ManageEmployeeVoting';
 import { fetchEmployees, createEmployee, updateEmployee, deleteEmployee } from '../services/employee';
+import PrintButton from '../components/reusable/Print';
 
 function Employee() {
   const [loading, setLoading] = useState(true);
@@ -75,9 +76,10 @@ function Employee() {
 
   const handleAddEmployee = async (newEmployee) => {
     try {
-      const addedEmployee = await createEmployee(newEmployee);
-      setEmployeesData(prev => [...prev, addedEmployee]);
       setIsAddModalOpen(false);
+      const addedEmployee = await createEmployee(newEmployee);
+      const freshEmployees = await fetchEmployees();
+      setEmployeesData(freshEmployees);
       toast.success('Employee added successfully');
     } catch (error) {
       toast.error('Failed to add employee');
@@ -337,6 +339,7 @@ function Employee() {
             {/* Employee Table */}
             <div className="bg-white rounded-lg shadow overflow-x-auto">
               {paginatedData.length > 0 ? (
+                <PrintButton>
                 <table className="w-full">
                   <thead className="bg-gray-50">
                     <tr>
@@ -345,9 +348,9 @@ function Employee() {
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Start Date</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Employee Status</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Employee Type</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Department</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase ">Department</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Supervisor</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500  operation uppercase">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
@@ -368,39 +371,35 @@ function Employee() {
                         <td className="px-4 py-3 text-sm">{employee.employee_type}</td>
                         <td className="px-4 py-3 text-sm">{employee.department}</td>
                         <td className="px-4 py-3 text-sm">{employee.department_supervisor}</td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 operation">
                           <div className="flex space-x-2">
                             <Button
-                              size="sm"
-                              variant="outline"
+                              size="icon"
+                              variant="ghost"
                               onClick={() => handleView(employee)}
                             >
-                              <Eye className="h-4 w-4 mr-1" />
-                              View
+                              <Eye className="h-4 w-4" />
                             </Button>
                             <Button
-                              size="sm"
-                              variant="outline"
+                              size="icon"
+                              variant="ghost"
                               onClick={() => handleEdit(employee)}
                             >
-                              <Edit className="h-4 w-4 mr-1" />
-                              Edit
+                              <Pencil className="h-4 w-4" />
                             </Button>
                             <Button
-                              size="sm"
-                              variant="outline"
+                              size="icon"
+                              variant="ghost"
                               onClick={() => handleDownload(employee)}
                             >
-                              <Download className="h-4 w-4 mr-1" />
-                              Download
+                              <Download className="h-4 w-4" />
                             </Button>
                             <Button
-                              size="sm"
-                              variant="destructive"
+                              size="icon"
+                              variant="ghost"
                               onClick={() => handleDelete(employee)}
                             >
-                              <Trash2 className="h-4 w-4 mr-1" />
-                              Delete
+                              <Trash2 className="h-4 w-4 text-red-500" />
                             </Button>
                           </div>
                         </td>
@@ -408,6 +407,7 @@ function Employee() {
                     ))}
                   </tbody>
                 </table>
+                </PrintButton>
               ) : (
                 <div className="flex flex-col items-center justify-center py-12">
                   <div className="text-6xl mb-4">🔍</div>

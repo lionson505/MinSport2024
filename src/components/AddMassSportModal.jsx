@@ -10,48 +10,58 @@ function AddMassSportModal({ isOpen, onClose, onAdd, sport }) {
   const { isDarkMode } = useTheme();
 
   const [formData, setFormData] = useState({
-    date: "",
-    province: "",
-    district: "",
-    sector: "",
-    cell: "",
-    village: "",
-    rounds: 1,
-    purposeTheam: "",
+    date: "2024-12-11",
+    province: "string",
+    district: "string",
+    sector: "string",
+    cell: "string",
+    village: "string",
+    rounds: 0,
+    purposeTheam: "string",
     numberFemaleParticipants: 0,
     numberMaleParticipants: 0,
-    organisers: "",
-    guestOfHonor: "",
+    totalParticipants: 0,
+    organisers: "string",
+    guestOfHonor: "string"
   });
 
-  // Prepopulate form fields if editing
   useEffect(() => {
     if (sport) {
       setFormData(sport);
     } else {
       setFormData({
-        date: "",
-        province: "",
-        district: "",
-        sector: "",
-        cell: "",
-        village: "",
-        rounds: 1,
-        purposeTheam: "",
+        date: "2024-12-11",
+        province: "string",
+        district: "string",
+        sector: "string",
+        cell: "string",
+        village: "string",
+        rounds: 0,
+        purposeTheam: "string",
         numberFemaleParticipants: 0,
         numberMaleParticipants: 0,
-        organisers: "",
-        guestOfHonor: "",
+        totalParticipants: 0,
+        organisers: "string",
+        guestOfHonor: "string"
       });
     }
   }, [sport]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name.includes("number") || name === "rounds" ? parseInt(value, 10) || 0 : value,
-    }));
+    setFormData((prev) => {
+      const newData = {
+        ...prev,
+        [name]: name.includes("number") || name === "rounds" ? parseInt(value, 10) || 0 : value,
+      };
+      
+      if (name === "numberFemaleParticipants" || name === "numberMaleParticipants") {
+        newData.totalParticipants = (name === "numberFemaleParticipants" ? parseInt(value, 10) || 0 : prev.numberFemaleParticipants) +
+                                   (name === "numberMaleParticipants" ? parseInt(value, 10) || 0 : prev.numberMaleParticipants);
+      }
+      
+      return newData;
+    });
   };
 
   const handleLocationChange = (e) => {
@@ -69,10 +79,7 @@ function AddMassSportModal({ isOpen, onClose, onAdd, sport }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const totalParticipants = formData.numberFemaleParticipants + formData.numberMaleParticipants;
-
-    onAdd({ ...formData, totalParticipants });
-
+    onAdd(formData);
     onClose();
   };
 

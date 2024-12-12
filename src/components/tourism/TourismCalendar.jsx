@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -6,30 +6,61 @@ import interactionPlugin from '@fullcalendar/interaction';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { MapPin, Users, Clock, Tag, DollarSign } from 'lucide-react';
-import { useTourism } from '../../contexts/TourismContext';
 import { format } from 'date-fns';
+import axiosInstance from '../../utils/axiosInstance';
 
 const TourismCalendar = () => {
-  const { events } = useTourism();
+  const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showEventDetails, setShowEventDetails] = useState(false);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await axiosInstance.get('/sports-tourism-events');
+        setEvents(response.data);
+      } catch (error) {
+        console.error('Error fetching events:', error);
+      }
+    };
+    fetchEvents();
+  }, []);
 
   // Transform events for FullCalendar
   const calendarEvents = events.map(event => ({
     id: event.id,
     title: event.name,
-    start: `${event.startDate}T${event.startTime}`,
-    end: `${event.endDate}T${event.endTime}`,
+    start: `${event.startDate}T${event.timeFrom}`,
+    end: `${event.endDate}T${event.timeTo}`,
     backgroundColor: 
-      event.category === 'Sports Events' ? '#3B82F6' :
-      event.category === 'Adventure Sports' ? '#10B981' :
+      event.category === 0 ? '#3B82F6' :
+      event.category === 1 ? '#10B981' :
       '#8B5CF6',
     borderColor: 
-      event.category === 'Sports Events' ? '#2563EB' :
-      event.category === 'Adventure Sports' ? '#059669' :
+      event.category === 0 ? '#2563EB' :
+      event.category === 1 ? '#059669' :
       '#7C3AED',
     textColor: '#FFFFFF',
-    extendedProps: event
+    extendedProps: {
+      ...event,
+      category: event.category === 0 ? 'Sports Events' : 
+                event.category === 1 ? 'Adventure Sports' : 
+                'Other Events',
+      location: {
+        province: event.province,
+        district: event.district,
+        sector: event.sector,
+        cell: event.cell,
+        village: event.village
+      },
+      participants: {
+        male: event.maleParticipants,
+        female: event.femaleParticipants
+      },
+      fees: event.participantsFee,
+      startTime: event.timeFrom,
+      endTime: event.timeTo
+    }
   }));
 
   const handleEventClick = (info) => {
@@ -88,6 +119,8 @@ const TourismCalendar = () => {
                   <p className="text-sm font-medium">Location</p>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
                     {`${selectedEvent.location.district}, ${selectedEvent.location.province}`}
+                    <br />
+                    {`${selectedEvent.location.sector}, ${selectedEvent.location.cell}, ${selectedEvent.location.village}`}
                   </p>
                 </div>
               </div>

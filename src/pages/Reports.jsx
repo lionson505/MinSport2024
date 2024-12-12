@@ -12,6 +12,8 @@ import {
   Legend,
   ArcElement
 } from 'chart.js';
+import * as XLSX from "xlsx";
+import ChartDownloadWrapper from '../components/reusable/chartDownloader';
 
 // Register ChartJS components
 ChartJS.register(
@@ -25,6 +27,21 @@ ChartJS.register(
 );
 
 const Reports = () => {
+
+const downloadChartAsExcel = (chartData, fileName) => {
+  // Convert data to worksheet format
+  const worksheet = XLSX.utils.json_to_sheet(chartData.datasets[0].data.map((value, index) => ({
+    Label: chartData.labels[index],
+    Value: value,
+  })));
+
+  // Create workbook and append the worksheet
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Chart Data");
+
+  // Write and download the Excel file
+  XLSX.writeFile(workbook, `${fileName}.xlsx`);
+};
   const [activeTab, setActiveTab] = useState('sports-professionals');
   const { isDarkMode } = useDarkMode();
 
@@ -262,8 +279,10 @@ const Reports = () => {
   ];
 
   const renderSportsProfessionalsReport = () => (
+
     <div className="space-y-8">
-      {/* By Discipline and Gender */}
+        {/* By Discipline and Gender */}
+        <ChartDownloadWrapper chartData={disciplineData} fileName={"Distribution by Discipline and Gender"}>
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
         <h3 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
           Distribution by Discipline and Gender
@@ -272,6 +291,7 @@ const Reports = () => {
           <Bar data={disciplineGenderData} options={chartOptions} />
         </div>
       </div>
+      </ChartDownloadWrapper>
 
       {/* Gender Distribution */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -290,6 +310,7 @@ const Reports = () => {
             Age Group Distribution
           </h3>
           <div className="h-[300px]">
+            
             <Bar data={ageGroupData} options={chartOptions} />
           </div>
         </div>
@@ -318,9 +339,15 @@ const Reports = () => {
         <div className="h-[400px]">
           <Bar data={studentsByGameAndGender} options={chartOptions} />
         </div>
+        <button
+          onClick={() => downloadChartAsExcel(studentsByGameAndGender, "students_by_game_and_gender")}
+          className="mt-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700"
+        >
+          Download as Excel
+        </button>
       </div>
-
-      {/* Students by Game and Students by Center */}
+  
+      {/* Students by Game */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
           <h3 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -329,8 +356,15 @@ const Reports = () => {
           <div className="h-[300px]">
             <Pie data={studentsByGame} options={pieChartOptions} />
           </div>
+          <button
+            onClick={() => downloadChartAsExcel(studentsByGame, "students_by_game")}
+            className="mt-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700"
+          >
+            Download as Excel
+          </button>
         </div>
-
+  
+        {/* Students by Center */}
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
           <h3 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
             Students by Center
@@ -338,41 +372,17 @@ const Reports = () => {
           <div className="h-[300px]">
             <Bar data={studentsByCenter} options={chartOptions} />
           </div>
-        </div>
-      </div>
-
-      {/* Centers by District and Students by District */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-          <h3 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-            Centers by District
-          </h3>
-          <div className="h-[300px]">
-            <Bar data={centersByDistrict} options={chartOptions} />
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-          <h3 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-            Students by District
-          </h3>
-          <div className="h-[300px]">
-            <Doughnut data={studentsByDistrict} options={pieChartOptions} />
-          </div>
-        </div>
-      </div>
-
-      {/* Students by Age Group */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-        <h3 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-          Students by Age Group
-        </h3>
-        <div className="h-[400px]">
-          <Bar data={studentsByAgeGroup} options={chartOptions} />
+          <button
+            onClick={() => downloadChartAsExcel(studentsByCenter, "students_by_center")}
+            className="mt-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700"
+          >
+            Download as Excel
+          </button>
         </div>
       </div>
     </div>
   );
+  
 
   // Add this new render function for Infrastructure reports
   const renderInfrastructureReport = () => (

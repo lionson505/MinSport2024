@@ -15,6 +15,7 @@ import { Input } from '../ui/input';
 import { Select } from '../ui/select';
 import axiosInstance from '../../utils/axiosInstance';
 import BookRequestModal from '../../components/infrastructure/BookingRequestModal'; // Import the modal
+import PrintButton from '../reusable/Print';
 
 const BookingManagement = () => {
   const [bookings, setBookings] = useState([]);
@@ -117,6 +118,7 @@ const BookingManagement = () => {
 
       {/* Bookings Table */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+        <PrintButton title='BOOKING REQUESTS REPORTS'>
         <Table>
           <TableHeader>
             <TableRow>
@@ -127,7 +129,7 @@ const BookingManagement = () => {
               <TableHead>Purpose</TableHead>
               <TableHead>Contact</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead className="operation">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -139,7 +141,7 @@ const BookingManagement = () => {
                 <TableCell>{booking.time}</TableCell>
                 <TableCell>{booking.purpose}</TableCell>
                 <TableCell>{booking.contact}</TableCell>
-                <TableCell>
+                <TableCell className="operation"> 
                   <span className={`px-2 py-1 rounded-full text-xs ${
                     booking.status === 'approved' 
                       ? 'bg-green-100 text-green-800'
@@ -178,6 +180,7 @@ const BookingManagement = () => {
             ))}
           </TableBody>
         </Table>
+        </PrintButton>
 
         {/* Pagination */}
         <TablePagination

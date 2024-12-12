@@ -7,7 +7,7 @@ import { useTheme } from '../context/ThemeContext';
 import toast from 'react-hot-toast';
 import axiosInstance from '../utils/axiosInstance';
 
-function AddDocumentModal({ isOpen, onClose, onAdd }) {
+function AddDocumentModal({ isOpen, onClose, onAddDocument }) {
   const { isDarkMode } = useTheme();
 
   // Form state
@@ -67,9 +67,10 @@ function AddDocumentModal({ isOpen, onClose, onAdd }) {
 
     try {
       const response = await axiosInstance.post('/documents', formData);
-      onAdd(response.data); // Notify parent component
+      onAddDocument(response.data);
       toast.success('Document added successfully');
-      onClose(); // Close modal
+      window.location.reload();
+      onClose();
     } catch (error) {
       console.error('Error posting document:', error.response?.data || error.message);
       const errorMessage =
@@ -266,6 +267,22 @@ function AddDocumentModal({ isOpen, onClose, onAdd }) {
                      ))}
                    </select>
                  </div>
+               </div>
+               <div className="mt-4">
+                 <label className="block mb-1 text-sm font-medium">
+                   Attachment
+                 </label>
+                 <Input
+                   type="file"
+                   onChange={(e) =>
+                     setFormData((prev) => ({ ...prev, attachment: e.target.files[0] }))
+                   }
+                   className="w-full"
+                   accept=".pdf,.doc,.docx,.txt"
+                 />
+                 <p className="text-sm text-gray-500 mt-1">
+                   Supported formats: PDF, DOC, DOCX, TXT
+                 </p>
                </div>
 
                {/* Action Buttons */}

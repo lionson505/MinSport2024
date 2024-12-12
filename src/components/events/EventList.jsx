@@ -53,7 +53,7 @@ export function EventList({ events, onView, onEdit, onDelete }) {
                   onClick={() => onEdit(event)}
                   className="p-1 hover:bg-gray-100 rounded"
                 >
-                  <Edit className="w-4 h-4" />
+                  <Edit className="w-4 h-4 text-black" />
                 </button>
                 <button
                   onClick={() => onDelete(event)}

@@ -22,6 +22,8 @@ import {
   History,
   AlertCircle,
   ArrowRight,
+  Pencil,
+  PencilLine,
 } from 'lucide-react';
 import Modal from '../components/ui/Modal';
 import AddFederationForm from '../components/forms/AddFederationForm';
@@ -39,6 +41,7 @@ import { Button } from '../components/ui/Button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 import PlayerStaffTransfer from '../components/federation/PlayerStaffTransfer';
 import axiosInstance from '../utils/axiosInstance';
+import PrintButton from '../components/reusable/Print';
 
 const TransferHistoryModal = ({ isOpen, onClose, player }) => {
   const [transferHistory, setTransferHistory] = useState([]);
@@ -53,7 +56,7 @@ const TransferHistoryModal = ({ isOpen, onClose, player }) => {
       setError(null);
       try {
         const response = await axiosInstance.get(`/transfers?playerStaffId=${player.id}`);
-        setTransferHistory(response.data);
+        setTransferHistory(response.data.filter(transfer => transfer.playerStaffId === player.id));
       } catch (err) {
         setError('Failed to load transfer history');
         console.error('Error fetching transfer history:', err);
@@ -64,8 +67,10 @@ const TransferHistoryModal = ({ isOpen, onClose, player }) => {
 
     if (isOpen) {
       fetchTransferHistory();
+    } else {
+      setTransferHistory([]); // Reset transfer history when modal is closed
     }
-  }, [isOpen, player?.id]);
+  }, [isOpen, player?.id]); // Depend on player ID and isOpen
 
   if (!isOpen || !player) return null;
 
@@ -91,7 +96,7 @@ const TransferHistoryModal = ({ isOpen, onClose, player }) => {
             </div>
           ) : transferHistory.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              No transfer history found
+              No transfer history found for {player.firstName} {player.lastName}
             </div>
           ) : (
             <div className="space-y-4">
@@ -232,7 +237,7 @@ const Federations = () => {
     'Manage Clubs',
     'Manage Players/Staff',
     'Player/Staff Transfer',
-    'Players Map',
+    // 'Players Map',
   ];
 
   const filterConfig = {
@@ -242,7 +247,6 @@ const Federations = () => {
   };
 
   const handleViewTransferHistory = (player) => {
-    console.log('Opening transfer history for:', player);
     setSelectedPlayer(player);
     setShowTransferHistoryModal(true);
   };
@@ -279,8 +283,8 @@ const Federations = () => {
     fetchData();
   }, [currentPage, itemsPerPage]);
 
-  const handleEditPlayerStaff = (staff) => {
-    setPlayerToEdit(staff);
+  const handleEditPlayerStaff = (person) => {
+    setPlayerToEdit(person);
     setIsAddPlayerModalOpen(true);
   };
 
@@ -674,6 +678,7 @@ const Federations = () => {
           
           <div className="bg-white rounded-lg shadow">
             <div className="overflow-x-auto">
+              <PrintButton>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -690,7 +695,7 @@ const Federations = () => {
                     <TableHead className="w-[100px] text-xs">Year Founded</TableHead>
                     <TableHead className="min-w-[180px] text-xs">Legal Representative</TableHead>
                     <TableHead className="min-w-[120px] text-xs">Address</TableHead>
-                    <TableHead className="w-[80px] text-xs">Operation</TableHead>
+                    <TableHead className="w-[80px] text-xs operation">Operation</TableHead>
                   </TableRow>
                 </TableHeader>
               <TableBody>
@@ -715,7 +720,7 @@ const Federations = () => {
                     <TableCell className="text-xs">{federation.yearFounded}</TableCell>
                     <TableCell className="text-xs">{federation.legalRepresentativeName}</TableCell>
                     <TableCell className="text-xs">{federation.address}</TableCell>
-                    <TableCell>
+                    <TableCell className="operation">
                       <div className="flex items-center gap-0.5">
                         <ActionMenu
                           onEdit={() => handleEdit(federation)}
@@ -727,6 +732,7 @@ const Federations = () => {
                 ))}
               </TableBody>
             </Table>
+            </PrintButton>
             </div>
 
             <div className="flex items-center justify-between px-4 py-3 border-t">
@@ -902,6 +908,7 @@ const Federations = () => {
             </div>
 
             <div className="bg-white rounded-lg shadow">
+              <PrintButton>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -914,7 +921,7 @@ const Federations = () => {
                     <TableHead className="w-[120px] text-xs">Club</TableHead>
                     <TableHead className="w-[120px] text-xs">Age/Date of birth</TableHead>
                     <TableHead className="w-[100px] text-xs">Nationality</TableHead>
-                    <TableHead className="w-[120px] text-xs">Operation</TableHead>
+                    <TableHead className="w-[120px] operation text-xs">Operation</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -929,7 +936,7 @@ const Federations = () => {
                       <TableCell>{person.currentClub.name}</TableCell>
                       <TableCell>{new Date(person.dateOfBirth).toLocaleDateString()}</TableCell>
                       <TableCell>{person.nationality}</TableCell>
-                      <TableCell>
+                      <TableCell className="operation"> 
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => handleViewPlayerDetails(person)}
@@ -940,10 +947,10 @@ const Federations = () => {
                           </button>
                           <button
                             onClick={() => handleEditPlayerStaff(person)}
-                            className="p-1 rounded-lg hover:bg-gray-100"
+                            className="p-1 rounded-lg hover:bg-gray-100 text-gray-900"
                             title="Edit"
                           >
-                            <Edit className="h-4 w-4" />
+                            <PencilLine className="h-4 w-4 stroke-[1.5]" />
                           </button>
                           <button
                             onClick={() => handleDeletePlayerStaffClick(person)}
@@ -965,6 +972,7 @@ const Federations = () => {
                   ))}
                 </TableBody>
               </Table>
+              </PrintButton>
               <div className="flex items-center justify-between px-4 py-3 border-t">
                 <div className="flex items-center text-sm text-gray-500">
                   Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredPlayersStaff.length)} of{' '}

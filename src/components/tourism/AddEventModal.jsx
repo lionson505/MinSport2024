@@ -12,6 +12,8 @@ import { locations } from '../../data/locations';
 const AddEventModal = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
     name: '',
+    banner: null,
+    video: null,
     category: '',
     subCategory: '',
     province: '',
@@ -21,6 +23,10 @@ const AddEventModal = ({ isOpen, onClose }) => {
     village: '',
     startDate: '2024-12-05',
     endDate: '2024-12-05',
+    timeFrom: '09:00 AM',
+    timeTo: '10:00 AM',
+    maleParticipants: 1,
+    femaleParticipants: 1,
     participants: 1,
     participantsFee: 1,
     amountGenerated: 1,
@@ -82,6 +88,8 @@ const AddEventModal = ({ isOpen, onClose }) => {
 
       setFormData({
         name: '',
+        banner: null,
+        video: null,
         category: '',
         subCategory: '',
         province: '',
@@ -91,6 +99,10 @@ const AddEventModal = ({ isOpen, onClose }) => {
         village: '',
         startDate: '2024-12-05',
         endDate: '2024-12-05',
+        timeFrom: '09:00 AM',
+        timeTo: '10:00 AM',
+        maleParticipants: 1,
+        femaleParticipants: 1,
         participants: 1,
         participantsFee: 1,
         amountGenerated: 1,
@@ -101,6 +113,15 @@ const AddEventModal = ({ isOpen, onClose }) => {
       console.error('Error adding event:', error.response || error.message);
       toast.error('Failed to add event');
     }
+  };
+
+  // Add file handling functions
+  const handleFileChange = (e, fieldName) => {
+    const file = e.target.files[0];
+    setFormData(prev => ({
+      ...prev,
+      [fieldName]: file
+    }));
   };
 
   return (
@@ -243,6 +264,23 @@ const AddEventModal = ({ isOpen, onClose }) => {
                     ))}
                 </select>
               </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Banner Image</label>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleFileChange(e, 'banner')}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Video</label>
+                <Input
+                  type="file"
+                  accept="video/*"
+                  onChange={(e) => handleFileChange(e, 'video')}
+                />
+              </div>
             </section>
 
             {/* Date Section */}
@@ -268,6 +306,26 @@ const AddEventModal = ({ isOpen, onClose }) => {
                     required
                   />
                 </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Time From</label>
+                  <Input
+                    type="time"
+                    value={formData.timeFrom}
+                    onChange={(e) => setFormData({ ...formData, timeFrom: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Time To</label>
+                  <Input
+                    type="time"
+                    value={formData.timeTo}
+                    onChange={(e) => setFormData({ ...formData, timeTo: e.target.value })}
+                    required
+                  />
+                </div>
               </div>
             </section>
 
@@ -275,6 +333,28 @@ const AddEventModal = ({ isOpen, onClose }) => {
             <section>
               <h3 className="text-lg font-semibold mb-4">Participants & Fees</h3>
               <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Male Participants</label>
+                  <Input
+                    type="number"
+                    value={formData.maleParticipants}
+                    onChange={(e) => setFormData({ ...formData, maleParticipants: parseInt(e.target.value, 10) })}
+                    min="0"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Female Participants</label>
+                  <Input
+                    type="number"
+                    value={formData.femaleParticipants}
+                    onChange={(e) => setFormData({ ...formData, femaleParticipants: parseInt(e.target.value, 10) })}
+                    min="0"
+                    required
+                  />
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium mb-2">Participants</label>
                   <Input

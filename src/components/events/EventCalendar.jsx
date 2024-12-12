@@ -1,13 +1,33 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Calendar } from '../ui/calendar';
+import axiosInstance from '../../utils/axiosInstance';
 
-export function EventCalendar({ events, onEventClick }) {
+export function EventCalendar() {
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [events, setEvents] = useState([]);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await axiosInstance.get('/sports-tourism-events');
+        setEvents(response.data);
+      } catch (error) {
+        console.error('Failed to fetch events:', error);
+      }
+    };
+    fetchEvents();
+  }, []);
 
   const eventDates = events.reduce((acc, event) => {
     const date = new Date(event.startDate).toISOString().split('T')[0];
     if (!acc[date]) acc[date] = [];
-    acc[date].push(event);
+    acc[date].push({
+      id: event.id,
+      title: event.name,
+      time: `${event.timeFrom} - ${event.timeTo}`,
+      startDate: event.startDate,
+      // Add any other event properties you need
+    });
     return acc;
   }, {});
 

@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/input';
-import { Search, Plus, Eye, Download, Trash } from 'lucide-react';
+import { Search, Plus, Eye, Download, Trash, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import AddDocumentModal from '../components/AddDocumentModal';
 import axiosInstance from '../utils/axiosInstance';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 import { AlertCircle } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import PrintButton from '../components/reusable/Print';
 
 function Documents() {
 
@@ -21,6 +23,8 @@ function Documents() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [documentToDelete, setDocumentToDelete] = useState(null);
   const [viewModalOpen, setViewModalOpen] = useState(false); // State for view modal
+  const [updateStatusModalOpen, setUpdateStatusModalOpen] = useState(false);
+  const [documentToUpdate, setDocumentToUpdate] = useState(null);
 
   const path  = window.location.pathname;
 
@@ -101,6 +105,28 @@ function Documents() {
     setViewModalOpen(true);
   };
 
+  const handleUpdateStatus = (document) => {
+    setDocumentToUpdate(document);
+    setUpdateStatusModalOpen(true);
+  };
+
+  const handleStatusUpdate = async (newStatus) => {
+    try {
+      await axiosInstance.patch(`/documents/${documentToUpdate.id}/status`, {
+        status: newStatus
+      });
+      
+      setDocuments(prev => prev.map(doc => 
+        doc.id === documentToUpdate.id ? { ...doc, status: newStatus } : doc
+      ));
+      
+      toast.success('Document status updated successfully');
+      setUpdateStatusModalOpen(false);
+    } catch (error) {
+      toast.error('Failed to update document status');
+    }
+  };
+
   return (
     <div className="p-6">
       <h1 className="text-2xl font-semibold mb-6">Manage Documents</h1>
@@ -126,19 +152,20 @@ function Documents() {
       </div>
 
       <div className="bg-white rounded-lg shadow overflow-x-auto">
+        <PrintButton>
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Document Name</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Document Type</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Reference No.</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Person/Institution</th>
+              {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Person/Institution</th> */}
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Phone</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Email ID</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Date of Recording</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Date of Reception/Sending</th>
+              {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Date of Recording</th> */}
+              {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Date of Reception/Sending</th> */}
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Status</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Operations</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 operation">Operations</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -147,23 +174,26 @@ function Documents() {
                 <td className="px-4 py-3 text-sm">{doc.documentName}</td>
                 <td className="px-4 py-3 text-sm">{doc.documentType}</td>
                 <td className="px-4 py-3 text-sm">{doc.referenceNo}</td>
-                <td className="px-4 py-3 text-sm">{doc.personOrInstitution}</td>
+                {/* <td className="px-4 py-3 text-sm">{doc.personOrInstitution}</td> */}
                 <td className="px-4 py-3 text-sm">{doc.phone}</td>
                 <td className="px-4 py-3 text-sm">{doc.emailId}</td>
-                <td className="px-4 py-3 text-sm">{doc.dateOfRecording}</td>
-                <td className="px-4 py-3 text-sm">{doc.dateOfReceptionOrSending}</td>
+                {/* <td className="px-4 py-3 text-sm">{doc.dateOfRecording}</td> */}
+                {/* <td className="px-4 py-3 text-sm">{doc.dateOfReceptionOrSending}</td> */}
                 <td className="px-4 py-3">
                   <span className={`inline-flex px-2 py-1 text-xs rounded-full ${doc.status === 'Received' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
                     {doc.status}
                   </span>
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 operation">
                   <div className="flex space-x-2">
                     <Button size="sm" variant="ghost" onClick={() => handleViewDocument(doc)}>
                       <Eye className="h-4 w-4" />
                     </Button>
                     <Button size="sm" variant="ghost" onClick={() => handleDownload(doc)}>
                       <Download className="h-4 w-4" />
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => handleUpdateStatus(doc)}>
+                      <RefreshCw className="h-4 w-4 text-blue-600" />
                     </Button>
                     <Button size="sm" variant="ghost" onClick={() => handleDelete(doc)}>
                       <Trash className="h-4 w-4 text-red-600" />
@@ -174,6 +204,7 @@ function Documents() {
             ))}
           </tbody>
         </table>
+        </PrintButton>
       </div>
 
       <div className="mt-4 flex justify-between items-center">
@@ -245,6 +276,36 @@ function Documents() {
           </DialogDescription>
           <div className="flex justify-end gap-3 mt-4">
             <Button onClick={() => setViewModalOpen(false)}>Close</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Update Status Modal */}
+      <Dialog open={updateStatusModalOpen} onOpenChange={setUpdateStatusModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Update Document Status</DialogTitle>
+            <DialogDescription>
+              Change the status for document: <span className="font-semibold">{documentToUpdate?.documentName}</span>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Select onValueChange={handleStatusUpdate} defaultValue={documentToUpdate?.status}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select new status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Received">Received</SelectItem>
+                <SelectItem value="Pending">Pending</SelectItem>
+                <SelectItem value="Processed">Processed</SelectItem>
+                <SelectItem value="Completed">Completed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex justify-end gap-3 mt-4">
+            <Button variant="outline" onClick={() => setUpdateStatusModalOpen(false)}>
+              Cancel
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

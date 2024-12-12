@@ -1,10 +1,10 @@
 "use client"
 
-import * as React from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { DayPicker } from "react-day-picker"
-import { cn } from "../../lib/utils"
-import { buttonVariants } from "./Button"
+import * as React from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { DayPicker } from "react-day-picker";
+import { cn } from "../../lib/utils";
+import { buttonVariants } from "./Button";
 
 function Calendar({
   className,
@@ -12,6 +12,15 @@ function Calendar({
   showOutsideDays = true,
   ...props
 }) {
+  // Get the current year and month
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+
+  // Define the static event date
+  const staticEventDate = new Date(year, month, 15); // 15th of the current month
+  console.log("Static Event Date:", staticEventDate); // Debugging log
+
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
@@ -52,10 +61,17 @@ function Calendar({
         IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
         IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
       }}
+      modifiers={{
+        staticEvent: staticEventDate,
+      }}
+      modifiersClassNames={{
+        staticEvent: "bg-yellow-300 text-black", // Custom style for the static event
+      }}
       {...props}
     />
-  )
+  );
 }
-Calendar.displayName = "Calendar"
 
-export { Calendar } 
+Calendar.displayName = "Calendar";
+
+export { Calendar };

@@ -9,6 +9,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs'
 import { useDarkMode } from '../contexts/DarkModeContext';
 import CategoryManagementModal from '../components/infrastructure/CategoryManagementModal';
 import axiosInstance from '../utils/axiosInstance';
+import { toast } from 'react-hot-toast';
 
 const Infrastructure = () => {
   const [showAddModal, setShowAddModal] = useState(false);
@@ -17,11 +18,16 @@ const Infrastructure = () => {
   const { isDarkMode } = useDarkMode();
   const [categories, setCategories] = useState([]);
   const [infrastructure, setInfrastructure] = useState([]);
+  const [lastUpdate, setLastUpdate] = useState(Date.now());
 
   useEffect(() => {
-    fetchCategories();
-    fetchInfrastructure();
-  }, []);
+    const fetchData = async () => {
+      await fetchCategories();
+      await fetchInfrastructure();
+    };
+    
+    fetchData();
+  }, [lastUpdate]);
 
   const fetchCategories = async () => {
     try {
@@ -29,6 +35,7 @@ const Infrastructure = () => {
       setCategories(response.data);
     } catch (error) {
       console.error('Error fetching categories:', error);
+      toast.error('Failed to fetch categories');
     }
   };
 
@@ -38,6 +45,7 @@ const Infrastructure = () => {
       setInfrastructure(response.data);
     } catch (error) {
       console.error('Error fetching infrastructure:', error);
+      toast.error('Failed to fetch infrastructure data');
     }
   };
 
@@ -45,8 +53,20 @@ const Infrastructure = () => {
     try {
       await axiosInstance.put('/infrastructure-categories', updatedCategories);
       setCategories(updatedCategories);
+      setLastUpdate(Date.now());
+      toast.success('Categories updated successfully');
     } catch (error) {
       console.error('Error updating categories:', error);
+      toast.error('Failed to update categories');
+    }
+  };
+
+  const refreshData = async () => {
+    try {
+      setLastUpdate(Date.now());
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+      toast.error('Failed to refresh data');
     }
   };
 
@@ -113,7 +133,7 @@ const Infrastructure = () => {
       <AddInfrastructureModal 
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
-        onAdd={fetchInfrastructure}
+        onRefresh={refreshData}
       />
 
       <CategoryManagementModal

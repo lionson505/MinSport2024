@@ -7,8 +7,12 @@ import { useTheme } from '../context/ThemeContext';
 import toast from 'react-hot-toast';
 import axiosInstance from '../utils/axiosInstance';
 import data from '../data/data.json';
+import { countries } from '../data/countries';
+import { institutionTypes } from '../data/institutionTypes';
+import { classOptions } from '../data/classOptions';
+import { gameTypes } from '../data/gameTypes';
 
-function AddAcademyStudent({ isOpen, onClose, onAdd, studentData = null, isEditing = false }) {
+function AddAcademyStudent({ isOpen, onClose, onAdd, studentData = null, isEditing = false, handleAddStudent }) {
   const { isDarkMode } = useTheme();
   const [formData, setFormData] = useState({
     photo_passport: "",
@@ -68,41 +72,84 @@ function AddAcademyStudent({ isOpen, onClose, onAdd, studentData = null, isEditi
     }
   };
 
+  const handleEditStudent = async (formDataToSend, studentId) => {
+    try {
+      console.log('Sending data:', Object.fromEntries(formDataToSend.entries()));
+      
+      const response = await axiosInstance.put(`/academy-students/${studentId}`, formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      toast.success('Student updated successfully');
+      return response;
+    } catch (error) {
+      console.error('API Error Details:', {
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers
+      });
+      
+      const errorMessage = error.response?.data?.message 
+        || error.response?.data?.error 
+        || 'Failed to update student';
+      throw new Error(errorMessage);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     try {
-      if (!formData.firstName || !formData.lastName || !formData.dateOfBirth) {
-        throw new Error('Please fill in all required fields');
+      // Validate required fields
+      const requiredFields = [
+        'firstName',
+        'lastName',
+        'dateOfBirth',
+        'gender',
+        'placeOfResidence',
+        'idPassportNo',
+        'nationality',
+        'namesOfParentsGuardian',
+        'nameOfSchoolAcademyTrainingCenter',
+        'typeOfSchoolAcademyTrainingCenter',
+        'class',
+        'typeOfGame'
+      ];
+
+      const missingFields = requiredFields.filter(field => !formData[field]);
+      if (missingFields.length > 0) {
+        throw new Error(`Please fill in all required fields: ${missingFields.join(', ')}`);
+      }
+
+      if (!isEditing && typeof handleAddStudent !== 'function') {
+        throw new Error('handleAddStudent prop is required for adding new students');
       }
 
       const formDataToSend = new FormData();
+      const dateFields = ['dateOfBirth'];
+      
       Object.keys(formData).forEach(key => {
-        formDataToSend.append(key, formData[key]);
+        if (dateFields.includes(key) && formData[key]) {
+          const date = new Date(formData[key]);
+          formDataToSend.append(key, date.toISOString().split('T')[0]);
+        } else if (formData[key] !== null && formData[key] !== undefined) {
+          formDataToSend.append(key, formData[key]);
+        }
       });
 
       if (isEditing) {
-        console.log(formData)
-        await axiosInstance.put(`/academy-students/${formData.id}`, formDataToSend, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        });
-        toast.success('Student updated successfully');
+        const response = await handleEditStudent(formDataToSend, formData.id);
+        console.log('Edit response:', response);
+        onAdd(response.data);
       } else {
-        await axiosInstance.post('/academy-students', formDataToSend, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        });
-        toast.success('Student added successfully');
+        await handleAddStudent(formDataToSend);
       }
 
-      onAdd(formData);
       onClose();
     } catch (error) {
-      console.error('Error submitting form:', error);
-      toast.error(error.response?.data?.message || error.message || 'An error occurred');
+      console.error('Form submission error:', error);
+      toast.error(error.message || 'An error occurred while submitting the form');
     }
   };
 
@@ -266,25 +313,33 @@ function AddAcademyStudent({ isOpen, onClose, onAdd, studentData = null, isEditi
                     <label className="block mb-1 text-sm font-medium">
                       Nationality <span className="text-red-500">*</span>
                     </label>
-                    <Input
-                      type="text"
+                    <select
                       value={formData.nationality}
                       onChange={(e) => setFormData(prev => ({ ...prev, nationality: e.target.value }))}
                       required
-                      placeholder="Enter nationality"
-                    />
+                      className="w-full border rounded-lg p-2"
+                    >
+                      <option value="">Select Nationality</option>
+                      {countries.map(country => (
+                        <option key={country} value={country}>{country}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block mb-1 text-sm font-medium">Other Nationality</label>
-                    <Input
-                      type="text"
+                    <select
                       value={formData.otherNationality}
                       onChange={(e) => setFormData(prev => ({ ...prev, otherNationality: e.target.value }))}
-                      placeholder="Enter other nationality"
-                    />
+                      className="w-full border rounded-lg p-2"
+                    >
+                      <option value="">Select Other Nationality</option>
+                      {countries.map(country => (
+                        <option key={country} value={country}>{country}</option>
+                      ))}
+                    </select>
                   </div>
                   <div>
                     <label className="block mb-1 text-sm font-medium">
@@ -321,13 +376,17 @@ function AddAcademyStudent({ isOpen, onClose, onAdd, studentData = null, isEditi
                     <label className="block mb-1 text-sm font-medium">
                       Type of School/Academy <span className="text-red-500">*</span>
                     </label>
-                    <Input
-                      type="text"
+                    <select
                       value={formData.typeOfSchoolAcademyTrainingCenter}
                       onChange={(e) => setFormData(prev => ({ ...prev, typeOfSchoolAcademyTrainingCenter: e.target.value }))}
                       required
-                      placeholder="Enter type of school/academy"
-                    />
+                      className="w-full border rounded-lg p-2"
+                    >
+                      <option value="">Select Type</option>
+                      {institutionTypes.map(type => (
+                        <option key={type} value={type}>{type}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
@@ -336,25 +395,33 @@ function AddAcademyStudent({ isOpen, onClose, onAdd, studentData = null, isEditi
                     <label className="block mb-1 text-sm font-medium">
                       Class <span className="text-red-500">*</span>
                     </label>
-                    <Input
-                      type="text"
+                    <select
                       value={formData.class}
                       onChange={(e) => setFormData(prev => ({ ...prev, class: e.target.value }))}
                       required
-                      placeholder="Enter class"
-                    />
+                      className="w-full border rounded-lg p-2"
+                    >
+                      <option value="">Select Class</option>
+                      {classOptions.map(option => (
+                        <option key={option} value={option}>{option}</option>
+                      ))}
+                    </select>
                   </div>
                   <div>
                     <label className="block mb-1 text-sm font-medium">
                       Type of Game <span className="text-red-500">*</span>
                     </label>
-                    <Input
-                      type="text"
+                    <select
                       value={formData.typeOfGame}
                       onChange={(e) => setFormData(prev => ({ ...prev, typeOfGame: e.target.value }))}
                       required
-                      placeholder="Enter type of game"
-                    />
+                      className="w-full border rounded-lg p-2"
+                    >
+                      <option value="">Select Game Type</option>
+                      {gameTypes.map(type => (
+                        <option key={type} value={type}>{type}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 

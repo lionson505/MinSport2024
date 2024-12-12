@@ -9,6 +9,7 @@ import {
   DialogDescription,
 } from './ui/dialog';
 import { AlertCircle } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 const StudentTransferForm = ({ students, isLoading, isSubmitting, setIsSubmitting }) => {
   const [schools, setSchools] = useState([]);
@@ -59,26 +60,33 @@ const StudentTransferForm = ({ students, isLoading, isSubmitting, setIsSubmittin
   const processTransfer = async () => {
     setIsSubmitting(true);
 
-    const fromSchoolName = schools.find(school => school.id === parseInt(fromSchool))?.name;
-    const toSchoolName = schools.find(school => school.id === parseInt(toSchool))?.name;
-
-    const transferData = {
-      studentId: transferStudent,
-      fromSchool: fromSchoolName,
-      toSchool: toSchoolName,
-      transferDate: new Date(transferDate).toISOString(),
-    };
-
-    console.log('Transfer Data:', transferData);
-
     try {
-      // Simulate API call for student transfer
-      await axiosInstance.post('/transfers', transferData);
+      const fromSchoolData = schools.find(school => school.id === parseInt(fromSchool));
+      const toSchoolData = schools.find(school => school.id === parseInt(toSchool));
+
+      if (!fromSchoolData || !toSchoolData) {
+        throw new Error('School data not found');
+      }
+
+      const transferData = {
+        studentId: parseInt(transferStudent),
+        fromSchool: fromSchoolData.id, // Send school ID instead of name
+        toSchool: toSchoolData.id, // Send school ID instead of name
+        transferDate: new Date(transferDate).toISOString(), // Properly format the date
+      };
+
+      console.log('Transfer Data:', transferData);
+
+      const response = await axiosInstance.post('/transfers', transferData);
       setShowTransferConfirm(false);
-      alert('Transfer processed successfully!');
+      toast.success('Transfer processed successfully!');
+      
+      // Optionally refresh the data after successful transfer
+      // if (onTransferSuccess) onTransferSuccess();
     } catch (error) {
       console.error('Error processing transfer:', error);
-      alert('Failed to process transfer. Please try again.');
+      const errorMessage = error.response?.data?.message || 'Failed to process transfer. Please try again.';
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

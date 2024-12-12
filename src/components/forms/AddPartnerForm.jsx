@@ -22,26 +22,21 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
     updatedAt: '',
   });
 
-  const [clubs, setClubs] = useState([]);
   const [disciplines, setDisciplines] = useState([]);
 
-  // Fetch clubs and disciplines from API
+  // Fetch disciplines from API
   useEffect(() => {
-    const fetchClubsAndDisciplines = async () => {
+    const fetchDisciplines = async () => {
       try {
-        const [clubsResponse, disciplinesResponse] = await Promise.all([
-          axiosInstance.get('/clubs'),
-          axiosInstance.get('/disciplines'),
-        ]);
-        setClubs(clubsResponse.data || []);
+        const disciplinesResponse = await axiosInstance.get('/disciplines');
         setDisciplines(disciplinesResponse.data || []);
       } catch (error) {
-        console.error('Error fetching clubs or disciplines:', error);
-        toast.error('Failed to fetch clubs or disciplines');
+        console.error('Error fetching disciplines:', error);
+        toast.error('Failed to fetch disciplines');
       }
     };
 
-    fetchClubsAndDisciplines();
+    fetchDisciplines();
   }, []);
 
   // If initialData is passed (edit mode), update formData state
@@ -145,221 +140,231 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
 
   return (
     <div className="max-h-[80vh] overflow-y-auto p-4">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Club Name */}
-        <div>
-          <label>Club Name</label>
-          <select
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-            className="w-full border rounded"
-          >
-            <option value="">Select Club</option>
-            {clubs.map((club) => (
-              <option key={club.id} value={club.name}>
-                {club.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        {/* Sports Discipline */}
-        <div>
-          <label>Sports Discipline</label>
-          <select
-            name="sports_discipline"
-            value={formData.sports_discipline}
-            onChange={handleChange}
-            required
-            className="w-full border rounded"
-          >
-            <option value="">Select Discipline</option>
-            {disciplines.map((discipline) => (
-              <option key={discipline.id} value={discipline.name}>
-                {discipline.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        {/* Legal Status */}
-        <div>
-          <label>Legal Status</label>
-          <input
-            type="text"
-            name="legal_status"
-            value={formData.legal_status}
-            onChange={handleChange}
-            required
-            className="w-full border rounded"
-          />
-        </div>
-        {/* Business */}
-        <div>
-          <label>Business</label>
-          <input
-            type="text"
-            name="business"
-            value={formData.business}
-            onChange={handleChange}
-            required
-            className="w-full border rounded"
-          />
-        </div>
-        {/* Location Province */}
-        <div>
-          <label>Location Province</label>
-          <select
-            name="location_province"
-            value={formData.location_province}
-            onChange={handleLocationChange}
-            required
-            className="w-full border rounded"
-          >
-            <option value="">Select Province</option>
-            {locations.provinces.map((province) => (
-              <option key={province} value={province}>
-                {province}
-              </option>
-            ))}
-          </select>
-        </div>
-        {/* Location District */}
-        <div>
-          <label>Location District</label>
-          <select
-            name="location_district"
-            value={formData.location_district}
-            onChange={handleLocationChange}
-            required
-            className="w-full border rounded"
-          >
-            <option value="">Select District</option>
-            {getDistricts().map((district) => (
-              <option key={district} value={district}>
-                {district}
-              </option>
-            ))}
-          </select>
-        </div>
-        {/* Location Sector */}
-        <div>
-          <label>Location Sector</label>
-          <select
-            name="location_sector"
-            value={formData.location_sector}
-            onChange={handleLocationChange}
-            required
-            className="w-full border rounded"
-          >
-            <option value="">Select Sector</option>
-            {getSectors().map((sector) => (
-              <option key={sector} value={sector}>
-                {sector}
-              </option>
-            ))}
-          </select>
-        </div>
-        {/* Location Cell */}
-        <div>
-          <label>Location Cell</label>
-          <select
-            name="location_cell"
-            value={formData.location_cell}
-            onChange={handleLocationChange}
-            required
-            className="w-full border rounded"
-          >
-            <option value="">Select Cell</option>
-            {getCells().map((cell) => (
-              <option key={cell} value={cell}>
-                {cell}
-              </option>
-            ))}
-          </select>
-        </div>
-        {/* Location Village */}
-        <div>
-          <label>Location Village</label>
-          <select
-            name="location_village"
-            value={formData.location_village}
-            onChange={handleLocationChange}
-            required
-            className="w-full border rounded"
-          >
-            <option value="">Select Village</option>
-            {getVillages().map((village) => (
-              <option key={village} value={village}>
-                {village}
-              </option>
-            ))}
-          </select>
-        </div>
-        {/* Legal Representative Name */}
-        <div>
-          <label>Legal Representative Name</label>
-          <input
-            type="text"
-            name="legal_representative_name"
-            value={formData.legal_representative_name}
-            onChange={handleChange}
-            required
-            className="w-full border rounded"
-          />
-        </div>
-        {/* Legal Representative Gender */}
-        <div>
-          <label>Legal Representative Gender</label>
-          <input
-            type="text"
-            name="legal_representative_gender"
-            value={formData.legal_representative_gender}
-            onChange={handleChange}
-            required
-            className="w-full border rounded"
-          />
-        </div>
-        {/* Legal Representative Email */}
-        <div>
-          <label>Legal Representative Email</label>
-          <input
-            type="email"
-            name="legal_representative_email"
-            value={formData.legal_representative_email}
-            onChange={handleChange}
-            required
-            className="w-full border rounded"
-          />
-        </div>
-        {/* Legal Representative Phone */}
-        <div>
-          <label>Legal Representative Phone</label>
-          <input
-            type="tel"
-            name="legal_representative_phone"
-            value={formData.legal_representative_phone}
-            onChange={handleChange}
-            required
-            className="w-full border rounded"
-          />
-        </div>
-        {/* Submit / Cancel Buttons */}
-        <div className="flex justify-end space-x-2">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="bg-gray-300 px-4 py-2 rounded"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="bg-blue-500 text-white px-4 py-2 rounded"
-          >
-            {isSubmitting ? 'Saving...' : 'Save'}
-          </button>
+      <form onSubmit={handleSubmit}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Club Name */}
+          <div>
+            <label>Name</label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              className="w-full border rounded"
+              placeholder="Enter  name"
+            />
+          </div>
+
+          {/* Sports Discipline */}
+          <div>
+            <label>Sports Discipline</label>
+            <select
+              name="sports_discipline"
+              value={formData.sports_discipline}
+              onChange={handleChange}
+              required
+              className="w-full border rounded"
+            >
+              <option value="">Select Discipline</option>
+              {disciplines.map((discipline) => (
+                <option key={discipline.id} value={discipline.name}>
+                  {discipline.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Legal Status */}
+          <div>
+            <label>Legal Status</label>
+            <input
+              type="text"
+              name="legal_status"
+              value={formData.legal_status}
+              onChange={handleChange}
+              required
+              className="w-full border rounded"
+            />
+          </div>
+
+          {/* Business */}
+          <div>
+            <label>Business</label>
+            <input
+              type="text"
+              name="business"
+              value={formData.business}
+              onChange={handleChange}
+              required
+              className="w-full border rounded"
+            />
+          </div>
+
+          {/* Location Province */}
+          <div>
+            <label>Location Province</label>
+            <select
+              name="location_province"
+              value={formData.location_province}
+              onChange={handleLocationChange}
+              required
+              className="w-full border rounded"
+            >
+              <option value="">Select Province</option>
+              {locations.provinces.map((province) => (
+                <option key={province} value={province}>
+                  {province}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Location District */}
+          <div>
+            <label>Location District</label>
+            <select
+              name="location_district"
+              value={formData.location_district}
+              onChange={handleLocationChange}
+              required
+              className="w-full border rounded"
+            >
+              <option value="">Select District</option>
+              {getDistricts().map((district) => (
+                <option key={district} value={district}>
+                  {district}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Location Sector */}
+          <div>
+            <label>Location Sector</label>
+            <select
+              name="location_sector"
+              value={formData.location_sector}
+              onChange={handleLocationChange}
+              required
+              className="w-full border rounded"
+            >
+              <option value="">Select Sector</option>
+              {getSectors().map((sector) => (
+                <option key={sector} value={sector}>
+                  {sector}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Location Cell */}
+          <div>
+            <label>Location Cell</label>
+            <select
+              name="location_cell"
+              value={formData.location_cell}
+              onChange={handleLocationChange}
+              required
+              className="w-full border rounded"
+            >
+              <option value="">Select Cell</option>
+              {getCells().map((cell) => (
+                <option key={cell} value={cell}>
+                  {cell}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Location Village */}
+          <div>
+            <label>Location Village</label>
+            <select
+              name="location_village"
+              value={formData.location_village}
+              onChange={handleLocationChange}
+              required
+              className="w-full border rounded"
+            >
+              <option value="">Select Village</option>
+              {getVillages().map((village) => (
+                <option key={village} value={village}>
+                  {village}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Legal Representative Name */}
+          <div>
+            <label>Legal Representative Name</label>
+            <input
+              type="text"
+              name="legal_representative_name"
+              value={formData.legal_representative_name}
+              onChange={handleChange}
+              required
+              className="w-full border rounded"
+            />
+          </div>
+
+          {/* Legal Representative Gender */}
+          <div>
+            <label>Legal Representative Gender</label>
+            <input
+              type="text"
+              name="legal_representative_gender"
+              value={formData.legal_representative_gender}
+              onChange={handleChange}
+              required
+              className="w-full border rounded"
+            />
+          </div>
+
+          {/* Legal Representative Email */}
+          <div>
+            <label>Legal Representative Email</label>
+            <input
+              type="email"
+              name="legal_representative_email"
+              value={formData.legal_representative_email}
+              onChange={handleChange}
+              required
+              className="w-full border rounded"
+            />
+          </div>
+
+          {/* Legal Representative Phone */}
+          <div>
+            <label>Legal Representative Phone</label>
+            <input
+              type="tel"
+              name="legal_representative_phone"
+              value={formData.legal_representative_phone}
+              onChange={handleChange}
+              required
+              className="w-full border rounded"
+            />
+          </div>
+
+          {/* Submit / Cancel Buttons - Make them span full width */}
+          <div className="flex justify-end space-x-2 md:col-span-2">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="bg-gray-300 px-4 py-2 rounded"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="bg-blue-500 text-white px-4 py-2 rounded"
+            >
+              {isSubmitting ? 'Saving...' : 'Save'}
+            </button>
+          </div>
         </div>
       </form>
     </div>

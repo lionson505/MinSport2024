@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../utils/axiosInstance';
 import { locations } from '../../data/locations';
+import { toast } from 'react-toastify';
 
-const AddInfrastructureModal = ({ isOpen, onClose }) => {
+const AddInfrastructureModal = ({ isOpen, onClose, onRefresh }) => {
   const [formData, setFormData] = useState({
     name: '',
     infra_category: 0,
@@ -22,6 +23,17 @@ const AddInfrastructureModal = ({ isOpen, onClose }) => {
     plot_area: 0,
     construction_date: '',
     owner: '',
+    main_users: '',
+    types_of_sports: '',
+    internet_connection: false,
+    electricity_connection: false,
+    water_connection: false,
+    access_road: false,
+    health_facility: false,
+    legal_representative_name: '',
+    legal_representative_gender: 'Male',
+    legal_representative_email: '',
+    legal_representative_phone: '',
   });
 
   const [categories, setCategories] = useState([]);
@@ -61,12 +73,13 @@ const AddInfrastructureModal = ({ isOpen, onClose }) => {
   }, [formData.infra_category]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
-      [name]: ['infra_category', 'infra_sub_category', 'capacity', 'latitude', 'longitude', 'plot_area'].includes(name)
-        ? parseFloat(value)
-        : value,
+      [name]: type === 'checkbox' ? checked : 
+              ['infra_category', 'infra_sub_category', 'capacity', 'latitude', 'longitude', 'plot_area'].includes(name)
+              ? parseFloat(value)
+              : value,
     });
   };
 
@@ -103,11 +116,18 @@ const AddInfrastructureModal = ({ isOpen, onClose }) => {
 
     try {
       const response = await axiosInstance.post('/infrastructures', formData);
-      console.log('API Response:', response.data);
       setSuccess(true);
+      toast.success('Infrastructure added successfully!');
+      await onRefresh?.();
+      onClose();
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (err) {
       console.error('API Error:', err);
-      setError(err.response?.data?.message || 'An error occurred');
+      const errorMessage = err.response?.data?.message || 'An error occurred';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -187,14 +207,22 @@ const AddInfrastructureModal = ({ isOpen, onClose }) => {
             <label htmlFor="type_level" className="font-medium mb-1">
               TYPE LEVEL:
             </label>
-            <input
-              type="text"
+            <select
               id="type_level"
               name="type_level"
               value={formData.type_level}
               onChange={handleChange}
               className="border border-gray-300 rounded p-2"
-            />
+            >
+              <option value="">Select Type Level</option>
+              <option value="International">International</option>
+              <option value="National">National</option>
+              <option value="Provincial">Provincial</option>
+              <option value="District">District</option>
+              <option value="Sector">Sector</option>
+              <option value="Cell">Cell</option>
+              <option value="Village">Village</option>
+            </select>
           </div>
 
           <div className="flex flex-col">
@@ -427,6 +455,148 @@ const AddInfrastructureModal = ({ isOpen, onClose }) => {
               id="owner"
               name="owner"
               value={formData.owner}
+              onChange={handleChange}
+              className="border border-gray-300 rounded p-2"
+            />
+          </div>
+
+          <div className="flex flex-col">
+            <label htmlFor="main_users" className="font-medium mb-1">
+              MAIN USERS:
+            </label>
+            <input
+              type="text"
+              id="main_users"
+              name="main_users"
+              value={formData.main_users}
+              onChange={handleChange}
+              className="border border-gray-300 rounded p-2"
+            />
+          </div>
+
+          <div className="flex flex-col">
+            <label htmlFor="types_of_sports" className="font-medium mb-1">
+              TYPES OF SPORTS:
+            </label>
+            <input
+              type="text"
+              id="types_of_sports"
+              name="types_of_sports"
+              value={formData.types_of_sports}
+              onChange={handleChange}
+              className="border border-gray-300 rounded p-2"
+            />
+          </div>
+
+          <div className="flex flex-col">
+            <label className="font-medium mb-1">CONNECTIONS:</label>
+            <div className="space-y-2">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="internet_connection"
+                  checked={formData.internet_connection}
+                  onChange={(e) => handleChange({ target: { name: e.target.name, value: e.target.checked }})}
+                  className="mr-2"
+                />
+                Internet Connection
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="electricity_connection"
+                  checked={formData.electricity_connection}
+                  onChange={(e) => handleChange({ target: { name: e.target.name, value: e.target.checked }})}
+                  className="mr-2"
+                />
+                Electricity Connection
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="water_connection"
+                  checked={formData.water_connection}
+                  onChange={(e) => handleChange({ target: { name: e.target.name, value: e.target.checked }})}
+                  className="mr-2"
+                />
+                Water Connection
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="access_road"
+                  checked={formData.access_road}
+                  onChange={(e) => handleChange({ target: { name: e.target.name, value: e.target.checked }})}
+                  className="mr-2"
+                />
+                Access Road
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="health_facility"
+                  checked={formData.health_facility}
+                  onChange={(e) => handleChange({ target: { name: e.target.name, value: e.target.checked }})}
+                  className="mr-2"
+                />
+                Health Facility
+              </label>
+            </div>
+          </div>
+
+          <div className="flex flex-col">
+            <label htmlFor="legal_representative_name" className="font-medium mb-1">
+              LEGAL REPRESENTATIVE NAME:
+            </label>
+            <input
+              type="text"
+              id="legal_representative_name"
+              name="legal_representative_name"
+              value={formData.legal_representative_name}
+              onChange={handleChange}
+              className="border border-gray-300 rounded p-2"
+            />
+          </div>
+
+          <div className="flex flex-col">
+            <label htmlFor="legal_representative_gender" className="font-medium mb-1">
+              LEGAL REPRESENTATIVE GENDER:
+            </label>
+            <select
+              id="legal_representative_gender"
+              name="legal_representative_gender"
+              value={formData.legal_representative_gender}
+              onChange={handleChange}
+              className="border border-gray-300 rounded p-2"
+            >
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+          </div>
+
+          <div className="flex flex-col">
+            <label htmlFor="legal_representative_email" className="font-medium mb-1">
+              LEGAL REPRESENTATIVE EMAIL:
+            </label>
+            <input
+              type="email"
+              id="legal_representative_email"
+              name="legal_representative_email"
+              value={formData.legal_representative_email}
+              onChange={handleChange}
+              className="border border-gray-300 rounded p-2"
+            />
+          </div>
+
+          <div className="flex flex-col">
+            <label htmlFor="legal_representative_phone" className="font-medium mb-1">
+              LEGAL REPRESENTATIVE PHONE:
+            </label>
+            <input
+              type="text"
+              id="legal_representative_phone"
+              name="legal_representative_phone"
+              value={formData.legal_representative_phone}
               onChange={handleChange}
               className="border border-gray-300 rounded p-2"
             />

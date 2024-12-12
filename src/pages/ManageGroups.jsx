@@ -2,12 +2,13 @@ import React, { useState, Fragment, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/input';
-import { Edit, Trash2, AlertTriangle, Plus } from 'lucide-react';
+import { Loader2, Pencil, Trash2, AlertTriangle } from 'lucide-react';
 import { Dialog, Transition } from '@headlessui/react';
 import toast from 'react-hot-toast';
 import EditGroupModal from '../components/EditGroupModal';
 import AddGroupModal from '../components/AddGroupModal';  // Import AddGroupModal
 import axiosInstance from '../utils/axiosInstance'; // Import the axios instance
+import PrintButton from '../components/reusable/Print';
 
 function ManageGroups() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -141,7 +142,7 @@ function ManageGroups() {
 
         {/* Add Group Button */}
         <Button onClick={handleAddGroup} className="mb-4 flex items-center gap-2">
-          <Plus className="h-5 w-5" />
+          <Loader2 className="h-5 w-5" />
           Add Group
         </Button>
 
@@ -201,38 +202,37 @@ function ManageGroups() {
             <div className="text-red-500 p-4">{error}</div>
           ) : (
             paginatedData.length > 0 ? (
+              <PrintButton title='Manage Groups Report'>
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Group Name</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Modules</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Users</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Operation</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium operation text-gray-500 uppercase">Operation</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {paginatedData.map((group) => (
                     <tr key={group.id} className="hover:bg-gray-50">
                       <td className="px-4 py-3">{group.name}</td>
-                      <td className="px-4 py-3">{group.modules}</td>
+                      <td className="px-4 py-3">{group.accessibleModules}</td>
                       <td className="px-4 py-3">{group.users}</td>
-                      <td className="px-4 py-3">
-                        <div className="flex space-x-2">
+                      <td className="px-4 py-3 operation" >
+                        <div className="flex items-center space-x-2">
                           <Button
-                            size="sm"
-                            variant="outline"
+                            size="icon"
+                            variant="ghost"
                             onClick={() => handleEdit(group)}
                           >
-                            <Edit className="h-4 w-4 mr-1" />
-                            Edit
+                            <Pencil className="h-4 w-4" />
                           </Button>
                           <Button
-                            size="sm"
-                            variant="destructive"
+                            size="icon"
+                            variant="ghost"
                             onClick={() => handleDelete(group)}
                           >
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            Delete
+                            <Trash2 className="h-4 w-4 text-red-500" />
                           </Button>
                         </div>
                       </td>
@@ -240,6 +240,7 @@ function ManageGroups() {
                   ))}
                 </tbody>
               </table>
+              </PrintButton>
             ) : (
               <div className="flex flex-col items-center justify-center py-12">
                 <div className="text-6xl mb-4">🔍</div>
@@ -337,7 +338,10 @@ function ManageGroups() {
                 <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
                   <div className="flex items-center gap-3 mb-4">
                     <AlertTriangle className="h-6 w-6 text-red-500" />
-                    <Dialog.Title className="text-lg font-medium">Delete Group</Dialog.Title>
+                    <Dialog.Title className="flex items-center gap-2 text-red-600">
+                      <AlertTriangle className="h-5 w-5" />
+                      Confirm Deletion
+                    </Dialog.Title>
                   </div>
 
                   <p className="text-sm text-gray-500 mb-4">
