@@ -172,25 +172,19 @@ function LandingPageMatch() {
                         Past
                     </TabsTrigger>
                     {/* <SearchModal /> */}
-                    <div className="flex items-center gap-2 ml-auto">
-                        <input
+                        <input onClick={() => setActiveTab('search')}
                             type="text"
                             placeholder="Search Matches..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="p-2 rounded-md border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
-                        <button
-                            onClick={() => setSearchTerm('')}
-                            className="p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-                        >
-                            <Search />
-                        </button>
-                    </div>
                 </TabsList>
                 {/* All Events Tab */}
                 {/* <TabsContent value="all" className=""> */}
-                <TabsContent value="all" className="mt-6 flex justify-center">
+                {/* <TabsContent value="all" className={`mt-6 flex justify-center border-2 border-gray-800 ${activeTab !== 'all' ? 'hidden' : ''}`}>
+ */}
+                <TabsContent value="all" className={`mt-6 flex justify-center ${ activeTab !== 'all' ? 'hidden' : ''}`}>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                         {filteredMatches.length > 0 ? (
                             filteredMatches.map((match) =>
@@ -448,7 +442,7 @@ function LandingPageMatch() {
 
 
                 {/* Live Events Tab */}
-                <TabsContent value="live" className="mt-6 flex justify-center">
+                <TabsContent value="live" className={`mt-6 flex justify-center ${ activeTab !== 'live' ? 'hidden' : ''}`}>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                         {filteredMatches.some(match => match.status === 'LIVE') ? (
                             filteredMatches.map((match) =>
@@ -700,7 +694,7 @@ function LandingPageMatch() {
                 </TabsContent>
 
                 {/* Upcoming Events Tab */}
-                <TabsContent value="upcoming" className="mt-6 flex justify-center">
+                <TabsContent value="upcoming" className={`mt-6 flex justify-center ${ activeTab !== 'upcoming' ? 'hidden' : ''}`}>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                         {filteredMatches.map((match) => (
                             match.status === 'UPCOMING' && (
@@ -948,7 +942,7 @@ function LandingPageMatch() {
                 </TabsContent>
 
                 {/* Past Events Tab */}
-                <TabsContent value="pasthjj" className="mt-6 flex justify-center">
+                <TabsContent value="past" className={`mt-6 flex justify-center ${ activeTab !== 'past' ? 'hidden' : ''}`}>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 ">
                         {filteredMatches.some(match => match.status === 'PAST') ? (
                             filteredMatches.map((match) =>
@@ -1024,7 +1018,7 @@ function LandingPageMatch() {
 
 
                 {/* search events Tab  */}
-                <TabsContent value="past" className="mt-6 flex justify-center">
+                <TabsContent value="search" className={`mt-6 flex justify-center ${ activeTab !== 'search' ? 'hidden' : ''}`}>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                         {searchedMatches.length > 0 ? (
                             searchedMatches.map((searchedMatch) =>
@@ -1093,7 +1087,7 @@ function LandingPageMatch() {
                             <div className="flex w-full justify-center border-2">
                                 <div className="text-center mx-auto">
                                     <h1 className="text-2xl font-semibold text-gray-800">
-                                        No Games Available Yet
+                                       Sorry! We Can't find " {searchTerm} "
                                     </h1>
                                 </div>
                             </div>
