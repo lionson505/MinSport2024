@@ -3,14 +3,13 @@ import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
-import { Calendar } from '../ui/calendar';
 import { toast } from 'sonner';
-import axiosInstance from '../../utils/axiosInstance'; // Import axiosInstance
+import axiosInstance from '../../utils/axiosInstance';
 
 const BookingRequestModal = ({ isOpen, onClose, infrastructure }) => {
   const [formData, setFormData] = useState({
-    startDate: null,
-    endDate: null,
+    startDate: '', // Add startDate to formData
+    endDate: '',   // Add endDate to formData
     startTime: '',
     endTime: '',
     purpose: '',
@@ -19,7 +18,7 @@ const BookingRequestModal = ({ isOpen, onClose, infrastructure }) => {
     organizerPhone: '',
     organizerEmail: '',
     additionalNotes: '',
-    infraCategory: '' // Add infraCategory to formData
+    infraCategory: ''
   });
 
   const [categories, setCategories] = useState([]);
@@ -43,8 +42,8 @@ const BookingRequestModal = ({ isOpen, onClose, infrastructure }) => {
     try {
       const bookingRequest = {
         infrastructure_id: formData.infraCategory,
-        start_date: "10/10/2020",
-        end_date: "11/11/202",
+        start_date: formData.startDate, // Include startDate in the request
+        end_date: formData.endDate,     // Include endDate in the request
         start_time: formData.startTime,
         end_time: formData.endTime,
         purpose: formData.purpose,
@@ -53,12 +52,9 @@ const BookingRequestModal = ({ isOpen, onClose, infrastructure }) => {
         organizer_phone: formData.organizerPhone,
         organizer_email: formData.organizerEmail,
         additional_notes: formData.additionalNotes,
-        // infra_category: formData.infraCategory, // Include infraCategory
         status: 'Pending'
       };
 
-      // API call to submit booking request
-      console.log(bookingRequest)
       await axiosInstance.post('/booking-requests', bookingRequest);
       toast.success('Booking request submitted successfully');
       onClose();
@@ -80,19 +76,19 @@ const BookingRequestModal = ({ isOpen, onClose, infrastructure }) => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">Start Date</label>
-              <Calendar
-                selected={formData.startDate}
-                onSelect={(date) => setFormData({ ...formData, startDate: date })}
-                minDate={new Date()}
+              <Input
+                type="date"
+                value={formData.startDate}
+                onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                 required
               />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">End Date</label>
-              <Calendar
-                selected={formData.endDate}
-                onSelect={(date) => setFormData({ ...formData, endDate: date })}
-                minDate={formData.startDate || new Date()}
+              <Input
+                type="date"
+                value={formData.endDate}
+                onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
                 required
               />
             </div>

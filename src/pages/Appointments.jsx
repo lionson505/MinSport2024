@@ -28,7 +28,11 @@ function Appointments() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
-  const [rescheduleData, setRescheduleData] = useState({ date: "", reason: "" });
+  const [rescheduleData, setRescheduleData] = useState({
+    request_date: '',
+    request_time: '',
+    reason_for_rescheduling: ''
+  });
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [appointmentDetails, setAppointmentDetails] = useState(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -40,6 +44,15 @@ function Appointments() {
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [comment, setComment] = useState('');
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
+  const [rejectData, setRejectData] = useState({
+    request_date: '',
+    request_time: '',
+    reason_for_rejection: ''
+  });
+  const [approveData, setApproveData] = useState({
+    request_date: '',
+    request_time: ''
+  });
 
   const fetchAppointments = async () => {
     setIsLoading(true);
@@ -64,8 +77,9 @@ function Appointments() {
     setSelectedAppointment(appointment);
     const formattedDate = new Date(appointment.request_time).toISOString().slice(0, 19);
     setRescheduleData({
-      date: formattedDate,
-      reason: "",
+      request_date: formattedDate.split('T')[0],
+      request_time: formattedDate.split('T')[1],
+      reason_for_rescheduling: "",
     });
     setIsRescheduleModalOpen(true);
   };
@@ -76,18 +90,19 @@ function Appointments() {
   };
 
   const handleRescheduleSubmit = async () => {
-    if (!rescheduleData.date || !rescheduleData.reason) {
+    if (!rescheduleData.request_date || !rescheduleData.request_time || !rescheduleData.reason_for_rescheduling) {
       setToastMessage("Please fill in all fields before submitting.");
       return;
     }
 
     try {
       const formattedData = {
-        request_date: rescheduleData.date,
+        request_date: `${rescheduleData.request_date}T00:00:00.000Z`,
+        request_time: `${rescheduleData.request_date}T${rescheduleData.request_time}:00.000Z`,
+        reason_for_rescheduling: rescheduleData.reason_for_rescheduling
       };
 
-      await axiosInstance.put(`/appointments/${selectedAppointment.id}`, formattedData);
-
+      await axiosInstance.put(`/appointments/${selectedAppointment.id}/reschedule`, formattedData);
       setToastMessage("Appointment rescheduled successfully!");
       setIsRescheduleModalOpen(false);
       fetchAppointments();
@@ -148,7 +163,12 @@ function Appointments() {
 
   const handleApproveConfirm = async () => {
     try {
-      await axiosInstance.put(`/appointments/${selectedAppointment.id}/approve`);
+      const formattedData = {
+        request_date: `${approveData.request_date}T${approveData.request_time}:00.000Z`,
+        request_time: `${approveData.request_date}T${approveData.request_time}:00.000Z`
+      };
+
+      await axiosInstance.put(`/appointments/${selectedAppointment.id}/grant`, formattedData);
       setToastMessage("Appointment approved successfully!");
       setIsApproveModalOpen(false);
       fetchAppointments();
@@ -160,7 +180,13 @@ function Appointments() {
 
   const handleRejectConfirm = async () => {
     try {
-      await axiosInstance.put(`/appointments/${selectedAppointment.id}/reject`);
+      const formattedData = {
+        request_date: `${rejectData.request_date}T${rejectData.request_time}:00.000Z`,
+        request_time: `${rejectData.request_date}T${rejectData.request_time}:00.000Z`,
+        reason_for_rejection: rejectData.reason_for_rejection
+      };
+
+      await axiosInstance.put(`/appointments/${selectedAppointment.id}/reject`, formattedData);
       setToastMessage("Appointment rejected successfully!");
       setIsRejectModalOpen(false);
       fetchAppointments();
@@ -227,7 +253,7 @@ function Appointments() {
               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Gender</th>
               {/* <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Email</th> */}
               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Cellphone</th>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 operation">Purpose</th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Purpose</th>
               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Institution</th>
               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Function</th>
               {/* <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Other People to Attend</th> */}
@@ -383,28 +409,43 @@ function Appointments() {
             <div className="flex min-h-full items-center justify-center p-4">
               <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
                 <Dialog.Title className="text-lg font-medium text-gray-900">Reschedule Appointment</Dialog.Title>
-                <div className="mt-4">
-                  <Input
-                    type="datetime-local"
-                    value={rescheduleData.date}
-                    onChange={(e) => setRescheduleData({ ...rescheduleData, date: e.target.value })}
-                    className="mb-2 w-full"
-                  />
-                  <Input
-                    type="text"
-                    placeholder="Reason for rescheduling"
-                    value={rescheduleData.reason}
-                    onChange={(e) => setRescheduleData({ ...rescheduleData, reason: e.target.value })}
-                    className="mb-2 w-full"
-                  />
-                </div>
-                <div className="flex justify-end gap-3 mt-4">
-                  <Button variant="outline" onClick={() => setIsRescheduleModalOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button variant="destructive" onClick={handleRescheduleSubmit}>
-                    Reschedule Appointment
-                  </Button>
+                <div className="mt-4 space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Request Date</label>
+                    <Input
+                      type="date"
+                      value={rescheduleData?.request_date?.split('T')[0] || ''}
+                      onChange={(e) => setRescheduleData({ ...rescheduleData, request_date: e.target.value })}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Request Time</label>
+                    <Input
+                      type="time"
+                      value={rescheduleData?.request_time?.split('T')[1]?.slice(0, 5) || ''}
+                      onChange={(e) => setRescheduleData({ ...rescheduleData, request_time: e.target.value })}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Reason for Rescheduling</label>
+                    <Input
+                      type="text"
+                      placeholder="Enter reason for rescheduling"
+                      value={rescheduleData.reason_for_rescheduling}
+                      onChange={(e) => setRescheduleData({ ...rescheduleData, reason_for_rescheduling: e.target.value })}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div className="flex justify-end gap-3 mt-4">
+                    <Button variant="outline" onClick={() => setIsRescheduleModalOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button variant="destructive" onClick={handleRescheduleSubmit}>
+                      Confirm Reschedule
+                    </Button>
+                  </div>
                 </div>
               </Dialog.Panel>
             </div>
@@ -494,8 +535,25 @@ function Appointments() {
             <div className="flex min-h-full items-center justify-center p-4">
               <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
                 <Dialog.Title className="text-lg font-medium text-gray-900">Approve Appointment</Dialog.Title>
-                <div className="mt-4">
-                  <p>Are you sure you want to approve this appointment?</p>
+                <div className="mt-4 space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Request Date</label>
+                    <Input
+                      type="date"
+                      value={approveData?.request_date?.split('T')[0] || ''}
+                      onChange={(e) => setApproveData({ ...approveData, request_date: e.target.value })}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Request Time</label>
+                    <Input
+                      type="time"
+                      value={approveData?.request_time?.split('T')[1]?.slice(0, 5) || ''}
+                      onChange={(e) => setApproveData({ ...approveData, request_time: e.target.value })}
+                      className="mt-1"
+                    />
+                  </div>
                   <div className="flex justify-end gap-3 mt-4">
                     <Button variant="outline" onClick={() => setIsApproveModalOpen(false)}>
                       Cancel
@@ -528,8 +586,35 @@ function Appointments() {
             <div className="flex min-h-full items-center justify-center p-4">
               <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
                 <Dialog.Title className="text-lg font-medium text-gray-900">Reject Appointment</Dialog.Title>
-                <div className="mt-4">
-                  <p>Are you sure you want to reject this appointment?</p>
+                <div className="mt-4 space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Request Date</label>
+                    <Input
+                      type="date"
+                      value={rejectData?.request_date?.split('T')[0] || ''}
+                      onChange={(e) => setRejectData({ ...rejectData, request_date: e.target.value })}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Request Time</label>
+                    <Input
+                      type="time"
+                      value={rejectData?.request_time?.split('T')[1]?.slice(0, 5) || ''}
+                      onChange={(e) => setRejectData({ ...rejectData, request_time: e.target.value })}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Reason for Rejection</label>
+                    <Input
+                      type="text"
+                      placeholder="Enter reason for rejection"
+                      value={rejectData?.reason_for_rejection || ''}
+                      onChange={(e) => setRejectData({ ...rejectData, reason_for_rejection: e.target.value })}
+                      className="mt-1"
+                    />
+                  </div>
                   <div className="flex justify-end gap-3 mt-4">
                     <Button variant="outline" onClick={() => setIsRejectModalOpen(false)}>
                       Cancel

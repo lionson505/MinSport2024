@@ -11,7 +11,7 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/input';
 import { Select,SelectContent,SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Eye, Pencil, Trash2, MapPin, Search, Filter, AlertTriangle } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast, Toaster } from 'sonner';
 import ExportButton from './ExportButton';
 import axiosInstance from '../../utils/axiosInstance';
 import { Dialog, Transition } from '@headlessui/react';
@@ -394,6 +394,13 @@ const InfrastructureList = () => {
 
   return (
     <div className="space-y-6">
+      <Toaster
+        position="top-right"
+        expand={false}
+        richColors
+        duration={5000}
+      />
+      
       {/* Search and Filter Section */}
       <div className="flex flex-col sm:flex-row justify-between gap-4">
         <div className="relative flex-1">

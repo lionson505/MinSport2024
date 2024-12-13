@@ -10,6 +10,7 @@ import AddAcademyStudent from '../components/AddAcademyStudent';
 import EditAcademyModal from '../components/EditAcademyModal';
 import axiosInstance from '../utils/axiosInstance';
 import PrintButton from "../components/reusable/Print"
+import EditAcademyStudentModal from '../components/EditAcademyStudentModal';
 
 
 function Academies() {
@@ -112,24 +113,73 @@ function Academies() {
     }
   };
 
-  const handleEditStudentSubmit = async (updatedStudent) => {
+  const handleEditStudentSubmit = async (updatedData) => {
     try {
-      if (!updatedStudent.id) {
+      if (!updatedData.id) {
         throw new Error('Student ID is required for updating');
       }
 
-      const response = await axiosInstance.put(`/academy-students/${updatedStudent.id}`, updatedStudent);
+      // Create FormData object for file upload
+      const formData = new FormData();
+
+      // Append all the required fields
+      formData.append('firstName', updatedData.firstName);
+      formData.append('lastName', updatedData.lastName);
+      formData.append('gender', updatedData.gender);
+      formData.append('dateOfBirth', updatedData.dateOfBirth);
+      formData.append('placeOfBirth', updatedData.placeOfBirth || '');
+      formData.append('placeOfResidence', updatedData.placeOfResidence);
+      formData.append('idPassportNo', updatedData.idPassportNo);
+      formData.append('nationality', updatedData.nationality);
+      formData.append('otherNationality', updatedData.otherNationality || '');
+      formData.append('namesOfParentsGuardian', updatedData.namesOfParentsGuardian);
+      formData.append('nameOfSchoolAcademyTrainingCenter', updatedData.nameOfSchoolAcademyTrainingCenter);
+      formData.append('typeOfSchoolAcademyTrainingCenter', updatedData.typeOfSchoolAcademyTrainingCenter);
+      formData.append('class', updatedData.class);
+      formData.append('typeOfGame', updatedData.typeOfGame);
+      formData.append('contact', updatedData.contact);
+
+      // Only append photo if it's provided and it's a File object
+      if (updatedData.photo_passport instanceof File) {
+        formData.append('photo_passport', updatedData.photo_passport);
+      }
+
+      const response = await axiosInstance.put(
+        `/academy-students/${updatedData.id}`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
 
       if (response.status === 200) {
         setIsEditStudentModalOpen(false);
         toast.success('Student updated successfully');
         fetchStudents();
-      } else {
-        throw new Error('Failed to update student');
       }
     } catch (error) {
       console.error('Error updating student:', error);
-      toast.error('Failed to update student');
+      
+      // Enhanced error handling
+      if (error.response) {
+        const errorMessage = error.response.data.message || 'Failed to update student';
+        if (error.response.data.details) {
+          const validationErrors = error.response.data.details
+            .map(detail => detail.message)
+            .join(', ');
+          toast.error(`Validation errors: ${validationErrors}`);
+        } else {
+          toast.error(errorMessage);
+        }
+      } else if (error.request) {
+        toast.error('No response received from server');
+      } else {
+        toast.error('Failed to update student');
+      }
+      
+      throw error;
     }
   };
 
@@ -534,29 +584,32 @@ function Academies() {
         { label: 'Full Name', value: `${student.firstName} ${student.lastName}` },
         { label: 'Gender', value: student.gender },
         { label: 'Date of Birth', value: new Date(student.dateOfBirth).toLocaleDateString() },
-        { label: 'Place of Birth', value: student.placeOfBirth },
+        { label: 'Place of Birth', value: student.placeOfBirth || 'N/A' },
         { label: 'Place of Residence', value: student.placeOfResidence },
+        { label: 'ID/Passport No', value: student.idPassportNo },
         { label: 'Nationality', value: student.nationality },
         { label: 'Other Nationality', value: student.otherNationality || 'N/A' }
       ]},
       { section: 'Academic Information', fields: [
-        { label: 'School/Academy', value: student.schoolName },
+        { label: 'School/Academy', value: student.nameOfSchoolAcademyTrainingCenter },
+        { label: 'Type of School/Academy', value: student.typeOfSchoolAcademyTrainingCenter },
         { label: 'Class', value: student.class },
-        { label: 'Game Type', value: student.gameType }
+        { label: 'Type of Game', value: student.typeOfGame }
       ]},
       { section: 'Contact Information', fields: [
-        { label: 'Parents/Guardian', value: student.parentsGuardian },
-        { label: 'Contact', value: student.contact || 'N/A' }
+        { label: 'Parents/Guardian', value: student.namesOfParentsGuardian },
+        { label: 'Contact', value: student.contact }
       ]}
     ];
 
     return (
       <div className="space-y-6">
-        {student.passportPicture && (
+        {student.photo_passport && (
           <div className="flex justify-center mb-6">
+            {console.log('Student photo full path:', `${axiosInstance.defaults.baseURL}/uploads/students/${student.photo_passport}`)}
             <img 
-              src={URL.createObjectURL(student.passportPicture)}
-              alt="Student"
+              src={`${axiosInstance.defaults.baseURL}/uploads/students/${student.photo_passport}`}
+              alt="Student Passport"
               className="w-32 h-32 rounded-lg object-cover"
             />
           </div>
@@ -578,6 +631,7 @@ function Academies() {
       </div>
     );
   };
+
 
   const handleAddAcademy = async (data) => {
     try {
@@ -614,6 +668,10 @@ function Academies() {
   };
 
   const handleEditStudent = (student) => {
+    if (!student?.id) {
+      toast.error('Invalid student data');
+      return;
+    }
     setSelectedStudent(student);
     setIsEditStudentModalOpen(true);
   };
@@ -967,15 +1025,14 @@ function Academies() {
       </Transition>
 
       {/* Edit Student Modal */}
-      <AddAcademyStudent
+      <EditAcademyStudentModal
         isOpen={isEditStudentModalOpen}
         onClose={() => {
           setIsEditStudentModalOpen(false);
           setSelectedStudent(null);
         }}
-        onAdd={handleEditStudentSubmit}
+        onEdit={handleEditStudentSubmit}
         studentData={selectedStudent}
-        isEditing={true}
       />
     </div>
   );

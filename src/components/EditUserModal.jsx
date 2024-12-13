@@ -13,6 +13,8 @@ const EditUserModal = ({ isOpen, onClose, onEdit, userData }) => {
     name: '',
     email: '',
     groupId: '',
+    active: false,
+    emailVerified: false,
   });
 
   const [groupOptions, setGroupOptions] = useState([]);
@@ -27,6 +29,8 @@ const EditUserModal = ({ isOpen, onClose, onEdit, userData }) => {
         name: userData?.name || '',
         email: userData?.email || '',
         groupId: userData?.groupId || '',
+        active: userData?.active || false,
+        emailVerified: userData?.emailVerified || false,
       });
 
       setGroupOptions([]);
@@ -76,7 +80,11 @@ const EditUserModal = ({ isOpen, onClose, onEdit, userData }) => {
     }
 
     try {
-      const response = await axiosInstance.put(`/users/${userData.id}`, formData, {
+      const response = await axiosInstance.put(`/users/${userData.id}`, {
+        ...formData,
+        active: Boolean(formData.active),
+        emailVerified: Boolean(formData.emailVerified)
+      }, {
         headers: { 'Content-Type': 'application/json' },
       });
 
@@ -99,6 +107,8 @@ const EditUserModal = ({ isOpen, onClose, onEdit, userData }) => {
       name: '',
       email: '',
       groupId: '',
+      active: false,
+      emailVerified: false,
     }); // Reset form data when modal closes
   }, [onClose]);
 
@@ -167,6 +177,45 @@ const EditUserModal = ({ isOpen, onClose, onEdit, userData }) => {
                       ))}
                     </select>
                   )}
+                </div>
+
+                <div>
+                  <label className="block mb-1 text-sm font-medium">Status</label>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="active"
+                        name="active"
+                        checked={formData.active}
+                        onChange={(e) => handleChange({
+                          target: {
+                            name: 'active',
+                            value: e.target.checked
+                          }
+                        })}
+                        className="rounded border-gray-300"
+                      />
+                      <label htmlFor="active" className="text-sm">Active</label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="emailVerified"
+                        name="emailVerified"
+                        checked={formData.emailVerified}
+                        onChange={(e) => handleChange({
+                          target: {
+                            name: 'emailVerified',
+                            value: e.target.checked
+                          }
+                        })}
+                        className="rounded border-gray-300"
+                      />
+                      <label htmlFor="emailVerified" className="text-sm">Email Verified</label>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="mt-4 flex justify-between">

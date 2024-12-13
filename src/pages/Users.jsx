@@ -65,16 +65,25 @@ function Users() {
     fetchData();
   }, []);
 
-  // Filter users based on search parameters
+  // Modify the filter for pending users to show inactive users
+  const pendingUsers = userData.filter(user => !user.active);
+
+  // Update the status display in the filtered users
   const filteredUsers = userData.filter((user) => {
     const matchesName = user.name.toLowerCase().includes(searchName.toLowerCase());
     const matchesGroup = !searchGroup || getGroupName(user.groupId).toLowerCase().includes(searchGroup.toLowerCase());
     
-    // Check if status exists before calling toLowerCase
-    const matchesStatus = !searchStatus || (user.status && user.status.toLowerCase().includes(searchStatus.toLowerCase()));
+    // Convert boolean active status to string for filtering
+    const userStatus = !user.active ? 'inactive' : 'active';
+    const matchesStatus = !searchStatus || userStatus.toLowerCase().includes(searchStatus.toLowerCase());
     
     return matchesName && matchesGroup && matchesStatus;
   });
+
+  // Helper function to get status string
+  const getUserStatus = (user) => {
+    return user.active ? 'active' : 'inactive';
+  };
 
   // Switch between users and groups tab
   const handleTabSwitch = (tab) => {
@@ -133,13 +142,19 @@ function Users() {
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Manage Users and Groups</h1>
 
-      {/* Tab navigation for User/Group management */}
+      {/* Update Tab navigation to include Pending Users */}
       <div className="flex gap-4 mb-4">
         <Button
           onClick={() => handleTabSwitch('users')}
           className={activeTab === 'users' ? 'bg-blue-600 text-white' : ''}
         >
           Manage Users
+        </Button>
+        <Button
+          onClick={() => handleTabSwitch('pending')}
+          className={activeTab === 'pending' ? 'bg-blue-600 text-white' : ''}
+        >
+          Pending Users
         </Button>
         <Button
           onClick={() => handleTabSwitch('groups')}
@@ -241,7 +256,7 @@ function Users() {
                     <td className="border p-2">{user.name}</td>
                     <td className="border p-2">{user.email}</td>
                     <td className="border p-2">{getGroupName(user.groupId)}</td>
-                    <td className="border p-2">{user.status}</td>
+                    <td className="border p-2">{getUserStatus(user)}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center space-x-2">
                         <Button
@@ -269,6 +284,119 @@ function Users() {
           {/* Display Message if No Users Found */}
           {!loading && !error && filteredUsers.length === 0 && (
             <div className="text-center text-gray-500">No users found</div>
+          )}
+        </>
+      )}
+
+      {/* Add Pending Users Tab Content */}
+      {activeTab === 'pending' && (
+        <>
+          {loading && (
+            <div className="flex justify-center items-center">
+              <Loader2 className="animate-spin text-blue-500" size={24} />
+            </div>
+          )}
+
+          {error && (
+            <div className="text-red-500 mb-4">
+              <strong>Error:</strong> {error}
+            </div>
+          )}
+
+          {/* Add Filters for Pending Users Tab */}
+          <div className="mb-4">
+            <h2 className="font-semibold text-lg mb-2">Filter Pending Users</h2>
+            <div className="flex gap-4">
+              {/* Search by Name */}
+              <div className="flex flex-col">
+                <label htmlFor="searchName" className="mb-1 text-sm">Search by Name</label>
+                <input
+                  type="text"
+                  id="searchName"
+                  placeholder="Search by Name"
+                  className="p-2 border border-gray-300 rounded"
+                  value={searchName}
+                  onChange={(e) => setSearchName(e.target.value)}
+                />
+              </div>
+
+              {/* Search by Group */}
+              <div className="flex flex-col">
+                <label htmlFor="searchGroup" className="mb-1 text-sm">Search by Group</label>
+                <input
+                  type="text"
+                  id="searchGroup"
+                  placeholder="Search by Group"
+                  className="p-2 border border-gray-300 rounded"
+                  value={searchGroup}
+                  onChange={(e) => setSearchGroup(e.target.value)}
+                />
+              </div>
+
+              {/* Button to Clear Filters */}
+              <div className="flex items-end">
+                <Button
+                  variant="outline"
+                  onClick={clearFilters}
+                  className="mb-0"
+                >
+                  Clear Filters
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Update the pendingUsers display to use filters */}
+          {!loading && !error && pendingUsers.length > 0 && (
+            <table className="min-w-full table-auto border-collapse">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border p-2 text-left">Name</th>
+                  <th className="border p-2 text-left">Email</th>
+                  <th className="border p-2 text-left">Group</th>
+                  <th className="border p-2 text-left">Status</th>
+                  <th className="border p-2 text-left">Operation</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingUsers
+                  .filter((user) => {
+                    const matchesName = user.name.toLowerCase().includes(searchName.toLowerCase());
+                    const matchesGroup = !searchGroup || getGroupName(user.groupId).toLowerCase().includes(searchGroup.toLowerCase());
+                    return matchesName && matchesGroup;
+                  })
+                  .map((user) => (
+                    <tr key={user.id} className="hover:bg-gray-50">
+                      <td className="border p-2">{user.name}</td>
+                      <td className="border p-2">{user.email}</td>
+                      <td className="border p-2">{getGroupName(user.groupId)}</td>
+                      <td className="border p-2">{getUserStatus(user)}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleEditUser(user)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleDeleteUser(user)}
+                          >
+                            <Trash2 className="h-4 w-4 text-red-500" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          )}
+
+          {!loading && !error && pendingUsers.length === 0 && (
+            <div className="text-center text-gray-500">No pending users found</div>
           )}
         </>
       )}

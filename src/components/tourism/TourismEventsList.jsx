@@ -300,8 +300,9 @@ const TourismEventsList = () => {
                 {/* Banner Section */}
                 {selectedEvent?.banner ? (
                   <div className="mb-4">
+                    {console.log('Banner full path:', `${axiosInstance.defaults.baseURL}/uploads/banners/${selectedEvent.banner}`)}
                     <img 
-                      src={`/uploads/banners/${selectedEvent.banner}`} 
+                      src={`${axiosInstance.defaults.baseURL}/${selectedEvent.banner}`} 
                       alt="Event Banner" 
                       className="w-full h-48 object-cover rounded-lg" 
                     />
@@ -357,8 +358,9 @@ const TourismEventsList = () => {
                 {selectedEvent?.video ? (
                   <div className="mt-4">
                     <p><strong>Event Video:</strong></p>
+                    {console.log('Video full path:', `${axiosInstance.defaults.baseURL}/uploads/video/${selectedEvent.video}`)}
                     <video 
-                      src={`/uploads/video/${selectedEvent.video}`} 
+                      src={`${axiosInstance.defaults.baseURL}/${selectedEvent.video}`} 
                       controls 
                       className="mt-2 w-full rounded-lg"
                     >
