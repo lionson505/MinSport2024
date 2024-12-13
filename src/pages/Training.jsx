@@ -170,6 +170,7 @@ const Training = () => {
 
       {/* Trainings Table */}
       <div className="overflow-x-auto bg-white rounded-lg shadow">
+
         <PrintButton>
           <Button
             onClick={() => setShowAddModal(true)}
@@ -288,5 +289,4 @@ const Training = () => {
     </div>
   );
 };
-
 export default Training;
