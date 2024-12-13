@@ -1,9 +1,9 @@
-/* src/components/forms/AddSportsProfessionalForm.jsx */
 import React, { useState, useEffect } from 'react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/input';
 import { toast } from 'react-hot-toast';
 import axios from '../../utils/axiosInstance';
+import { countries } from '../../data/countries'; // Import countries data
 
 const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSubmitting }) => {
   const [idType, setIdType] = useState('nid');
@@ -56,6 +56,8 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
     { value: 'MASTER', label: 'Master' },
     { value: 'PHD', label: 'PhD' }
   ];
+
+  const selectClassName = "h-12 w-full px-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500";
 
   useEffect(() => {
     if (initialData.idPassportNo) {
@@ -236,265 +238,274 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
 
   return (
     <div className="max-h-[80vh] overflow-y-auto p-4 space-y-6">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="p-4 bg-gray-50 rounded-lg space-y-4">
-          <div className="flex gap-4">
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="idType"
-                value="nid"
-                checked={idType === 'nid'}
-                onChange={(e) => {
-                  setIdType(e.target.value);
-                  setIdNumber('');
-                  setIdError('');
-                  setNidaData(null);
-                }}
-                className="mr-2"
-              />
-              National ID
-            </label>
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="idType"
-                value="passport"
-                checked={idType === 'passport'}
-                onChange={(e) => {
-                  setIdType(e.target.value);
-                  setIdNumber('');
-                  setIdError('');
-                  setNidaData(null);
-                }}
-                className="mr-2"
-              />
-              Passport
-            </label>
-          </div>
+     <form onSubmit={handleSubmit} className="space-y-6">
+  <div className="p-4 bg-gray-50 rounded-lg space-y-4">
+    <div className="flex gap-4">
+      <label className="flex items-center">
+        <input
+          type="radio"
+          name="idType"
+          value="nid"
+          checked={idType === 'nid'}
+          onChange={(e) => {
+            setIdType(e.target.value);
+            setIdNumber('');
+            setIdError('');
+            setNidaData(null);
+          }}
+          className="mr-2"
+        />
+        National ID
+      </label>
+      <label className="flex items-center">
+        <input
+          type="radio"
+          name="idType"
+          value="passport"
+          checked={idType === 'passport'}
+          onChange={(e) => {
+            setIdType(e.target.value);
+            setIdNumber('');
+            setIdError('');
+            setNidaData(null);
+          }}
+          className="mr-2"
+        />
+        Passport
+      </label>
+    </div>
 
-          <div className="flex gap-4 items-end">
-            <div className="flex-1">
-              <label className="block text-sm font-medium mb-1">
-                {idType === 'nid' ? 'National ID Number' : 'Passport Number'}
-              </label>
-              <Input
-                type="text"
-                value={idNumber}
-                onChange={(e) => {
-                  setIdNumber(e.target.value);
-                  setIdError('');
-                }}
-                className={idError ? 'border-red-500' : ''}
-                placeholder={idType === 'nid' ? 'Enter 16-digit ID number' : 'Enter passport number'}
-              />
-            </div>
+    <div className="flex flex-col gap-4">
+      <div className="flex-1">
+        <label className="block text-sm font-medium mb-1">
+          {idType === 'nid' ? 'National ID Number' : 'Passport Number'}
+        </label>
+        <Input
+          type="text"
+          value={idNumber}
+          onChange={(e) => {
+            setIdNumber(e.target.value);
+            setIdError('');
+          }}
+          className={idError ? 'border-red-500' : ''}
+          placeholder={idType === 'nid' ? 'Enter 16-digit ID number' : 'Enter passport number'}
+        />
+      </div>
 
-            {idType === 'passport' && (
-              <div className="flex-1">
-                <label className="block text-sm font-medium mb-1">
-                  Passport Expiry Date
-                </label>
-                <Input
-                  type="date"
-                  value={passportExpiry}
-                  onChange={(e) => {
-                    setPassportExpiry(e.target.value);
-                    setIdError('');
-                  }}
-                  min={new Date().toISOString().split('T')[0]}
-                  className={idError ? 'border-red-500' : ''}
-                />
-              </div>
-            )}
-
-            <Button
-              type="button"
-              onClick={handleNIDLookup}
-              disabled={isLoadingNIDA || !idNumber || (idType === 'passport' && !passportExpiry)}
-            >
-              {isLoadingNIDA ? 'Verifying...' : 'Verify ID'}
-            </Button>
-          </div>
-
-          {idError && (
-            <p className="text-sm text-red-500 mt-1">{idError}</p>
-          )}
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Full Name</label>
-            <Input
-              value={nidaData?.names || ''}
-              readOnly
-              className="bg-gray-50"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Date of Birth</label>
-            <Input
-              value={nidaData?.dateOfBirth || ''}
-              readOnly
-              className="bg-gray-50"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Gender</label>
-            <Input
-              value={nidaData?.gender || ''}
-              readOnly
-              className="bg-gray-50"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Nationality</label>
-            <Input
-              value={nidaData?.nationality || ''}
-              readOnly
-              className="bg-gray-50"
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Marital Status</label>
-            <select
-              value={formData.maritalStatus}
-              onChange={(e) => setFormData({ ...formData, maritalStatus: e.target.value })}
-              className="block w-full mt-1"
-            >
-              {maritalStatusOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Region</label>
-            <Input
-              value={formData.region}
-              onChange={(e) => setFormData({ ...formData, region: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Discipline</label>
-            <select
-              value={formData.discipline}
-              onChange={(e) => setFormData({ ...formData, discipline: e.target.value })}
-              className="block w-full mt-1"
-            >
-              <option value="">Select a discipline</option>
-              {disciplines.map((discipline) => (
-                <option key={discipline.id} value={discipline.name}>
-                  {discipline.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">License</label>
-            <Input
-              value={formData.license}
-              onChange={(e) => setFormData({ ...formData, license: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Function</label>
-            <select
-              value={formData.function}
-              onChange={(e) => setFormData({ ...formData, function: e.target.value })}
-              className="block w-full mt-1"
-            >
-              <option value="">Select a function</option>
-              {functions.map((func) => (
-                <option key={func.id} value={func.name}>
-                  {func.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Other Nationality</label>
-            <Input
-              value={formData.otherNationality}
-              onChange={(e) => setFormData({ ...formData, otherNationality: e.target.value })}
-              placeholder="Enter other nationality if applicable"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Place of Residence</label>
-            <Input
-              value={formData.placeOfResidence}
-              onChange={(e) => setFormData({ ...formData, placeOfResidence: e.target.value })}
-              placeholder="Enter place of residence"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Fitness Status</label>
-            <select
-              value={formData.fitnessStatus}
-              onChange={(e) => setFormData({ ...formData, fitnessStatus: e.target.value })}
-              className="block w-full mt-1"
-            >
-              {fitnessStatusOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Level of Education</label>
-            <select
-              value={formData.levelOfEducation}
-              onChange={(e) => setFormData({ ...formData, levelOfEducation: e.target.value })}
-              className="block w-full mt-1"
-            >
-              {educationLevelOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Period of Experience</label>
-            <Input
-              value={formData.periodOfExperience}
-              onChange={(e) => setFormData({ ...formData, periodOfExperience: e.target.value })}
-              placeholder="Enter period of experience"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Resume</label>
+      {idType === 'passport' && (
+        <div className="flex-1">
+          <label className="block text-sm font-medium mb-1">
+            Passport Expiry Date
+          </label>
           <Input
-            type="file"
-            accept=".pdf,.doc,.docx"
+            type="date"
+            value={passportExpiry}
             onChange={(e) => {
-              const fileName = e.target.files[0]?.name || '';
-              setFormData({ ...formData, resume: fileName });
+              setPassportExpiry(e.target.value);
+              setIdError('');
             }}
+            min={new Date().toISOString().split('T')[0]}
+            className={idError ? 'border-red-500' : ''}
           />
-          {formData.resume && (
-            <p className="text-sm text-gray-600 mt-1">Selected file: {formData.resume}</p>
-          )}
         </div>
+      )}
 
-        <div className="flex gap-4 justify-end">
-          <Button type="button" onClick={onCancel}>Cancel</Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {initialData.id ? 'Update' : 'Submit'}
-          </Button>
-        </div>
-      </form>
+      <Button
+        type="button"
+        onClick={handleNIDLookup}
+        disabled={isLoadingNIDA || !idNumber || (idType === 'passport' && !passportExpiry)}
+      >
+        {isLoadingNIDA ? 'Verifying...' : 'Verify ID'}
+      </Button>
+    </div>
+
+    {idError && (
+      <p className="text-sm text-red-500 mt-1">{idError}</p>
+    )}
+  </div>
+
+  <div className="space-y-4">
+    <div>
+      <label className="block text-sm font-medium mb-1">Full Name</label>
+      <Input
+        value={nidaData?.names || ''}
+        readOnly
+        className="bg-gray-50"
+      />
+    </div>
+    <div>
+      <label className="block text-sm font-medium mb-1">Date of Birth</label>
+      <Input
+        value={nidaData?.dateOfBirth || ''}
+        readOnly
+        className="bg-gray-50"
+      />
+    </div>
+    <div>
+      <label className="block text-sm font-medium mb-1">Gender</label>
+      <Input
+        value={nidaData?.gender || ''}
+        readOnly
+        className="bg-gray-50"
+      />
+    </div>
+    <div>
+      <label className="block text-sm font-medium mb-1">Nationality</label>
+      <Input
+        value={nidaData?.nationality || ''}
+        readOnly
+        className="bg-gray-50"
+      />
+    </div>
+  </div>
+
+  <div className="space-y-4">
+    <div>
+      <label className="block text-sm font-medium mb-1">Marital Status</label>
+      <select
+        value={formData.maritalStatus}
+        onChange={(e) => setFormData({ ...formData, maritalStatus: e.target.value })}
+        className={selectClassName}
+      >
+        {maritalStatusOptions.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </div>
+    <div>
+      <label className="block text-sm font-medium mb-1">Region</label>
+      <Input
+        value={formData.region}
+        onChange={(e) => setFormData({ ...formData, region: e.target.value })}
+      />
+    </div>
+    <div>
+      <label className="block text-sm font-medium mb-1">Discipline</label>
+      <select
+        value={formData.discipline}
+        onChange={(e) => setFormData({ ...formData, discipline: e.target.value })}
+        className={selectClassName}
+      >
+        <option value="">Select a discipline</option>
+        {disciplines.map((discipline) => (
+          <option key={discipline.id} value={discipline.name}>
+            {discipline.name}
+          </option>
+        ))}
+      </select>
+    </div>
+    <div>
+      <label className="block text-sm font-medium mb-1">License</label>
+      <Input
+        value={formData.license}
+        onChange={(e) => setFormData({ ...formData, license: e.target.value })}
+      />
+    </div>
+    <div>
+      <label className="block text-sm font-medium mb-1">Function</label>
+      <select
+        value={formData.function}
+        onChange={(e) => setFormData({ ...formData, function: e.target.value })}
+        className={selectClassName}
+      >
+        <option value="">Select a function</option>
+        {functions.map((func) => (
+          <option key={func.id} value={func.name}>
+            {func.name}
+          </option>
+        ))}
+      </select>
+    </div>
+  </div>
+
+  <div className="space-y-4">
+    <div>
+      <label className="block text-sm font-medium mb-1">Other Nationality</label>
+      <select
+  value={formData.otherNationality}
+  onChange={(e) => setFormData({ ...formData, otherNationality: e.target.value })}
+  className={selectClassName}
+>
+  <option value="">Select a nationality</option>
+  {countries.map((country) => (
+    <option key={country} value={country}>
+      {country}
+    </option>
+  ))}
+</select>
+
+    </div>
+    <div>
+      <label className="block text-sm font-medium mb-1">Place of Residence</label>
+      <Input
+        value={formData.placeOfResidence}
+        onChange={(e) => setFormData({ ...formData, placeOfResidence: e.target.value })}
+        placeholder="Enter place of residence"
+      />
+    </div>
+    <div>
+      <label className="block text-sm font-medium mb-1">Fitness Status</label>
+      <select
+        value={formData.fitnessStatus}
+        onChange={(e) => setFormData({ ...formData, fitnessStatus: e.target.value })}
+        className={selectClassName}
+      >
+        {fitnessStatusOptions.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </div>
+    <div>
+      <label className="block text-sm font-medium mb-1">Level of Education</label>
+      <select
+        value={formData.levelOfEducation}
+        onChange={(e) => setFormData({ ...formData, levelOfEducation: e.target.value })}
+        className={selectClassName}
+      >
+        {educationLevelOptions.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </div>
+    <div>
+      <label className="block text-sm font-medium mb-1">Period of Experience</label>
+      <Input
+        value={formData.periodOfExperience}
+        onChange={(e) => setFormData({ ...formData, periodOfExperience: e.target.value })}
+        placeholder="Enter period of experience"
+      />
+    </div>
+  </div>
+
+  <div>
+    <label className="block text-sm font-medium mb-1">Resume</label>
+    <Input
+      type="file"
+      accept=".pdf,.doc,.docx"
+      onChange={(e) => {
+        const fileName = e.target.files[0]?.name || '';
+        setFormData({ ...formData, resume: fileName });
+      }}
+    />
+    {formData.resume && (
+      <p className="text-sm text-gray-600 mt-1">Selected file: {formData.resume}</p>
+    )}
+  </div>
+
+  <div className="flex gap-4 justify-end">
+    <Button type="button" onClick={onCancel}>Cancel</Button>
+    <Button type="submit" disabled={isSubmitting}>
+      {initialData.id ? 'Update' : 'Submit'}
+    </Button>
+  </div>
+</form>
+
     </div>
   );
 };

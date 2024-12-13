@@ -19,17 +19,17 @@ const Toast = ({ message, onClose }) => {
 const AddAppointmentForm = ({ onSubmit, onCancel }) => {
   const [formData, setFormData] = useState({
     person_to_meet: 'MINISTER',
-    names: 'John Doe',
-    gender: 'Male',
-    email: 'johndoe@example.com',
-    cellphone: '1234567890',
-    purpose: 'Discussing new project proposals',
-    request_date: '2024-10-16T00:00:00.000Z',
-    request_time: '2024-10-16T09:30:00.000Z',
+    names: '',
+    gender: '',
+    email: '',
+    cellphone: '',
+    purpose: '',
+    request_date: '',
+    request_time: '',
     institution: '',
     function: '',
-    other_people_to_attend: 'Jane Smith, Mark Brown',
-    other_ministry_staff: 'Secretary, Assistant',
+    other_people_to_attend: '',
+    other_ministry_staff: '',
   });
 
   const [institutions, setInstitutions] = useState([]);
@@ -91,7 +91,7 @@ const AddAppointmentForm = ({ onSubmit, onCancel }) => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 gap-5">
           <div className="flex flex-col">
             <label className="mb-1 text-sm font-medium">
               Person to Meet
@@ -123,12 +123,16 @@ const AddAppointmentForm = ({ onSubmit, onCancel }) => {
             <label className="mb-1 text-sm font-medium">
               Gender
             </label>
-            <Input
-              type="text"
+            <select
               value={formData.gender}
               onChange={(e) => setFormData(prev => ({ ...prev, gender: e.target.value }))}
-              placeholder="Enter gender"
-            />
+              className="border rounded-lg p-2"
+            >
+              <option value="">Select Gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
           </div>
 
           <div className="flex flex-col">

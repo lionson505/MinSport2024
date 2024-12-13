@@ -9,11 +9,13 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import axiosInstance from '../../utils/axiosInstance';
 import { locations } from '../../data/locations';
 
+const inputClassName = "h-12 w-full";
+
 const AddEventModal = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
     name: '',
-    banner: null,
-    video: null,
+    banner: '',
+    video: '',
     category: '',
     subCategory: '',
     province: '',
@@ -81,9 +83,38 @@ const AddEventModal = ({ isOpen, onClose }) => {
     }
 
     try {
-      const response = await axiosInstance.post('/sports-tourism-events', formData);
+      // Create a new FormData instance
+      const formDataToSend = new FormData();
+
+      // Append all regular fields
+      Object.keys(formData).forEach(key => {
+        if (key !== 'banner' && key !== 'video') {
+          formDataToSend.append(key, formData[key]);
+        }
+      });
+
+      // Append files if they exist
+      if (formData.banner) {
+        formDataToSend.append('banner', formData.banner);
+      }
+      if (formData.video) {
+        formDataToSend.append('video', formData.video);
+      }
+
+      const response = await axiosInstance.post('/sports-tourism-events', formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
       console.log('Event added:', response.data);
-      toast.success('Event added successfully');
+      toast.success('Event added successfully!', {
+        description: `${formData.name} has been created.`
+      });
+      
+      // Reload the page after successful submission
+      window.location.reload();
+      
       onClose();
 
       setFormData({
@@ -111,7 +142,9 @@ const AddEventModal = ({ isOpen, onClose }) => {
       });
     } catch (error) {
       console.error('Error adding event:', error.response || error.message);
-      toast.error('Failed to add event');
+      toast.error('Failed to add event', {
+        description: error.response?.data?.message || 'Please try again later.'
+      });
     }
   };
 
@@ -142,6 +175,7 @@ const AddEventModal = ({ isOpen, onClose }) => {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
+                  className={inputClassName}
                 />
               </div>
               <div>
@@ -150,7 +184,7 @@ const AddEventModal = ({ isOpen, onClose }) => {
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   required
-                  className="w-full border border-gray-300 rounded-md"
+                  className="w-full border border-gray-300 rounded-md h-12"
                 >
                   <option value="">Select Category</option>
                   {categories.map((category) => (
@@ -166,7 +200,7 @@ const AddEventModal = ({ isOpen, onClose }) => {
                   value={formData.subCategory}
                   onChange={(e) => setFormData({ ...formData, subCategory: e.target.value })}
                   required
-                  className="w-full border border-gray-300 rounded-md"
+                  className="w-full border border-gray-300 rounded-md h-12"
                 >
                   <option value="">Select Sub Category</option>
                   {subCategories.map((subCategory) => (
@@ -182,7 +216,7 @@ const AddEventModal = ({ isOpen, onClose }) => {
                   value={formData.province}
                   onChange={(e) => handleLocationChange('province', e.target.value)}
                   required
-                  className="w-full border border-gray-300 rounded-md"
+                  className="w-full border border-gray-300 rounded-md h-12"
                 >
                   <option value="">Select Province</option>
                   {locations.provinces.map((province) => (
@@ -198,7 +232,7 @@ const AddEventModal = ({ isOpen, onClose }) => {
                   value={formData.district}
                   onChange={(e) => handleLocationChange('district', e.target.value)}
                   required
-                  className="w-full border border-gray-300 rounded-md"
+                  className="w-full border border-gray-300 rounded-md h-12"
                   disabled={!formData.province}
                 >
                   <option value="">Select District</option>
@@ -216,7 +250,7 @@ const AddEventModal = ({ isOpen, onClose }) => {
                   value={formData.sector}
                   onChange={(e) => handleLocationChange('sector', e.target.value)}
                   required
-                  className="w-full border border-gray-300 rounded-md"
+                  className="w-full border border-gray-300 rounded-md h-12"
                   disabled={!formData.district}
                 >
                   <option value="">Select Sector</option>
@@ -234,7 +268,7 @@ const AddEventModal = ({ isOpen, onClose }) => {
                   value={formData.cell}
                   onChange={(e) => handleLocationChange('cell', e.target.value)}
                   required
-                  className="w-full border border-gray-300 rounded-md"
+                  className="w-full border border-gray-300 rounded-md h-12"
                   disabled={!formData.sector}
                 >
                   <option value="">Select Cell</option>
@@ -252,7 +286,7 @@ const AddEventModal = ({ isOpen, onClose }) => {
                   value={formData.village}
                   onChange={(e) => setFormData({ ...formData, village: e.target.value })}
                   required
-                  className="w-full border border-gray-300 rounded-md"
+                  className="w-full border border-gray-300 rounded-md h-12"
                   disabled={!formData.cell}
                 >
                   <option value="">Select Village</option>
@@ -270,6 +304,7 @@ const AddEventModal = ({ isOpen, onClose }) => {
                   type="file"
                   accept="image/*"
                   onChange={(e) => handleFileChange(e, 'banner')}
+                  className={inputClassName}
                 />
               </div>
 
@@ -279,6 +314,7 @@ const AddEventModal = ({ isOpen, onClose }) => {
                   type="file"
                   accept="video/*"
                   onChange={(e) => handleFileChange(e, 'video')}
+                  className={inputClassName}
                 />
               </div>
             </section>
@@ -294,6 +330,7 @@ const AddEventModal = ({ isOpen, onClose }) => {
                     value={formData.startDate}
                     onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                     required
+                    className={inputClassName}
                   />
                 </div>
 
@@ -304,6 +341,7 @@ const AddEventModal = ({ isOpen, onClose }) => {
                     value={formData.endDate}
                     onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
                     required
+                    className={inputClassName}
                   />
                 </div>
 
@@ -314,6 +352,7 @@ const AddEventModal = ({ isOpen, onClose }) => {
                     value={formData.timeFrom}
                     onChange={(e) => setFormData({ ...formData, timeFrom: e.target.value })}
                     required
+                    className={inputClassName}
                   />
                 </div>
 
@@ -324,6 +363,7 @@ const AddEventModal = ({ isOpen, onClose }) => {
                     value={formData.timeTo}
                     onChange={(e) => setFormData({ ...formData, timeTo: e.target.value })}
                     required
+                    className={inputClassName}
                   />
                 </div>
               </div>
@@ -341,6 +381,7 @@ const AddEventModal = ({ isOpen, onClose }) => {
                     onChange={(e) => setFormData({ ...formData, maleParticipants: parseInt(e.target.value, 10) })}
                     min="0"
                     required
+                    className={inputClassName}
                   />
                 </div>
 
@@ -352,6 +393,7 @@ const AddEventModal = ({ isOpen, onClose }) => {
                     onChange={(e) => setFormData({ ...formData, femaleParticipants: parseInt(e.target.value, 10) })}
                     min="0"
                     required
+                    className={inputClassName}
                   />
                 </div>
 
@@ -363,6 +405,7 @@ const AddEventModal = ({ isOpen, onClose }) => {
                     onChange={(e) => setFormData({ ...formData, participants: parseInt(e.target.value, 10) })}
                     min="0"
                     required
+                    className={inputClassName}
                   />
                 </div>
 
@@ -374,6 +417,7 @@ const AddEventModal = ({ isOpen, onClose }) => {
                     onChange={(e) => setFormData({ ...formData, participantsFee: parseInt(e.target.value, 10) })}
                     min="0"
                     required
+                    className={inputClassName}
                   />
                 </div>
 
@@ -385,6 +429,7 @@ const AddEventModal = ({ isOpen, onClose }) => {
                     onChange={(e) => setFormData({ ...formData, amountGenerated: parseInt(e.target.value, 10) })}
                     min="0"
                     required
+                    className={inputClassName}
                   />
                 </div>
               </div>

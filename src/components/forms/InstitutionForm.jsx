@@ -114,21 +114,17 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
     handleChange({ target: { name: 'location', value: updatedLocation } });
   };
 
-  const inputClasses = (error, touched) => `
-    w-full px-4 py-2.5 rounded-lg border text-sm
-    ${error && touched ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 focus:ring-blue-500'}
-    focus:outline-none focus:ring-2 transition-colors
-  `;
+  const inputClassName = "h-12 w-full px-4 border border-gray-300 rounded-md";
 
   return (
     <div className="flex flex-col h-full max-h-[85vh]">
       <form onSubmit={handleSubmit} className="flex flex-col h-full">
-        <div className="flex-1 overflow-y-auto px-6 py-4">
+        <div className="flex-1 overflow-y-auto px-2 py-4">
           <div className="space-y-6">
             {/* Basic Information Section */}
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 {/* Institution Name */}
                 <div className="space-y-1.5">
                   <label className="block text-sm font-medium text-gray-700">
@@ -140,7 +136,7 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
                     value={values.name}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    className={inputClasses(errors.name, touched.name)}
+                    className={inputClassName}
                     placeholder="Enter institution name"
                   />
                   {errors.name && touched.name && (
@@ -159,7 +155,7 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
                     value={values.domain}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    className={inputClasses(errors.domain, touched.domain)}
+                    className={inputClassName}
                     placeholder="Enter domain"
                   />
                   {errors.domain && touched.domain && (
@@ -176,7 +172,7 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
                     name="category"
                     value={values.category}
                     onChange={handleChange}
-                    className={inputClasses()}
+                    className={inputClassName}
                   >
                     {categories.map((category) => (
                       <option key={category} value={category}>
@@ -191,7 +187,7 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
             {/* Location Section */}
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Location Details</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 {/* Province */}
                 <div className="space-y-1.5">
                   <label className="block text-sm font-medium text-gray-700">
@@ -202,7 +198,7 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
                     value={values.location?.province || ''}
                     onChange={handleLocationChange}
                     onBlur={handleBlur}
-                    className={inputClasses(errors.location?.province, touched.location?.province)}
+                    className={inputClassName}
                   >
                     <option value="">Select Province</option>
                     {locations.provinces.map((province) => (
@@ -223,7 +219,7 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
                     value={values.location?.district || ''}
                     onChange={handleLocationChange}
                     onBlur={handleBlur}
-                    className={inputClasses(errors.location?.district, touched.location?.district)}
+                    className={inputClassName}
                     disabled={!values.location.province}
                   >
                     <option value="">Select District</option>
@@ -245,7 +241,7 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
                     value={values.location?.sector || ''}
                     onChange={handleLocationChange}
                     onBlur={handleBlur}
-                    className={inputClasses(errors.location?.sector, touched.location?.sector)}
+                    className={inputClassName}
                     disabled={!values.location.district}
                   >
                     <option value="">Select Sector</option>
@@ -267,7 +263,7 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
                     value={values.location?.cell || ''}
                     onChange={handleLocationChange}
                     onBlur={handleBlur}
-                    className={inputClasses(errors.location?.cell, touched.location?.cell)}
+                    className={inputClassName}
                     disabled={!values.location.sector}
                   >
                     <option value="">Select Cell</option>
@@ -289,7 +285,7 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
                     value={values.location?.village || ''}
                     onChange={handleLocationChange}
                     onBlur={handleBlur}
-                    className={inputClasses(errors.location?.village, touched.location?.village)}
+                    className={inputClassName}
                     disabled={!values.location.cell}
                   >
                     <option value="">Select Village</option>
@@ -306,7 +302,7 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
             {/* Legal Representative Section */}
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Legal Representative Details</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-1.5">
                   <label className="block text-sm font-medium text-gray-700">
                     Legal Representative Name
@@ -317,7 +313,7 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
                     value={values.legalRepresentativeName}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    className={inputClasses(errors.legalRepresentativeName, touched.legalRepresentativeName)}
+                    className={inputClassName}
                     placeholder="Enter legal representative name"
                   />
                   {errors.legalRepresentativeName && touched.legalRepresentativeName && (
@@ -333,7 +329,7 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
                     name="legalRepresentativeGender"
                     value={values.legalRepresentativeGender}
                     onChange={handleChange}
-                    className={inputClasses()}
+                    className={inputClassName}
                   >
                     {genders.map((gender) => (
                       <option key={gender} value={gender}>
@@ -353,7 +349,7 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
                     value={values.legalRepresentativeEmail}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    className={inputClasses(errors.legalRepresentativeEmail, touched.legalRepresentativeEmail)}
+                    className={inputClassName}
                     placeholder="Enter legal representative email"
                   />
                   {errors.legalRepresentativeEmail && touched.legalRepresentativeEmail && (
@@ -371,7 +367,7 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
                     value={values.legalRepresentativePhone}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    className={inputClasses(errors.legalRepresentativePhone, touched.legalRepresentativePhone)}
+                    className={inputClassName}
                     placeholder="Enter legal representative phone"
                   />
                   {errors.legalRepresentativePhone && touched.legalRepresentativePhone && (

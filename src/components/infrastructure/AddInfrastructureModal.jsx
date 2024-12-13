@@ -47,6 +47,7 @@ const AddInfrastructureModal = ({ isOpen, onClose, onRefresh }) => {
       try {
         const response = await axiosInstance.get('/infrastructure-categories');
         setCategories(response.data);
+        // toast.success('Infrastructure  successfully!');
       } catch (err) {
         console.error('Failed to fetch categories:', err);
       }

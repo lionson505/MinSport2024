@@ -1,34 +1,67 @@
 import React, { useState } from 'react';
 import { createEmployee, updateEmployee } from '../../services/employee';
 import toast from 'react-hot-toast';
+import { locations } from '../../data/locations'; // Import locations data
 
 const AddEmployeeForm = ({ isEditing, onSuccess, onCancel }) => {
   const [formData, setFormData] = useState({
-    photoPassport: 'https://example.com/images/photo.jpg',
-    firstName: 'John',
-    lastName: 'Doe',
-    gender: 'Male',
-    email: 'example@gmail.com',
-    phone: '1234567890',
-    maritalStatus: 'Single',
-    province: 'Kigali',
-    district: 'Nyarugenge',
-    sector: 'Kiyovu',
-    cell: 'Cell 1',
-    village: 'Umudugudu',
-    startDate: '2024-01-01',
-    employeeStatus: 'Active',
-    employeeType: 'Full_time',
-    departmentSupervisor: 'Jane Smith',
-    contactFirstName: 'Emily',
-    contactLastName: 'Brown',
-    relationship: 'Sister',
-    contactPhone: '0987654321',
+    photoPassport: '',
+    firstName: '',
+    lastName: '',
+    gender: '',
+    email: '',
+    phone: '',
+    maritalStatus: '',
+    province: '',
+    district: '',
+    sector: '',
+    cell: '',
+    village: '',
+    startDate: '',
+    employeeStatus: '',
+    employeeType: '',
+    departmentSupervisor: '',
+    contactFirstName: '',
+    contactLastName: '',
+    relationship: '',
+    contactPhone: '',
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData((prev) => ({ ...prev, photoPassport: file.name }));
+    }
+  };
+
+  const handleLocationChange = (field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+      ...(field === 'province' && {
+        district: '',
+        sector: '',
+        cell: '',
+        village: '',
+      }),
+      ...(field === 'district' && {
+        sector: '',
+        cell: '',
+        village: '',
+      }),
+      ...(field === 'sector' && {
+        cell: '',
+        village: '',
+      }),
+      ...(field === 'cell' && {
+        village: '',
+      }),
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -108,17 +141,20 @@ const AddEmployeeForm = ({ isEditing, onSuccess, onCancel }) => {
         <div className="space-y-4">
           <h3 className="text-lg font-medium border-b pb-2">Employee Details</h3>
           <div>
-            <label htmlFor="photoPassport" className="block text-sm font-medium">Photo URL</label>
+            <label htmlFor="photoPassport" className="block text-sm font-medium">Photo Passport</label>
             <input
               id="photoPassport"
               name="photoPassport"
-              value={formData.photoPassport}
-              onChange={handleChange}
+              type="file"
+              onChange={handleFileChange}
               className="w-full border rounded-md py-2 px-3 mt-1"
-              type="url"
               required
             />
+            {formData.photoPassport && (
+              <p className="text-sm mt-1">Selected file: {formData.photoPassport}</p>
+            )}
           </div>
+          {/* Other form fields remain unchanged */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="firstName" className="block text-sm font-medium">First Name</label>
@@ -312,49 +348,98 @@ const AddEmployeeForm = ({ isEditing, onSuccess, onCancel }) => {
           <h3 className="text-lg font-medium border-b pb-2">Address Details</h3>
           <div>
             <label htmlFor="province" className="block text-sm font-medium">Province</label>
-            <input
-              id="contactFirstName"
-              name="contactFirstName"
-              value={formData.contactFirstName}
-              onChange={handleChange}
+            <select
+              id="province"
+              name="province"
+              value={formData.province}
+              onChange={(e) => handleLocationChange('province', e.target.value)}
               className="w-full border rounded-md py-2 px-3 mt-1"
               required
-            />
+            >
+              <option value="">Select Province</option>
+              {locations.provinces.map((province) => (
+                <option key={province} value={province}>
+                  {province}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label htmlFor="district" className="block text-sm font-medium">District</label>
-            <input
-              id="contactLastName"
-              name="contactLastName"
-              value={formData.contactLastName}
-              onChange={handleChange}
+            <select
+              id="district"
+              name="district"
+              value={formData.district}
+              onChange={(e) => handleLocationChange('district', e.target.value)}
               className="w-full border rounded-md py-2 px-3 mt-1"
+              disabled={!formData.province}
               required
-            />
+            >
+              <option value="">Select District</option>
+              {(locations.districts[formData.province] || []).map((district) => (
+                <option key={district} value={district}>
+                  {district}
+                </option>
+              ))}
+            </select>
           </div>
-        </div>
-        <div>
-          <label htmlFor="relationship" className="block text-sm font-medium">Relationship</label>
-          <input
-            id="relationship"
-            name="relationship"
-            value={formData.relationship}
-            onChange={handleChange}
-            className="w-full border rounded-md py-2 px-3 mt-1"
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="contactPhone" className="block text-sm font-medium">Contact Phone</label>
-          <input
-            id="contactPhone"
-            name="contactPhone"
-            value={formData.contactPhone}
-            onChange={handleChange}
-            className="w-full border rounded-md py-2 px-3 mt-1"
-            type="tel"
-            required
-          />
+          <div>
+            <label htmlFor="sector" className="block text-sm font-medium">Sector</label>
+            <select
+              id="sector"
+              name="sector"
+              value={formData.sector}
+              onChange={(e) => handleLocationChange('sector', e.target.value)}
+              className="w-full border rounded-md py-2 px-3 mt-1"
+              disabled={!formData.district}
+              required
+            >
+              <option value="">Select Sector</option>
+              {(locations.sectors[formData.district] || []).map((sector) => (
+                <option key={sector} value={sector}>
+                  {sector}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="cell" className="block text-sm font-medium">Cell</label>
+            <select
+              id="cell"
+              name="cell"
+              value={formData.cell}
+              onChange={(e) => handleLocationChange('cell', e.target.value)}
+              className="w-full border rounded-md py-2 px-3 mt-1"
+              disabled={!formData.sector}
+              required
+            >
+              <option value="">Select Cell</option>
+              {(locations.cells[formData.sector] || []).map((cell) => (
+                <option key={cell} value={cell}>
+                  {cell}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="village" className="block text-sm font-medium">Village</label>
+            <select
+              id="village"
+              name="village"
+              value={formData.village}
+              onChange={(e) => handleLocationChange('village', e.target.value)}
+              className="w-full border rounded-md py-2 px-3 mt-1"
+              disabled={!formData.cell}
+              required
+            >
+              <option value="">Select Village</option>
+              {(locations.villages[formData.cell] || []).map((village) => (
+                <option key={village} value={village}>
+                  {village}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 

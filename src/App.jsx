@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import Login from './pages/auth/Login';
+import Register from './pages/auth/Register';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import CheckEmail from './pages/auth/CheckEmail';
 import DashboardLayout from './components/DashboardLayout';
@@ -109,6 +110,7 @@ function App() {
                     />
                     <Routes>
                       {/* Public Routes */}
+                      <Route path="/register" element={<Register />} />
                       <Route path="/login" element={<Login />} />
                       <Route path="/forgot-password" element={<ForgotPassword />} />
                       <Route path="/check-email" element={<CheckEmail />} />

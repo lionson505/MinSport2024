@@ -172,6 +172,7 @@ const InfrastructureList = () => {
         editFormData
       );
       
+      toast.success('Infrastructure updated successfully!');
       if (response.status === 200) {
         // First update the state
         setInfrastructures(prevInfrastructures => 

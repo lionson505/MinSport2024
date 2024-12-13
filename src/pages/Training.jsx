@@ -139,14 +139,8 @@ const Training = () => {
 
       {/* Search Bar */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <Button
-          onClick={() => setShowAddModal(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 w-full sm:w-auto"
-          disabled={isSubmitting}
-        >
-          <Plus className="h-5 w-5" />
-          <span>Add Training</span>
-        </Button>
+        <h1 className={`text-2xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Trainings</h1>
+     
         
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto">
           <div className="relative flex-grow sm:flex-grow-0">
@@ -177,7 +171,16 @@ const Training = () => {
 
       {/* Trainings Table */}
       <div className="overflow-x-auto bg-white rounded-lg shadow">
+        
         <PrintButton>
+        <Button
+          onClick={() => setShowAddModal(true)}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 w-full sm:w-auto"
+          disabled={isSubmitting}
+        >
+          <Plus className="h-5 w-5" />
+          <span>Add Training</span>
+        </Button>
         <Table>
           <TableHeader>
             <TableRow>

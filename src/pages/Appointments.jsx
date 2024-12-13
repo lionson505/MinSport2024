@@ -189,6 +189,8 @@ function Appointments() {
     <div className="p-4">
       {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage('')} />}
       <div className="flex justify-between items-center mb-4">
+        
+      <h1 className={`text-2xl font-semibold $`}>Appointments</h1>
         <div className="relative w-80">
           <Input
             type="text"

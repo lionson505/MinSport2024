@@ -634,7 +634,7 @@ const SportsProfessionals = () => {
                 <label className="block font-semibold">Name</label>
                 <input
                   type="text"
-                  className="input"
+                  className="h-12 w-full px-4 border border-gray-300 rounded-md"
                   value={functionForm.name}
                   onChange={(e) => setFunctionForm({ ...functionForm, name: e.target.value })}
                   required
@@ -643,7 +643,7 @@ const SportsProfessionals = () => {
               <div className="space-y-2">
                 <label className="block font-semibold">Discipline</label>
                 <select
-                  className="input"
+                  className="h-12 w-full px-4 border border-gray-300 rounded-md"
                   value={functionForm.disciplineId}
                   onChange={(e) => setFunctionForm({ ...functionForm, disciplineId: e.target.value })}
                   required
