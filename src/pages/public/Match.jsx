@@ -13,14 +13,18 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui/ta
 import aprLogo from '../../components/liveMatch/aprLogo.jpeg';
 import rayonLogo from '../../components/liveMatch/rayonLogo.jpg';
 import SearchModal from './searchModal';
+import { Search } from 'lucide-react';
+
 
 
 function LandingPageMatch() {
     const [imageIndex, setImageIndex] = useState(0);
     const [activeTab, setActiveTab] = useState('all');
     const [selectedMatch, setSelectedMatch] = useState(null);
+    const [searchedMatch, setSelectedsearchedMatch] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
-    
+    const [searchTerm, setSearchTerm] = useState('');
+
     const [matches, setMatches] = useState([]);
     //fetch matches
     useEffect(() => {
@@ -46,6 +50,18 @@ function LandingPageMatch() {
         return false;
     });
 
+    //Filter matches based on search inputs
+    const searchedMatches = matches.filter(searchedMatch => {
+        const lowerCaseSearchTerm = searchTerm.toLowerCase();
+        return (
+            searchedMatch.homeTeam.toLowerCase().includes(lowerCaseSearchTerm) ||
+            searchedMatch.awayTeam.toLowerCase().includes(lowerCaseSearchTerm) ||
+            searchedMatch.competition.toLowerCase().includes(lowerCaseSearchTerm) ||
+            searchedMatch.venue.toLowerCase().includes(lowerCaseSearchTerm)
+        );
+    });
+
+
 
     const image = matchesBackground;
 
@@ -54,8 +70,14 @@ function LandingPageMatch() {
         setSelectedMatch(match); // Set the clicked match data
     };
 
+    //setting modal on searched
+    const handlesearchedMatchClick = (searchedMatch) => {
+        setSelectedsearchedMatch(searchedMatch); // Set the clicked match data
+    };
+
     const handleCloseModal = () => {
         setSelectedMatch(null); // Close the modal
+        setSelectedsearchedMatch(null);
     };
 
     const tabs = ['Info', 'Summary', 'Line-Up'];
@@ -149,11 +171,20 @@ function LandingPageMatch() {
                     <TabsTrigger value="past" onClick={() => setActiveTab('past')}>
                         Past
                     </TabsTrigger>
-                    <SearchModal />
-                    </TabsList>
+                    {/* <SearchModal /> */}
+                        <input onClick={() => setActiveTab('search')}
+                            type="text"
+                            placeholder="Search Matches..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="p-2 rounded-md border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                </TabsList>
                 {/* All Events Tab */}
                 {/* <TabsContent value="all" className=""> */}
-                <TabsContent value="all" className="mt-6 flex justify-center">
+                {/* <TabsContent value="all" className={`mt-6 flex justify-center border-2 border-gray-800 ${activeTab !== 'all' ? 'hidden' : ''}`}>
+ */}
+                <TabsContent value="all" className={`mt-6 flex justify-center ${ activeTab !== 'all' ? 'hidden' : ''}`}>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                         {filteredMatches.length > 0 ? (
                             filteredMatches.map((match) =>
@@ -411,7 +442,7 @@ function LandingPageMatch() {
 
 
                 {/* Live Events Tab */}
-                <TabsContent value="live" className="mt-6 flex justify-center">
+                <TabsContent value="live" className={`mt-6 flex justify-center ${ activeTab !== 'live' ? 'hidden' : ''}`}>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                         {filteredMatches.some(match => match.status === 'LIVE') ? (
                             filteredMatches.map((match) =>
@@ -663,7 +694,7 @@ function LandingPageMatch() {
                 </TabsContent>
 
                 {/* Upcoming Events Tab */}
-                <TabsContent value="upcoming" className="mt-6 flex justify-center">
+                <TabsContent value="upcoming" className={`mt-6 flex justify-center ${ activeTab !== 'upcoming' ? 'hidden' : ''}`}>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                         {filteredMatches.map((match) => (
                             match.status === 'UPCOMING' && (
@@ -911,7 +942,7 @@ function LandingPageMatch() {
                 </TabsContent>
 
                 {/* Past Events Tab */}
-                <TabsContent value="past" className="mt-6 flex justify-center">
+                <TabsContent value="past" className={`mt-6 flex justify-center ${ activeTab !== 'past' ? 'hidden' : ''}`}>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 ">
                         {filteredMatches.some(match => match.status === 'PAST') ? (
                             filteredMatches.map((match) =>
@@ -978,6 +1009,263 @@ function LandingPageMatch() {
                                     <h1 className="text-2xl font-semibold text-gray-800">
                                         No Past Games Available
                                     </h1>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </TabsContent>
+
+
+
+                {/* search events Tab  */}
+                <TabsContent value="search" className={`mt-6 flex justify-center ${ activeTab !== 'search' ? 'hidden' : ''}`}>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                        {searchedMatches.length > 0 ? (
+                            searchedMatches.map((searchedMatch) =>
+                                <div
+                                    key={searchedMatch.id}
+                                    className="flex-shrink-0 w-[280px] p-4 rounded-lg border border-gray-200 bg-white shadow-sm cursor-pointer m-8"
+                                    onClick={() => handlesearchedMatchClick(searchedMatch)}
+                                >
+                                    {/* Match Header */}
+                                    <div className="flex justify-between items-center mb-4">
+                                        <span className="text-sm font-medium text-gray-900">
+                                            {searchedMatch.competition}
+                                        </span>
+                                        <span className="flex items-center">
+                                            <span className="h-2 w-2 bg-red-500 rounded-full animate-pulse mr-2"></span>
+                                            <span className="text-sm text-red-500">{searchedMatch.status}</span>
+                                        </span>
+                                    </div>
+
+                                    {/* Teams */}
+                                    <div className="space-y-4">
+                                        {/* Home Team */}
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <img
+                                                    src={searchedMatch.homeTeam.logo || aprLogo}
+                                                    alt={searchedMatch.homeTeam || 'Unknown team name'}
+                                                    className="h-8 w-8 object-contain"
+                                                />
+                                                <span className="font-medium text-gray-900">
+                                                    {searchedMatch.homeTeam}
+                                                </span>
+                                            </div>
+                                            <span className="text-lg font-bold text-gray-900">
+                                                {searchedMatch.homeScore || '0'}
+                                            </span>
+                                        </div>
+
+                                        {/* Away Team */}
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <img
+                                                    src={searchedMatch.awayTeamLogo || rayonLogo}
+                                                    alt={searchedMatch.awayTeam}
+                                                    className="h-8 w-8 object-contain"
+                                                />
+                                                <span className="font-medium text-gray-900">
+                                                    {searchedMatch.awayTeam}
+                                                </span>
+                                            </div>
+                                            <span className="text-lg font-bold text-gray-900">
+                                                {searchedMatch.awayScore || '0'}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Match Info */}
+                                    <div className="mt-4 text-sm text-gray-500">
+                                        <div className="text-center font-medium text-red-500">
+                                            {searchedMatch.time || '82`'}
+                                        </div>
+                                        <div className="text-center mt-1">{searchedMatch.venue}</div>
+                                    </div>
+                                </div>
+                            )) : (
+                            <div className="flex w-full justify-center border-2">
+                                <div className="text-center mx-auto">
+                                    <h1 className="text-2xl font-semibold text-gray-800">
+                                       Sorry! We Can't find " {searchTerm} "
+                                    </h1>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                    <div>   
+                    {searchedMatch && (
+                            <div
+                                className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                                <div className="bg-background w-[90%] max-w-4xl rounded-lg shadow-lg overflow-hidden">
+                                    {/* Match Score Header */}
+                                    <div className="bg-[#004d14] p-6 text-white text-muted-foreground">
+                                        <div className="flex justify-between items-center mb-4">
+                                            <div
+                                                onClick={handleCloseModal}
+                                                className='bg-white hover:bg-[#046200] px-4 py-2 rounded-full hover:bg-white/80'>
+                                                <button
+                                                    className="text-black text-xl"
+                                                >
+                                                    ×
+                                                </button>
+                                            </div>
+                                            <span className="text-white/80">{searchedMatch.competition}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center gap-8">
+                                            <div className="flex items-center gap-4 flex-1">
+                                                <img
+                                                    src={searchedMatch.homeTeam.logo || rayonLogo}
+                                                    alt=""
+                                                    className="h-16 w-16 object-contain"
+                                                />
+                                                <span className="text-xl font-semibold">{searchedMatch.homeTeam}</span>
+                                            </div>
+                                            <div className="flex items-center gap-4 text-3xl font-bold">
+                                                <span>{searchedMatch.homeScore}</span>
+                                                <span>-</span>
+                                                <span>{searchedMatch.awayScore}</span>
+                                            </div>
+                                            <div className="flex items-center gap-4 flex-1 justify-end">
+                                                <span className="text-xl font-semibold">{searchedMatch.awayTeam}</span>
+                                                <img
+                                                    src={searchedMatch.awayTeam.logo || aprLogo}
+                                                    alt={searchedMatch.awayTeam}
+                                                    className="h-16 w-16 object-contain"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="mt-4 text-center text-white/80">
+                                            <span>{searchedMatch.time || '82`'}</span>
+                                            <span className="mx-2">•</span>
+                                            <span>{searchedMatch.venue}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Match Details Tabs */}
+                                    <div className="border-b border-border">
+                                        <nav className="flex gap-4 p-4">
+                                            {tabs.map((tab) => (
+                                                <button
+                                                    key={tab}
+                                                    onClick={() => setActiveTab(tab)}
+                                                    className={`px-3 py-2 text-sm font-medium rounded-md ${activeTab === tab
+                                                        ? 'bg-primary text-primary-foreground'
+                                                        : 'text-muted-foreground hover:text-foreground'
+                                                        }`}
+                                                >
+                                                    {tab}
+                                                </button>
+                                            ))}
+                                        </nav>
+                                    </div>
+
+                                    {/* Match Events */}
+                                    {activeTab === "Summary" ? (
+                                        <div className="p-6 max-h-[400px] overflow-y-auto">
+                                            <div className="space-y-4">
+                                                <div className="flex items-center gap-4">
+                                                    <span className="text-sm text-muted-foreground">2</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-medium">Goal</span>
+                                                        <span className="text-sm text-muted-foreground">N. Milenković (E. Anderson)</span>
+                                                    </div>
+                                                </div>
+                                                {/* Add more events as needed */}
+                                            </div>
+                                        </div>
+                                    ) : activeTab === "Info" ? (
+                                        <div className="p-6 max-h-[400px] overflow-y-auto">
+                                            <div className="space-y-4">
+                                                {/* Match Title */}
+                                                <div className="text-center mb-4">
+                                                    <h1 className="text-lg font-bold">
+                                                        {searchedMatch.homeTeam} vs {searchedMatch.awayTeam}
+                                                    </h1>
+                                                    <p className="text-sm text-muted-foreground">
+                                                        {searchedMatch.competition} - {searchedMatch.venue}
+                                                    </p>
+                                                </div>
+
+                                                {/* Scores */}
+                                                <div className="flex justify-between items-center bg-gray-100 p-4 rounded-md">
+                                                    <div className="text-center">
+                                                        <h2 className="text-xl font-semibold">{searchedMatch.homeTeam}</h2>
+                                                        <p className="text-2xl font-bold">{searchedMatch.homeScore}</p>
+                                                    </div>
+                                                    <span className="text-sm text-muted-foreground">VS</span>
+                                                    <div className="text-center">
+                                                        <h2 className="text-xl font-semibold">{searchedMatch.awayTeam}</h2>
+                                                        <p className="text-2xl font-bold">{searchedMatch.awayScore}</p>
+                                                    </div>
+                                                </div>
+
+                                                {/* Match Details */}
+                                                <div className="bg-gray-50 p-4 rounded-md space-y-2">
+                                                    <div className="flex justify-between">
+                                                        <span className="font-medium">Status:</span>
+                                                        <span className="text-muted-foreground">{searchedMatch.status}</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span className="font-medium">Date:</span>
+                                                        <span className="text-muted-foreground">
+                                                            {new Date(searchedMatch.matchDate).toLocaleDateString()}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span className="font-medium">Start Time:</span>
+                                                        <span className="text-muted-foreground">
+                                                            {new Date(searchedMatch.startTime).toLocaleTimeString()}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span className="font-medium">Venue:</span>
+                                                        <span className="text-muted-foreground">{searchedMatch.venue}</span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Additional Dummy Data */}
+                                                <div className="bg-gray-100 p-4 rounded-md">
+                                                    <h3 className="font-semibold mb-2">Additional Info:</h3>
+                                                    <ul className="list-disc list-inside text-sm text-muted-foreground">
+                                                        <li>Referee: Michael Oliver</li>
+                                                        <li>Weather: Cloudy, 18°C</li>
+                                                        <li>Attendance: 75,000</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="p-6 max-h-[400px] overflow-y-auto">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                {/* Home Team Line-up */}
+                                                <div className="border-r border-gray-300 pr-4">
+                                                    <h2 className="text-lg font-bold mb-2">{searchedMatch.homeTeam} Line-up</h2>
+                                                    <ul className="space-y-2">
+                                                        {dummyLineUp.homePlayers.map((player, index) => (
+                                                            <li key={index} className="flex justify-between bg-gray-100 p-2 rounded-md">
+                                                                <span>{player.number}. {player.name}</span>
+                                                                <span className="text-sm text-muted-foreground">{player.position}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+
+                                                {/* Away Team Line-up */}
+                                                <div className="pl-4">
+                                                    <h2 className="text-lg font-bold mb-2">{searchedMatch.awayTeam} Line-up</h2>
+                                                    <ul className="space-y-2">
+                                                        {dummyLineUp.awayPlayers.map((player, index) => (
+                                                            <li key={index} className="flex justify-between bg-gray-100 p-2 rounded-md">
+                                                                <span>{player.number}. {player.name}</span>
+                                                                <span className="text-sm text-muted-foreground">{player.position}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         )}
