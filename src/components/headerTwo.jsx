@@ -7,7 +7,7 @@ const HeaderTwo = () => {
     { name: 'FEDERATIONS', path: '/federation' },
     { name: 'EVENTS', path: '/events' },
     { name: 'MATCHES', path: '/match' },
-    // { name: 'INFRASTRUCTURE', path: '/infrastructures' },
+    //   { name: 'INFRASTRUCTURE', path: '/infrastructures' },
   ];
 
   const [iSactiveTab, setIsActiveTab] = useState('HOME');
