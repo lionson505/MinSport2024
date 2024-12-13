@@ -289,5 +289,4 @@ const Training = () => {
     </div>
   );
 };
-
 export default Training;
