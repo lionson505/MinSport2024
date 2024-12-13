@@ -1,9 +1,55 @@
-import React, { useState } from 'react';
-import { createEmployee, updateEmployee } from '../../services/employee';
+import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import toast from 'react-hot-toast';
 import { locations } from '../../data/locations'; // Import locations data
+import axiosInstance from '../../utils/axiosInstance';
 
-const AddEmployeeForm = ({ isEditing, onSuccess, onCancel }) => {
+const createEmployee = async (data) => {
+  try {
+    console.log("Sending JSON data:", data);
+
+    const response = await axiosInstance.post('/employees', data, {
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    
+    if (!response.data) {
+      throw new Error('No response data received');
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error('Complete error:', error);
+    throw error;
+  }
+};
+
+const updateEmployee = async (employeeId, data) => {
+  if (!employeeId) {
+    throw new Error('Employee ID is required for updates');
+  }
+  try {
+    console.log('Updating employee with data:', data);
+
+    const response = await axiosInstance.put(`/employees/${employeeId}`, data, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.data) {
+      throw new Error('No response data received');
+    }
+    
+    return response.data;
+  } catch (error) {
+    console.error('API Error Response:', error.response?.data);
+    throw error;
+  }
+};
+
+const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
   const [formData, setFormData] = useState({
     photoPassport: '',
     firstName: '',
@@ -27,6 +73,85 @@ const AddEmployeeForm = ({ isEditing, onSuccess, onCancel }) => {
     contactPhone: '',
   });
 
+  useEffect(() => {
+    const fetchEmployeeData = async () => {
+      if (isEditing && employeeId) {
+        try {
+          const response = await axiosInstance.get(`/employees/${employeeId}`);
+          console.log('Raw API response:', response.data);
+
+          const employeeData = response.data.employee;
+          console.log('Employee data before mapping:', {
+            gender: employeeData.gender,
+            employee_status: employeeData.employee_status,
+            employee_type: employeeData.employee_type,
+            martial_status: employeeData.martial_status
+          });
+
+          // Normalize the values to match select options
+          const normalizedData = {
+            ...employeeData,
+            gender: employeeData.gender?.trim() || '',
+            employee_status: employeeData.employee_status?.trim() || '',
+            employee_type: employeeData.employee_type?.trim() || '',
+            martial_status: employeeData.martial_status?.trim() || ''
+          };
+
+          setFormData({
+            photoPassport: normalizedData.photo_passport || '',
+            firstName: normalizedData.firstname || '',
+            lastName: normalizedData.lastname || '',
+            gender: normalizedData.gender || '',
+            email: normalizedData.email || '',
+            phone: normalizedData.phone || '',
+            maritalStatus: normalizedData.martial_status || '',
+            province: normalizedData.address_province || '',
+            district: normalizedData.address_district || '',
+            sector: normalizedData.address_sector || '',
+            cell: normalizedData.address_cell || '',
+            village: normalizedData.address_village || '',
+            startDate: normalizedData.start_date ? new Date(normalizedData.start_date).toISOString().split('T')[0] : '',
+            employeeStatus: normalizedData.employee_status || '',
+            employeeType: normalizedData.employee_type || '',
+            departmentSupervisor: normalizedData.department_supervisor || '',
+            contactFirstName: normalizedData.person_of_contact_firstname || '',
+            contactLastName: normalizedData.person_of_contact_lastname || '',
+            relationship: normalizedData.person_of_contact_relationship || '',
+            contactPhone: normalizedData.person_of_contact_phone || ''
+          });
+
+          console.log('Form data after mapping:', {
+            gender: normalizedData.gender,
+            employeeStatus: normalizedData.employee_status,
+            employeeType: normalizedData.employee_type,
+            maritalStatus: normalizedData.martial_status
+          });
+
+        } catch (error) {
+          console.error('Error fetching employee data:', error);
+          toast.error(`Failed to load employee data: ${error.message}`);
+        }
+      }
+    };
+
+    fetchEmployeeData();
+  }, [isEditing, employeeId]);
+
+  // Add a debug effect to monitor form data changes
+  useEffect(() => {
+    if (isEditing) {
+      console.log('Current form data:', formData);
+    }
+  }, [formData, isEditing]);
+
+  useEffect(() => {
+    console.log('FormData state updated:', formData);
+  }, [formData]);
+
+  useEffect(() => {
+    console.log('Component props:', { isEditing, employeeId });
+  }, [isEditing, employeeId]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -35,7 +160,7 @@ const AddEmployeeForm = ({ isEditing, onSuccess, onCancel }) => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setFormData((prev) => ({ ...prev, photoPassport: file.name }));
+      setFormData((prev) => ({ ...prev, photoPassport: file }));
     }
   };
 
@@ -66,70 +191,60 @@ const AddEmployeeForm = ({ isEditing, onSuccess, onCancel }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
-    const transformedData = {
-      photo_passport: formData.photoPassport,
-      firstname: formData.firstName,
-      lastname: formData.lastName,
-      gender: formData.gender,
-      email: formData.email,
-      phone: formData.phone,
-      martial_status: formData.maritalStatus,
-      address_province: formData.province,
-      address_district: formData.district,
-      address_sector: formData.sector,
-      address_cell: formData.cell,
-      address_village: formData.village,
-      start_date: formData.startDate,
-      employee_status: formData.employeeStatus,
-      employee_type: formData.employeeType,
-      department_supervisor: formData.departmentSupervisor,
-      person_of_contact_firstname: formData.contactFirstName,
-      person_of_contact_lastname: formData.contactLastName,
-      person_of_contact_relationship: formData.relationship,
-      person_of_contact_phone: formData.contactPhone,
-    };
-  
+
     try {
+      // Create the data object with the correct field names
+      const dataToSend = {
+        photo_passport: formData.photoPassport || "https://example.com/images/photo.jpg",
+        firstname: formData.firstName,
+        lastname: formData.lastName,
+        gender: formData.gender,
+        email: formData.email,
+        phone: formData.phone,
+        martial_status: formData.maritalStatus,
+        address_province: formData.province,
+        address_district: formData.district,
+        address_sector: formData.sector,
+        address_cell: formData.cell,
+        address_village: formData.village,
+        start_date: formData.startDate,
+        employee_status: formData.employeeStatus,
+        employee_type: formData.employeeType,
+        department_supervisor: formData.departmentSupervisor,
+        person_of_contact_firstname: formData.contactFirstName,
+        person_of_contact_lastname: formData.contactLastName,
+        person_of_contact_relationship: formData.relationship,
+        person_of_contact_phone: formData.contactPhone
+      };
+
+      console.log('Submitting data:', dataToSend);
+
       if (isEditing) {
-        await updateEmployee(transformedData);
+        const result = await updateEmployee(employeeId, dataToSend);
+        console.log('Update response:', result);
         toast.success('Employee updated successfully!');
+           // Add a slight delay before reloading to ensure the toast message is visible
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500); // 1.5 seconds delay
       } else {
-        await createEmployee(transformedData);
+        const result = await createEmployee(dataToSend);
+        console.log('Create response:', result);
         toast.success('Employee created successfully!');
+           // Add a slight delay before reloading to ensure the toast message is visible
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500); // 1.5 seconds delay
       }
+      
       if (typeof onSuccess === 'function') {
         onSuccess();
       }
-      setFormData({
-        photoPassport: '',
-        firstName: '',
-        lastName: '',
-        gender: '',
-        email: '',
-        phone: '',
-        maritalStatus: '',
-        province: '',
-        district: '',
-        sector: '',
-        cell: '',
-        village: '',
-        startDate: '',
-        employeeStatus: '',
-        employeeType: '',
-        departmentSupervisor: '',
-        contactFirstName: '',
-        contactLastName: '',
-        relationship: '',
-        contactPhone: '',
-      });
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+
     } catch (error) {
-      console.error('Error:', error);
-      const errorMessage = error.response?.data?.message || error.message || 'An error occurred';
-      toast.error(`An error occurred: ${errorMessage}`);
+      console.error('Form submission error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'An unknown error occurred';
+      toast.error(`Failed to ${isEditing ? 'update' : 'create'} employee: ${errorMessage}`);
     }
   };
   
@@ -148,10 +263,14 @@ const AddEmployeeForm = ({ isEditing, onSuccess, onCancel }) => {
               type="file"
               onChange={handleFileChange}
               className="w-full border rounded-md py-2 px-3 mt-1"
-              required
             />
             {formData.photoPassport && (
-              <p className="text-sm mt-1">Selected file: {formData.photoPassport}</p>
+              <p className="text-sm mt-1">
+                {formData.photoPassport instanceof File 
+                  ? `Selected file: ${formData.photoPassport.name}`
+                  : `Current photo: ${formData.photoPassport}`
+                }
+              </p>
             )}
           </div>
           {/* Other form fields remain unchanged */}
@@ -190,8 +309,8 @@ const AddEmployeeForm = ({ isEditing, onSuccess, onCancel }) => {
               required
             >
               <option value="">Select gender</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
             </select>
           </div>
           <div>
@@ -226,9 +345,13 @@ const AddEmployeeForm = ({ isEditing, onSuccess, onCancel }) => {
               value={formData.maritalStatus}
               onChange={handleChange}
               className="w-full border rounded-md py-2 px-3 mt-1"
+              required
             >
-              <option value="Single">Single</option>
-              <option value="Married">Married</option>
+              <option value="">Select Marital Status</option>
+              <option value="single">Single</option>
+              <option value="married">Married</option>
+              <option value="divorced">Divorced</option>
+              <option value="widowed">Widowed</option>
             </select>
           </div>
         </div>
@@ -311,9 +434,13 @@ const AddEmployeeForm = ({ isEditing, onSuccess, onCancel }) => {
               value={formData.employeeStatus}
               onChange={handleChange}
               className="w-full border rounded-md py-2 px-3 mt-1"
+              required
             >
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
+              <option value="">Select Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="on_leave">On Leave</option>
+              <option value="suspended">Suspended</option>
             </select>
           </div>
           <div>
@@ -324,10 +451,14 @@ const AddEmployeeForm = ({ isEditing, onSuccess, onCancel }) => {
               value={formData.employeeType}
               onChange={handleChange}
               className="w-full border rounded-md py-2 px-3 mt-1"
+              required
             >
-              <option value="Full_time">Full-time</option>
-              <option value="Part_time">Part-time</option>
-              <option value="Contractor">Contractor</option>
+              <option value="">Select Type</option>
+              <option value="full_time">Full-time</option>
+              <option value="part_time">Part-time</option>
+              <option value="contractor">Contractor</option>
+              <option value="intern">Intern</option>
+              <option value="temporary">Temporary</option>
             </select>
           </div>
           <div>
@@ -460,6 +591,19 @@ const AddEmployeeForm = ({ isEditing, onSuccess, onCancel }) => {
       </div>
     </form>
   );
+};
+
+AddEmployeeForm.propTypes = {
+  isEditing: PropTypes.bool,
+  employeeId: PropTypes.string,
+  onSuccess: PropTypes.func,
+  onCancel: PropTypes.func.isRequired
+};
+
+AddEmployeeForm.defaultProps = {
+  isEditing: false,
+  employeeId: null,
+  onSuccess: () => {}
 };
 
 export default AddEmployeeForm;

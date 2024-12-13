@@ -373,9 +373,9 @@ const IsongaPrograms = () => {
                         <TableCell className="text-xs font-medium">{program.name}</TableCell>
                         <TableCell className="text-xs">{program.domain}</TableCell>
                         <TableCell className="text-xs">{program.category}</TableCell>
-                        <TableCell className="text-xs">
+                        {/* <TableCell className="text-xs"> */}
                           {/* {`${program.location_province}, ${program.location_district}`} */}
-                        </TableCell>
+                        {/* </TableCell> */}
                         {/* <TableCell className="text-xs">{program.legalRepresentativeName}</TableCell> */}
                         <TableCell>
                           <div className="flex items-center gap-1">

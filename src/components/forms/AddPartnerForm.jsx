@@ -141,7 +141,7 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
   return (
     <div className="max-h-[80vh] overflow-y-auto p-4">
       <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           {/* Club Name */}
           <div>
             <label>Name</label>
@@ -151,8 +151,8 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
               value={formData.name}
               onChange={handleChange}
               required
-              className="w-full border rounded"
-              placeholder="Enter  name"
+              className="w-full border rounded px-3 py-2 h-12"
+              placeholder="Enter name"
             />
           </div>
 
@@ -164,7 +164,7 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
               value={formData.sports_discipline}
               onChange={handleChange}
               required
-              className="w-full border rounded"
+              className="w-full border rounded px-3 py-2 h-12"
             >
               <option value="">Select Discipline</option>
               {disciplines.map((discipline) => (
@@ -184,7 +184,7 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
               value={formData.legal_status}
               onChange={handleChange}
               required
-              className="w-full border rounded"
+              className="w-full border rounded px-3 py-2 h-12"
             />
           </div>
 
@@ -197,7 +197,7 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
               value={formData.business}
               onChange={handleChange}
               required
-              className="w-full border rounded"
+              className="w-full border rounded px-3 py-2 h-12"
             />
           </div>
 
@@ -209,7 +209,7 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
               value={formData.location_province}
               onChange={handleLocationChange}
               required
-              className="w-full border rounded"
+              className="w-full border rounded px-3 py-2 h-12"
             >
               <option value="">Select Province</option>
               {locations.provinces.map((province) => (
@@ -228,7 +228,7 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
               value={formData.location_district}
               onChange={handleLocationChange}
               required
-              className="w-full border rounded"
+              className="w-full border rounded px-3 py-2 h-12"
             >
               <option value="">Select District</option>
               {getDistricts().map((district) => (
@@ -247,7 +247,7 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
               value={formData.location_sector}
               onChange={handleLocationChange}
               required
-              className="w-full border rounded"
+              className="w-full border rounded px-3 py-2 h-12"
             >
               <option value="">Select Sector</option>
               {getSectors().map((sector) => (
@@ -266,7 +266,7 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
               value={formData.location_cell}
               onChange={handleLocationChange}
               required
-              className="w-full border rounded"
+              className="w-full border rounded px-3 py-2 h-12"
             >
               <option value="">Select Cell</option>
               {getCells().map((cell) => (
@@ -285,7 +285,7 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
               value={formData.location_village}
               onChange={handleLocationChange}
               required
-              className="w-full border rounded"
+              className="w-full border rounded px-3 py-2 h-12"
             >
               <option value="">Select Village</option>
               {getVillages().map((village) => (
@@ -305,7 +305,7 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
               value={formData.legal_representative_name}
               onChange={handleChange}
               required
-              className="w-full border rounded"
+              className="w-full border rounded px-3 py-2 h-12"
             />
           </div>
 
@@ -318,7 +318,7 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
               value={formData.legal_representative_gender}
               onChange={handleChange}
               required
-              className="w-full border rounded"
+              className="w-full border rounded px-3 py-2 h-12"
             />
           </div>
 
@@ -331,7 +331,7 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
               value={formData.legal_representative_email}
               onChange={handleChange}
               required
-              className="w-full border rounded"
+              className="w-full border rounded px-3 py-2 h-12"
             />
           </div>
 
@@ -344,12 +344,12 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
               value={formData.legal_representative_phone}
               onChange={handleChange}
               required
-              className="w-full border rounded"
+              className="w-full border rounded px-3 py-2 h-12"
             />
           </div>
 
-          {/* Submit / Cancel Buttons - Make them span full width */}
-          <div className="flex justify-end space-x-2 md:col-span-2">
+          {/* Submit / Cancel Buttons - Updated span */}
+          <div className="flex justify-end space-x-2">
             <button
               type="button"
               onClick={onCancel}

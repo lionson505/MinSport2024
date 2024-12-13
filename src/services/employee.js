@@ -45,12 +45,16 @@ export const createEmployee = async (data) => {
 
 export const updateEmployee = async (data) => {
   try {
-    const response = await axiosInstance.put(`/employees/${data.id}`, data); // Assuming `id` is used for updates
+    if (!data.id) {
+      throw new Error('Employee ID is required for updates');
+    }
+    const response = await axiosInstance.put(`/employees/${data.id}`, data);
     toast.success('Employee updated successfully');
     return response.data;
   } catch (error) {
-    console.error('Error updating employee:', error);
+    console.error('Error updating employee:', error.response?.data || error.message);
     handleApiError(error, 'Failed to update employee');
+    return null;
   }
 };
 

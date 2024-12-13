@@ -146,12 +146,13 @@ function Appointments() {
 
   const renderStatusBadge = (status) => {
     const statusClass = {
-      Scheduled: "bg-green-100 text-green-800",
-      "Not confirmed": "bg-orange-100 text-orange-800",
-      Completed: "bg-blue-100 text-blue-800",
+      granted: "bg-green-100 text-green-800",
+      rescheduled: "bg-blue-100 text-blue-800",
+      pending: "bg-yellow-100 text-yellow-800",
+      rejected: "bg-red-100 text-red-800"
     };
     return (
-      <span className={`inline-flex px-2 py-0.5 text-xs rounded-full ${statusClass[status] || ""}`}>
+      <span className={`inline-flex px-2 py-0.5 text-xs rounded-full ${statusClass[status?.toLowerCase()] || "bg-gray-100 text-gray-800"}`}>
         {status}
       </span>
     );
@@ -251,13 +252,11 @@ function Appointments() {
               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">TIME</th>
               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">NAMES</th>
               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Gender</th>
-              {/* <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Email</th> */}
               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Cellphone</th>
               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Purpose</th>
               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Institution</th>
               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Function</th>
-              {/* <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Other People to Attend</th> */}
-              {/* <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Other Ministry Staff</th> */}
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Status</th>
               <th className="w-24 px-3 py-2 text-left text-xs font-medium operation text-gray-500">Actions</th>
             </tr>
           </thead>
@@ -282,14 +281,12 @@ function Appointments() {
                   {new Date(appointment.request_time).toLocaleTimeString()}
                 </td>
                 <td className="px-3 py-2 text-sm">{appointment.names}</td>
-                {/* <td className="px-3 py-2 text-sm">{appointment.gender}</td> */}
-                <td className="px-3 py-2 text-sm ">{appointment.gender}</td>
+                <td className="px-3 py-2 text-sm">{appointment.gender}</td>
                 <td className="px-3 py-2 text-sm">{appointment.cellphone}</td>
-                <td className="px-3 py-2 text-sm operation">{appointment.purpose}</td>
+                <td className="px-3 py-2 text-sm">{appointment.purpose}</td>
                 <td className="px-3 py-2 text-sm">{appointment.institution}</td>
                 <td className="px-3 py-2 text-sm">{appointment.function}</td>
-                {/* <td className="px-3 py-2 text-sm">{appointment.other_people_to_attend}</td> */}
-                {/* <td className="px-3 py-2 text-sm">{appointment.other_ministry_staff}</td> */}
+                <td className="px-3 py-2 text-sm">{renderStatusBadge(appointment.status)}</td>
                 <td className="px-3 py-2 flex space-x-2 operation" >
                   <button onClick={() => handleView(appointment)}>
                     <Eye className="h-4 w-4" />

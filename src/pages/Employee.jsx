@@ -47,8 +47,8 @@ function Employee() {
   const counts = {
     total: employeesData.length,
     active: employeesData.filter(emp => emp.employee_status.toLowerCase() === 'active').length,
-    dormant: employeesData.filter(emp => emp.employee_status.toLowerCase() === 'dormant').length,
-    onSalary: employeesData.filter(emp => emp.employee_type.toLowerCase() === 'on salary').length,
+    inactive: employeesData.filter(emp => emp.employee_status.toLowerCase() === 'inactive').length,
+    suspended: employeesData.filter(emp => emp.employee_status.toLowerCase() === 'suspended').length,
     contract: employeesData.filter(emp => emp.employee_type.toLowerCase() === 'contract').length
   };
 
@@ -290,12 +290,12 @@ function Employee() {
                 <p className="text-2xl font-semibold text-green-600">{counts.active}</p>
               </div>
               <div className="bg-white p-4 rounded-lg shadow">
-                <h3 className="text-sm text-gray-500">Dormant</h3>
-                <p className="text-2xl font-semibold text-red-600">{counts.dormant}</p>
+                <h3 className="text-sm text-gray-500">Inactive</h3>
+                <p className="text-2xl font-semibold text-red-600">{counts.inactive}</p>
               </div>
               <div className="bg-white p-4 rounded-lg shadow">
-                <h3 className="text-sm text-gray-500">On Salary</h3>
-                <p className="text-2xl font-semibold text-blue-600">{counts.onSalary}</p>
+                <h3 className="text-sm text-gray-500">Suspended</h3>
+                <p className="text-2xl font-semibold text-blue-600">{counts.suspended}</p>
               </div>
             </div>
 

@@ -182,7 +182,6 @@ const TourismEventsList = () => {
               <TableHead>Category</TableHead>
               <TableHead>Start Date</TableHead>
               <TableHead>Location</TableHead>
-              <TableHead className="operation" >Status</TableHead>
               <TableHead className="operation">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -190,28 +189,15 @@ const TourismEventsList = () => {
             {paginatedEvents.map((event) => (
               <TableRow key={event.id}>
                 <TableCell className="font-medium">{event.name}</TableCell>
-                <TableCell>{event.categoryId}</TableCell>
+                <TableCell>
+                  {categories.find(cat => cat.id === event.categoryId)?.name || 'Unknown Category'}
+                </TableCell>
                 <TableCell>
                   {isValid(new Date(event.startDate))
                     ? format(new Date(event.startDate), 'MMM dd, yyyy')
                     : 'Invalid Date'}
                 </TableCell>
                 <TableCell>{`${event.province}, ${event.district}`}</TableCell>
-                <TableCell className="operation"  >
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs ${
-                      event.status === 'Upcoming'
-                        ? 'bg-blue-100 text-blue-800'
-                        : event.status === 'Ongoing'
-                        ? 'bg-green-100 text-green-800'
-                        : event.status === 'Completed'
-                        ? 'bg-gray-100 text-gray-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}
-                  >
-                    {event.status}
-                  </span>
-                </TableCell>
                 <TableCell className="operation" >
                   <div className="flex space-x-2">
                     <Button

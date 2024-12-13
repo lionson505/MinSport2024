@@ -86,9 +86,10 @@ const InfrastructureList = () => {
     try {
       const response = await axiosInstance.get('/infrastructures');
       setInfrastructures(response.data);
-      toast.success('Infrastructure list loaded', {
-        description: `Successfully loaded ${response.data.length} infrastructures`
-      });
+      // toast.success('Infrastructure list loaded', {
+        // description: `Successfully loaded ${response.data.length} infrastructures`
+      // }
+    // );
     } catch (error) {
       console.error('Error fetching infrastructures:', error);
       toast.error('Failed to load infrastructures', {
@@ -101,7 +102,7 @@ const InfrastructureList = () => {
     try {
       const response = await axiosInstance.get('/infrastructure-categories');
       setCategories(response.data);
-      toast.success('Categories loaded successfully');
+      // toast.success('Categories loaded successfully');
     } catch (error) {
       console.error('Error fetching categories:', error);
       toast.error('Failed to load categories', {
@@ -114,7 +115,7 @@ const InfrastructureList = () => {
     try {
       const response = await axiosInstance.get(`/infrastructure-subcategories?category=${categoryId}`);
       setSubCategories(response.data);
-      toast.success('Subcategories loaded successfully');
+      // toast.success('Subcategories loaded successfully');
     } catch (error) {
       console.error('Error fetching subcategories:', error);
       toast.error('Failed to load subcategories', {

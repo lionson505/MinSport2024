@@ -285,7 +285,7 @@ function Academies() {
                   {paginatedAcademies.map((academy) => (
                     <tr key={academy.id} className="hover:bg-gray-50">
                       <td className="px-4 py-3 text-sm">{academy.name}</td>
-                      <td className="px-4 py-3 text-sm">{academy.location}</td>
+                      <td className="px-4 py-3 text-sm">{academy.location_province},{academy.location_district}</td>
                       <td className="px-4 py-3 text-sm">{academy.category}</td>
                       <td className="px-4 py-3 text-sm">{academy.students || '-'}</td>
                       <td className="px-4 py-3 flex gap-2 operation">
@@ -407,11 +407,11 @@ function Academies() {
                   {paginatedStudents.map((student) => (
                     <tr key={student.id} className="hover:bg-gray-50">
                       <td className="px-4 py-3 text-sm">{`${student.firstName} ${student.lastName}`}</td>
-                      <td className="px-4 py-3 text-sm">{student.schoolName}</td>
+                      <td className="px-4 py-3 text-sm">{student.nameOfSchoolAcademyTrainingCenter}</td>
                       <td className="px-4 py-3 text-sm">{new Date(student.dateOfBirth).toLocaleDateString()}</td>
                       <td className="px-4 py-3 text-sm">{student.nationality}</td>
                       <td className="px-4 py-3 text-sm">{student.gender}</td>
-                      <td className="px-4 py-3 text-sm">{student.gameType}</td>
+                      <td className="px-4 py-3 text-sm">{student.typeOfGame }</td>
                       <td className="px-4 py-3 text-sm">{student.class}</td>
                       <td className="px-4 py-3 operation">
                         <div className="flex space-x-2">
@@ -898,7 +898,7 @@ function Academies() {
                           <tr key={student.id} className="hover:bg-gray-50">
                             <td className="px-4 py-3">{student.name}</td>
                             <td className="px-4 py-3">{student.class}</td>
-                            <td className="px-4 py-3">{student.game}</td>
+                            <td className="px-4 py-3">{student.typeOfGame}</td>
                             <td className="px-4 py-3">{student.gender}</td>
                           </tr>
                         ))}
