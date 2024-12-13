@@ -68,6 +68,22 @@ const LiveMatches = () => {
     fetchMatches();
   }, []);
 
+  const groupMatches = (matches) => {
+    const liveMatches = matches.filter((match) => match.status === "LIVE");
+    const upcomingMatches = matches.filter((match) => match.status === "UPCOMING");
+    const pastMatches = matches.filter((match) => match.status === "In Progress");
+
+    return [...liveMatches, ...upcomingMatches, ...pastMatches];
+  };
+
+  const groupedMatches = groupMatches(matches);
+
+console.log("Live Matches:", groupedMatches.filter(m => m.status === "LIVE"));
+console.log("Upcoming Matches:", groupedMatches.filter(m => m.status === "UPCOMING"));
+console.log("Past Matches:", groupedMatches.filter(m => m.status === "In Progress"));
+
+
+
   const scrollContainer = (direction) => {
     const container = document.getElementById('matches-container');
     const scrollAmount = 300;
@@ -93,13 +109,13 @@ const LiveMatches = () => {
   return (
     <div className="relative">
       {/* Scroll Buttons */}
-      <button 
+      <button
         onClick={() => scrollContainer('left')}
         className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 -ml-4"
       >
         <ChevronLeft className="h-6 w-6" />
       </button>
-      <button 
+      <button
         onClick={() => scrollContainer('right')}
         className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-2 -mr-4"
       >
@@ -110,7 +126,8 @@ const LiveMatches = () => {
         id="matches-container"
         className="flex overflow-x-auto hide-scrollbar gap-4 px-6 py-4"
       >
-        {matches.map((match) => (
+
+        {groupedMatches.map((match) => (
           <div
             key={match.id}
             className="flex-shrink-0 w-[280px] p-4 rounded-lg border border-gray-200 bg-white shadow-sm cursor-pointer"
