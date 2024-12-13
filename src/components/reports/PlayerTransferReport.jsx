@@ -120,34 +120,31 @@ const PlayerTransferReport = () => {
     return federation ? federation.name : 'N/A';
   };
 
-  const getClubName = (clubId) => {
-    const club = clubs.find(c => c.id === clubId);
-    return club ? club.name : 'N/A';
-  };
-
   // Add this new function to filter the data
   const getFilteredData = () => {
     return transferData.filter(transfer => {
       // Search term filter
       const searchString = (
-        getFederationName(transfer.playerStaffId?.federationId) + ' ' +
-        getClubName(transfer.fromClubId) + ' ' +
-        (transfer.playerStaffId ? 
-          playerStaffOptions.find(p => p.id === transfer.playerStaffId)?.firstName + ' ' +
-          playerStaffOptions.find(p => p.id === transfer.playerStaffId)?.lastName 
+        transfer.playerStaff?.federation?.name + ' ' +
+        transfer.fromClub?.name + ' ' +
+        (transfer.playerStaff ? 
+          transfer.playerStaff.firstName + ' ' +
+          transfer.playerStaff.lastName 
           : '') + ' ' +
-        getClubName(transfer.toClubId) + ' ' +
+        transfer.toClub?.name + ' ' +
         (transfer.transferDate ? new Date(transfer.transferDate).toLocaleDateString() : '')
       ).toLowerCase();
 
       const searchMatch = !searchTerm || searchString.includes(searchTerm.toLowerCase());
 
       // Filters
-      const federationMatch = !filters.federation || getFederationName(transfer.playerStaffId?.federationId) === filters.federation;
-      const clubFromMatch = !filters.clubFrom || getClubName(transfer.fromClubId) === filters.clubFrom;
-      const clubToMatch = !filters.clubTo || getClubName(transfer.toClubId) === filters.clubTo;
-      const playerStaffMatch = !filters.playerStaff || transfer.playerStaffId?.toString() === filters.playerStaff?.toString();
-      
+      const federationMatch = !filters.federation || 
+        getFederationName(transfer.playerStaff?.federationId) === filters.federation;
+      const clubFromMatch = !filters.clubFrom || transfer.fromClub?.name === filters.clubFrom;
+      const clubToMatch = !filters.clubTo || transfer.toClub?.name === filters.clubTo;
+      const playerStaffMatch = !filters.playerStaff || 
+        transfer.playerStaff?.id.toString() === filters.playerStaff;
+
       // Date filters
       const transferDate = transfer.transferDate ? new Date(transfer.transferDate) : null;
       const monthMatch = !filters.month || 
@@ -348,16 +345,16 @@ const PlayerTransferReport = () => {
             <TableBody>
               {getFilteredData().map((transfer) => (
                 <TableRow key={transfer.id}>
-                  <TableCell>{getFederationName(transfer.playerStaffId?.federationId)}</TableCell>
-                  <TableCell>{getClubName(transfer.fromClubId)}</TableCell>
+                  <TableCell>{getFederationName(transfer.playerStaff?.federationId)}</TableCell>
+                  <TableCell>{transfer.fromClub?.name || 'N/A'}</TableCell>
                   <TableCell>
-                    {transfer.playerStaffId 
-                      ? `${playerStaffOptions.find(p => p.id === transfer.playerStaffId)?.firstName} ${playerStaffOptions.find(p => p.id === transfer.playerStaffId)?.lastName}`
+                    {transfer.playerStaff 
+                      ? `${transfer.playerStaff.firstName} ${transfer.playerStaff.lastName}`
                       : 'N/A'
                     }
                   </TableCell>
-                  <TableCell>{transfer.playerStaffId?.type || 'N/A'}</TableCell>
-                  <TableCell>{getClubName(transfer.toClubId)}</TableCell>
+                  <TableCell>{transfer.playerStaff?.type || 'N/A'}</TableCell>
+                  <TableCell>{transfer.toClub?.name || 'N/A'}</TableCell>
                   <TableCell>
                     {transfer.transferDate 
                       ? new Date(transfer.transferDate).toLocaleDateString()
