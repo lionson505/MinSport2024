@@ -1,20 +1,12 @@
 import { useState, useEffect } from 'react';
-import { cn } from "../../lib/utils"
-import { Modal } from "../../components/ui/Modal";
 import axiosInstance from '../../utils/axiosInstance';
-import { Form } from 'react-bootstrap';
-import logo from "../../components/liveMatch/image.png";
 import image1 from "../../components/liveMatch/a.jpg";
 import image2 from "../../components/liveMatch/b.jpg";
 import matchesBackground from "../../components/liveMatch/matchBackground.jpg";
 import HeaderTwo from '../../components/headerTwo';
-import LiveMatches from '../../components/LiveMatches';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui/tabsTwo';
 import aprLogo from '../../components/liveMatch/aprLogo.jpeg';
 import rayonLogo from '../../components/liveMatch/rayonLogo.jpg';
-import SearchModal from './searchModal';
-import { Search } from 'lucide-react';
-
 
 
 function LandingPageMatch() {
@@ -1086,7 +1078,7 @@ function LandingPageMatch() {
                             )) : (
                             <div className="flex w-full justify-center border-2">
                                 <div className="text-center mx-auto">
-                                    <h1 className="text-2xl font-semibold text-gray-800">
+                                    <h1 className="text-2xl font-semibold">
                                        Sorry! We Can't find " {searchTerm} "
                                     </h1>
                                 </div>
