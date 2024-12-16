@@ -289,15 +289,17 @@ function NationalTeams() {
 
   const renderTeamDetails = (team) => {
     if (!team) return null;
-
+  
+    const teamPlayers = players.filter(player => player.teamId === team.id);
+  
     const details = [
       { label: 'Team Name', value: team.teamName },
       { label: 'Month', value: team.month },
-      { label: 'teamYear', value: team.teamYear },
+      { label: 'Year', value: team.teamYear },
       { label: 'Federation', value: team.federation.name || team.federation },
-      { label: 'Players', value: Array.isArray(team.players) ? team.players.length : team.players }
+      { label: 'Players', value: teamPlayers.length }
     ];
-
+  
     return (
       <div className="space-y-4">
         {details.map((detail, index) => (
@@ -306,10 +308,36 @@ function NationalTeams() {
             <span className="font-medium">{detail.value}</span>
           </div>
         ))}
+        <div>
+          <h3 className="text-lg font-medium mt-4">Players</h3>
+          {teamPlayers.length > 0 ? (
+            <table className="min-w-full bg-white">
+              <thead>
+                <tr>
+                  <th className="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                  <th className="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Club</th>
+                  <th className="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Games</th>
+                </tr>
+              </thead>
+              <tbody>
+                {teamPlayers.map(player => (
+                  <tr key={player.id}>
+                    <td className="py-2 px-4 border-b border-gray-200">{player.firstName} {player.lastName}</td>
+                    <td className="py-2 px-4 border-b border-gray-200">{player.club?.name || player.club}</td>
+                    <td className="py-2 px-4 border-b border-gray-200">
+                      {Array.isArray(player.games) ? player.games.map(game => game.stadium).join(', ') : player.games}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p className="text-gray-500">No players found for this team.</p>
+          )}
+        </div>
       </div>
     );
   };
-
   const renderPlayerDetails = (player) => {
     if (!player) return null;
 
@@ -530,8 +558,12 @@ function NationalTeams() {
                       </span>
                     </td>
                     <td className="px-4 py-3">{team.federation.name || team.federation}</td>
-                    <td className="px-4 py-3">{Array.isArray(team.players) ? team.players.length : team.players}</td>
-                    <td className="px-4 py-3 operation">
+                  <td className="px-4 py-3">
+  {Array.isArray(players)
+    ? players.filter(player => player.teamId === team.id).length
+    : 0}
+</td>
+<td className="px-4 py-3 operation">
                       <div className="flex items-center space-x-2 ">
                         <Button
                           size="sm"
@@ -832,14 +864,13 @@ function NationalTeams() {
                     <tr key={player.id} className="hover:bg-gray-50">
                       <td className="px-4 py-3">{player.firstName} {player.lastName}</td>
                       <td className="px-4 py-3">
-                        <span className={`px-2 py-1 rounded-full text-xs ${
-                          player.appearances > 0 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {player.appearances} {player.appearances === 1 ? 'Appearance' : 'Appearances'}
-                        </span>
-                      </td>
+  <span className={`px-2 py-1 rounded-full text-xs ${
+    player.teamId ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+  }`}>
+    {teams.filter(team => team.id === player.teamId).length} {teams.filter(team => team.id === player.teamId).length === 1 ? 'Team' : 'Teams'}
+  </span>
+</td>
+
                     </tr>
                   ))
                 ) : (

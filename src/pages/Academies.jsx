@@ -1,23 +1,21 @@
 import React, { useState, useEffect, Fragment } from 'react';
-import { useTheme } from '../context/ThemeContext';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/input';
-import { Search, Plus, Eye, Edit, Trash2, AlertTriangle, X, PencilIcon } from 'lucide-react';
+import { Search, Plus, Eye, PencilIcon, Trash2, AlertTriangle, X } from 'lucide-react';
 import { Dialog, Transition } from '@headlessui/react';
 import toast from 'react-hot-toast';
 import AddAcademyModal from '../components/AddAcademyModal';
 import AddAcademyStudent from '../components/AddAcademyStudent';
 import EditAcademyModal from '../components/EditAcademyModal';
 import axiosInstance from '../utils/axiosInstance';
-import PrintButton from "../components/reusable/Print"
+import PrintButton from "../components/reusable/Print";
 import EditAcademyStudentModal from '../components/EditAcademyStudentModal';
-
 
 function Academies() {
   const [activeTab, setActiveTab] = useState('manage');
   const [searchTerm, setSearchTerm] = useState('');
   const [studentSearchTerm, setStudentSearchTerm] = useState('');
-  const [entriesPerPage] = useState(5); // Set entries per page to 5
+  const [entriesPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [studentCurrentPage, setStudentCurrentPage] = useState(1);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -186,9 +184,7 @@ function Academies() {
   const handleTransferSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Implement the transfer logic here
       console.log('Transferring student:', transferData);
-      // Reset transfer data after successful transfer
       setTransferData({ fromSchool: '', student: '', toSchool: '' });
       toast.success('Student transferred successfully');
     } catch (error) {
@@ -201,7 +197,7 @@ function Academies() {
     setTransferData(prev => ({ ...prev, fromSchool: schoolId, student: '', toSchool: '' }));
   };
 
-  const availableStudents = students.filter(student => student.schoolId === transferData.fromSchool);
+  const availableStudents = students.filter(student => student.nameOfSchoolAcademyTrainingCenter === transferData.fromSchool);
 
   const renderAcademyDetails = (academy) => {
     if (!academy) return null;
@@ -221,6 +217,9 @@ function Academies() {
       { label: 'LR Phone', value: academy.legalRepresentative?.phone || 'N/A' }
     ];
 
+    // Filter students for the selected academy
+    const academyStudents = students.filter(student => student.nameOfSchoolAcademyTrainingCenter === academy.name);
+
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-1 gap-4">
@@ -230,6 +229,37 @@ function Academies() {
               <div className="text-sm">{detail.value}</div>
             </div>
           ))}
+        </div>
+
+        {/* Student Table */}
+        <div className="mt-6">
+          <h3 className="text-lg font-medium mb-4">Students</h3>
+          {academyStudents.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Name</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Class</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Game</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Gender</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {academyStudents.map((student) => (
+                    <tr key={student.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3">{`${student.firstName} ${student.lastName}`}</td>
+                      <td className="px-4 py-3">{student.class}</td>
+                      <td className="px-4 py-3">{student.typeOfGame}</td>
+                      <td className="px-4 py-3">{student.gender}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-gray-500">No students found for this academy.</p>
+          )}
         </div>
       </div>
     );
@@ -282,43 +312,48 @@ function Academies() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {paginatedAcademies.map((academy) => (
-                    <tr key={academy.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm">{academy.name}</td>
-                      <td className="px-4 py-3 text-sm">{academy.location_province},{academy.location_district}</td>
-                      <td className="px-4 py-3 text-sm">{academy.category}</td>
-                      <td className="px-4 py-3 text-sm">{academy.students || '-'}</td>
-                      <td className="px-4 py-3 flex gap-2 operation">
-                        <Button
-                          variant="ghost"
-                          onClick={() => {
-                            setSelectedAcademy(academy);
-                            setIsViewModalOpen(true);
-                          }}
-                        >
-                          <Eye className="h-4 w-4 text-black" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          onClick={() => {
-                            setSelectedAcademy(academy);
-                            setIsEditModalOpen(true);
-                          }}
-                        >
-                          <PencilIcon className="h-4 w-4 text-black" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          onClick={() => {
-                            setSelectedAcademy(academy);
-                            setIsDeleteModalOpen(true);
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4 text-red-600" />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
+                  {paginatedAcademies.map((academy) => {
+                    // Calculate the number of students for this academy
+                    const studentCount = students.filter(student => student.nameOfSchoolAcademyTrainingCenter === academy.name).length;
+
+                    return (
+                      <tr key={academy.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 text-sm">{academy.name}</td>
+                        <td className="px-4 py-3 text-sm">{academy.location_province},{academy.location_district}</td>
+                        <td className="px-4 py-3 text-sm">{academy.category}</td>
+                        <td className="px-4 py-3 text-sm">{studentCount}</td>
+                        <td className="px-4 py-3 flex gap-2 operation">
+                          <Button
+                            variant="ghost"
+                            onClick={() => {
+                              setSelectedAcademy(academy);
+                              setIsViewModalOpen(true);
+                            }}
+                          >
+                            <Eye className="h-4 w-4 text-black" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            onClick={() => {
+                              setSelectedAcademy(academy);
+                              setIsEditModalOpen(true);
+                            }}
+                          >
+                            <PencilIcon className="h-4 w-4 text-black" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            onClick={() => {
+                              setSelectedAcademy(academy);
+                              setIsDeleteModalOpen(true);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 text-red-600" />
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
               </PrintButton>
@@ -502,7 +537,7 @@ function Academies() {
                 >
                   <option value="">Select School</option>
                   {academies.map(academy => (
-                    <option key={academy.id} value={academy.id}>
+                    <option key={academy.id} value={academy.name}>
                       {academy.name}
                     </option>
                   ))}
@@ -544,9 +579,9 @@ function Academies() {
                 >
                   <option value="">Select School</option>
                   {academies
-                    .filter(academy => academy.id !== transferData.fromSchool)
+                    .filter(academy => academy.name !== transferData.fromSchool)
                     .map(academy => (
-                      <option key={academy.id} value={academy.id}>
+                      <option key={academy.id} value={academy.name}>
                         {academy.name}
                       </option>
                     ))}
@@ -724,7 +759,63 @@ function Academies() {
         onClose={() => setIsAddModalOpen(false)}
         onAdd={handleAddAcademy}
       />
+{/* View Student Modal */}
+<Transition appear show={isViewStudentModalOpen} as={Fragment}>
+  <Dialog 
+    as="div" 
+    className="relative z-50" 
+    onClose={() => setIsViewStudentModalOpen(false)}
+  >
+    <Transition.Child
+      as={Fragment}
+      enter="ease-out duration-300"
+      enterFrom="opacity-0"
+      enterTo="opacity-100"
+      leave="ease-in duration-200"
+      leaveFrom="opacity-100"
+      leaveTo="opacity-0"
+    >
+      <div className="fixed inset-0 bg-black bg-opacity-25" />
+    </Transition.Child>
 
+    <div className="fixed inset-0 overflow-y-auto">
+      <div className="flex min-h-full items-center justify-center p-4">
+        <Dialog.Panel className="w-full h-full max-w-none transform overflow-hidden bg-white p-6 text-left align-middle shadow-xl transition-all">
+          <div className="flex justify-between items-center mb-6">
+            <Dialog.Title className="text-xl font-bold">
+              View Student Details
+            </Dialog.Title>
+            <button
+              onClick={() => setIsViewStudentModalOpen(false)}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          {renderStudentDetails(selectedStudent)}
+
+          <div className="flex justify-end mt-6 pt-4 border-t">
+            <Button onClick={() => setIsViewStudentModalOpen(false)}>
+              Close
+            </Button>
+          </div>
+        </Dialog.Panel>
+      </div>
+    </div>
+  </Dialog>
+</Transition>
+
+      {/* Add EditAcademyModal */}
+      <EditAcademyModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedAcademy(null);
+        }}
+        onEdit={handleEditSubmit}
+        academyData={selectedAcademy}
+      />
       {/* Add Student Modal */}
       <AddAcademyStudent
         isOpen={isAddStudentModalOpen}
@@ -773,193 +864,6 @@ function Academies() {
 
                 <div className="flex justify-end mt-6 pt-4 border-t">
                   <Button onClick={() => setIsViewModalOpen(false)}>
-                    Close
-                  </Button>
-                </div>
-              </Dialog.Panel>
-            </div>
-          </div>
-        </Dialog>
-      </Transition>
-
-      {/* Delete Confirmation Modal */}
-      <Transition appear show={isDeleteModalOpen} as={Fragment}>
-        <Dialog 
-          as="div" 
-          className="relative z-50" 
-          onClose={() => setIsDeleteModalOpen(false)}
-        >
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-black bg-opacity-25" />
-          </Transition.Child>
-
-          <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4">
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
-                <div className="flex items-center gap-3 mb-4">
-                  <AlertTriangle className="h-6 w-6 text-red-500" />
-                  <Dialog.Title className="text-lg font-medium">
-                    Delete Academy
-                  </Dialog.Title>
-                </div>
-
-                <p className="text-sm text-gray-500 mb-4">
-                  Are you sure you want to delete "{selectedAcademy?.name}"? 
-                  This action cannot be undone.
-                </p>
-
-                <div className="flex justify-end gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsDeleteModalOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    className="bg-red-600 hover:bg-red-700 text-white"
-                    onClick={handleDeleteConfirm}
-                  >
-                    Delete Academy
-                  </Button>
-                </div>
-              </Dialog.Panel>
-            </div>
-          </div>
-        </Dialog>
-      </Transition>
-
-      {/* Add EditAcademyModal */}
-      <EditAcademyModal
-        isOpen={isEditModalOpen}
-        onClose={() => {
-          setIsEditModalOpen(false);
-          setSelectedAcademy(null);
-        }}
-        onEdit={handleEditSubmit}
-        academyData={selectedAcademy}
-      />
-
-      {/* Add View Students Modal */}
-      <Transition appear show={isViewStudentsModalOpen} as={Fragment}>
-        <Dialog 
-          as="div" 
-          className="relative z-50" 
-          onClose={() => setIsViewStudentsModalOpen(false)}
-        >
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-black bg-opacity-25" />
-          </Transition.Child>
-
-          <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4">
-              <Dialog.Panel className="w-full max-w-4xl transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
-                <div className="flex justify-between items-center mb-6">
-                  <Dialog.Title className="text-xl font-bold">
-                    Academy Students
-                  </Dialog.Title>
-                  <button
-                    onClick={() => setIsViewStudentsModalOpen(false)}
-                    className="text-gray-500 hover:text-gray-700"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-                </div>
-
-                {selectedAcademyStudents.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    
-                    <table className="w-full">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Name</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Class</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Game</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Gender</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-200">
-                        {selectedAcademyStudents.map((student) => (
-                          <tr key={student.id} className="hover:bg-gray-50">
-                            <td className="px-4 py-3">{student.name}</td>
-                            <td className="px-4 py-3">{student.class}</td>
-                            <td className="px-4 py-3">{student.typeOfGame}</td>
-                            <td className="px-4 py-3">{student.gender}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500">No students found for this academy</p>
-                  </div>
-                )}
-
-                <div className="flex justify-end mt-6">
-                  <Button onClick={() => setIsViewStudentsModalOpen(false)}>
-                    Close
-                  </Button>
-                </div>
-              </Dialog.Panel>
-            </div>
-          </div>
-        </Dialog>
-      </Transition>
-
-      {/* View Student Modal */}
-      <Transition appear show={isViewStudentModalOpen} as={Fragment}>
-        <Dialog 
-          as="div" 
-          className="relative z-50" 
-          onClose={() => setIsViewStudentModalOpen(false)}
-        >
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-black bg-opacity-25" />
-          </Transition.Child>
-
-          <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4">
-              <Dialog.Panel className="w-full max-w-3xl transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
-                <div className="flex justify-between items-center mb-6">
-                  <Dialog.Title className="text-xl font-bold">
-                    Student Details
-                  </Dialog.Title>
-                  <button
-                    onClick={() => setIsViewStudentModalOpen(false)}
-                    className="text-gray-500 hover:text-gray-700"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-                </div>
-
-                {renderStudentDetails(selectedStudent)}
-
-                <div className="flex justify-end mt-6 pt-4 border-t">
-                  <Button onClick={() => setIsViewStudentModalOpen(false)}>
                     Close
                   </Button>
                 </div>
@@ -1024,8 +928,8 @@ function Academies() {
         </Dialog>
       </Transition>
 
-      {/* Edit Student Modal */}
-      <EditAcademyStudentModal
+     {/* Edit Student Modal */}
+     <EditAcademyStudentModal
         isOpen={isEditStudentModalOpen}
         onClose={() => {
           setIsEditStudentModalOpen(false);
@@ -1034,6 +938,60 @@ function Academies() {
         onEdit={handleEditStudentSubmit}
         studentData={selectedStudent}
       />
+
+      {/* Delete Academy Confirmation Modal */}
+      <Transition appear show={isDeleteModalOpen} as={Fragment}>
+        <Dialog 
+          as="div" 
+          className="relative z-50" 
+          onClose={() => setIsDeleteModalOpen(false)}
+        >
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black bg-opacity-25" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
+                <div className="flex items-center gap-3 mb-4">
+                  <AlertTriangle className="h-6 w-6 text-red-500" />
+                  <Dialog.Title className="text-lg font-medium">
+                    Delete Academy
+                  </Dialog.Title>
+                </div>
+
+                <p className="text-sm text-gray-500 mb-4">
+                  Are you sure you want to delete "{selectedAcademy?.name}"? 
+                  This action cannot be undone.
+                </p>
+
+                <div className="flex justify-end gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsDeleteModalOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                    onClick={handleDeleteConfirm}
+                  >
+                    Delete Academy
+                  </Button>
+                </div>
+              </Dialog.Panel>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
     </div>
   );
 }
