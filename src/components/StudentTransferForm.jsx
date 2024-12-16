@@ -11,14 +11,16 @@ import {
 import { AlertCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
-const StudentTransferForm = ({ students, isLoading, isSubmitting, setIsSubmitting }) => {
+const StudentTransferForm = ({ isSubmitting, setIsSubmitting }) => {
   const [schools, setSchools] = useState([]);
+  const [students, setStudents] = useState([]);
   const [fromSchool, setFromSchool] = useState('');
   const [transferStudent, setTransferStudent] = useState('');
   const [toSchool, setToSchool] = useState('');
   const [transferDate, setTransferDate] = useState('');
   const [showTransferConfirm, setShowTransferConfirm] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchSchools = async () => {
@@ -30,7 +32,19 @@ const StudentTransferForm = ({ students, isLoading, isSubmitting, setIsSubmittin
       }
     };
 
+    const fetchStudents = async () => {
+      try {
+        const response = await axiosInstance.get('/students'); // Fetch students from the students endpoint
+        setStudents(response.data || []);
+      } catch (error) {
+        console.error('Error fetching students:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     fetchSchools();
+    fetchStudents();
   }, []);
 
   const availableStudents = students.filter(student => student.schoolId !== parseInt(fromSchool));
@@ -77,7 +91,7 @@ const StudentTransferForm = ({ students, isLoading, isSubmitting, setIsSubmittin
 
       console.log('Transfer Data:', transferData);
 
-      const response = await axiosInstance.post('/transfers', transferData);
+      const response = await axiosInstance.post('/students/transfers', transferData);
       setShowTransferConfirm(false);
       toast.success('Transfer processed successfully!');
       

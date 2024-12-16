@@ -21,6 +21,11 @@ const educationLevelOptions = [
   { value: 'OTHER', label: 'Other' }
 ];
 
+const fitnessStatusOptions = [
+  { value: 'Fit', label: 'Fit' },
+  { value: 'Unfit', label: 'Unfit' },
+];
+
 const inputClassName = "h-14 w-full px-6 border border-gray-300 rounded-md text-base";
 
 const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
@@ -164,7 +169,7 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 max-h-[80vh] overflow-y-auto p-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">Type</label>
           <select
@@ -412,13 +417,19 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Fitness Status</label>
-          <input
-            type="text"
+          <select
             name="fitnessStatus"
             value={formData.fitnessStatus}
             onChange={handleChange}
-            className={`${inputClassName} mt-1 block w-full border rounded-md`}
-          />
+            className={inputClassName}
+          >
+            <option value="">Select Fitness Status</option>
+            {fitnessStatusOptions.map((status) => (
+              <option key={status.value} value={status.value}>
+                {status.label}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Level of Education</label>
