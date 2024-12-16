@@ -209,13 +209,13 @@ function LandingPage() {
       {/* Header */}
       <HeaderTwo />
 
-      <main className="container mx-auto px-6 pt-24 pb-12">
+      <main className="container mx-auto px-6 pt-24 pb-12 border-2 border-green-500">
         {/* Live Matches Section */}
-        <div className="mb-16">
+        <div className="mb-16 border-2 border-green-400">
           <Link
             to="/match"
             className="text-gray-500 hover:text-gray-600 flex items-center text-base justify-end"
-          >
+           >
             View all
             <ChevronRight className="w-5 h-5 ml-2" />
           </Link>
@@ -223,11 +223,11 @@ function LandingPage() {
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-12 gap-12">
+        <div className="grid lg:grid-cols-12 gap-12">
           {/* Left Content */}
           <div className="col-span-12 lg:col-span-8">
-            {/* Leagues Section */}
-            <section className="mb-16">
+            {/* Leagues Section  */}
+            <section className="mb-16 w-full border-2 border-green-400">
               <div className="flex justify-between items-center mb-8">
                 <h2 className="text-3xl font-bold">Leagues To Browse</h2>
                 <Link
@@ -240,26 +240,39 @@ function LandingPage() {
               </div>
 
               <Swiper
-                // install Swiper modules
-                // modules={[Navigation, Pagination, A11y]}
+                // Install Swiper modules
                 modules={[Pagination, Autoplay, A11y]}
                 spaceBetween={50}
-                slidesPerView={4}
+                slidesPerView={4} // Default for larger devices
                 pagination={{ clickable: true }}
                 loop={true}
-                autoplay={{
-                  delay: 2000, // Delay between transitions in milliseconds
-                  disableOnInteraction: false, // Continue autoplay after user interaction
+                // autoplay={{
+                //   delay: 2000, // Delay between transitions in milliseconds
+                //   disableOnInteraction: false, // Continue autoplay after user interaction
+                // }}
+                className='pb-10 w- border-2 border-blue-400  px-6 py-4'
+                breakpoints={{
+                  320: { // For small devices
+                    slidesPerView: 1, // Display 1 slide
+                    spaceBetween: 10, // Space between slides for small devices
+                  },
+                  768: { // For tablets and above
+                    slidesPerView: 2, // Display 2 slides
+                    spaceBetween: 20,
+                  },
+                  1024: { // For larger devices
+                    slidesPerView: 4, // Display 4 slides
+                    spaceBetween: 50,
+                  },
                 }}
-                className='pb-10'
               >
 
-                <div className="grid grid-cols-6 gap-6">
+                <div className="grid grid-cols-6 gap-6 border-2 border-red-400  ">
                   {leagues.slice(0, 6).map((league, index) => (
                     <SwiperSlide>
                       <div
                         key={index}
-                        className={`aspect-square rounded-xl ${league.color} flex flex-col items-center justify-center p-4 cursor-pointer hover:opacity-90 transition-all transform hover:scale-105`}
+                        className={`aspect-square rounded-xl w-[250px] md:w-[280px] ${league.color} flex flex-col items-center justify-center p-4 cursor-pointer hover:opacity-90 transition-all transform hover:scale-105`}
                       >
                         <img
                           src={league.logo}
@@ -320,10 +333,7 @@ function LandingPage() {
                 ))}
               </div>
             </section>
-            <section className="mb-16">
-              <div className="flex justify-between items-center mb-8">
-                <h2 className="text-3xl font-bold">Sports Facilities</h2>
-              </div>
+            <section className="mb-16 py-14">
               <MyMap />
             </section>
 
@@ -426,7 +436,6 @@ function LandingPage() {
                     </div>
                   </div>
                 ))}
-
               </div>
             </div>
           </div>
