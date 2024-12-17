@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/input';
-import { Search, Plus, Eye, Download, Trash, RefreshCw } from 'lucide-react';
+import { Search, Plus, Eye, Download, Trash, RefreshCw, Edit } from 'lucide-react';
 import toast from 'react-hot-toast';
 import AddDocumentModal from '../components/AddDocumentModal';
 import axiosInstance from '../utils/axiosInstance';
@@ -12,30 +12,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import PrintButton from '../components/reusable/Print';
 
 function Documents() {
-
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const { isDarkMode } = useTheme();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [documents, setDocuments] = useState([]);
   const [selectedDocument, setSelectedDocument] = useState(null);
+  const [documentToEdit, setDocumentToEdit] = useState(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [documentToDelete, setDocumentToDelete] = useState(null);
-  const [viewModalOpen, setViewModalOpen] = useState(false); // State for view modal
+  const [viewModalOpen, setViewModalOpen] = useState(false);
   const [updateStatusModalOpen, setUpdateStatusModalOpen] = useState(false);
   const [documentToUpdate, setDocumentToUpdate] = useState(null);
-
-  const path  = window.location.pathname;
-
-  const allowedPaths = localStorage.getItem("accessibleLinks");
-
-  console.log(allowedPaths, path);
-
-  // if (!allowedPaths.path.includes(path)) {
-  //   return <Navigate to="/unauthorized" />;
-  // }
-
 
   useEffect(() => {
     const fetchDocuments = async () => {
@@ -82,6 +72,24 @@ function Documents() {
   const handleAddDocument = (newDocument) => {
     setDocuments((prev) => [...prev, newDocument]);
     toast.success('Document added successfully');
+  };
+
+  const handleEditDocument = (document) => {
+    setDocumentToEdit(document);
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditConfirm = async (updatedDocument) => {
+    try {
+      const response = await axiosInstance.put(`/documents/${documentToEdit.id}`, updatedDocument);
+      setDocuments((prev) =>
+        prev.map((doc) => (doc.id === documentToEdit.id ? response.data : doc))
+      );
+      toast.success('Document updated successfully');
+      setIsEditModalOpen(false);
+    } catch {
+      toast.error('Failed to update document');
+    }
   };
 
   const handleDelete = (document) => {
@@ -159,11 +167,8 @@ function Documents() {
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Document Name</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Document Type</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Reference No.</th>
-              {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Person/Institution</th> */}
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Phone</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Email ID</th>
-              {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Date of Recording</th> */}
-              {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Date of Reception/Sending</th> */}
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Status</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 operation">Operations</th>
             </tr>
@@ -174,11 +179,8 @@ function Documents() {
                 <td className="px-4 py-3 text-sm">{doc.documentName}</td>
                 <td className="px-4 py-3 text-sm">{doc.documentType}</td>
                 <td className="px-4 py-3 text-sm">{doc.referenceNo}</td>
-                {/* <td className="px-4 py-3 text-sm">{doc.personOrInstitution}</td> */}
                 <td className="px-4 py-3 text-sm">{doc.phone}</td>
                 <td className="px-4 py-3 text-sm">{doc.emailId}</td>
-                {/* <td className="px-4 py-3 text-sm">{doc.dateOfRecording}</td> */}
-                {/* <td className="px-4 py-3 text-sm">{doc.dateOfReceptionOrSending}</td> */}
                 <td className="px-4 py-3">
                   <span className={`inline-flex px-2 py-1 text-xs rounded-full ${doc.status === 'Received' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
                     {doc.status}
@@ -191,6 +193,9 @@ function Documents() {
                     </Button>
                     <Button size="sm" variant="ghost" onClick={() => handleDownload(doc)}>
                       <Download className="h-4 w-4" />
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => handleEditDocument(doc)}>
+                      <Edit className="h-4 w-4 text-blue-600" />
                     </Button>
                     <Button size="sm" variant="ghost" onClick={() => handleUpdateStatus(doc)}>
                       <RefreshCw className="h-4 w-4 text-blue-600" />
@@ -228,6 +233,16 @@ function Documents() {
         onClose={() => setIsAddModalOpen(false)}
         onAddDocument={handleAddDocument}
       />
+
+      {/* Edit Document Modal */}
+      {documentToEdit && (
+        <AddDocumentModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          onAddDocument={handleEditConfirm}
+          initialData={documentToEdit}
+        />
+      )}
 
       {/* Delete Confirmation Modal */}
       <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>

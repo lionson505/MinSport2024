@@ -59,7 +59,6 @@ function EditEmployeeModal({ isOpen, onClose, onEdit, employeeData }) {
                   initialData={employeeData} // Initialize form with existing employee data
                   isEditing={true} // Flag to indicate that we're in editing mode
                   employeeId={employeeData?.id}
-
                 />
               </Dialog.Panel>
             </Transition.Child>
