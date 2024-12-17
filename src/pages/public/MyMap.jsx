@@ -33,10 +33,10 @@ export default function MyMap() {
   }, [])
 
   return (
-    <div className="mx-auto p-4">
+    <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold mb-6 text-center">Sports Facilities in Rwanda</h1>
       
-      <div className="mb-4 flex flex-col gap-2 md:flex-row md:flex-wrap md:gap-4">
+      <div className="mb-4 flex gap-2">
         <input
           type="text"
           placeholder="Search facilities..."

@@ -124,13 +124,13 @@ console.log("Past Matches:", groupedMatches.filter(m => m.status === "In Progres
       {/* Matches Container */}
       <div
         id="matches-container"
-        className="flex overflow-x-auto hide-scrollbar gap-4 px-6 py-4"
+        className="flex overflow-x-auto hide-scrollbar gap-4 px-6 py-4 "
       >
 
         {groupedMatches.map((match) => (
           <div
             key={match.id}
-            className="flex-shrink-0 w-[280px] p-4 rounded-lg border border-gray-200 bg-white shadow-sm cursor-pointer"
+            className="flex-shrink-0 w-[250px] md:w-[280px] p-4 rounded-lg border border-gray-200 bg-white shadow-sm cursor-pointer"
             onClick={() => handleMatchClick(match)}
           >
             {/* Match Header */}
