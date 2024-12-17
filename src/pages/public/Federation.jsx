@@ -287,19 +287,19 @@ function Federation() {
   return (
     <>
       <div
-        className="px-24"
+        className="px-10"
         style={{
           backgroundImage: `url(${image})`, // Ensure the correct path to federation.png
           backgroundSize: "100% 100%",
           backgroundRepeat: "no-repeat",
           backgroundPosition: "center",
-          height: "50vh",
+          height: "60vh",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           color: "white",
           position: "relative",
-          marginBottom: "2rem"
+          // marginBottom: "2rem"
         }}
       >
         {/* Overlay for a slight dark effect */}
@@ -312,12 +312,12 @@ function Federation() {
           backgroundColor: "rgba(0, 0, 0, 0.7)"
         }}></div>
         {/* Content Section */}
-        <div className="flex w-full mt-24 space-x-10" style={{ maxWidth: "100%", textAlign: "center", zIndex: 1 }}>
-          <div className=' w-4/5 text-start'>
-            <h1 style={{ fontSize: "3rem", fontWeight: "bold" }}>
+        <div className="flex" style={{ maxWidth: "100%", textAlign: "center", zIndex: 1 }}>
+          <div className='w-full sm:w-4/5  text-start'>
+            <h1 className='!text-4xl' style={{ fontWeight: "bold" }}>
               Welcome to Rwanda Sports Federations
             </h1>
-            <p style={{ fontSize: "1.2rem", margin: "20px 0", maxWidth: "700px" }}>
+            <p style={{ margin: "10px 0", maxWidth: "700px" }}>
               Explore all the sports federations in Rwanda, including FERWAFA,
               FERWABA, and many more. Stay updated on events, news, and achievements.
             </p>
@@ -334,7 +334,7 @@ function Federation() {
               Read More
             </button>
           </div>
-          <div className="flex justify-end w-1/6 w-60 h-60">
+          <div className="hidden sm:flex justify-end w-1/6 w-60 h-60">
             <img src={logo} alt="rwandanLogo" className="w-full h-full" />
           </div>
 

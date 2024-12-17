@@ -115,7 +115,7 @@ function App() {
                       <Route path="/forgot-password" element={<ForgotPassword />} />
                       <Route path="/check-email" element={<CheckEmail />} />
                       <Route path="/" element={<LandingPage />} />
-                      <Route path="/landing" element={<LandingPage />} />
+                      <Route path="/home" element={<LandingPage />} />
                       <Route path="/notAuthorized" element={<NoPageFound />} />
                       <Route path="/sports-events" element={<AllSportsEvents />} />
                       <Route path="/events" element={<EventsPage />} />
