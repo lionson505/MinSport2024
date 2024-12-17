@@ -1,0 +1,22 @@
+export const gameTypes = [
+  "Football",
+  "Basketball",
+  "Volleyball",
+  "Rugby",
+  "Tennis",
+  "Table Tennis",
+  "Swimming",
+  "Athletics",
+  "Cricket",
+  "Handball",
+  "Hockey",
+  "Martial Arts",
+  "Boxing",
+  "Wrestling",
+  "Gymnastics",
+  "Chess",
+  "Cycling",
+  "Badminton",
+  "Golf",
+  "Other"
+]; 

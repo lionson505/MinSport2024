@@ -1,0 +1,16 @@
+{
+    "genderOptions": ["Male", "Female", "Other"],
+    "nationalityOptions": [
+      "Rwandan", "Kenyan", "Ugandan", "Tanzanian", "Burundian", "Other (specify)"
+    ],
+    "classOptions": [
+      "P1", "P2", "P3", "P4", "P5", "P6", "S1", "S2", "S3", "S4", "S5", "S6"
+    ],
+    "identificationTypes": ["ID", "Passport", "N/A"],
+    "gameTypes": [
+      "Football", "Basketball", "Volleyball", "Handball", "Rugby", "Cricket", "Hockey", "Baseball", "Netball",
+      "Tennis", "Table Tennis", "Badminton", "Swimming", "Athletics", "Boxing", "Wrestling", "Judo", "Karate", "Taekwondo",
+      "Squash", "Pickleball", "Kickboxing", "Mixed Martial Arts", "Cycling", "Golf", "Gymnastics", "Weightlifting", "Chess", "Archery"
+    ]
+  }
+  
