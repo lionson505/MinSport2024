@@ -28,7 +28,6 @@ function LandingPageMatch() {
                 console.error('Error fetching matches:', error);
             }
         };
-
         fetchMatches();
     }, []);
     console.log('fetched matches on the page: ', matches);
@@ -150,7 +149,9 @@ function LandingPageMatch() {
             </div>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
                 {/* Tabs List with Search */}
-                <TabsList className="bg-white p-4 shadow-sm flex items-center gap-4">
+                <TabsList className="bg-white p-2 sm:p-4  shadow-sm flex flex-wrap items-center gap-2 
+                     sm:flex-col md:flex-row lg:gap-6">
+                    <div className=''>
                     <TabsTrigger value="all" onClick={() => setActiveTab('all')}>
                         All Matches
                     </TabsTrigger>
@@ -163,26 +164,25 @@ function LandingPageMatch() {
                     <TabsTrigger value="past" onClick={() => setActiveTab('past')}>
                         Past
                     </TabsTrigger>
-                    {/* <SearchModal /> */}
+                    </div>
+                    <div className=''>
+                        {/* <SearchModal /> */}
                         <input onClick={() => setActiveTab('search')}
                             type="text"
                             placeholder="Search Matches..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="p-2 rounded-md border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
+                    </div>
                 </TabsList>
-                {/* All Events Tab */}
-                {/* <TabsContent value="all" className=""> */}
-                {/* <TabsContent value="all" className={`mt-6 flex justify-center border-2 border-gray-800 ${activeTab !== 'all' ? 'hidden' : ''}`}>
- */}
-                <TabsContent value="all" className={`mt-6 flex justify-center ${ activeTab !== 'all' ? 'hidden' : ''}`}>
+                <TabsContent value="all" className={`mt-6 flex justify-center ${activeTab !== 'all' ? 'hidden' : ''}`}>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                         {filteredMatches.length > 0 ? (
                             filteredMatches.map((match) =>
                                 <div
                                     key={match.id}
-                                    className="flex-shrink-0 w-[280px] p-4 rounded-lg border border-gray-200 bg-white shadow-sm cursor-pointer m-8"
+                                    className="flex-shrink-0 w-[280px] p-4 rounded-lg bg-white shadow-sm cursor-pointer m-8"
                                     onClick={() => handleMatchClick(match)}
                                 >
                                     {/* Match Header */}
@@ -242,7 +242,7 @@ function LandingPageMatch() {
                                     </div>
                                 </div>
                             )) : (
-                            <div className="flex w-full justify-center border-2">
+                            <div className="flex w-full justify-center ">
                                 <div className="text-center mx-auto">
                                     <h1 className="text-2xl font-semibold text-gray-800">
                                         No Games Available Yet
@@ -434,7 +434,7 @@ function LandingPageMatch() {
 
 
                 {/* Live Events Tab */}
-                <TabsContent value="live" className={`mt-6 flex justify-center ${ activeTab !== 'live' ? 'hidden' : ''}`}>
+                <TabsContent value="live" className={`mt-6 flex justify-center ${activeTab !== 'live' ? 'hidden' : ''}`}>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                         {filteredMatches.some(match => match.status === 'LIVE') ? (
                             filteredMatches.map((match) =>
@@ -686,7 +686,7 @@ function LandingPageMatch() {
                 </TabsContent>
 
                 {/* Upcoming Events Tab */}
-                <TabsContent value="upcoming" className={`mt-6 flex justify-center ${ activeTab !== 'upcoming' ? 'hidden' : ''}`}>
+                <TabsContent value="upcoming" className={`mt-6 flex justify-center ${activeTab !== 'upcoming' ? 'hidden' : ''}`}>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                         {filteredMatches.map((match) => (
                             match.status === 'UPCOMING' && (
@@ -934,7 +934,7 @@ function LandingPageMatch() {
                 </TabsContent>
 
                 {/* Past Events Tab */}
-                <TabsContent value="past" className={`mt-6 flex justify-center ${ activeTab !== 'past' ? 'hidden' : ''}`}>
+                <TabsContent value="past" className={`mt-6 flex justify-center ${activeTab !== 'past' ? 'hidden' : ''}`}>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 ">
                         {filteredMatches.some(match => match.status === 'PAST') ? (
                             filteredMatches.map((match) =>
@@ -1010,8 +1010,8 @@ function LandingPageMatch() {
 
 
                 {/* search events Tab  */}
-                <TabsContent value="search" className={`mt-6 flex justify-center ${ activeTab !== 'search' ? 'hidden' : ''}`}>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                <TabsContent value="search" className={`mt-6 flex justify-center ${activeTab !== 'search' ? 'hidden' : ''}`}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                         {searchedMatches.length > 0 ? (
                             searchedMatches.map((searchedMatch) =>
                                 <div
@@ -1076,17 +1076,17 @@ function LandingPageMatch() {
                                     </div>
                                 </div>
                             )) : (
-                            <div className="flex w-full justify-center border-2">
+                            <div className="flex w-full justify-center ">
                                 <div className="text-center mx-auto">
                                     <h1 className="text-2xl font-semibold">
-                                       Sorry! We Can't find " {searchTerm} "
+                                        Sorry! We Can't find " {searchTerm} "
                                     </h1>
                                 </div>
                             </div>
                         )}
                     </div>
-                    <div>   
-                    {searchedMatch && (
+                    <div>
+                        {searchedMatch && (
                             <div
                                 className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                                 <div className="bg-background w-[90%] max-w-4xl rounded-lg shadow-lg overflow-hidden">
