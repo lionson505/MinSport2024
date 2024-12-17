@@ -280,28 +280,12 @@ function LandingPage() {
                         slidesPerView: 3,
                         spaceBetween: 30,
                       },
-                      1024: {
-                        slidesPerView: 4,
-                        spaceBetween: 40,
-                      },
-                      1280: {
-                        slidesPerView: 5,
-                        spaceBetween: 50,
-                      },
-                      1440: {
-                        slidesPerView: 6,
-                        spaceBetween: 60,
-                      },
-                      1920: {
-                        slidesPerView: 7,
-                        spaceBetween: 70,
-                      },
                     }}
                   >
                     {leagues.slice(0, 6).map((league, index) => (
                       <SwiperSlide
                         key={index}
-                        className={`aspect-square rounded-xl !w-[250px] !md:w-[280px] ${league.color} flex flex-col items-center justify-center p-4 cursor-pointer hover:opacity-90 transition-all transform hover:scale-105`}
+                        className={`aspect-square m-4 rounded-xl !w-[250px] !md:w-[280px] ${league.color} flex flex-col items-center justify-center p-4 cursor-pointer hover:opacity-90 transition-all transform hover:scale-105`}
                       >
                         <img
                           src={league.logo}
