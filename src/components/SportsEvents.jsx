@@ -2,6 +2,7 @@ import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 function SportsEvents() {
+
   const events = [
     {
       id: 1,

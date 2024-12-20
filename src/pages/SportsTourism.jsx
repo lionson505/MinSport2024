@@ -16,6 +16,7 @@ const SportsTourism = () => {
   const [activeTab, setActiveTab] = useState('list');
   const { isDarkMode } = useDarkMode();
   const [events, setEvents] = useState([]);
+  console.log('eventsss:', events)
 
   useEffect(() => {
     // Fetch events data using axiosInstance
@@ -75,7 +76,7 @@ const SportsTourism = () => {
       </Tabs>
 
       {/* Add Event Modal */}
-      <AddEventModal 
+      <AddEventModal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
       />

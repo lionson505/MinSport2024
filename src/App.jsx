@@ -125,7 +125,7 @@ function App() {
 
                       {/* Protected Routes */}
                       <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-                        <Route path="/" element={<Navigate to="/landing" replace />} />
+                        <Route path="/" element={<Navigate to="/home" replace />} />
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/national-teams" element={isPathAllowed('/national-teams') ? <NationalTeams /> : <Navigate to="/unauthorized" />} />
                         <Route path="/federations" element={isPathAllowed('/federations') ? <Federations /> : <Navigate to="/unauthorized" />} />

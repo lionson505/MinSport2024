@@ -18,10 +18,10 @@ export function MatchOperatorDashboard() {
   const [activeTab, setActiveTab] = useState('all');
   const [matches, setMatches] = useState([]);
 
-  const { 
+  const {
     oldMatches = [],
     initializeMatchSetup,
-    checkMatchAvailability 
+    checkMatchAvailability
   } = useMatchOperator();
 
   // Fetch matches from API
@@ -40,7 +40,6 @@ export function MatchOperatorDashboard() {
   }, []); // Ensure the dependency array is empty to run this effect only once
 
 
-  console.log('it was just a test:', matches[2]?.homeTeam);
 
   const handleMatchClick = async (match) => {
     try {
@@ -64,16 +63,16 @@ export function MatchOperatorDashboard() {
     setSetupMode(false);
   };
 
-  const formatTime = (dateString) => {
-    try {
-      return new Date(dateString).toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch (error) {
-      return '--:--';
-    }
-  };
+  // const formatTime = (dateString) => {
+  //   try {
+  //     return new Date(dateString).toLocaleTimeString([], {
+  //       hour: '2-digit',
+  //       minute: '2-digit'
+  //     });
+  //   } catch (error) {
+  //     return '--:--';
+  //   }
+  // };
 
   const formatDate = (dateString) => {
     try {
@@ -91,7 +90,7 @@ export function MatchOperatorDashboard() {
     if (status === 'all') return matches; // Show all matches if status is 'all'
     return matches.filter(match => match.status === status); // Filter matches based on the selected status
   };
-  
+
   console.log('some data: ', matches)
 
   return (
@@ -115,8 +114,8 @@ export function MatchOperatorDashboard() {
       )}
 
       {/* <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full"> */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}  className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList>
           <TabsTrigger value="all">All Matches</TabsTrigger>
           <TabsTrigger value="LIVE">Live</TabsTrigger>
           <TabsTrigger value="UPCOMING">Upcoming</TabsTrigger>
@@ -126,57 +125,80 @@ export function MatchOperatorDashboard() {
         {['all', 'LIVE', 'UPCOMING', 'COMPLETED'].map((status) => (
           <TabsContent key={status} value={status}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filterMatches(status).map((currentMatch) => (
-                <div 
-                key={currentMatch.id} 
-                className="bg-white p-4 rounded-lg shadow cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => handleMatchClick(currentMatch)}
-                >
-                  <div className="flex justify-between items-center mb-4">
-                    <div>
-                      <span className="text-sm font-medium text-gray-500">{currentMatch.competition || 'Unknown Competition'}</span>
-                      <div className="text-xs text-gray-400 mt-1">{currentMatch.gameType || 'Unknown Game Type'}</div>
-                    </div>
-                    <span className={`px-2 py-1 rounded-full text-xs ${currentMatch.status === 'LIVE' ? 'bg-red-100 text-red-600' :
-                        currentMatch.status === 'UPCOMING' ? 'bg-green-100 text-green-600' :
-                          'bg-gray-100 text-gray-600'
-                      }`}>
-                      {currentMatch.status}
-                    </span>
-                  </div>
+              {filterMatches(status).map((currentMatch) => {
+                // Format startTime for current match
+                const dateOnly = currentMatch.startTime
+                  ? new Date(currentMatch.startTime).toISOString().split('T')[0]
+                  : 'N/A';
 
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <span className="font-medium">{currentMatch.homeTeam || 'Unknown Home Team'}</span>
+                const timeOnly = currentMatch.startTime
+                  ? new Date(currentMatch.startTime).toISOString().split('T')[1].split('.')[0]
+                  : 'N/A';
+
+                return (
+                  <div
+                    key={currentMatch.id}
+                    className="bg-white p-4 rounded-lg shadow cursor-pointer hover:shadow-md transition-shadow"
+                    onClick={() => handleMatchClick(currentMatch)}
+                  >
+                    <div className="flex justify-between items-center mb-4">
+                      <div>
+                        <span className="text-sm font-medium text-gray-500">
+                          {currentMatch.competition || 'Unknown Competition'}
+                        </span>
+                        <div className="text-xs text-gray-400 mt-1">
+                          {currentMatch.gameType || 'Unknown Game Type'}
+                        </div>
                       </div>
-                      <span className="text-xl font-bold">
-                        {currentMatch.awayScore || '0'}
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs ${currentMatch.status === 'LIVE'
+                          ? 'bg-red-100 text-red-600'
+                          : currentMatch.status === 'UPCOMING'
+                            ? 'bg-green-100 text-green-600'
+                            : 'bg-gray-100 text-gray-600'
+                          }`}
+                      >
+                        {currentMatch.status}
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <span className="font-medium">{currentMatch.awayTeam || 'Unknown Away Team'}</span>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-medium">
+                            {currentMatch.homeTeam || 'Unknown Home Team'}
+                          </span>
+                        </div>
+                        <span className="text-xl font-bold">
+                          {currentMatch.awayScore || '0'}
+                        </span>
                       </div>
-                      <span className="text-xl font-bold">
-                        {currentMatch.homeScore || '0'}
-                      </span>
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-medium">
+                            {currentMatch.awayTeam || 'Unknown Away Team'}
+                          </span>
+                        </div>
+                        <span className="text-xl font-bold">
+                          {currentMatch.homeScore || '0'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-4 border-t">
+                      <div className="flex justify-between items-center text-sm text-gray-500">
+                        <span>{currentMatch.venue || 'Unknown venue'}</span>
+                        {/* Display the formatted time */}
+                        <span>{timeOnly}</span>
+                      </div>
+                      <div className="text-xs text-gray-400 mt-1">
+                        {dateOnly}
+                      </div>
                     </div>
                   </div>
-
-                  <div className="mt-4 pt-4 border-t">
-                    <div className="flex justify-between items-center text-sm text-gray-500">
-                      <span>{currentMatch.venue || 'TBD'}</span>
-                      <span>{formatTime(currentMatch.startTime)}</span>
-                    </div>
-                    <div className="text-xs text-gray-400 mt-1">
-                      {formatDate(currentMatch.startTime)}
-                    </div>
-                  </div>
-                </div>
-              ))}
-
+                );
+              })}
             </div>
           </TabsContent>
         ))}
