@@ -43,9 +43,11 @@ export function CreateMatchModal({ open, onClose }) {
       "venue": formData.venue || "Maracanã Stadium", 
       "matchDate": `${formData.date}T${formData.startTime}:00Z` || "2024-07-15T19:00:00Z", 
       "startTime": `${formData.date}T${formData.startTime}:00Z` || "2024-07-15T19:00:00Z", 
-      "gameType": "FOOTBALL", 
-      "status" :   "ONGOING"
+      "gameType": formData.gameType, 
+      "status" :   formData.status
     }
+
+    formData.status
     
     
 
@@ -86,6 +88,7 @@ export function CreateMatchModal({ open, onClose }) {
       setLoading(false);
     }
   };
+  // some commentd
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -113,9 +116,9 @@ export function CreateMatchModal({ open, onClose }) {
                   <SelectValue placeholder="Select game type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="football">Football</SelectItem>
-                  <SelectItem value="basketball">Basketball</SelectItem>
-                  <SelectItem value="volleyball">Volleyball</SelectItem>
+                  <SelectItem value="Football">Football</SelectItem>
+                  <SelectItem value="Basketball">Basketball</SelectItem>
+                  <SelectItem value="Volleyball">Volleyball</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -128,12 +131,12 @@ export function CreateMatchModal({ open, onClose }) {
                   console.log('you selected status: ', value)
                 }
                 }
-              >
+               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="In Progress">In Progress</SelectItem>
+                  <SelectItem value="IN PROGRESS">IN PROGRESS</SelectItem>
                   <SelectItem value="LIVE">LIVE</SelectItem>
                   <SelectItem value="UPCOMING">UPCOMING</SelectItem>
                 </SelectContent>
