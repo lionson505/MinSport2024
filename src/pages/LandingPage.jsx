@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "../components/ui/carousel";
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import LiveMatches from '../components/LiveMatches';
 import HeaderTwo from '../components/headerTwo';
@@ -15,12 +8,38 @@ import { Pagination, Autoplay, A11y } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/navigation';
+import axiosInstance from '../utils/axiosInstance';
 import 'swiper/css/pagination';
-
 import 'swiper/css/autoplay';
+import federationImage from '../components/liveMatch/federationImgFallBack.png';
+import eventImage from '../components/liveMatch/eventFallbackImg.jpeg';
 
 function LandingPage() {
+  const [federations, setFederations] = useState([]);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [events, setEvents] = useState([])
+  const [categories, setCategories] = useState([])
+  console.log('the following are all events: ', events)
+  console.log("the following are federrations:", federations)
+
+  // fetch federation 
+  useEffect(() => {
+    const fetchFederations = async () => {
+      try {
+
+        const response = await axiosInstance.get('/federations');
+        await setFederations(response.data);
+        console.log("fetching federation in landing Page succeed : ", federations);
+      } catch (err) {
+        setError('Error fetching federations');
+        console.error('Error fetching federations:', err);
+
+      }
+    };
+
+    fetchFederations();
+
+  }, []);
 
   // Listen to screen size changes
   useEffect(() => {
@@ -36,85 +55,38 @@ function LandingPage() {
   }, []);
   const [activeTab, setActiveTab] = useState('ALL');
   const [selectedSport, setSelectedSport] = useState('BASKETBALL');
-
-  // const navigation = ['HOME', 'FEDERATION', 'EVENTS', 'MATCHES', 'INFRASTRUCTURE'];
-
-  const leagues = [
-    {
-      name: 'RPL',
-      logo: '/logos/rpl.svg',
-      color: 'bg-blue-900',
-      bgPattern: 'bg-[url("/patterns/rpl-pattern.svg")]'
-    },
-    {
-      name: 'RBL',
-      logo: '/logos/rbl.svg',
-      color: 'bg-blue-500',
-      bgPattern: 'bg-[url("/patterns/rbl-pattern.svg")]'
-    },
-    {
-      name: 'FRVB',
-      logo: '/logos/frvb.svg',
-      color: 'bg-purple-900',
-      bgPattern: 'bg-[url("/patterns/frvb-pattern.svg")]'
-    },
-    {
-      name: 'Tour Du Rwanda',
-      logo: '/logos/tour.svg',
-      color: 'bg-yellow-500',
-      bgPattern: 'bg-[url("/patterns/tour-pattern.svg")]'
-    },
-    {
-      name: 'Rwanda Handball League',
-      logo: '/logos/handball.svg',
-      color: 'bg-green-600',
-      bgPattern: 'bg-[url("/patterns/handball-pattern.svg")]'
-    },
-    {
-      name: 'NPC',
-      logo: '/logos/npc.svg',
-      color: 'bg-gray-500',
-      bgPattern: 'bg-[url("/patterns/npc-pattern.svg")]'
-    }
+  const colors = [
+    "bg-[#041779]",
+    "bg-[#32a8dd]",
+    "bg-[#32174c]",
+    "bg-[#44ab40]",
+    "bg-[#041779]",
   ];
 
-  const sportsEvents = [
-    {
-      title: 'BASKETBALL AFRICA LEAGUE 2024',
-      subtitle: 'The biggest show in basketball is coming to Kigali',
-      date: '04:22',
-      image: '/events/bal.jpg',
-      category: 'BASKETBALL AFRICA LEAGUE 2024'
-    },
-    {
-      title: 'VETERANS CLUB WORLD CUP 2024',
-      subtitle: '150 football legends live in Kigali',
-      date: '04:22',
-      image: '/events/vcwc.jpg',
-      category: 'VETERANS CLUB WORLD CUP 2024'
-    },
-    {
-      title: 'FIFA CONGRESS',
-      subtitle: '73rd fifa congress',
-      date: '04:22',
-      image: '/events/fifa.jpg',
-      category: 'FIFA CONGRESS'
-    },
-    {
-      title: 'RWANDA SUMMER GOLF',
-      subtitle: 'Falcon & Country club presents Rwanda summer golf',
-      date: '04:22',
-      image: '/events/golf.jpg',
-      category: 'RWANDA SUMMER GOLF'
-    },
-    {
-      title: 'WORLD TENNIS TOUR JUNIORS',
-      subtitle: 'IPRC Kigali ecology club',
-      date: '04:22',
-      image: '/events/tennis.jpg',
-      category: 'WORLD TENNIS TOUR JUNIORS'
-    }
-  ];
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await axiosInstance.get('/sports-tourism-events');
+        setEvents(response.data || []);
+      } catch (error) {
+        console.error('Error fetching events:', error);
+        toast.error('Failed to fetch events');
+      }
+    };
+
+    const fetchCategories = async () => {
+      try {
+        const response = await axiosInstance.get('/sports-tourism-categories');
+        setCategories(response.data || []);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        toast.error('Failed to fetch categories');
+      }
+    };
+
+    fetchEvents();
+    fetchCategories();
+  }, []);
 
   // Add ref and scroll functions for leagues
   const leaguesContainerRef = React.useRef(null);
@@ -225,12 +197,12 @@ function LandingPage() {
 
       <main className="container mx-auto px-6 pt-24 pb-12">
         {/* Live Matches Section */}
-        <div className="mb-16  border-green-400">
+        <div className="mb-16">
           <Link
             to="/match"
             className="text-gray-500 hover:text-gray-600 flex items-center text-base justify-end"
           >
-            View all
+            Explore Matches
             <ChevronRight className="w-5 h-5 ml-2" />
           </Link>
           <LiveMatches />
@@ -245,12 +217,12 @@ function LandingPage() {
               {/* Leagues Section */}
               <div className="w-full md:w-3/4">
                 <div className="flex justify-between items-center mb-8">
-                  <h2 className="text-3xl font-bold">Leagues To Browse</h2>
+                  <h2 className="lg:text-3xl md:text-2xl text-lg font-bold">Federations To Browse</h2>
                   <Link
                     to="/federation"
                     className="text-gray-500 hover:text-gray-600 flex items-center text-base"
                   >
-                    View all
+                    View Federations
                     <ChevronRight className="w-5 h-5 ml-2" />
                   </Link>
                 </div>
@@ -258,19 +230,21 @@ function LandingPage() {
                 {isMobile ? (
                   <Swiper
                     modules={[Pagination, Autoplay, A11y]}
-                    spaceBetween={50}
-                    slidesPerView={4}
+                    spaceBetween={0} // Ensure no gap between slides for small devices
+                    slidesPerView={1}
+                    centeredSlides={true} // Center the active slide
                     pagination={{ clickable: true }}
                     loop={true}
                     autoplay={{
-                      delay: 2000,
+                      delay: 1000,
                       disableOnInteraction: false,
                     }}
                     className="pb-10 px-6 py-4 w-full"
                     breakpoints={{
                       360: {
                         slidesPerView: 1,
-                        spaceBetween: 10,
+                        spaceBetween: 0, // No space for small devices
+                        centeredSlides: true, // Ensure centering is respected
                       },
                       640: {
                         slidesPerView: 2,
@@ -282,46 +256,54 @@ function LandingPage() {
                       },
                     }}
                   >
-                    {leagues.slice(0, 6).map((league, index) => (
-                      <SwiperSlide
-                        key={index}
-                        className={`aspect-square m-4 rounded-xl !w-[250px] !md:w-[280px] ${league.color} flex flex-col items-center justify-center p-4 cursor-pointer hover:opacity-90 transition-all transform hover:scale-105`}
-                      >
-                        <img
-                          src={league.logo}
-                          alt={league.name}
-                          className="h-16 w-16 mb-4"
-                        />
-                        <span className="text-white text-center font-medium text-sm">
-                          {league.name}
-                        </span>
-                      </SwiperSlide>
-                    ))}
+                    {federations.map((federation, index) => {
+                      const color = colors[index % colors.length];
+
+                      return (
+                        <SwiperSlide
+                          key={federation.id}
+                          className={`aspect-square m-4 rounded-xl !w-[250px] !md:w-[280px] ${color} flex flex-col items-center justify-center p-4 cursor-pointer hover:opacity-90 transition-all transform hover:scale-105`}
+                        >
+                          <img
+                            src={federationImage}
+                            alt={federation.name}
+                            className="h-16 w-16 mb-4 rounded-full"
+                          />
+                          <span className="text-white text-center font-medium text-sm">
+                            {federation.name}
+                          </span>
+                        </SwiperSlide>
+                      )
+                    })}
                   </Swiper>
+
                 ) : (
-                  <div className="pb-10 py-4 px-2 md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-                    {leagues.slice(0, 6).map((league, index) => (
-                      <div
-                        key={index}
-                        className={`aspect-square m-2 rounded-xl w-[240px]w-[0px] ${league.color} flex flex-col items-center justify-center p-4 cursor-pointer hover:opacity-90 transition-all transform hover:scale-105`}
-                      >
-                        <img
-                          src={league.logo}
-                          alt={league.name}
-                          className="h-16 w-16 mb-4"
-                        />
-                        <span className="text-white text-center font-medium text-sm">
-                          {league.name}
-                        </span>
-                      </div>
-                    ))}
+                  <div className="md:grid md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 w-full">
+                    {federations.map((federation, index) => {
+                      const color = colors[index % colors.length];
+                      return (
+                        <div
+                          key={federation.id}
+                          className={`aspect-square my-2 rounded-xl w-[175px] lg:w-[265px] xl:w-[230px] 2xl:w-[275px] ${color} flex flex-col items-center justify-center p-4 cursor-pointer hover:opacity-90 transition-all transform hover:scale-105`}
+                        >
+                          <img
+                            src={federationImage || federation.logo}
+                            alt={federation.name}
+                            className="h-16 w-16 mb-4"
+                          />
+                          <span className="text-white text-center font-medium text-sm">
+                            {federation.name}
+                          </span>
+                        </div>
+                      )
+                    })}
                   </div>
                 )}
               </div>
               {/* Right Sidebar - Matches Section */}
               <div className="bg-white rounded-xl p-8 shadow-md w-full md:w-1/2">
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-bold">Matches</h2>
+                  <h2 className="lg:text-3xl md:text-2xl text-lg font-bold">Matches</h2>
                   <div className="relative">
                     <button
                       className="flex items-center space-x-2 px-4 py-1 bg-blue-600 text-white rounded-full text-sm"
@@ -423,12 +405,12 @@ function LandingPage() {
             {/* Sports Events Section */}
             <section className='px-2 py-8'>
               <div className="flex justify-between items-center mb-8">
-                <h2 className="text-3xl font-bold">Sports Event</h2>
+                <h2 className="lg:text-3xl md:text-2xl text-lg font-bold">Sports Event</h2>
                 <Link
                   to="/events"
                   className="text-red-500 hover:text-red-600 flex items-center text-base"
                 >
-                  View all
+                  See Events
                   <ChevronRight className="w-5 h-5 ml-2" />
                 </Link>
               </div>
@@ -478,42 +460,47 @@ function LandingPage() {
                 <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
                   {/* {sportsEvents.slice(0, 5).map((event, index) => (
                   <div key={index} className="relative group cursor-pointer"> */}
-                  {sportsEvents.slice(0, 5).map((event, index) => (
-                    <SwiperSlide
-                      key={index}
-                      className="relative group cursor-pointer"
-                    >
-                      <div className="relative overflow-hidden rounded-lg">
-                        <img
-                          src={event.image}
-                          alt={event.title}
-                          className="w-full aspect-[3/4] object-cover transition-transform duration-300 group-hover:scale-110"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black opacity-90"></div>
+                  {events.map((event) => {
+                    const date = new Date(event.startDate); // Create a Date object
+                    const formattedDate = date.toISOString().split('T')[0]; // Extract date (YYYY-MM-DD)
+                    const formattedTime = date.toTimeString().slice(0, 5); // Extract time (HH:mm)
 
-                        {/* Time badge */}
-                        <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded text-xs flex items-center">
-                          <svg className="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <circle cx="12" cy="12" r="10" />
-                            <path d="M12 6v6l4 2" />
-                          </svg>
-                          {event.date}
-                        </div>
+                    return (
+                      <SwiperSlide
+                        key={event.id}
+                        className="relative group cursor-pointer"
+                      >
+                        <div className="relative overflow-hidden rounded-lg md:w-[210px] lg:w-[225px] xl:w-[230px] 2xl:w-[205px]">
+                          <img
+                            src={eventImage || event.image}
+                            alt={event.name}
+                            className="w-full aspect-[3/4] object-contain transition-transform duration-300 group-hover:scale-110"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black opacity-90"></div>
 
-                        {/* Text content */}
-                        <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                          <div className="text-xs mb-2">{event.category}</div>
-                          <h3 className="font-bold mb-1">{event.title}</h3>
-                          <p className="text-sm text-gray-200">{event.subtitle}</p>
+                          {/* Time badge */}
+                          <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded text-xs flex items-center">
+                            <svg className="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                              <circle cx="12" cy="12" r="10" />
+                              <path d="M12 6v6l4 2" />
+                            </svg>
+                            {formattedTime}
+                          </div>
+
+                          {/* Text content */}
+                          <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                            <div className="text-xs mb-2">{categories.find(cat => cat.id === event.categoryId)?.name || 'Unknown Category'}</div>
+                            <h3 className="font-bold mb-1">{event.name}</h3>
+                            <p className="text-sm text-gray-200">{event.description}</p>
+                          </div>
                         </div>
-                      </div>
-                    </SwiperSlide>
-                    // </div>
-                  ))}
+                      </SwiperSlide>
+                      // </div>
+                    )
+                  })}
                 </div>
               </Swiper>
             </section>
-            {/* Sports Events Section */}
 
             <section className="mb-16">
               <MyMap />

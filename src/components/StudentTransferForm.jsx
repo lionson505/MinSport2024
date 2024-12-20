@@ -148,7 +148,7 @@ const StudentTransferForm = ({ isSubmitting, setIsSubmitting }) => {
               onChange={(e) => setTransferStudent(e.target.value)}
               required
               disabled={!fromSchool || isLoading}
-            >
+             >
               <option value="">
                 {isLoading 
                   ? 'Loading students...' 

@@ -152,18 +152,18 @@ function LandingPageMatch() {
                 <TabsList className="bg-white p-2 sm:p-4  shadow-sm flex flex-wrap items-center gap-2 
                      sm:flex-col md:flex-row lg:gap-6">
                     <div className=''>
-                    <TabsTrigger value="all" onClick={() => setActiveTab('all')}>
-                        All Matches
-                    </TabsTrigger>
-                    <TabsTrigger value="live" onClick={() => setActiveTab('live')}>
-                        Live
-                    </TabsTrigger>
-                    <TabsTrigger value="upcoming" onClick={() => setActiveTab('upcoming')}>
-                        Upcoming
-                    </TabsTrigger>
-                    <TabsTrigger value="past" onClick={() => setActiveTab('past')}>
-                        Past
-                    </TabsTrigger>
+                        <TabsTrigger value="all" onClick={() => setActiveTab('all')}>
+                            All Matches
+                        </TabsTrigger>
+                        <TabsTrigger value="live" onClick={() => setActiveTab('live')}>
+                            Live
+                        </TabsTrigger>
+                        <TabsTrigger value="upcoming" onClick={() => setActiveTab('upcoming')}>
+                            Upcoming
+                        </TabsTrigger>
+                        <TabsTrigger value="past" onClick={() => setActiveTab('past')}>
+                            Past
+                        </TabsTrigger>
                     </div>
                     <div className=''>
                         {/* <SearchModal /> */}
@@ -261,42 +261,45 @@ function LandingPageMatch() {
                                         <div className="flex justify-between items-center mb-4">
                                             <div
                                                 onClick={handleCloseModal}
-                                                className='bg-white hover:bg-[#046200] px-4 py-2 rounded-full hover:bg-white/80'>
+                                                className='bg-white hover:bg-[#046200] px-4 py-2 rounded-full hover:bg-white/80 me-8'>
                                                 <button
                                                     className="text-black text-xl"
                                                 >
                                                     ×
                                                 </button>
                                             </div>
+
                                             <span className="text-white/80">{selectedMatch.competition}</span>
                                         </div>
-                                        <div className="flex justify-between items-center gap-8">
-                                            <div className="flex items-center gap-4 flex-1">
+                                        <div className="flex flex-col sm:flex-row justify-between items-center gap-8">
+                                            <div className="flex sm:w-1/4 w-3/4 items-center gap-2 flex-1 justify-start">
                                                 <img
                                                     src={selectedMatch.homeTeam.logo || rayonLogo}
                                                     alt=""
                                                     className="h-16 w-16 object-contain"
                                                 />
-                                                <span className="text-xl font-semibold">{selectedMatch.homeTeam}</span>
+                                                <span className="md:text-lg text-sm lg:text-lg font-semibold">{selectedMatch.homeTeam}</span>
                                             </div>
-                                            <div className="flex items-center gap-4 text-3xl font-bold">
-                                                <span>{selectedMatch.homeScore}</span>
-                                                <span>-</span>
-                                                <span>{selectedMatch.awayScore}</span>
+                                            <div className="flex flex-col sm:w-1/4 w-1/2">
+                                                <div className='flex justify-center items-center gap-4 text-3xl font-bold'>
+                                                    <span>{selectedMatch.homeScore}</span>
+                                                    <span>-</span>
+                                                    <span>{selectedMatch.awayScore}</span>
+                                                </div>
+                                                <div className="mt-4 text-center text-white/80">
+                                                    <span className=''>{selectedMatch.time || '82`'}</span>
+                                                    <span className="mx-2">•</span>
+                                                    <span className='break-words'>{selectedMatch.venue}</span>
+                                                </div>
                                             </div>
-                                            <div className="flex items-center gap-4 flex-1 justify-end">
-                                                <span className="text-xl font-semibold">{selectedMatch.awayTeam}</span>
+                                            <div className="flex sm:w-1/4 w-3/4 items-center gap-2 flex-1 justify-start">
+                                                <span className="order-2 sm:order-1 !text-start md:text-md text-sm lg:text-lg font-semibold order">{selectedMatch.awayTeam}</span>
                                                 <img
                                                     src={selectedMatch.awayTeam.logo || aprLogo}
                                                     alt={selectedMatch.awayTeam}
-                                                    className="h-16 w-16 object-contain"
+                                                    className="order-1 sm:order-2 h-16 w-16 object-contain"
                                                 />
                                             </div>
-                                        </div>
-                                        <div className="mt-4 text-center text-white/80">
-                                            <span>{selectedMatch.time || '82`'}</span>
-                                            <span className="mx-2">•</span>
-                                            <span>{selectedMatch.venue}</span>
                                         </div>
                                     </div>
 

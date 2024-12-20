@@ -33,7 +33,7 @@ function AllSportsEvents() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center mb-8">
           <Link 
-            to="/landing" 
+            to="/home" 
             className="text-[#4318FF] flex items-center text-sm font-medium hover:opacity-80"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
