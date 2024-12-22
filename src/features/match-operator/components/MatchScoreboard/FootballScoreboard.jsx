@@ -29,7 +29,6 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [showPlayerSelect, setShowPlayerSelect] = useState(false);
   const [pendingEvent, setPendingEvent] = useState(null);
-  console.log("Team A players: ", teamAPlayers, "Team B players:", teamBPlayers)
 
   const addEvent = (type, team, player = null) => {
     setMatchData(prev => ({
@@ -52,16 +51,47 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
     setShowPlayerSelect(true);
   };
 
+  // for searching Player 
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Filter players based on the search term
+  const filteredPlayers =
+    pendingEvent?.team === 'B'
+      ? teamBPlayers.filter((player) =>
+        `${player.playerStaff.firstName} ${player.playerStaff.lastName}`
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())
+      )
+      : [];
+
+
   const confirmEventWithPlayer = (playerId) => {
-    const player = pendingEvent.team === 'A' 
+    console.log('ID of the player who scored:', playerId);
+
+    // Find the player based on the team
+    const player = pendingEvent.team === 'A'
       ? teamAPlayers.find(p => p.id === playerId)
       : teamBPlayers.find(p => p.id === playerId);
 
-    addEvent(pendingEvent.type, pendingEvent.team, player);
+    // Create a formatted object or string with full name
+    const playerDetails = player
+      ? {
+        id: player.playerStaff.id,
+        fullName: `${player.playerStaff.lastName} ${player.playerStaff.firstName}`,
+      }
+      : null;
+
+    console.log('Selected player details:', playerDetails);
+
+    // Add event and reset states
+    if (playerDetails) {
+      addEvent(pendingEvent.type, pendingEvent.team, playerDetails.fullName);
+    }
     setShowPlayerSelect(false);
     setPendingEvent(null);
     setSelectedPlayer(null);
   };
+
 
   const handlePeriodChange = (newStatus) => {
     setMatchData(prev => ({
@@ -88,7 +118,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
             size="sm"
             variant={matchData.status === 'FIRST_HALF' ? 'default' : 'outline'}
             onClick={() => handlePeriodChange('FIRST_HALF')}
-           >
+          >
             1st Half
           </Button>
           <Button
@@ -109,7 +139,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
             size="sm"
             variant={matchData.status === 'FULL_TIME' ? 'default' : 'outline'}
             onClick={() => handlePeriodChange('FULL_TIME')}
-           >
+          >
             Full Time
           </Button>
         </div>
@@ -207,7 +237,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
 
       {/* Team B Controls */}
       <div className="space-y-4">
-        <h3 className="font-medium">{match.awayTeam  || 'Away Team'} Controls</h3>
+        <h3 className="font-medium">{match.awayTeam || 'Away Team'} Controls</h3>
         <div className="grid grid-cols-2 gap-2">
           <Button
             onClick={() => handleEventWithPlayer('GOAL', 'B')}
@@ -278,29 +308,30 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
         <DialogHeader>
           <DialogTitle>Select Player</DialogTitle>
           <DialogDescription>
-            Choose the player for this eventaaaaaaaaaaa
+            Choose the player for this event
           </DialogDescription>
         </DialogHeader>
 
-        <Select value={selectedPlayer} onValueChange={confirmEventWithPlayer}>
+        <Select value={selectedPlayer} onValueChange={(value) => confirmEventWithPlayer(value)}>
           <SelectTrigger>
             <SelectValue placeholder="Select player" />
           </SelectTrigger>
-          <SelectContent>
-  {pendingEvent?.team === 'A' &&
-    teamAPlayers?.map(player => (
-      <SelectItem key={player.id} value={player.id}>
-        #{player.playerStaff.id} - {player.playerStaff.lastName}
-      </SelectItem>
-    ))}
-  {pendingEvent?.team === 'B' &&
-    teamBPlayers?.map(player => (
-      <SelectItem key={player.id} value={player.id}>
-        #{player.playerStaff.id} - {player.playerStaff.lastName}
-      </SelectItem>
-    ))}
-</SelectContent>
+          <SelectContent className="border-2 border-blue-500 h-80 overflow-y-auto mt-2">
+            {pendingEvent?.team === 'A' &&
+              teamAPlayers?.map(player => (
+                <SelectItem key={player.id} value={player.id}>
+                  #{player.playerStaff.id} - {player.playerStaff.lastName} {player.playerStaff.firstName}
+                </SelectItem>
+              ))}
+            {pendingEvent?.team === 'B' &&
+              teamBPlayers?.map(player => (
+                <SelectItem key={player.id} value={player.id}>
+                  #{player.playerStaff.id} - {player.playerStaff.lastName} {player.playerStaff.firstName}
+                </SelectItem>
+              ))}
+          </SelectContent>
         </Select>
+
       </DialogContent>
     </Dialog>
   );

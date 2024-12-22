@@ -64,6 +64,8 @@ module.exports = {
         '9xl': "8rem",     // 9X large (128px)
       },
     },
-    plugins: [],
+    plugins: [
+      require('tailwind-scrollbar'),
+    ],
   }
   }; 
