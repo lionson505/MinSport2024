@@ -1,16 +1,13 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://mis.minisports.gov.rw/api';
-
 const axiosInstance = axios.create({
-  baseURL: API_URL,
-  timeout: 10000, // 10 seconds
+  baseURL: 'https://mis.minisports.gov.rw/api',
   headers: {
     'Content-Type': 'application/json',
-  },
+  }
 });
 
-// Request interceptor to include Authorization header
+// Request interceptor
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -24,49 +21,25 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Response interceptor to handle errors globally
+// Response interceptor
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response) {
-      // Log or handle specific error codes
-      switch (error.response.status) {
-        case 401:
-          localStorage.removeItem('token');
-          window.location.href = '/login';
-          break;
-        case 403:
-          console.error('Access forbidden');
-          break;
-        case 404:
-          console.error('Resource not found');
-          break;
-        case 500:
-          console.error('Server error');
-          break;
-        default:
-          console.error('An error occurred');
-      }
-
-      return Promise.reject({
-        message: error.response.data.message || 'An error occurred',
-        status: error.response.status,
-        data: error.response.data,
-      });
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
     }
 
-    if (error.request) {
-      // Network error
-      return Promise.reject({
-        message: 'Network error. Please check your connection.',
-        status: 0,
-      });
-    }
+    // Format error response
+    const formattedError = {
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.response?.data?.error || error.message,
+      url: error.config?.url
+    };
 
-    return Promise.reject({
-      message: error.message || 'An unexpected error occurred.',
-      status: 0,
-    });
+    console.error('API Error:', formattedError);
+    return Promise.reject(formattedError);
   }
 );
 

@@ -1,233 +1,171 @@
-import React, { useState, useEffect, useCallback, Fragment } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { Button } from './ui/Button';
 import { Input } from './ui/input';
 import { useTheme } from '../context/ThemeContext';
-import { X } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { X, Loader2 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import axiosInstance from '../utils/axiosInstance';
+import { Label } from './ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
-const EditUserModal = ({ isOpen, onClose, onEdit, userData }) => {
+const EditUserModal = ({ isOpen, onClose, onEdit, userData, groups = [] }) => {
   const { isDarkMode } = useTheme();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    gender: '',
     groupId: '',
-    active: false,
-    emailVerified: false,
+    active: true
   });
-
-  const [groupOptions, setGroupOptions] = useState([]);
-  const [loadingGroups, setLoadingGroups] = useState(false);
-  const [errorGroups, setErrorGroups] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Handle modal open and reset form
   useEffect(() => {
-    if (isOpen) {
+    if (userData) {
       setFormData({
-        name: userData?.name || '',
-        email: userData?.email || '',
-        groupId: userData?.groupId || '',
-        active: userData?.active || false,
-        emailVerified: userData?.emailVerified || false,
+        name: userData.name || '',
+        email: userData.email || '',
+        gender: userData.gender || '',
+        groupId: userData.groupId || '',
+        active: userData.active ?? true
       });
-
-      setGroupOptions([]);
-      setLoadingGroups(true);
-      setErrorGroups(null);
-
-      axiosInstance.get('/groups')
-        .then((response) => {
-          setGroupOptions(response.data);
-        })
-        .catch((error) => {
-          setErrorGroups(error.response?.data?.message || 'Failed to load groups');
-          toast.error(error.response?.data?.message || 'Failed to load groups');
-        })
-        .finally(() => {
-          setLoadingGroups(false);
-        });
     }
-  }, [isOpen, userData]);
+  }, [userData]);
 
-  // Handle form field changes
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     setLoading(true);
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      toast.error('Please enter a valid email address');
-      setLoading(false);
-      return;
-    }
-
-    if (!formData.groupId) {
-      toast.error('Please select a group');
-      setLoading(false);
-      return;
-    }
-
     try {
-      const response = await axiosInstance.put(`/users/${userData.id}`, {
-        ...formData,
-        active: Boolean(formData.active),
-        emailVerified: Boolean(formData.emailVerified)
-      }, {
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      console.log('User updated successfully:', response.data);
+      const response = await axiosInstance.put(`/users/${userData.id}`, formData);
       onEdit(response.data);
-      toast.success('User updated successfully');
       onClose();
+      toast.success('User updated successfully');
     } catch (error) {
-      console.error('Error updating user:', error.response);
       toast.error(error.response?.data?.message || 'Failed to update user');
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle modal close and reset form state
-  const handleClose = useCallback(() => {
-    onClose();
-    setFormData({
-      name: '',
-      email: '',
-      groupId: '',
-      active: false,
-      emailVerified: false,
-    }); // Reset form data when modal closes
-  }, [onClose]);
-
   return (
-    <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={handleClose}>
-        <div className="fixed inset-0 bg-black bg-opacity-25" />
+    <Transition show={isOpen} as={Fragment}>
+      <Dialog as="div" className="relative z-50" onClose={onClose}>
+        <Transition.Child
+          as={Fragment}
+          enter="ease-out duration-300"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in duration-200"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <div className="fixed inset-0 bg-black bg-opacity-25" />
+        </Transition.Child>
+
         <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 text-center">
-            <Dialog.Panel className={`w-full max-w-md transform overflow-hidden rounded-lg ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'} p-6 text-left align-middle shadow-xl transition-all`}>
-              <div className="flex justify-between items-center mb-6">
-                <Dialog.Title className="text-xl font-bold">Edit User</Dialog.Title>
-                <button onClick={handleClose} className="text-gray-500 hover:text-gray-700">
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
+          <div className="flex min-h-full items-center justify-center p-4">
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 scale-95"
+              enterTo="opacity-100 scale-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 scale-100"
+              leaveTo="opacity-0 scale-95"
+            >
+              <Dialog.Panel className={`w-full max-w-md transform overflow-hidden rounded-2xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'} p-6 text-left align-middle shadow-xl transition-all`}>
+                <Dialog.Title as="h3" className="text-lg font-medium leading-6 mb-4">
+                  Edit User
+                </Dialog.Title>
 
-              {errorGroups && (
-                <div className="text-red-500 text-sm mb-4">
-                  {errorGroups}
-                </div>
-              )}
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block mb-1 text-sm font-medium">Name</label>
-                  <Input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                    className="w-full"
-                    placeholder="Enter full name"
-                  />
-                </div>
-                <div>
-                  <label className="block mb-1 text-sm font-medium">Email</label>
-                  <Input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    className="w-full"
-                    placeholder="Enter email address"
-                  />
-                </div>
-                <div>
-                  <label className="block mb-1 text-sm font-medium">Group</label>
-                  {loadingGroups ? (
-                    <div className="text-sm text-gray-500">Loading groups...</div>
-                  ) : (
-                    <select
-                      name="groupId"
-                      value={formData.groupId}
-                      onChange={handleChange}
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <Label htmlFor="name">Name</Label>
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                       required
-                      className="w-full rounded-md border p-2"
-                    >
-                      <option value="">Select group</option>
-                      {groupOptions.map((group) => (
-                        <option key={group.id} value={group.id}>
-                          {group.name}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block mb-1 text-sm font-medium">Status</label>
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="active"
-                        name="active"
-                        checked={formData.active}
-                        onChange={(e) => handleChange({
-                          target: {
-                            name: 'active',
-                            value: e.target.checked
-                          }
-                        })}
-                        className="rounded border-gray-300"
-                      />
-                      <label htmlFor="active" className="text-sm">Active</label>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="emailVerified"
-                        name="emailVerified"
-                        checked={formData.emailVerified}
-                        onChange={(e) => handleChange({
-                          target: {
-                            name: 'emailVerified',
-                            value: e.target.checked
-                          }
-                        })}
-                        className="rounded border-gray-300"
-                      />
-                      <label htmlFor="emailVerified" className="text-sm">Email Verified</label>
-                    </div>
+                    />
                   </div>
-                </div>
 
-                <div className="mt-4 flex justify-between">
-                  <Button type="button" onClick={handleClose} variant="outline">
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={loading}>
-                    {loading ? 'Updating...' : 'Update User'}
-                  </Button>
-                </div>
-              </form>
-            </Dialog.Panel>
+                  <div>
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="gender">Gender</Label>
+                    <Select
+                      value={formData.gender}
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, gender: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select gender" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="male">Male</SelectItem>
+                        <SelectItem value="female">Female</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="group">Group</Label>
+                    <Select
+                      value={formData.groupId}
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, groupId: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select group" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.isArray(groups) && groups.map(group => (
+                          <SelectItem key={group.id} value={group.id}>
+                            {group.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="active"
+                      checked={formData.active}
+                      onChange={(e) => setFormData(prev => ({ ...prev, active: e.target.checked }))}
+                      className="h-4 w-4 rounded border-gray-300"
+                    />
+                    <Label htmlFor="active">Active</Label>
+                  </div>
+
+                  <div className="flex justify-end gap-3 mt-6">
+                    <Button type="button" variant="outline" onClick={onClose}>
+                      Cancel
+                    </Button>
+                    <Button type="submit" disabled={loading}>
+                      {loading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Updating...
+                        </>
+                      ) : (
+                        'Update User'
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </Dialog.Panel>
+            </Transition.Child>
           </div>
         </div>
       </Dialog>

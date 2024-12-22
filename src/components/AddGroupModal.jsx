@@ -1,116 +1,123 @@
-import React, { useState, Fragment } from 'react';
+import React, { useState, Fragment, useEffect } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { Button } from './ui/Button';
 import { Input } from './ui/input';
 import { useTheme } from '../context/ThemeContext';
-import { X } from 'lucide-react';
-import toast from 'react-hot-toast';
-import axiosInstance from '../utils/axiosInstance'; // Import axios instance for API calls
-import { modules } from '../data/modulePermissions';
+import { X, Loader2 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import axiosInstance from '../utils/axiosInstance';
+import { Label } from './ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { groupService } from '../services/groupService';
 
-function AddGroupModal({ isOpen, onClose, onAdd }) {
+const AddGroupModal = ({ isOpen, onClose, onAdd }) => {
   const { isDarkMode } = useTheme();
-  const [groupName, setGroupName] = useState('');
-  const [permissions, setPermissions] = useState({});
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    isDefault: false,
+    permissions: []
+  });
+  const [modules, setModules] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // Initialize permissions state
-  React.useEffect(() => {
-    const initialPermissions = {};
-    modules.forEach(module => {
-      initialPermissions[module.id] = {
-        Add: false,
-        Edit: false,
-        Delete: false
-      };
-    });
-    setPermissions(initialPermissions);
+  useEffect(() => {
+    fetchModules();
   }, []);
 
-  const handleCheckAll = () => {
-    const newPermissions = {};
-    modules.forEach(module => {
-      newPermissions[module.id] = {
-        Add: true,
-        Edit: true,
-        Delete: true
-      };
-    });
-    setPermissions(newPermissions);
+  const fetchModules = async () => {
+    try {
+      const modulesData = await groupService.getModules();
+      setModules(modulesData);
+      // Initialize permissions array with default values
+      setFormData(prev => ({
+        ...prev,
+        permissions: modulesData.map(module => ({
+          moduleId: Number(module.id),
+          canRead: false,
+          canCreate: false,
+          canUpdate: false,
+          canDelete: false
+        }))
+      }));
+    } catch (error) {
+      toast.error('Failed to fetch modules');
+    }
   };
 
-  const handleUncheckAll = () => {
-    const newPermissions = {};
-    modules.forEach(module => {
-      newPermissions[module.id] = {
-        Add: false,
-        Edit: false,
-        Delete: false
-      };
-    });
-    setPermissions(newPermissions);
-  };
-
-  const handlePermissionChange = (moduleId, permission) => {
-    setPermissions(prev => ({
+  const handlePermissionChange = (moduleId, permissionType) => {
+    setFormData(prev => ({
       ...prev,
-      [moduleId]: {
-        ...prev[moduleId],
-        [permission]: !prev[moduleId]?.[permission] // Safe access with optional chaining
-      }
+      permissions: prev.permissions.map(permission => 
+        permission.moduleId === moduleId
+          ? { 
+              ...permission, 
+              [permissionType]: !permission[permissionType],
+              // Ensure the value is boolean
+              canRead: permissionType === 'canRead' ? !permission.canRead : permission.canRead,
+              canCreate: permissionType === 'canCreate' ? !permission.canCreate : permission.canCreate,
+              canUpdate: permissionType === 'canUpdate' ? !permission.canUpdate : permission.canUpdate,
+              canDelete: permissionType === 'canDelete' ? !permission.canDelete : permission.canDelete,
+            }
+          : permission
+      )
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!groupName.trim()) {
-      toast.error('Please enter a group name');
-      return;
-    }
+    setLoading(true);
 
     try {
-      // Create an array of the module IDs that have permissions enabled
-      const accessibleModules = Object.keys(permissions)
-        .filter(moduleId => permissions[moduleId]?.Add || permissions[moduleId]?.Edit || permissions[moduleId]?.Delete) // Safe check with optional chaining
-        .join(", "); // Join module IDs into a string
-
-      // Prepare the data to send in the POST request
-      const newGroup = {
-        name: groupName,
-        accessibleModules: accessibleModules, // string of module IDs or names
-      };
-
-      // Get token from localStorage or auth context
-      const token = localStorage.getItem('token');
-      if (!token) {
-        toast.error('Session expired. Please log in again.');
+      if (!formData.name.trim()) {
+        toast.error('Group name is required');
         return;
       }
 
-      // Send the POST request to the API
-      const response = await axiosInstance.post('/groups', newGroup, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // Format permissions to match Swagger example
+      const submitData = {
+        name: formData.name.trim(),
+        description: formData.description?.trim() || '',
+        isDefault: false,
+        permissions: formData.permissions
+          .filter(p => p.canRead || p.canCreate || p.canUpdate || p.canDelete)
+          .map(p => {
+            const perm = {
+              moduleId: Number(p.moduleId)
+            };
+            
+            // Only include true permissions
+            if (p.canRead) perm.canRead = true;
+            if (p.canCreate) perm.canCreate = true;
+            if (p.canUpdate) perm.canUpdate = true;
+            if (p.canDelete) perm.canDelete = true;
+            
+            return perm;
+          })
+      };
 
-      // On success, call the onAdd function to update the UI
-      onAdd(response.data);
+      // Validate permissions
+      if (submitData.permissions.length === 0) {
+        toast.error('Please select at least one permission');
+        return;
+      }
 
-      // Reset form fields
-      setGroupName('');
-      setPermissions({});
+      console.log('Submitting group data:', JSON.stringify(submitData, null, 2));
 
-      toast.success('Group added successfully');
-      onClose(); // Close the modal after successful submission
+      await groupService.createGroup(submitData);
+      toast.success('Group created successfully');
+      onAdd();
+      onClose();
     } catch (error) {
-      toast.error('Failed to add group');
-      console.error(error);
+      console.error('Error creating group:', error);
+      toast.error(error.message || 'Failed to create group');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Transition appear show={isOpen} as={Fragment}>
+    <Transition show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
         <Transition.Child
           as={Fragment}
@@ -135,75 +142,62 @@ function AddGroupModal({ isOpen, onClose, onAdd }) {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel
-                className={`w-full max-w-4xl transform overflow-hidden rounded-lg ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'} p-6 text-left align-middle shadow-xl transition-all`}
-              >
-                <div className="flex justify-between items-center mb-6">
-                  <Dialog.Title className="text-xl font-bold">Add New Group</Dialog.Title>
-                  <button
-                    onClick={onClose}
-                    className="text-gray-500 hover:text-gray-700"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-                </div>
+              <Dialog.Panel className={`w-full max-w-md transform overflow-hidden rounded-2xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'} p-6 text-left align-middle shadow-xl transition-all`}>
+                <Dialog.Title as="h3" className="text-lg font-medium leading-6 mb-4">
+                  Add New Group
+                </Dialog.Title>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <label className="block mb-1 text-sm font-medium">Name</label>
+                    <Label htmlFor="name">Name</Label>
                     <Input
-                      type="text"
-                      value={groupName}
-                      onChange={(e) => setGroupName(e.target.value)}
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        name: e.target.value
+                      }))}
                       required
                       placeholder="Enter group name"
-                      className="w-full"
                     />
                   </div>
 
                   <div>
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-lg font-medium">Accessible Modules</h3>
-                      <div className="flex gap-4">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={handleCheckAll}
-                          className="text-sm"
-                        >
-                          Check All
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={handleUncheckAll}
-                          className="text-sm"
-                        >
-                          Un-check All
-                        </Button>
-                      </div>
-                    </div>
+                    <Label htmlFor="description">Description</Label>
+                    <Input
+                      id="description"
+                      value={formData.description}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        description: e.target.value
+                      }))}
+                      placeholder="Enter group description"
+                    />
+                  </div>
 
+                  <div>
+                    <h4 className="text-sm font-medium mb-2">Module Permissions</h4>
                     <div className="border rounded-lg overflow-hidden">
                       <table className="w-full">
                         <thead className="bg-gray-50">
                           <tr>
                             <th className="px-4 py-2 text-left">Module</th>
-                            <th className="px-4 py-2 text-center">Add</th>
-                            <th className="px-4 py-2 text-center">Edit</th>
+                            <th className="px-4 py-2 text-center">Read</th>
+                            <th className="px-4 py-2 text-center">Create</th>
+                            <th className="px-4 py-2 text-center">Update</th>
                             <th className="px-4 py-2 text-center">Delete</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y">
-                          {modules.map((module) => (
+                          {modules.map(module => (
                             <tr key={module.id} className="hover:bg-gray-50">
                               <td className="px-4 py-2">{module.name}</td>
-                              {['Add', 'Edit', 'Delete'].map((permission) => (
+                              {['canRead', 'canCreate', 'canUpdate', 'canDelete'].map(permission => (
                                 <td key={permission} className="px-4 py-2 text-center">
                                   <input
                                     type="checkbox"
-                                    checked={permissions[module.id]?.[permission] || false} // Safe check with optional chaining
-                                    onChange={() => handlePermissionChange(module.id, permission)} // Update specific permission
+                                    checked={formData.permissions.find(p => p.moduleId === module.id)?.[permission] || false}
+                                    onChange={() => handlePermissionChange(module.id, permission)}
                                     className="h-4 w-4 rounded border-gray-300"
                                   />
                                 </td>
@@ -219,11 +213,15 @@ function AddGroupModal({ isOpen, onClose, onAdd }) {
                     <Button type="button" variant="outline" onClick={onClose}>
                       Cancel
                     </Button>
-                    <Button
-                      type="submit"
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      Add Group
+                    <Button type="submit" disabled={loading}>
+                      {loading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Creating...
+                        </>
+                      ) : (
+                        'Create Group'
+                      )}
                     </Button>
                   </div>
                 </form>
@@ -234,6 +232,6 @@ function AddGroupModal({ isOpen, onClose, onAdd }) {
       </Dialog>
     </Transition>
   );
-}
+};
 
 export default AddGroupModal;

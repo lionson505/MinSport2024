@@ -2,6 +2,10 @@ import React, { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useDarkMode } from "../contexts/DarkModeContext";
 import axiosInstance from "../utils/axiosInstance";
+import { useAuth } from '../hooks/useAuth';
+import { usePermissions } from '../hooks/usePermissions';
+import { MODULES } from '../constants/permissions';
+import { sidebarLinks } from '../constants/navigation';
 
 import { 
   LayoutGrid,
@@ -29,88 +33,37 @@ import {
   UserPlus,
   Timer
 } from 'lucide-react';
-const sidebarLinks = [
-  { title:"Dashboard", icon: LayoutGrid, label: 'Dashboard', path: '/dashboard' },
-  // { title:"Setting", icon: LayoutGrid, label: 'setting', path: '/settings' },  
-  { title: "National Teams", path: "/national-teams", icon: Flag },
-  { title:"Federations  ", icon: Award, label: 'Federations', path: '/federations' },
-  { title:"Sports professionals", icon: Users, label: 'Sports professionals', path: '/sports-professionals' },
-  { title:"Trainings", icon: GraduationCap, label: 'Trainings', path: '/trainings' },
-  { title:"Isonga Programs", icon: School, label: 'Isonga Programs', path: '/isonga-programs' },
-  { title:"Academies", icon: School, label: 'Academies', path: '/academies' },
-  { title:"Infrastructure", icon: Building2, label: 'Infrastructure', path: '/infrastructure' },
-  { title:"Sports tourism", icon: Plane, label: 'Sports tourism', path: '/sports-tourism' },
-  { title:"Documents", icon: FileText, label: 'Documents', path: '/documents' },
-  { title:"Contracts", icon: Briefcase, label: 'Contracts', path: '/contracts' },
-  { title:"Appointments", icon: Calendar, label: 'Appointments', path: '/appointments' },
-  { title:"Employee", icon: CircleUser, label: 'Employee', path: '/employee' },
-  { title:"Users", icon: UsersRound, label: 'Users', path: '/users' },
-  { title:"Partners", icon: Users, label: 'Partners', path: '/partners' },
-  { title:"Reports", icon: BarChart3, label: 'Reports', path: '/reports' },
-  { title:"Sports for all", icon: Trophy, label: 'Sports for all', path: '/sports-for-all' },
-  { title:"Transfer Report", icon: UserPlus, label: 'Transfer Report', path: '/player-transfer-report' },
-  { title:"Match Operator", icon: Timer, label: 'Match Operator', path: '/match-operator' }
-];
 
-const  Sidebar = () => {
+const Sidebar = () => {
   const { isDarkMode, toggleDarkMode } = useDarkMode();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const location = useLocation();
-  const [accessibleModules, setAccessibleModules] = useState([]);
-  const [accessibleLinks, setAccessibleLinks] = useState([]);
+  const { user } = useAuth();
+  const { hasPermission } = usePermissions();
 
-  // Fetch accessible modules from the API
-  useEffect(() => {
-    const fetchGroupDetails = async () => {
-      try {
-        const userRole = await localStorage.getItem("userRole");
-        const response = await axiosInstance.get(`/groups/${userRole}`);
-        const modules = response.data.accessibleModules;
-        console.log("API Response - Accessible Modules:", modules);
+  // Function to check if a link should be visible
+  const isLinkVisible = (link) => {
+    // Admin sees everything
+    if (user?.userGroup?.name === 'admin') return true;
 
-        if (modules === "all") {
-          setAccessibleModules(sidebarLinks.map((link) => link.path)); // All modules accessible
-          
-        } else if (modules) {
-          const formattedModules = modules.split(", ").map((module) =>
-            module.trim().toLowerCase().replace(/_/g, "-")
-          ); // Normalize to match sidebar paths
-          setAccessibleModules(formattedModules);
-        } else {
-          setAccessibleModules([]); // No modules accessible
-        }
-      } catch (error) {
-        console.error("Error fetching group details:", error);
-        setAccessibleModules([]); // Handle error gracefully
-      }
-    };
-
-    fetchGroupDetails();
-  }, []);
-
-  // Update accessible links whenever accessibleModules changes
-  useEffect(() => {
-
-    const links = sidebarLinks.filter((link) =>
-      accessibleModules.some((module) =>
-        link.path.toLowerCase().includes(module)
-      )
-    );
-
-    const dashboardLink = sidebarLinks.find((link) => link.path === "/dashboard");
-    if (dashboardLink && !links.some((link) => link.path === "/dashboard")) {
-      links.unshift(dashboardLink); // Add Dashboard to the start
+    // Check module permissions
+    switch (link.path) {
+      case '/users':
+        return hasPermission({ moduleId: MODULES.USERS, action: 'Read' });
+      case '/groups':
+        return hasPermission({ moduleId: MODULES.GROUPS, action: 'Read' });
+      case '/federations':
+        return hasPermission({ moduleId: MODULES.FEDERATIONS, action: 'Read' });
+      case '/clubs':
+        return hasPermission({ moduleId: MODULES.CLUBS, action: 'Read' });
+      // Add other cases for different modules
+      default:
+        return true; // Public routes
     }
-    console.log("Accessible Modules:", accessibleModules);
-    console.log("Accessible Links:", links);
-    setAccessibleLinks(links);
-  }, [accessibleModules]);
+  };
 
-   localStorage.setItem("accessibleLinks", JSON.stringify(accessibleLinks));
-
-
-
-
+  // Filter sidebar links based on permissions
+  const filteredLinks = sidebarLinks.filter(isLinkVisible);
 
   return (
     <aside
@@ -139,8 +92,10 @@ const  Sidebar = () => {
         {/* Navigation */}
         <div className="flex-1 overflow-y-auto">
           <nav className="px-3 py-4 space-y-1">
-            {accessibleLinks.map((item) => {
+            {filteredLinks.map((item) => {
               const isActive = location.pathname === item.path;
+              const Icon = item.icon;  // Get the icon component
+
               return (
                 <NavLink
                   key={item.title}
@@ -153,7 +108,7 @@ const  Sidebar = () => {
                       : "text-gray-600 hover:bg-gray-100"
                   }`}
                 >
-                  <item.icon className="h-5 w-5" />
+                  <Icon className="h-5 w-5" />
                   <span className="text-sm">{item.title}</span>
                 </NavLink>
               );

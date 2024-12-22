@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import Login from './pages/auth/Login';
-import Register from './pages/auth/Register';
+import Register from './pages/Register';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import CheckEmail from './pages/auth/CheckEmail';
 import DashboardLayout from './components/DashboardLayout';
@@ -41,6 +41,8 @@ import { MatchOperatorDashboard, TeamManagement, MatchOperatorProvider } from '.
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import MyMap from './pages/Map.jsx';
+import { withPermission } from './components/guards/withPermission';
+import { MODULES } from './constants/permissions';
 
 function App() {
   const [accessibleLinks, setAccessibleLinks] = useState(null); // Initialize as null to differentiate between loading and empty state
@@ -80,85 +82,85 @@ function App() {
 
 
   return (
-      <ThemeProvider>
-        <DarkModeProvider>
-          <InfrastructureProvider>
-            <TourismProvider>
-              <MatchOperatorProvider>
-                <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-                  <AuthProvider>
-                    <Toaster 
-                      position="top-right"
-                      toastOptions={{
-                        duration: 3000,  // Toast will be shown for 3 seconds
-                        style: {
-                          background: '#333',
-                          color: '#fff',
-                        },
-                      }}
-                    />
-                    <ToastContainer 
-                      position="top-right"
-                      autoClose={3000}
-                      hideProgressBar={false}
-                      newestOnTop={false}
-                      closeOnClick
-                      rtl={false}
-                      pauseOnFocusLoss
-                      draggable
-                      pauseOnHover
-                    />
-                    <Routes>
-                      {/* Public Routes */}
-                      <Route path="/register" element={<Register />} />
-                      <Route path="/login" element={<Login />} />
-                      <Route path="/forgot-password" element={<ForgotPassword />} />
-                      <Route path="/check-email" element={<CheckEmail />} />
-                      <Route path="/" element={<LandingPage />} />
-                      <Route path="/home" element={<LandingPage />} />
-                      <Route path="/notAuthorized" element={<NoPageFound />} />
-                      <Route path="/sports-events" element={<AllSportsEvents />} />
-                      <Route path="/events" element={<EventsPage />} />
-                      <Route path="/federation" element={<LandingPageFederation />} />
-                      <Route path="/match" element={<LandingPageMatch />} />
-                      <Route path="/map" element={<MyMap/>} />
+    <Router>
+      <AuthProvider>
+        <ThemeProvider>
+          <DarkModeProvider>
+            <InfrastructureProvider>
+              <TourismProvider>
+                <MatchOperatorProvider>
+                  <Toaster 
+                    position="top-right"
+                    toastOptions={{
+                      duration: 3000,
+                      style: {
+                        background: '#333',
+                        color: '#fff',
+                      },
+                    }}
+                  />
+                  <ToastContainer 
+                    position="top-right"
+                    autoClose={3000}
+                    hideProgressBar={false}
+                    newestOnTop={false}
+                    closeOnClick
+                    rtl={false}
+                    pauseOnFocusLoss
+                    draggable
+                    pauseOnHover
+                  />
+                  <Routes>
+                    {/* Public Routes */}
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
+                    <Route path="/check-email" element={<CheckEmail />} />
+                    <Route path="/" element={<LandingPage />} />
+                    <Route path="/home" element={<LandingPage />} />
+                    <Route path="/notAuthorized" element={<NoPageFound />} />
+                    <Route path="/sports-events" element={<AllSportsEvents />} />
+                    <Route path="/events" element={<EventsPage />} />
+                    <Route path="/federation" element={<LandingPageFederation />} />
+                    <Route path="/match" element={<LandingPageMatch />} />
+                    <Route path="/map" element={<MyMap/>} />
 
-                      {/* Protected Routes */}
-                      <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-                        <Route path="/" element={<Navigate to="/home" replace />} />
-                        <Route path="/dashboard" element={<Dashboard />} />
-                        <Route path="/national-teams" element={isPathAllowed('/national-teams') ? <NationalTeams /> : <Navigate to="/unauthorized" />} />
-                        <Route path="/federations" element={isPathAllowed('/federations') ? <Federations /> : <Navigate to="/unauthorized" />} />
-                        <Route path="/sports-professionals" element={isPathAllowed('/sports-professionals') ? <SportsProfessionals /> : <Navigate to="/unauthorized" />} />
-                        <Route path="/trainings" element={isPathAllowed('/trainings') ? <Training /> : <Navigate to="/unauthorized" />} />
-                        <Route path="/isonga-programs" element={isPathAllowed('/isonga-programs') ? <IsongaPrograms /> : <Navigate to="/unauthorized" />} />
-                        <Route path="/academies" element={isPathAllowed('/academies') ? <Academies /> : <Navigate to="/unauthorized" />} />
-                        <Route path="/infrastructure" element={isPathAllowed('/infrastructure') ? <Infrastructure /> : <Navigate to="/unauthorized" />} />
-                        <Route path="/sports-tourism" element={isPathAllowed('/sports-tourism') ? <SportsTourism /> : <Navigate to="/unauthorized" />} />
-                        <Route path="/documents" element={isPathAllowed('/documents') ? <Documents /> : <Navigate to="/unauthorized" />} />
-                        <Route path="/contracts" element={isPathAllowed('/contracts') ? <Contracts /> : <Navigate to="/unauthorized" />} />
-                        <Route path="/appointments" element={isPathAllowed('/appointments') ? <Appointments /> : <Navigate to="/unauthorized" />} />
-                        <Route path="/employee" element={isPathAllowed('/employee') ? <Employee /> : <Navigate to="/unauthorized" />} />
-                        <Route path="/users" element={isPathAllowed('/users') ? <Users /> : <Navigate to="/unauthorized" />} />
-                        <Route path="/partners" element={isPathAllowed('/partners') ? <Partners /> : <Navigate to="/unauthorized" />} />
-                        <Route path="/reports" element={isPathAllowed('/reports') ? <Reports /> : <Navigate to="/unauthorized" />} />
-                        <Route path="/sports-for-all" element={isPathAllowed('/sports-for-all') ? <SportsForAll /> : <Navigate to="/unauthorized" />} />
-                        <Route path="/settings" element={<Settings />} />
-                        <Route path="/player-transfer-report" element={isPathAllowed('/player-transfer-report') ? <PlayerTransferReport /> : <Navigate to="/unauthorized" />} />
-                        <Route path="/match-operator" element={isPathAllowed('/match-operator') ? <MatchOperatorDashboard /> : <Navigate to="/unauthorized" />} />
-                        <Route path="/match-operator/teams" element={isPathAllowed('/match-operator/teams') ? <TeamManagement /> : <Navigate to="/unauthorized" />} />
-                      </Route>
+                    {/* Protected Routes */}
+                    <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+                      <Route path="/" element={<Navigate to="/home" replace />} />
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/national-teams" element={isPathAllowed('/national-teams') ? <NationalTeams /> : <Navigate to="/unauthorized" />} />
+                      <Route path="/federations" element={isPathAllowed('/federations') ? <Federations /> : <Navigate to="/unauthorized" />} />
+                      <Route path="/sports-professionals" element={isPathAllowed('/sports-professionals') ? <SportsProfessionals /> : <Navigate to="/unauthorized" />} />
+                      <Route path="/trainings" element={isPathAllowed('/trainings') ? <Training /> : <Navigate to="/unauthorized" />} />
+                      <Route path="/isonga-programs" element={isPathAllowed('/isonga-programs') ? <IsongaPrograms /> : <Navigate to="/unauthorized" />} />
+                      <Route path="/academies" element={isPathAllowed('/academies') ? <Academies /> : <Navigate to="/unauthorized" />} />
+                      <Route path="/infrastructure" element={isPathAllowed('/infrastructure') ? <Infrastructure /> : <Navigate to="/unauthorized" />} />
+                      <Route path="/sports-tourism" element={isPathAllowed('/sports-tourism') ? <SportsTourism /> : <Navigate to="/unauthorized" />} />
+                      <Route path="/documents" element={isPathAllowed('/documents') ? <Documents /> : <Navigate to="/unauthorized" />} />
+                      <Route path="/contracts" element={isPathAllowed('/contracts') ? <Contracts /> : <Navigate to="/unauthorized" />} />
+                      <Route path="/appointments" element={isPathAllowed('/appointments') ? <Appointments /> : <Navigate to="/unauthorized" />} />
+                      <Route path="/employee" element={isPathAllowed('/employee') ? <Employee /> : <Navigate to="/unauthorized" />} />
+                      <Route path="/users" element={isPathAllowed('/users') ? <Users /> : <Navigate to="/unauthorized" />} />
+                      <Route path="/partners" element={isPathAllowed('/partners') ? <Partners /> : <Navigate to="/unauthorized" />} />
+                      <Route path="/reports" element={isPathAllowed('/reports') ? <Reports /> : <Navigate to="/unauthorized" />} />
+                      <Route path="/sports-for-all" element={isPathAllowed('/sports-for-all') ? <SportsForAll /> : <Navigate to="/unauthorized" />} />
+                      <Route path="/settings" element={<Settings />} />
+                      <Route path="/player-transfer-report" element={isPathAllowed('/player-transfer-report') ? <PlayerTransferReport /> : <Navigate to="/unauthorized" />} />
+                      <Route path="/match-operator" element={isPathAllowed('/match-operator') ? <MatchOperatorDashboard /> : <Navigate to="/unauthorized" />} />
+                      <Route path="/match-operator/teams" element={isPathAllowed('/match-operator/teams') ? <TeamManagement /> : <Navigate to="/unauthorized" />} />
+                    </Route>
 
-                      {/* Fallback Route for non-accessible paths */}
-                      <Route path="*" element={<Navigate to="/notAuthorized" replace />} />
-                    </Routes>
-                  </AuthProvider>
-                </Router>
-              </MatchOperatorProvider>
-            </TourismProvider>
-          </InfrastructureProvider>
-        </DarkModeProvider>
-      </ThemeProvider>
+                    {/* Fallback Route for non-accessible paths */}
+                    <Route path="*" element={<Navigate to="/notAuthorized" replace />} />
+                  </Routes>
+                </MatchOperatorProvider>
+              </TourismProvider>
+            </InfrastructureProvider>
+          </DarkModeProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </Router>
   );
 }
 

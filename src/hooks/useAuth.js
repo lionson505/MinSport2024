@@ -1,114 +1,87 @@
-import { useState, useCallback, useEffect } from 'react';
-import axios from 'axios';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axiosInstance from '../utils/axiosInstance';
+import { toast } from 'sonner';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://mis.minisports.gov.rw/api';
-
-export function useAuth() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+export const useAuth = () => {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  // Function to handle login
-  const login = useCallback(async (email, password) => {
-    setLoading(true);
-    setError(null);
+  const initializeAuth = useCallback(async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
     try {
-      const response = await axios.post(`${API_URL}/auth/login`, {
+      const userId = localStorage.getItem('userId');
+      if (!userId) {
+        throw new Error('User ID not found');
+      }
+
+      const response = await axiosInstance.get(`/users/${userId}`);
+      setUser(response.data);
+    } catch (error) {
+      console.error('Error initializing user:', error);
+      // If we get a 403, clear auth and redirect to login
+      if (error.response?.status === 403 || error.response?.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userId');
+        navigate('/login');
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    initializeAuth();
+  }, [initializeAuth]);
+
+  const login = async (email, password) => {
+    try {
+      const response = await axiosInstance.post('/auth/login', {
         email,
-        password,
+        password
       });
 
-      const { token, user: userData } = response.data;
-
-      // Store token in localStorage
+      const { token, user } = response.data;
       localStorage.setItem('token', token);
-
-      // Store user data in localStorage
-      localStorage.setItem('user', JSON.stringify(userData));
-
-      // Attach token to Axios default headers
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
-      // Set user data in state
-      setUser(userData);
-
-      return response.data;
-    } catch (err) {
-      setError(err.response?.data?.message || 'An error occurred');
-      throw err;
-    } finally {
-      setLoading(false);
+      localStorage.setItem('userId', user.id);
+      setUser(user);
+      
+      return user;
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
     }
-  }, []);
+  };
 
-  // Function to fetch authenticated user details
-  const fetchUser = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No token found, please login again.');
-      }
-
-      // Attach token to Axios default headers
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
-      // Fetch user data using the stored user ID
-      const storedUser = JSON.parse(localStorage.getItem('user'));
-      if (storedUser && storedUser.id) {
-        const response = await axios.get(`${API_URL}/users/${storedUser.id}`);
-        setUser(response.data);
-
-        return response.data;
-      } else {
-        throw new Error('User ID not found.');
-      }
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch user data');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Function to handle logout
   const logout = useCallback(() => {
     localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    delete axios.defaults.headers.common['Authorization'];
+    localStorage.removeItem('userId');
     setUser(null);
-  }, []);
+    navigate('/login');
+  }, [navigate]);
 
-  // Initialize user if token exists
-  useEffect(() => {
-    const initializeAuth = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        try {
-          const storedUser = JSON.parse(localStorage.getItem('user'));
-
-          if (storedUser && storedUser.id) {
-            setUser(storedUser); // Use the user data from localStorage
-            await fetchUser();
-          } else {
-            // If user data is not in localStorage, try fetching it
-            await fetchUser();
-          }
-        } catch (error) {
-          console.error('Error initializing user:', error);
-        }
-      }
-    };
-    initializeAuth();
-  }, [fetchUser]);
+  const register = async (userData) => {
+    try {
+      const response = await axiosInstance.post('/auth/register', userData);
+      toast.success(response.data.message || 'Registration successful');
+      navigate('/login');
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
+    }
+  };
 
   return {
     user,
     loading,
-    error,
     login,
-    fetchUser,
     logout,
+    register
   };
-}
+};

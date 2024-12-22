@@ -1,11 +1,13 @@
 /* src/pages/auth/Login.jsx */
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { toast } from 'react-hot-toast';
 
 function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -26,22 +28,12 @@ function Login() {
     setLoading(true);
 
     try {
-      const loggedInUser = await login(formData.email, formData.password);
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem("jl", "yes");
-
-      if (formData.rememberMe) {
-        localStorage.setItem('rememberMe', 'true');
-      }
-
-      localStorage.setItem('userRole', loggedInUser.user.groupId);
-      console.log('User Data', localStorage.getItem('userRole'));
-
-      // Show OTP modal instead of navigating directly
-      setShowOtpModal(true);
+      await login(formData.email, formData.password);
+      // Redirect to the page they were trying to access, or dashboard
+      const from = location.state?.from?.pathname || '/dashboard';
+      navigate(from, { replace: true });
     } catch (error) {
-      setErrorMessage(error.message || 'Login failed. Please check your credentials.');
-      console.error('Login Error:', error);
+      toast.error(error.response?.data?.message || 'Login failed');
     } finally {
       setLoading(false);
     }

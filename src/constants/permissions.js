@@ -1,9 +1,29 @@
-export const PERMISSIONS = {
-  // ... existing permissions
-  MATCH_OPERATOR: {
-    ACCESS: 'match_operator.access',
-    CREATE_MATCH: 'match_operator.create_match',
-    UPDATE_MATCH: 'match_operator.update_match',
-    MANAGE_TEAMS: 'match_operator.manage_teams'
-  }
+export const MODULES = {
+  USERS: 1,
+  GROUPS: 2,
+  FEDERATIONS: 3,
+  CLUBS: 4,
+  TEAMS: 5,
+  SPORTS_PROFESSIONALS: 6,
+  TRAININGS: 7,
+  ISONGA: 8,
+  ACADEMIES: 9,
+  INFRASTRUCTURE: 10,
+  TOURISM: 11,
+  DOCUMENTS: 12,
+  CONTRACTS: 13,
+  APPOINTMENTS: 14,
+  EMPLOYEES: 15,
+  PARTNERS: 16,
+  REPORTS: 17,
+  SPORTS_FOR_ALL: 18,
+  TRANSFERS: 19,
+  MATCH_OPERATOR: 20
+};
+
+export const ACTIONS = {
+  READ: 'Read',
+  CREATE: 'Create',
+  UPDATE: 'Update',
+  DELETE: 'Delete'
 }; 

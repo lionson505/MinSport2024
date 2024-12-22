@@ -1,167 +1,198 @@
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { Button } from './ui/Button';
 import { Input } from './ui/input';
 import { useTheme } from '../context/ThemeContext';
-import { X, Eye, EyeOff } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { X, Loader2 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import axiosInstance from '../utils/axiosInstance';
+import { Label } from './ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
-const AddUserModal = ({ isOpen, onClose, onAdd }) => {
+const AddUserModal = ({ isOpen, onClose, groups = [], onAdd }) => {
   const { isDarkMode } = useTheme();
-  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    gender: '',
     password: '',
+    confirmPassword: '',
+    gender: '',
     groupId: '',
+    active: true
   });
-
-  const [groupOptions, setGroupOptions] = useState([]);
-  const [loadingGroups, setLoadingGroups] = useState(false);
-  const [errorGroups, setErrorGroups] = useState(null);
-
-  useEffect(() => {
-    if (isOpen) {
-      setGroupOptions([]);
-      setLoadingGroups(true);
-      setErrorGroups(null);
-
-      axiosInstance.get('/groups')
-        .then((response) => {
-          setGroupOptions(response.data);
-        })
-        .catch((error) => {
-          setErrorGroups(error.response?.data?.message || 'Failed to load groups');
-          toast.error(error.response?.data?.message || 'Failed to load groups');
-        })
-        .finally(() => {
-          setLoadingGroups(false);
-        });
-    }
-  }, [isOpen]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      toast.error('Please enter a valid email address');
-      return;
-    }
-
-    // Password strength validation
-    if (formData.password.length < 8) {
-      toast.error('Password must be at least 8 characters long');
-      return;
-    }
-
-    // Ensure the groupId is selected
-    if (!formData.groupId) {
-      toast.error('Please select a group');
+    // Validate passwords match
+    if (formData.password !== formData.confirmPassword) {
+      toast.error('Passwords do not match');
+      setLoading(false);
       return;
     }
 
     try {
-      // Sending data as JSON with appropriate headers
-      const response = await axiosInstance.post('/auth/create-user', formData, {
-        headers: {
-          'Content-Type': 'application/json',  // Ensure JSON content-type
-        }
+      const response = await axiosInstance.post('/users', {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        gender: formData.gender,
+        groupId: formData.groupId,
+        active: formData.active
       });
 
-      console.log('Response from API:', response.data);
       onAdd(response.data);
-      toast.success('User created successfully');
-      setFormData({ name: '', email: '', gender: '', password: '', groupId: '' });
       onClose();
+      toast.success('User created successfully');
     } catch (error) {
-      console.error('Error creating user:', error.response);
       toast.error(error.response?.data?.message || 'Failed to create user');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Transition appear show={isOpen} as={Fragment}>
+    <Transition show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
-        <div className="fixed inset-0 bg-black bg-opacity-25" />
+        <Transition.Child
+          as={Fragment}
+          enter="ease-out duration-300"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in duration-200"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <div className="fixed inset-0 bg-black bg-opacity-25" />
+        </Transition.Child>
+
         <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 text-center">
-            <Dialog.Panel className={`w-full max-w-md transform overflow-hidden rounded-lg ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white'} p-6 text-left align-middle shadow-xl transition-all`}>
-              <div className="flex justify-between items-center mb-6">
-                <Dialog.Title className="text-xl font-bold">Add New User</Dialog.Title>
-                <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
+          <div className="flex min-h-full items-center justify-center p-4">
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 scale-95"
+              enterTo="opacity-100 scale-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 scale-100"
+              leaveTo="opacity-0 scale-95"
+            >
+              <Dialog.Panel className={`w-full max-w-md transform overflow-hidden rounded-2xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'} p-6 text-left align-middle shadow-xl transition-all`}>
+                <Dialog.Title as="h3" className="text-lg font-medium leading-6 mb-4">
+                  Add New User
+                </Dialog.Title>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block mb-1 text-sm font-medium">Name</label>
-                  <Input type="text" name="name" value={formData.name} onChange={handleChange} required placeholder="Enter full name" className="w-full" />
-                </div>
-                <div>
-                  <label className="block mb-1 text-sm font-medium">Email</label>
-                  <Input type="email" name="email" value={formData.email} onChange={handleChange} required placeholder="Enter email address" className="w-full" />
-                </div>
-                <div>
-                  <label className="block mb-1 text-sm font-medium">Gender</label>
-                  <select name="gender" value={formData.gender} onChange={handleChange} required className="w-full rounded-md border p-2">
-                    <option value="">Select gender</option>
-                    {['Male', 'Female', 'Other'].map((option) => (
-                      <option key={option} value={option.toLowerCase()}>{option}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block mb-1 text-sm font-medium">Password</label>
-                  <div className="relative">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <Label htmlFor="name">Name</Label>
                     <Input
-                      type={showPassword ? 'text' : 'password'}
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                       required
-                      placeholder="Enter password"
-                      className="w-full"
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-                    >
-                      {showPassword ? <EyeOff /> : <Eye />}
-                    </button>
                   </div>
-                </div>
-                <div>
-                  <label className="block mb-1 text-sm font-medium">Group</label>
-                  <select name="groupId" value={formData.groupId} onChange={handleChange} required className="w-full rounded-md border p-2">
-                    <option value="">Select group</option>
-                    {groupOptions.map((group) => (
-                      <option key={group.id} value={group.id}>
-                        {group.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
 
-                <div className="mt-4 flex justify-between">
-                  <Button type="button" onClick={onClose} variant="outline">Cancel</Button>
-                  <Button type="submit">Create User</Button>
-                </div>
-              </form>
-            </Dialog.Panel>
+                  <div>
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={formData.password}
+                      onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="confirmPassword">Confirm Password</Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      value={formData.confirmPassword}
+                      onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="gender">Gender</Label>
+                    <Select
+                      value={formData.gender}
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, gender: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select gender" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="male">Male</SelectItem>
+                        <SelectItem value="female">Female</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="group">Group</Label>
+                    <Select
+                      value={formData.groupId}
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, groupId: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select group" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.isArray(groups) && groups.map(group => (
+                          <SelectItem key={group.id} value={group.id}>
+                            {group.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="active"
+                      checked={formData.active}
+                      onChange={(e) => setFormData(prev => ({ ...prev, active: e.target.checked }))}
+                      className="h-4 w-4 rounded border-gray-300"
+                    />
+                    <Label htmlFor="active">Active</Label>
+                  </div>
+
+                  <div className="flex justify-end gap-3 mt-6">
+                    <Button type="button" variant="outline" onClick={onClose}>
+                      Cancel
+                    </Button>
+                    <Button type="submit" disabled={loading}>
+                      {loading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Creating...
+                        </>
+                      ) : (
+                        'Create User'
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </Dialog.Panel>
+            </Transition.Child>
           </div>
         </div>
       </Dialog>

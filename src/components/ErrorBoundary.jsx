@@ -1,6 +1,8 @@
-import { Component } from 'react';
+import React from 'react';
+import { AlertTriangle } from 'lucide-react';
+import { Button } from './ui/button';
 
-class ErrorBoundary extends Component {
+class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
     this.state = { hasError: false };
@@ -11,21 +13,25 @@ class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('Error:', error, errorInfo);
+    console.error('Error caught by boundary:', error, errorInfo);
   }
 
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
           <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">Something went wrong</h1>
-            <button
+            <AlertTriangle className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">Oops! Something went wrong</h1>
+            <p className="text-lg text-gray-600 mb-8">
+              We're sorry for the inconvenience. Please try refreshing the page.
+            </p>
+            <Button
               onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+              variant="outline"
             >
-              Reload page
-            </button>
+              Refresh Page
+            </Button>
           </div>
         </div>
       );
