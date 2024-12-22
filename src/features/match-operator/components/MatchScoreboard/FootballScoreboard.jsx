@@ -29,7 +29,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [showPlayerSelect, setShowPlayerSelect] = useState(false);
   const [pendingEvent, setPendingEvent] = useState(null);
-  console.log("pending events: ", teamAPlayers)
+  console.log("Team A players: ", teamAPlayers, "Team B players:", teamBPlayers)
 
   const addEvent = (type, team, player = null) => {
     setMatchData(prev => ({
@@ -278,7 +278,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
         <DialogHeader>
           <DialogTitle>Select Player</DialogTitle>
           <DialogDescription>
-            Choose the player for this event
+            Choose the player for this eventaaaaaaaaaaa
           </DialogDescription>
         </DialogHeader>
 
@@ -287,12 +287,19 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
             <SelectValue placeholder="Select player" />
           </SelectTrigger>
           <SelectContent>
-            {(pendingEvent?.team === 'A' ? teamAPlayers : teamBPlayers).map(player => (
-              <SelectItem key={player.id} value={player.id}>
-                #{player.number} - {player.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
+  {pendingEvent?.team === 'A' &&
+    teamAPlayers?.map(player => (
+      <SelectItem key={player.id} value={player.id}>
+        #{player.playerStaff.id} - {player.playerStaff.lastName}
+      </SelectItem>
+    ))}
+  {pendingEvent?.team === 'B' &&
+    teamBPlayers?.map(player => (
+      <SelectItem key={player.id} value={player.id}>
+        #{player.playerStaff.id} - {player.playerStaff.lastName}
+      </SelectItem>
+    ))}
+</SelectContent>
         </Select>
       </DialogContent>
     </Dialog>

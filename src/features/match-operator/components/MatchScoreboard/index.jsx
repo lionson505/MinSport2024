@@ -4,12 +4,10 @@ import FootballScoreboard from './FootballScoreboard';
 import BasketballScoreboard from './BasketballScoreboard';
 import VolleyballScoreboard from './VolleyballScoreboard';
 
-export function MatchScoreboard({ match, onClose }) {
+export function MatchScoreboard({ match, homeTeamPlayers, awayTeamPlayers, onClose }) {
   const [teamAPlayers, setTeamAPlayers] = useState([]);
   console.log("match : ", match);
-  console.log("team A : ", teamAPlayers);
   const [teamBPlayers, setTeamBPlayers] = useState([]);
-  console.log("team B : ", teamBPlayers);
 
 
   // Load players from match setup data
@@ -35,8 +33,8 @@ export function MatchScoreboard({ match, onClose }) {
             <FootballScoreboard 
               match={match} 
               onClose={onClose}
-              teamAPlayers={teamAPlayers}
-              teamBPlayers={teamBPlayers}
+              teamAPlayers={homeTeamPlayers}
+              teamBPlayers={awayTeamPlayers}
             />
           )}
           {match.gameType === 'basketball' && (
