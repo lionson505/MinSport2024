@@ -6,7 +6,11 @@ import VolleyballScoreboard from './VolleyballScoreboard';
 
 export function MatchScoreboard({ match, onClose }) {
   const [teamAPlayers, setTeamAPlayers] = useState([]);
+  console.log("match : ", match);
+  console.log("team A : ", teamAPlayers);
   const [teamBPlayers, setTeamBPlayers] = useState([]);
+  console.log("team B : ", teamBPlayers);
+
 
   // Load players from match setup data
   useEffect(() => {
@@ -27,7 +31,7 @@ export function MatchScoreboard({ match, onClose }) {
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto p-4">
-          {match.gameType === 'football' && (
+          {match.gameType === 'Football' && (
             <FootballScoreboard 
               match={match} 
               onClose={onClose}

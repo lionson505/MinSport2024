@@ -29,6 +29,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [showPlayerSelect, setShowPlayerSelect] = useState(false);
   const [pendingEvent, setPendingEvent] = useState(null);
+  console.log("pending events: ", teamAPlayers)
 
   const addEvent = (type, team, player = null) => {
     setMatchData(prev => ({
@@ -87,7 +88,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
             size="sm"
             variant={matchData.status === 'FIRST_HALF' ? 'default' : 'outline'}
             onClick={() => handlePeriodChange('FIRST_HALF')}
-          >
+           >
             1st Half
           </Button>
           <Button
@@ -108,7 +109,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
             size="sm"
             variant={matchData.status === 'FULL_TIME' ? 'default' : 'outline'}
             onClick={() => handlePeriodChange('FULL_TIME')}
-          >
+           >
             Full Time
           </Button>
         </div>
@@ -133,16 +134,16 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
       <div className="grid grid-cols-3 gap-4">
         {/* Team A */}
         <div className="text-center">
-          <h3 className="font-medium mb-2">{match.homeTeam?.name || 'Home Team'}</h3>
-          <div className="text-5xl font-bold mb-2">{matchData.teamAScore}</div>
+          <h3 className="font-medium mb-2">{match.homeTeam || 'Home Team'}</h3>
+          <div className="text-5xl font-bold mb-2">{match.homeScore}</div>
           <div className="flex justify-center gap-2">
-            <Button
+            {/* <Button
               size="sm"
               variant="outline"
               onClick={() => addEvent('GOAL', 'A')}
             >
               ⚽ Goal
-            </Button>
+            </Button> */}
           </div>
         </div>
 
@@ -161,16 +162,16 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
 
         {/* Team B */}
         <div className="text-center">
-          <h3 className="font-medium mb-2">{match.awayTeam?.name || 'Away Team'}</h3>
-          <div className="text-5xl font-bold mb-2">{matchData.teamBScore}</div>
+          <h3 className="font-medium mb-2">{match.awayTeam || 'Away Team'}</h3>
+          <div className="text-5xl font-bold mb-2">{match.awayScore}</div>
           <div className="flex justify-center gap-2">
-            <Button
+            {/* <Button
               size="sm"
               variant="outline"
               onClick={() => addEvent('GOAL', 'B')}
             >
               ⚽ Goal
-            </Button>
+            </Button> */}
           </div>
         </div>
       </div>
@@ -181,7 +182,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
     <div className="grid grid-cols-2 gap-6 mb-6">
       {/* Team A Controls */}
       <div className="space-y-4">
-        <h3 className="font-medium">{match.homeTeam?.name || 'Home Team'} Controls</h3>
+        <h3 className="font-medium">{match.homeTeam || 'Home Team'} Controls</h3>
         <div className="grid grid-cols-2 gap-2">
           <Button
             onClick={() => handleEventWithPlayer('GOAL', 'A')}
@@ -206,7 +207,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
 
       {/* Team B Controls */}
       <div className="space-y-4">
-        <h3 className="font-medium">{match.awayTeam?.name || 'Away Team'} Controls</h3>
+        <h3 className="font-medium">{match.awayTeam  || 'Away Team'} Controls</h3>
         <div className="grid grid-cols-2 gap-2">
           <Button
             onClick={() => handleEventWithPlayer('GOAL', 'B')}
