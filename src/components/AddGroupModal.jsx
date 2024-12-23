@@ -5,59 +5,35 @@ import { Input } from './ui/input';
 import { useTheme } from '../context/ThemeContext';
 import { X } from 'lucide-react';
 import toast from 'react-hot-toast';
-import axiosInstance from '../utils/axiosInstance'; // Import axios instance for API calls
+import axiosInstance from '../utils/axiosInstance';
 import { modules } from '../data/modulePermissions';
 
 function AddGroupModal({ isOpen, onClose, onAdd }) {
   const { isDarkMode } = useTheme();
   const [groupName, setGroupName] = useState('');
-  const [permissions, setPermissions] = useState({});
+  const [groupDescription, setGroupDescription] = useState('');
+  const [permissions, setPermissions] = useState([]);
 
   // Initialize permissions state
   React.useEffect(() => {
-    const initialPermissions = {};
-    modules.forEach(module => {
-      initialPermissions[module.id] = {
-        Add: false,
-        Edit: false,
-        Delete: false
-      };
-    });
+    const initialPermissions = modules.map(module => ({
+      moduleId: module.id,
+      canRead: false,
+      canCreate: false,
+      canUpdate: false,
+      canDelete: false
+    }));
     setPermissions(initialPermissions);
   }, []);
 
-  const handleCheckAll = () => {
-    const newPermissions = {};
-    modules.forEach(module => {
-      newPermissions[module.id] = {
-        Add: true,
-        Edit: true,
-        Delete: true
-      };
-    });
-    setPermissions(newPermissions);
-  };
-
-  const handleUncheckAll = () => {
-    const newPermissions = {};
-    modules.forEach(module => {
-      newPermissions[module.id] = {
-        Add: false,
-        Edit: false,
-        Delete: false
-      };
-    });
-    setPermissions(newPermissions);
-  };
-
   const handlePermissionChange = (moduleId, permission) => {
-    setPermissions(prev => ({
-      ...prev,
-      [moduleId]: {
-        ...prev[moduleId],
-        [permission]: !prev[moduleId]?.[permission] // Safe access with optional chaining
-      }
-    }));
+    setPermissions(prevPermissions =>
+      prevPermissions.map(permissionObj =>
+        permissionObj.moduleId === moduleId
+          ? { ...permissionObj, [permission]: !permissionObj[permission] }
+          : permissionObj
+      )
+    );
   };
 
   const handleSubmit = async (e) => {
@@ -68,41 +44,32 @@ function AddGroupModal({ isOpen, onClose, onAdd }) {
       return;
     }
 
+    const newGroup = {
+      name: groupName,
+      description: groupDescription,
+      isDefault: false,
+      permissions: permissions
+    };
+
     try {
-      // Create an array of the module IDs that have permissions enabled
-      const accessibleModules = Object.keys(permissions)
-        .filter(moduleId => permissions[moduleId]?.Add || permissions[moduleId]?.Edit || permissions[moduleId]?.Delete) // Safe check with optional chaining
-        .join(", "); // Join module IDs into a string
-
-      // Prepare the data to send in the POST request
-      const newGroup = {
-        name: groupName,
-        accessibleModules: accessibleModules, // string of module IDs or names
-      };
-
-      // Get token from localStorage or auth context
       const token = localStorage.getItem('token');
       if (!token) {
         toast.error('Session expired. Please log in again.');
         return;
       }
 
-      // Send the POST request to the API
       const response = await axiosInstance.post('/groups', newGroup, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      // On success, call the onAdd function to update the UI
       onAdd(response.data);
-
-      // Reset form fields
       setGroupName('');
-      setPermissions({});
-
+      setGroupDescription('');
+      setPermissions([]);
       toast.success('Group added successfully');
-      onClose(); // Close the modal after successful submission
+      onClose();
     } catch (error) {
       toast.error('Failed to add group');
       console.error(error);
@@ -162,26 +129,19 @@ function AddGroupModal({ isOpen, onClose, onAdd }) {
                   </div>
 
                   <div>
+                    <label className="block mb-1 text-sm font-medium">Description</label>
+                    <Input
+                      type="text"
+                      value={groupDescription}
+                      onChange={(e) => setGroupDescription(e.target.value)}
+                      placeholder="Enter group description"
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div>
                     <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-lg font-medium">Accessible Modules</h3>
-                      <div className="flex gap-4">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={handleCheckAll}
-                          className="text-sm"
-                        >
-                          Check All
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={handleUncheckAll}
-                          className="text-sm"
-                        >
-                          Un-check All
-                        </Button>
-                      </div>
+                      <h3 className="text-lg font-medium">Permissions</h3>
                     </div>
 
                     <div className="border rounded-lg overflow-hidden">
@@ -189,21 +149,22 @@ function AddGroupModal({ isOpen, onClose, onAdd }) {
                         <thead className="bg-gray-50">
                           <tr>
                             <th className="px-4 py-2 text-left">Module</th>
-                            <th className="px-4 py-2 text-center">Add</th>
-                            <th className="px-4 py-2 text-center">Edit</th>
+                            <th className="px-4 py-2 text-center">Read</th>
+                            <th className="px-4 py-2 text-center">Create</th>
+                            <th className="px-4 py-2 text-center">Update</th>
                             <th className="px-4 py-2 text-center">Delete</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y">
-                          {modules.map((module) => (
-                            <tr key={module.id} className="hover:bg-gray-50">
-                              <td className="px-4 py-2">{module.name}</td>
-                              {['Add', 'Edit', 'Delete'].map((permission) => (
+                          {permissions.map((permissionObj) => (
+                            <tr key={permissionObj.moduleId} className="hover:bg-gray-50">
+                              <td className="px-4 py-2">{modules.find(module => module.id === permissionObj.moduleId).name}</td>
+                              {['canRead', 'canCreate', 'canUpdate', 'canDelete'].map((permission) => (
                                 <td key={permission} className="px-4 py-2 text-center">
                                   <input
                                     type="checkbox"
-                                    checked={permissions[module.id]?.[permission] || false} // Safe check with optional chaining
-                                    onChange={() => handlePermissionChange(module.id, permission)} // Update specific permission
+                                    checked={permissionObj[permission]}
+                                    onChange={() => handlePermissionChange(permissionObj.moduleId, permission)}
                                     className="h-4 w-4 rounded border-gray-300"
                                   />
                                 </td>

@@ -339,7 +339,7 @@ const PlayerTransferReport = () => {
                 <TableHead>Player/Staff</TableHead>
                 <TableHead>Club To</TableHead>
                 <TableHead>Month</TableHead>
-                {/* <TableHead>Year</TableHead> */}
+                <TableHead>Year</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -353,6 +353,7 @@ const PlayerTransferReport = () => {
                       : 'N/A'
                     }
                   </TableCell>
+                  <TableCell>{transfer.playerStaff?.type || 'N/A'}</TableCell>
                   <TableCell>{transfer.toClub?.name || 'N/A'}</TableCell>
                   <TableCell>
                     {transfer.transferDate 

@@ -51,7 +51,7 @@ function LeaguesToBrowse() {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold text-[#1B2559]">Leagues To Browse</h2>
         <button className="text-[#4318FF] flex items-center text-sm font-medium">
-          View all <ChevronRight className="w-4 h-4 ml-1" />
+        view all <ChevronRight className="w-4 h-4 ml-1" />
         </button>
       </div>
       <div className="grid grid-cols-3 gap-6">

@@ -3,11 +3,10 @@ import { Link } from 'react-router-dom';
 
 const HeaderTwo = () => {
   const navigation = [
-    { name: 'HOME', path: '/landing' },
+    { name: 'HOME', path: '/home' },
     { name: 'FEDERATIONS', path: '/federation' },
     { name: 'EVENTS', path: '/events' },
     { name: 'MATCHES', path: '/match' },
-    { name: 'INFRASTRUCTURE', path: '/infrastructures' },
   ];
   const [iSactiveTab, setIsActiveTab] = useState('HOME');
 
@@ -20,7 +19,7 @@ const HeaderTwo = () => {
       <header className="bg-white shadow fixed top-0 w-full z-50">
         <div className="container mx-auto px-6">
           <div className="flex items-center justify-between h-20">
-            <Link to="/landing">
+            <Link to="/home">
               <img src="/logo/logo.svg" alt="MINISPORTS" className="h-12 w-auto" />
             </Link>
             <nav className="hidden md:flex space-x-10">

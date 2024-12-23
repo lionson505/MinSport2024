@@ -28,7 +28,6 @@ function LandingPageMatch() {
                 console.error('Error fetching matches:', error);
             }
         };
-
         fetchMatches();
     }, []);
     console.log('fetched matches on the page: ', matches);
@@ -150,39 +149,40 @@ function LandingPageMatch() {
             </div>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
                 {/* Tabs List with Search */}
-                <TabsList className="bg-white p-4 shadow-sm flex items-center gap-4">
-                    <TabsTrigger value="all" onClick={() => setActiveTab('all')}>
-                        All Matches
-                    </TabsTrigger>
-                    <TabsTrigger value="live" onClick={() => setActiveTab('live')}>
-                        Live
-                    </TabsTrigger>
-                    <TabsTrigger value="upcoming" onClick={() => setActiveTab('upcoming')}>
-                        Upcoming
-                    </TabsTrigger>
-                    <TabsTrigger value="past" onClick={() => setActiveTab('past')}>
-                        Past
-                    </TabsTrigger>
-                    {/* <SearchModal /> */}
+                <TabsList className="bg-white p-2 sm:p-4  shadow-sm flex flex-wrap items-center gap-2 
+                     sm:flex-col md:flex-row lg:gap-6">
+                    <div className=''>
+                        <TabsTrigger value="all" onClick={() => setActiveTab('all')}>
+                            All Matches
+                        </TabsTrigger>
+                        <TabsTrigger value="live" onClick={() => setActiveTab('live')}>
+                            Live
+                        </TabsTrigger>
+                        <TabsTrigger value="upcoming" onClick={() => setActiveTab('upcoming')}>
+                            Upcoming
+                        </TabsTrigger>
+                        <TabsTrigger value="past" onClick={() => setActiveTab('past')}>
+                            Past
+                        </TabsTrigger>
+                    </div>
+                    <div className=''>
+                        {/* <SearchModal /> */}
                         <input onClick={() => setActiveTab('search')}
                             type="text"
                             placeholder="Search Matches..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="p-2 rounded-md border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
+                    </div>
                 </TabsList>
-                {/* All Events Tab */}
-                {/* <TabsContent value="all" className=""> */}
-                {/* <TabsContent value="all" className={`mt-6 flex justify-center border-2 border-gray-800 ${activeTab !== 'all' ? 'hidden' : ''}`}>
- */}
-                <TabsContent value="all" className={`mt-6 flex justify-center ${ activeTab !== 'all' ? 'hidden' : ''}`}>
+                <TabsContent value="all" className={`mt-6 flex justify-center ${activeTab !== 'all' ? 'hidden' : ''}`}>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                         {filteredMatches.length > 0 ? (
                             filteredMatches.map((match) =>
                                 <div
                                     key={match.id}
-                                    className="flex-shrink-0 w-[280px] p-4 rounded-lg border border-gray-200 bg-white shadow-sm cursor-pointer m-8"
+                                    className="flex-shrink-0 w-[280px] p-4 rounded-lg bg-white shadow-sm cursor-pointer m-8"
                                     onClick={() => handleMatchClick(match)}
                                 >
                                     {/* Match Header */}
@@ -242,7 +242,7 @@ function LandingPageMatch() {
                                     </div>
                                 </div>
                             )) : (
-                            <div className="flex w-full justify-center border-2">
+                            <div className="flex w-full justify-center ">
                                 <div className="text-center mx-auto">
                                     <h1 className="text-2xl font-semibold text-gray-800">
                                         No Games Available Yet
@@ -261,42 +261,45 @@ function LandingPageMatch() {
                                         <div className="flex justify-between items-center mb-4">
                                             <div
                                                 onClick={handleCloseModal}
-                                                className='bg-white hover:bg-[#046200] px-4 py-2 rounded-full hover:bg-white/80'>
+                                                className='bg-white hover:bg-[#046200] px-4 py-2 rounded-full hover:bg-white/80 me-8'>
                                                 <button
                                                     className="text-black text-xl"
                                                 >
                                                     ×
                                                 </button>
                                             </div>
+
                                             <span className="text-white/80">{selectedMatch.competition}</span>
                                         </div>
-                                        <div className="flex justify-between items-center gap-8">
-                                            <div className="flex items-center gap-4 flex-1">
+                                        <div className="flex flex-col sm:flex-row justify-between items-center gap-8">
+                                            <div className="flex sm:w-1/4 w-3/4 items-center gap-2 flex-1 justify-start">
                                                 <img
                                                     src={selectedMatch.homeTeam.logo || rayonLogo}
                                                     alt=""
                                                     className="h-16 w-16 object-contain"
                                                 />
-                                                <span className="text-xl font-semibold">{selectedMatch.homeTeam}</span>
+                                                <span className="md:text-lg text-sm lg:text-lg font-semibold">{selectedMatch.homeTeam}</span>
                                             </div>
-                                            <div className="flex items-center gap-4 text-3xl font-bold">
-                                                <span>{selectedMatch.homeScore}</span>
-                                                <span>-</span>
-                                                <span>{selectedMatch.awayScore}</span>
+                                            <div className="flex flex-col sm:w-1/4 w-1/2">
+                                                <div className='flex justify-center items-center gap-4 text-3xl font-bold'>
+                                                    <span>{selectedMatch.homeScore}</span>
+                                                    <span>-</span>
+                                                    <span>{selectedMatch.awayScore}</span>
+                                                </div>
+                                                <div className="mt-4 text-center text-white/80">
+                                                    <span className=''>{selectedMatch.time || '82`'}</span>
+                                                    <span className="mx-2">•</span>
+                                                    <span className='break-words'>{selectedMatch.venue}</span>
+                                                </div>
                                             </div>
-                                            <div className="flex items-center gap-4 flex-1 justify-end">
-                                                <span className="text-xl font-semibold">{selectedMatch.awayTeam}</span>
+                                            <div className="flex sm:w-1/4 w-3/4 items-center gap-2 flex-1 justify-start">
+                                                <span className="order-2 sm:order-1 !text-start md:text-md text-sm lg:text-lg font-semibold order">{selectedMatch.awayTeam}</span>
                                                 <img
                                                     src={selectedMatch.awayTeam.logo || aprLogo}
                                                     alt={selectedMatch.awayTeam}
-                                                    className="h-16 w-16 object-contain"
+                                                    className="order-1 sm:order-2 h-16 w-16 object-contain"
                                                 />
                                             </div>
-                                        </div>
-                                        <div className="mt-4 text-center text-white/80">
-                                            <span>{selectedMatch.time || '82`'}</span>
-                                            <span className="mx-2">•</span>
-                                            <span>{selectedMatch.venue}</span>
                                         </div>
                                     </div>
 
@@ -434,7 +437,7 @@ function LandingPageMatch() {
 
 
                 {/* Live Events Tab */}
-                <TabsContent value="live" className={`mt-6 flex justify-center ${ activeTab !== 'live' ? 'hidden' : ''}`}>
+                <TabsContent value="live" className={`mt-6 flex justify-center ${activeTab !== 'live' ? 'hidden' : ''}`}>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                         {filteredMatches.some(match => match.status === 'LIVE') ? (
                             filteredMatches.map((match) =>
@@ -686,7 +689,7 @@ function LandingPageMatch() {
                 </TabsContent>
 
                 {/* Upcoming Events Tab */}
-                <TabsContent value="upcoming" className={`mt-6 flex justify-center ${ activeTab !== 'upcoming' ? 'hidden' : ''}`}>
+                <TabsContent value="upcoming" className={`mt-6 flex justify-center ${activeTab !== 'upcoming' ? 'hidden' : ''}`}>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                         {filteredMatches.map((match) => (
                             match.status === 'UPCOMING' && (
@@ -934,7 +937,7 @@ function LandingPageMatch() {
                 </TabsContent>
 
                 {/* Past Events Tab */}
-                <TabsContent value="past" className={`mt-6 flex justify-center ${ activeTab !== 'past' ? 'hidden' : ''}`}>
+                <TabsContent value="past" className={`mt-6 flex justify-center ${activeTab !== 'past' ? 'hidden' : ''}`}>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 ">
                         {filteredMatches.some(match => match.status === 'PAST') ? (
                             filteredMatches.map((match) =>
@@ -1010,8 +1013,8 @@ function LandingPageMatch() {
 
 
                 {/* search events Tab  */}
-                <TabsContent value="search" className={`mt-6 flex justify-center ${ activeTab !== 'search' ? 'hidden' : ''}`}>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                <TabsContent value="search" className={`mt-6 flex justify-center ${activeTab !== 'search' ? 'hidden' : ''}`}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                         {searchedMatches.length > 0 ? (
                             searchedMatches.map((searchedMatch) =>
                                 <div
@@ -1076,17 +1079,17 @@ function LandingPageMatch() {
                                     </div>
                                 </div>
                             )) : (
-                            <div className="flex w-full justify-center border-2">
+                            <div className="flex w-full justify-center ">
                                 <div className="text-center mx-auto">
                                     <h1 className="text-2xl font-semibold">
-                                       Sorry! We Can't find " {searchTerm} "
+                                        Sorry! We Can't find " {searchTerm} "
                                     </h1>
                                 </div>
                             </div>
                         )}
                     </div>
-                    <div>   
-                    {searchedMatch && (
+                    <div>
+                        {searchedMatch && (
                             <div
                                 className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                                 <div className="bg-background w-[90%] max-w-4xl rounded-lg shadow-lg overflow-hidden">

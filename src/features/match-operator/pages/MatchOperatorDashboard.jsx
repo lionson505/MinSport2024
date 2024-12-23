@@ -17,11 +17,17 @@ export function MatchOperatorDashboard() {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('all');
   const [matches, setMatches] = useState([]);
+  const [nationalTeam, setNationalTeam] = useState([])
+  console.log('national team: ', nationalTeam);
+  
+  const [nationalTeamAPlayers, setNationalTeamAPlayers] = useState([])
+  const [nationalTeamBPlayers, setNationalTeamBPlayers] = useState([])
+  console.log('national team A players: ', nationalTeamAPlayers, 'national team B players : ', nationalTeamBPlayers)
 
-  const { 
+  const {
     oldMatches = [],
     initializeMatchSetup,
-    checkMatchAvailability 
+    checkMatchAvailability
   } = useMatchOperator();
 
   // Fetch matches from API
@@ -40,40 +46,110 @@ export function MatchOperatorDashboard() {
   }, []); // Ensure the dependency array is empty to run this effect only once
 
 
-  console.log('it was just a test:', matches[2]?.homeTeam);
-
-  const handleMatchClick = async (match) => {
+// fetch national teams
+useEffect(() => {
+  const fetchNationalTeam = async () => {
     try {
-      setError(null);
-      await checkMatchAvailability(match.id);
-
-      if (match.status === 'UPCOMING') {
-        await initializeMatchSetup(match.id);
-        setSelectedMatch(match);
-        setSetupMode(true);
-      } else if (match.status === 'LIVE') {
-        setSelectedMatch(match);
-        setSetupMode(false);
-      }
-    } catch (error) {
-      setError(error.message);
+      const response = await axiosInstance.get('/national-teams');
+      setNationalTeam(response.data); // Set all national teams in state
+    } catch (err) {
+      setError("Failed to fetch national teams. Please try again later.");
+      console.error(err);
     }
   };
+
+  fetchNationalTeam();
+}, []);
+
+const handleMatchClick = async (match) => {
+  try {
+    setError(null);
+    await checkMatchAvailability(match.id);
+
+    // Find the national team that matches the home and away teams
+    const awayTeam = nationalTeam.find(team => team.teamName === match.awayTeam);
+    const homeTeam = nationalTeam.find(team => team.teamName === match.homeTeam);
+
+    if (!homeTeam || !awayTeam) {
+      console.warn("No matching national team found for one or both teams.");
+      return;
+    }
+
+    const homeTeamPlayersId = homeTeam.id;
+    const awayTeamPlayersId = awayTeam.id;
+
+    console.log("Home team ID:", homeTeamPlayersId, "Away team ID:", awayTeamPlayersId);
+
+    // Fetch players for the respective teams
+    fetchNationalTeamPlayers(homeTeamPlayersId, awayTeamPlayersId);
+
+    if (match.status === 'UPCOMING') {
+      await initializeMatchSetup(match.id);
+      setSelectedMatch(match);
+      setSetupMode(true);
+    } else if (match.status === 'LIVE') {
+      setSelectedMatch(match);
+      console.log('Selected match:', match);
+      setSetupMode(false);
+    }
+  } catch (error) {
+    setError(error.message);
+    console.error("Error in handleMatchClick:", error);
+  }
+};
+
+// Refactor fetchNationalTeamPlayers to accept team IDs as arguments
+const fetchNationalTeamPlayers = async (homeTeamPlayersId, awayTeamPlayersId) => {
+  try {
+    const response = await axiosInstance.get('/national-team-player-staff');
+    const filteredAPlayers = response.data.filter(player => player.team?.id === homeTeamPlayersId);
+    setNationalTeamAPlayers(filteredAPlayers);
+
+    const filteredBPlayers = response.data.filter(player => player.team?.id === awayTeamPlayersId);
+    setNationalTeamBPlayers(filteredBPlayers);
+  } catch (err) {
+    setError("Failed to fetch national-team players. Please try again later.");
+    console.error(err);
+  }
+};
+
+
+
+  // national team players
+  // useEffect(() => {
+  //   const fetchNationalTeamPlayers = async () => {
+  //     try {
+  //       const response = await axiosInstance.get('/national-team-player-staff');
+  //       const filteredAPlayers = response.data.filter(player => player.team?.id === 77); // Filter by team id
+  //       setNationalTeamAPlayers(filteredAPlayers);
+  //       const filteredBPlayers = response.data.filter(player => player.team?.id === 76); // Filter by team id
+  //       setNationalTeamBPlayers(filteredBPlayers);
+  //     } catch (err) {
+  //       setError("Failed to fetch national-team players. Please try again later.");
+  //       console.error(err);
+  //     }
+  //   };
+  
+  //   fetchNationalTeamPlayers();
+  // }, []);
+
+
+
 
   const handleSetupComplete = () => {
     setSetupMode(false);
   };
 
-  const formatTime = (dateString) => {
-    try {
-      return new Date(dateString).toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch (error) {
-      return '--:--';
-    }
-  };
+  // const formatTime = (dateString) => {
+  //   try {
+  //     return new Date(dateString).toLocaleTimeString([], {
+  //       hour: '2-digit',
+  //       minute: '2-digit'
+  //     });
+  //   } catch (error) {
+  //     return '--:--';
+  //   }
+  // };
 
   const formatDate = (dateString) => {
     try {
@@ -91,7 +167,7 @@ export function MatchOperatorDashboard() {
     if (status === 'all') return matches; // Show all matches if status is 'all'
     return matches.filter(match => match.status === status); // Filter matches based on the selected status
   };
-  
+
   console.log('some data: ', matches)
 
   return (
@@ -115,8 +191,8 @@ export function MatchOperatorDashboard() {
       )}
 
       {/* <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full"> */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}  className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList>
           <TabsTrigger value="all">All Matches</TabsTrigger>
           <TabsTrigger value="LIVE">Live</TabsTrigger>
           <TabsTrigger value="UPCOMING">Upcoming</TabsTrigger>
@@ -126,57 +202,80 @@ export function MatchOperatorDashboard() {
         {['all', 'LIVE', 'UPCOMING', 'COMPLETED'].map((status) => (
           <TabsContent key={status} value={status}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filterMatches(status).map((currentMatch) => (
-                <div 
-                key={currentMatch.id} 
-                className="bg-white p-4 rounded-lg shadow cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => handleMatchClick(currentMatch)}
-                >
-                  <div className="flex justify-between items-center mb-4">
-                    <div>
-                      <span className="text-sm font-medium text-gray-500">{currentMatch.competition || 'Unknown Competition'}</span>
-                      <div className="text-xs text-gray-400 mt-1">{currentMatch.gameType || 'Unknown Game Type'}</div>
-                    </div>
-                    <span className={`px-2 py-1 rounded-full text-xs ${currentMatch.status === 'LIVE' ? 'bg-red-100 text-red-600' :
-                        currentMatch.status === 'UPCOMING' ? 'bg-green-100 text-green-600' :
-                          'bg-gray-100 text-gray-600'
-                      }`}>
-                      {currentMatch.status}
-                    </span>
-                  </div>
+              {filterMatches(status).map((currentMatch) => {
+                // Format startTime for current match
+                const dateOnly = currentMatch.startTime
+                  ? new Date(currentMatch.startTime).toISOString().split('T')[0]
+                  : 'N/A';
 
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <span className="font-medium">{currentMatch.homeTeam || 'Unknown Home Team'}</span>
+                const timeOnly = currentMatch.startTime
+                  ? new Date(currentMatch.startTime).toISOString().split('T')[1].split('.')[0]
+                  : 'N/A';
+
+                return (
+                  <div
+                    key={currentMatch.id}
+                    className="bg-white p-4 rounded-lg shadow cursor-pointer hover:shadow-md transition-shadow"
+                    onClick={() => handleMatchClick(currentMatch)}
+                  >
+                    <div className="flex justify-between items-center mb-4">
+                      <div>
+                        <span className="text-sm font-medium text-gray-500">
+                          {currentMatch.competition || 'Unknown Competition'}
+                        </span>
+                        <div className="text-xs text-gray-400 mt-1">
+                          {currentMatch.gameType || 'Unknown Game Type'}
+                        </div>
                       </div>
-                      <span className="text-xl font-bold">
-                        {currentMatch.awayScore || '0'}
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs ${currentMatch.status === 'LIVE'
+                          ? 'bg-red-100 text-red-600'
+                          : currentMatch.status === 'UPCOMING'
+                            ? 'bg-green-100 text-green-600'
+                            : 'bg-gray-100 text-gray-600'
+                          }`}
+                      >
+                        {currentMatch.status}
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <span className="font-medium">{currentMatch.awayTeam || 'Unknown Away Team'}</span>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-medium">
+                            {currentMatch.homeTeam || 'Unknown Home Team'}
+                          </span>
+                        </div>
+                        <span className="text-xl font-bold">
+                          {currentMatch.awayScore || '0'}
+                        </span>
                       </div>
-                      <span className="text-xl font-bold">
-                        {currentMatch.homeScore || '0'}
-                      </span>
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-medium">
+                            {currentMatch.awayTeam || 'Unknown Away Team'}
+                          </span>
+                        </div>
+                        <span className="text-xl font-bold">
+                          {currentMatch.homeScore || '0'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-4 border-t">
+                      <div className="flex justify-between items-center text-sm text-gray-500">
+                        <span>{currentMatch.venue || 'Unknown venue'}</span>
+                        {/* Display the formatted time */}
+                        <span>{timeOnly}</span>
+                      </div>
+                      <div className="text-xs text-gray-400 mt-1">
+                        {dateOnly}
+                      </div>
                     </div>
                   </div>
-
-                  <div className="mt-4 pt-4 border-t">
-                    <div className="flex justify-between items-center text-sm text-gray-500">
-                      <span>{currentMatch.venue || 'TBD'}</span>
-                      <span>{formatTime(currentMatch.startTime)}</span>
-                    </div>
-                    <div className="text-xs text-gray-400 mt-1">
-                      {formatDate(currentMatch.startTime)}
-                    </div>
-                  </div>
-                </div>
-              ))}
-
+                );
+              })}
             </div>
           </TabsContent>
         ))}
@@ -200,6 +299,8 @@ export function MatchOperatorDashboard() {
       {selectedMatch && !setupMode && (
         <MatchScoreboard
           match={selectedMatch}
+          homeTeamPlayers={nationalTeamAPlayers}
+          awayTeamPlayers={nationalTeamBPlayers}
           onClose={() => setSelectedMatch(null)}
         />
       )}

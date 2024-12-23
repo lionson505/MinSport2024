@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('accessibleLinks');
         setUser(null);
         setPermissions([]);
-        navigate('/landing');
+        navigate('/home');
         resolve();
       }, 1000);
     });

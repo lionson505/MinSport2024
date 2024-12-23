@@ -36,7 +36,7 @@ const ProfileMenu = () => {
       localStorage.removeItem('accessibleLinks');
       localStorage.removeItem('user');
       
-      navigate('/landing'); // Navigate after logout
+      navigate('/home'); // Navigate after logout
     } catch (error) {
       console.error('Logout error:', error); // Log errors
       toast.error('Failed to logout. Please try again.');

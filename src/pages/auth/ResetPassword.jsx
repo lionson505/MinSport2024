@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import axiosInstance from '../../utils/axiosInstance';
 
@@ -12,11 +12,6 @@ function ResetPassword() {
   });
   const [message, setMessage] = useState('');
 
-  // Extract token from query parameters
-  const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
-  const token = searchParams.get('token');
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
@@ -25,10 +20,7 @@ function ResetPassword() {
     }
 
     try {
-      console.log(token);
-      console.log(formData.password);
       const response = await axiosInstance.post('auth/reset-password', {
-        token: token, // Include the token in the request body
         password: formData.password
       });
       setMessage('Password has been reset successfully.');
@@ -39,7 +31,7 @@ function ResetPassword() {
 
   return (
     <div className="min-h-screen bg-[#F5F5FA] flex flex-col items-center justify-center p-4">
-      <img src="/logo/logo.svg" alt="MINISPORTS" className="h-32" />
+      <img src="https://dashboard.codeparrot.ai/api/assets/Z0iP4YNVQVcR8-NP__zKlYkwU" alt="Logo" className="h-16 mb-8" />
       
       <div className="w-full max-w-md bg-white rounded-[20px] shadow-sm p-8">
         <h2 className="text-2xl font-semibold text-[#1B2559] mb-2">Reset password</h2>

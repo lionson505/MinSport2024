@@ -54,7 +54,7 @@ function Documents() {
 
   const handleDownload = async (document) => {
     try {
-      const response = await axiosInstance.get(`src/uploads/documents/${document.filePath}`, {
+      const response = await axiosInstance.get(`/documents/download/${document.id}`, {
         responseType: 'blob',
       });
       const url = window.URL.createObjectURL(new Blob([response.data]));

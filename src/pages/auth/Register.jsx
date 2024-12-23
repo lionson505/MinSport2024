@@ -116,7 +116,7 @@ function Register() {
       if (formData.idType === 'national' && !nationalIdRegex.test(formData.idNumber)) {
         throw new Error('National ID must be 16 digits starting with 1 or 2');
       }
-      if (formData.idType === 'passport' && !passportRegex.test (formData.idNumber)) {
+      if (formData.idType === 'passport' && !passportRegex.test(formData.idNumber)) {
         throw new Error('Passport number must be 2 letters followed by 7 digits');
       }
 
@@ -145,8 +145,33 @@ function Register() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row">
-      <div className="w-full md:w-1/2 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen flex">
+      <style>
+        {`
+          @keyframes moveUpDown {
+            0%, 100% {
+              transform: translateY(0);
+            }
+            50% {
+              transform: translateY(-10px);
+            }
+          }
+
+          .animate-title span {
+            display: inline-block;
+            animation: moveUpDown 1s infinite;
+          }
+
+          .animate-title span:nth-child(odd) {
+            animation-delay: 0.1s;
+          }
+
+          .animate-title span:nth-child(even) {
+            animation-delay: 0.2s;
+          }
+        `}
+      </style>
+      <div className="w-1/2 flex flex-col items-center justify-center p-4">
         <div className="w-full max-w-md">
           <div className="bg-white rounded-lg shadow-sm p-8">
             <h2 className="text-xl font-semibold mb-2">Create an Account</h2>
@@ -173,81 +198,70 @@ function Register() {
                     <option value="passport">Passport</option>
                   </select>
                 </div>
-                <div>
-  <label className="block text-sm font-medium text-gray-700 mb-1">
-    {formData.idType === 'national' ? 'National ID Number' : 'Passport Number'}
-  </label>
-  <div className="flex gap-2">
-    <div className="relative flex-1">
-      <input
-        type="text"
-        name="idNumber"
-        value={formData.idNumber}
-        onChange={handleChange}
-        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-          verified ? 'border-green-500 pr-10' : ''
-        }`}
-        placeholder={formData.idType === 'national' 
-          ? "Enter your 16-digit National ID" 
-          : "Enter your Passport number (e.g., PC1234567)"
-        }
-        required
-        disabled={verified}
-      />
-      {verified && (
-        <svg
-          className="h-5 w-5 text-green-500 absolute right-3 top-1/2 -translate-y-1/2"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M5 13l4 4L19 7"
-          />
-        </svg>
-      )}
-    </div>
-    <button
-      type="button"
-      onClick={handleVerify}
-      disabled={verifying || verified || !formData.idNumber}
-      className={`px-4 py-2 rounded-lg text-white font-medium ${
-        verified
-          ? 'bg-green-500 hover:bg-green-600'
-          : 'bg-blue-600 hover:bg-blue-700'
-      } disabled:opacity-50 disabled:cursor-not-allowed min-w-[100px]`}
-    >
-      {verifying ? (
-        'Verifying...'
-      ) : verified ? (
-        'Verified'
-      ) : (
-        'Verify'
-      )}
-    </button>
-  </div>
 
-  {/* Conditionally render expiration date input for passport */}
-  {formData.idType === 'passport' && (
-    <div className="mt-4">
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        Expiration Date
-      </label>
-      <input
-        type="date"
-        name="expirationDate"
-        value={formData.expirationDate}
-        onChange={handleChange}
-        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-        required
-        disabled={verified}
-      />
-    </div>
-  )}
-</div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {formData.idType === 'national' ? 'National ID Number' : 'Passport Number'}
+                  </label>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <input
+                        type="text"
+                        name="idNumber"
+                        value={formData.idNumber}
+                        onChange={handleChange}
+                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                          verified ? 'border-green-500 pr-10' : ''
+                        }`}
+                        placeholder={formData.idType === 'national' 
+                          ? "Enter your 16-digit National ID" 
+                          : "Enter your Passport number (e.g., PC1234567)"
+                        }
+                        required
+                        disabled={verified}
+                      />
+                      {verified && (
+                        <svg
+                          className="h-5 w-5 text-green-500 absolute right-3 top-1/2 -translate-y-1/2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleVerify}
+                      disabled={verifying || verified || !formData.idNumber}
+                      className={`px-4 py-2 rounded-lg text-white font-medium ${
+                        verified
+                          ? 'bg-green-500 hover:bg-green-600'
+                          : 'bg-blue-600 hover:bg-blue-700'
+                      } disabled:opacity-50 disabled:cursor-not-allowed min-w-[100px]`}
+                    >
+                      {verifying ? (
+                        'Verifying...'
+                      ) : verified ? (
+                        'Verified'
+                      ) : (
+                        'Verify'
+                      )}
+                    </button>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {formData.idType === 'national' 
+                      ? "Must be 16 digits starting with 1 or 2" 
+                      : "Must be 2 letters followed by 7 digits"
+                    }
+                  </p>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -280,16 +294,6 @@ function Register() {
                   type="email"
                   name="email"
                   value={formData.email}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>  <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Telephone</label>
-                <input
-                  type="tel"
-                  name="telephone"
-                  value={formData.telephone}
                   onChange={handleChange}
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                   required
@@ -356,7 +360,7 @@ function Register() {
                   value={formData.reason}
                   onChange={handleChange}
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 min-h-[100px] resize-y"
-                  placeholder="Please explain why you want to register...    explain your Position and Area you work in"
+                  placeholder="Please explain why you want to register..."
                   required
                 />
               </div>
@@ -378,11 +382,10 @@ function Register() {
                 </div>
               </div>
             </form>
-          
           </div>
         </div>
       </div>
-      <div className="hidden md:flex md:w-1/2 bg-blue-600 flex-col items-center justify-center">
+      <div className="w-1/2 bg-blue-600 flex flex-col items-center justify-center">
         <h1 className="text-2xl font-bold text-white mb-8 animate-title">
           {Array.from("MIS - MINISPORTS").map((char, index) => (
             <span key={index}>{char}</span>
@@ -423,7 +426,6 @@ function Register() {
         </div>
       )}
     </div>
-
   );
 }
 

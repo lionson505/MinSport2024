@@ -18,8 +18,7 @@ import image3 from "../../components/liveMatch/c.jpg";
 import image4 from "../../components/liveMatch/d.jpeg";
 import image5 from "../../components/liveMatch/e.webp";
 import axiosInstance from '../../utils/axiosInstance';
-import { Form } from 'react-bootstrap';
-import federationImage from '../../components/liveMatch/federation.jpg';
+import federationImage from '../../components/liveMatch/federationImgFallBack.png';
 
 function Federation() {
   const [loading, setLoading] = useState(false);
@@ -33,6 +32,8 @@ function Federation() {
   const [imageIndex, setImageIndex] = useState(0);
   const [federations, setFederations] = useState([]);
   const [error, setError] = useState(null);
+  console.log("here is fetched federations: ", federations)
+
 
   useEffect(() => {
     const fetchFederations = async () => {
@@ -40,8 +41,6 @@ function Federation() {
 
         const response = await axiosInstance.get('/federations');
         await setFederations(response.data);
-
-
       } catch (err) {
         setError('Error fetching federations');
         console.error('Error fetching federations:', err);
@@ -69,65 +68,49 @@ function Federation() {
     const date = new Date(dateString);
     return date.toISOString().split('T')[0]; // Returns the date in YYYY-MM-DD format
   };
-  const events = federations.map((federation) => ({
-    id: federation.id,
-    title: federation.name,
-    subtitle: federation.acronym || federation.address, // Provide meaningful fallback
-    // image: federation.logo || federationImage , // Assuming this is the correct path for the image
-    image: federationImage, // Assuming this is the correct path for the image
-    startDate: formatDate(federation.createdAt),  // Use a relevant date field
-    category: federation.name,                  // Placeholder (adjust based on data)
-  }));
+  // const events = federations.map((federation) => ({
+  //   id: federation.id,
+  //   title: federation.name,
+  //   subtitle: federation.acronym || federation.address, // Provide meaningful fallback
+  //   // image: federation.logo || federationImage , // Assuming this is the correct path for the image
+  //   image: federationImage, // Assuming this is the correct path for the image
+  //   startDate: formatDate(federation.createdAt),  // Use a relevant date field
+  //   category: federation.name,                  // Placeholder (adjust based on data)
+  // }));
 
-  console.log(events);
+  // console.log(events);
 
-  useEffect(() => {
-    fetchEvents();
-  }, []);
 
-  const fetchEvents = async () => {
-    try {
-      setLoading(true);
-      // const data = await sportsEventService.getAllEvents();
-      setEvents(tempEvents);
-    } catch (error) {
-      console.error('Error fetching events:', error);
-      setEvents(tempEvents);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const filterEvents = (status) => {
+  //   if (!Array.isArray(events)) return [];
+  //   if (status === 'all') return events;
+  //   return events.filter(event => event.status === status);
+  // };
 
-  const filterEvents = (status) => {
-    if (!Array.isArray(events)) return [];
-    if (status === 'all') return events;
-    return events.filter(event => event.status === status);
-  };
+  // const renderEventCard = (event) => (
+  // <div
+  //   key={federation.id}
+  //   className="relative group cursor-pointer"
+  // >
+  //   <div className="h-80 relative overflow-hidden rounded-lg bg-blue-400 flex justify-center transform transition-all duration-300 hover:shadow-xl hover:shadow-black hover:scale-105 hover:bg-blue-500 hover:shadow-lg hover:opacity-80">
+  //     <div className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-white mt-10">
+  //       <img
+  //         src={federation.image}
+  //         alt={federation.title}
+  //         className="w-full h-full object-cover"
+  //       />
+  //     </div>
+  //     <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black opacity-90"></div>
 
-  const renderEventCard = (event) => (
-    <div
-      key={event.id}
-      className="relative group cursor-pointer"
-    >
-      <div className="h-80 relative overflow-hidden rounded-lg bg-blue-400 flex justify-center transform transition-all duration-300 hover:shadow-xl hover:shadow-black hover:scale-105 hover:bg-blue-500 hover:shadow-lg hover:opacity-80">
-        <div className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-white mt-10">
-          <img
-            src={event.image}
-            alt={event.title}
-            className="w-full h-full object-cover"
-          />
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black opacity-90"></div>
-
-        {/* Text content */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-          <div className="text-xs mb-2">{event.title}</div>
-          <h3 className="font-bold mb-1">{event.subtitle}</h3>
-          <p className="text-sm text-gray-200">{event.startDate}</p>
-        </div>
-      </div>
-    </div>
-  );
+  //     {/* Text content */}
+  //     <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+  //       <div className="text-xs mb-2">{federation.title}</div>
+  //       <h3 className="font-bold mb-1">{federation.subtitle}</h3>
+  //       <p className="text-sm text-gray-200">{federation.startDate}</p>
+  //     </div>
+  //   </div>
+  // </div>
+  // );
 
   const renderEventDetails = () => {
     if (!selectedEvent) return null;
@@ -287,19 +270,19 @@ function Federation() {
   return (
     <>
       <div
-        className="px-24"
+        className="px-10"
         style={{
           backgroundImage: `url(${image})`, // Ensure the correct path to federation.png
           backgroundSize: "100% 100%",
           backgroundRepeat: "no-repeat",
           backgroundPosition: "center",
-          height: "50vh",
+          height: "60vh",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           color: "white",
           position: "relative",
-          marginBottom: "2rem"
+          // marginBottom: "2rem"
         }}
       >
         {/* Overlay for a slight dark effect */}
@@ -312,12 +295,12 @@ function Federation() {
           backgroundColor: "rgba(0, 0, 0, 0.7)"
         }}></div>
         {/* Content Section */}
-        <div className="flex w-full mt-24 space-x-10" style={{ maxWidth: "100%", textAlign: "center", zIndex: 1 }}>
-          <div className=' w-4/5 text-start'>
-            <h1 style={{ fontSize: "3rem", fontWeight: "bold" }}>
+        <div className="flex" style={{ maxWidth: "100%", textAlign: "center", zIndex: 1 }}>
+          <div className='w-full sm:w-4/5  text-start'>
+            <h1 className='!text-4xl' style={{ fontWeight: "bold" }}>
               Welcome to Rwanda Sports Federations
             </h1>
-            <p style={{ fontSize: "1.2rem", margin: "20px 0", maxWidth: "700px" }}>
+            <p style={{ margin: "10px 0", maxWidth: "700px" }}>
               Explore all the sports federations in Rwanda, including FERWAFA,
               FERWABA, and many more. Stay updated on events, news, and achievements.
             </p>
@@ -334,7 +317,7 @@ function Federation() {
               Read More
             </button>
           </div>
-          <div className="flex justify-end w-1/6 w-60 h-60">
+          <div className="hidden sm:flex justify-end w-1/6 w-60 h-60">
             <img src={logo} alt="rwandanLogo" className="w-full h-full" />
           </div>
 
@@ -347,7 +330,103 @@ function Federation() {
           <Tabs defaultValue="all" className="mb-8">
             <TabsContent value="all" className="mt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {filterEvents('all').map(renderEventCard)}
+
+                {federations.map((federation) => (
+                  < div
+                    key={federation.id}
+                    className="aspect-square m-4 border-2 rounded-xl bg-blue-500 flex flex-col items-center justify-between p-4 cursor-pointer hover:opacity-90 transition-all transform hover:scale-105"
+                  >
+                    {/* Logo */}
+                    <img
+                      src={federationImage || federation.logo}
+                      alt={`${federation.name} logo`}
+                      className="h-16 w-16 mb-4"
+                    />
+
+                    {/* Federation Name and Acronym */}
+                    <div className="text-center">
+                      <h2 className="text-white font-bold text-lg">{federation.name}</h2>
+                      {federation.acronym && (
+                        <span className="text-white text-sm">({federation.acronym})</span>
+                      )}
+                    </div>
+
+                    {/* Optional Information */}
+                    <p className="text-white text-xs mt-2">
+                      Representative: {federation.legalRepresentativeName || "N/A"}
+                    </p>
+
+                    {/* Year Founded and Website */}
+                    <div className="flex justify-between items-center w-full mt-4 text-xs text-white">
+                      <span>Founded: {federation.yearFounded || "N/A"}</span>
+                      <a
+                        href={federation.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline"
+                      >
+                        Website
+                      </a>
+                    </div>
+                  </div>
+                ))}
+                {/* // acronym
+                  // address
+                  // createdAt
+                  // id
+                  // legalRepresentativeEmail
+                  // legalRepresentativeGender
+                  // legalRepresentativeName
+                  // legalRepresentativePhone
+                  // loginEmail
+                  // loginPassword
+                  // logo
+                  // name
+                  // updatedAt
+                  // website
+                  // yearFounded */}
+
+
+                {/* {filterEvents('all').map(renderEventCard)} */}
+                {/* Logo */}
+
+                {/* {federations.map((federation) => 
+                <div key={federation.id}>
+                  <img
+                  src={federation.logo}
+                  alt={`${federation.name} logo`}
+                  className="h-16 w-16 mb-4"
+                />
+
+                {/* Federation Name and Acronym */}
+                {/* <div className="text-center">
+                  <h2 className="text-white font-bold text-lg">{federation.name}</h2>
+                  {federation.acronym && (
+                    <span className="text-white text-sm">({federation.acronym})</span>
+                  )}
+                </div>
+
+                {/* Optional Information 
+                <p className="text-white text-xs mt-2">
+                  Representative: {federation.legalRepresentativeName || "N/A"}
+                </p>
+
+                {/* Year Founded and Website 
+                <div className="flex justify-between items-center w-full mt-4 text-xs text-white">
+                  <span>Founded: {federation.yearFounded || "N/A"}</span>
+                  <a
+                    href={federation.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline"
+                  >
+                    Website
+                  </a>
+                </div>
+                </div>
+                ) */}
+                {/* } */}
+
               </div>
             </TabsContent>
           </Tabs>
@@ -359,7 +438,7 @@ function Federation() {
             {renderEventDetails()}
           </Dialog>
         </div>
-      </PublicLayout>
+      </PublicLayout >
     </>
   );
 

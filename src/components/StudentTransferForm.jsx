@@ -11,14 +11,16 @@ import {
 import { AlertCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
-const StudentTransferForm = ({ students, isLoading, isSubmitting, setIsSubmitting }) => {
+const StudentTransferForm = ({ isSubmitting, setIsSubmitting }) => {
   const [schools, setSchools] = useState([]);
+  const [students, setStudents] = useState([]);
   const [fromSchool, setFromSchool] = useState('');
   const [transferStudent, setTransferStudent] = useState('');
   const [toSchool, setToSchool] = useState('');
   const [transferDate, setTransferDate] = useState('');
   const [showTransferConfirm, setShowTransferConfirm] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchSchools = async () => {
@@ -30,7 +32,19 @@ const StudentTransferForm = ({ students, isLoading, isSubmitting, setIsSubmittin
       }
     };
 
+    const fetchStudents = async () => {
+      try {
+        const response = await axiosInstance.get('/students'); // Fetch students from the students endpoint
+        setStudents(response.data || []);
+      } catch (error) {
+        console.error('Error fetching students:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     fetchSchools();
+    fetchStudents();
   }, []);
 
   const availableStudents = students.filter(student => student.schoolId !== parseInt(fromSchool));
@@ -59,36 +73,29 @@ const StudentTransferForm = ({ students, isLoading, isSubmitting, setIsSubmittin
 
   const processTransfer = async () => {
     setIsSubmitting(true);
-  
+
     try {
-      // Retrieve the school data
       const fromSchoolData = schools.find(school => school.id === parseInt(fromSchool));
       const toSchoolData = schools.find(school => school.id === parseInt(toSchool));
-  
+
       if (!fromSchoolData || !toSchoolData) {
         throw new Error('School data not found');
       }
-  
-      // Prepare the transfer data in the desired format
+
       const transferData = {
-        studentId: parseInt(transferStudent), // Student ID
-        fromInstitutionId: fromSchoolData.id, // Source Institution ID
-        toInstitutionId: toSchoolData.id, // Destination Institution ID
-        transferDate: new Date(transferDate).toISOString(), // ISO format date
+        studentId: parseInt(transferStudent),
+        fromSchool: fromSchoolData.id, // Send school ID instead of name
+        toSchool: toSchoolData.id, // Send school ID instead of name
+        transferDate: new Date(transferDate).toISOString(), // Properly format the date
       };
-  
+
       console.log('Transfer Data:', transferData);
-  
-      // Send the transfer data to the API
+
       const response = await axiosInstance.post('/students/transfers', transferData);
-  
-      // Close the confirmation dialog
       setShowTransferConfirm(false);
-  
-      // Display a success toast
       toast.success('Transfer processed successfully!');
-  
-      // Optionally refresh data or trigger a callback
+      
+      // Optionally refresh the data after successful transfer
       // if (onTransferSuccess) onTransferSuccess();
     } catch (error) {
       console.error('Error processing transfer:', error);
@@ -98,7 +105,7 @@ const StudentTransferForm = ({ students, isLoading, isSubmitting, setIsSubmittin
       setIsSubmitting(false);
     }
   };
-  
+
   return (
     <div className="transition-all duration-300 ease-in-out">
       <div className="bg-white rounded-lg shadow p-6">
@@ -141,7 +148,7 @@ const StudentTransferForm = ({ students, isLoading, isSubmitting, setIsSubmittin
               onChange={(e) => setTransferStudent(e.target.value)}
               required
               disabled={!fromSchool || isLoading}
-            >
+             >
               <option value="">
                 {isLoading 
                   ? 'Loading students...' 

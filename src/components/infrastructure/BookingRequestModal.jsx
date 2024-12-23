@@ -3,7 +3,7 @@ import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
-import { toast } from 'sonner';
+import { toast } from 'react-hot-toast';
 import axiosInstance from '../../utils/axiosInstance';
 
 const BookingRequestModal = ({ isOpen, onClose, infrastructure }) => {

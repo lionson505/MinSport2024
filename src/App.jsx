@@ -5,7 +5,6 @@ import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import CheckEmail from './pages/auth/CheckEmail';
-import ResetPassword from './pages/auth/ResetPassword';
 import DashboardLayout from './components/DashboardLayout';
 import Dashboard from './pages/Dashboard';
 import { DarkModeProvider } from './contexts/DarkModeContext';
@@ -115,9 +114,8 @@ function App() {
                       <Route path="/login" element={<Login />} />
                       <Route path="/forgot-password" element={<ForgotPassword />} />
                       <Route path="/check-email" element={<CheckEmail />} />
-                      <Route path="/reset-password" element={<ResetPassword />} />
                       <Route path="/" element={<LandingPage />} />
-                      <Route path="/landing" element={<LandingPage />} />
+                      <Route path="/home" element={<LandingPage />} />
                       <Route path="/notAuthorized" element={<NoPageFound />} />
                       <Route path="/sports-events" element={<AllSportsEvents />} />
                       <Route path="/events" element={<EventsPage />} />
@@ -127,7 +125,7 @@ function App() {
 
                       {/* Protected Routes */}
                       <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-                        <Route path="/" element={<Navigate to="/landing" replace />} />
+                        <Route path="/" element={<Navigate to="/home" replace />} />
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/national-teams" element={isPathAllowed('/national-teams') ? <NationalTeams /> : <Navigate to="/unauthorized" />} />
                         <Route path="/federations" element={isPathAllowed('/federations') ? <Federations /> : <Navigate to="/unauthorized" />} />

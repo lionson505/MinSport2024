@@ -6,8 +6,8 @@ import { Loader2, Pencil, Trash2, AlertTriangle } from 'lucide-react';
 import { Dialog, Transition } from '@headlessui/react';
 import toast from 'react-hot-toast';
 import EditGroupModal from '../components/EditGroupModal';
-import AddGroupModal from '../components/AddGroupModal';  // Import AddGroupModal
-import axiosInstance from '../utils/axiosInstance'; // Import the axios instance
+import AddGroupModal from '../components/AddGroupModal';
+import axiosInstance from '../utils/axiosInstance';
 import PrintButton from '../components/reusable/Print';
 
 function ManageGroups() {
@@ -16,17 +16,15 @@ function ManageGroups() {
   const [currentPage, setCurrentPage] = useState(1);
   const { isDarkMode } = useTheme();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false); // For Add Group Modal
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [groupToDelete, setGroupToDelete] = useState(null);
 
-  // State to hold groups data fetched from the API
   const [groupsData, setGroupsData] = useState([]);
-  const [loading, setLoading] = useState(true); // To handle loading state
-  const [error, setError] = useState(null); // To handle error messages
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Fetch groups data from the API
   const fetchGroups = async () => {
     try {
       setLoading(true);
@@ -44,7 +42,8 @@ function ManageGroups() {
         }
       });
 
-      setGroupsData(response.data);
+      console.log('Fetched group data:', response.data); // Log the group data
+      setGroupsData(Array.isArray(response.data.data) ? response.data.data : []);
     } catch (err) {
       setError('Failed to load groups data.');
       console.error('Error fetching groups:', err);
@@ -57,14 +56,11 @@ function ManageGroups() {
     fetchGroups();
   }, []);
 
-  // Filter function for search term
   const filteredData = groupsData.filter(group =>
-    Object.values(group).some(value =>
-      value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    (group.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (group.description || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Pagination logic
   const totalPages = Math.ceil(filteredData.length / entriesPerPage);
   const startIndex = (currentPage - 1) * entriesPerPage;
   const paginatedData = filteredData.slice(startIndex, startIndex + entriesPerPage);
@@ -74,8 +70,7 @@ function ManageGroups() {
   const lastEntry = Math.min(startIndex + entriesPerPage, totalEntries);
 
   const handleEdit = (group) => {
-    const groupToEdit = { ...group, permissions: group.permissions || {} };
-    setSelectedGroup(groupToEdit);
+    setSelectedGroup(group);
     setIsEditModalOpen(true);
   };
 
@@ -91,7 +86,6 @@ function ManageGroups() {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      // Update the group data with the updated group
       setGroupsData(prev => 
         prev.map(group => group.id === updatedGroup.id ? response.data : group)
       );
@@ -130,9 +124,8 @@ function ManageGroups() {
     }
   };
 
-  // Handle Add Group button click
   const handleAddGroup = () => {
-    setIsAddModalOpen(true); // Open Add Group Modal
+    setIsAddModalOpen(true);
   };
 
   return (
@@ -140,13 +133,11 @@ function ManageGroups() {
       <div className="mb-6">
         <h1 className="text-2xl font-semibold mb-6">Manage Groups</h1>
 
-        {/* Add Group Button */}
         <Button onClick={handleAddGroup} className="mb-4 flex items-center gap-2">
           <Loader2 className="h-5 w-5" />
           Add Group
         </Button>
 
-        {/* Table Controls */}
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center gap-4">
             <div>
@@ -192,7 +183,6 @@ function ManageGroups() {
           </div>
         </div>
 
-        {/* Groups Table */}
         <div className="bg-white rounded-lg shadow overflow-x-auto">
           {loading ? (
             <div className="flex justify-center items-center p-12">
@@ -203,43 +193,43 @@ function ManageGroups() {
           ) : (
             paginatedData.length > 0 ? (
               <PrintButton title='Manage Groups Report'>
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Group Name</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Modules</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Users</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium operation text-gray-500 uppercase">Operation</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {paginatedData.map((group) => (
-                    <tr key={group.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3">{group.name}</td>
-                      <td className="px-4 py-3">{group.accessibleModules}</td>
-                      <td className="px-4 py-3">{group.users}</td>
-                      <td className="px-4 py-3 operation" >
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => handleEdit(group)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => handleDelete(group)}
-                          >
-                            <Trash2 className="h-4 w-4 text-red-500" />
-                          </Button>
-                        </div>
-                      </td>
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Group Name</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Default</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium operation text-gray-500 uppercase">Operation</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {paginatedData.map((group) => (
+                      <tr key={group.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3">{group.name}</td>
+                        <td className="px-4 py-3">{group.description || 'N/A'}</td>
+                        <td className="px-4 py-3">{group.isDefault ? 'Yes' : 'No'}</td>
+                        <td className="px-4 py-3 operation">
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => handleEdit(group)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => handleDelete(group)}
+                            >
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </PrintButton>
             ) : (
               <div className="flex flex-col items-center justify-center py-12">
@@ -251,7 +241,6 @@ function ManageGroups() {
           )}
         </div>
 
-        {/* Pagination */}
         <div className="flex items-center justify-between mt-4">
           <div className="text-sm text-gray-500">
             {totalEntries > 0 ? `Showing ${firstEntry} to ${lastEntry} of ${totalEntries} entries` : 'No entries to show'}
@@ -296,20 +285,18 @@ function ManageGroups() {
         isOpen={isEditModalOpen}
         onClose={() => {
           setIsEditModalOpen(false);
-          setSelectedGroup(null); // Clear selected group when closing
+          setSelectedGroup(null);
         }}
         onEdit={handleEditSubmit}
         groupData={selectedGroup}
       />
 
-      {/* Add Group Modal */}
       <AddGroupModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        onAdd={fetchGroups} // Reload groups after adding a new one
+        onAdd={fetchGroups}
       />
 
-      {/* Delete Confirmation Modal */}
       <Transition appear show={isDeleteModalOpen} as={Fragment}>
         <Dialog as="div" className="relative z-50" onClose={() => setIsDeleteModalOpen(false)}>
           <Transition.Child

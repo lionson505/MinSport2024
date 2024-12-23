@@ -19,44 +19,60 @@ export function CreateMatchModal({ open, onClose }) {
     gameType: '',
     homeTeam: '',
     awayTeam: '',
+    homeScore: 0,
+    awayScore: 0,
     venue: '',
     startTime: '',
     date: '',
     status: ''
   });
-// on swagger db there are 11 fields needs to be created and save
+  
+  // on swagger db there are 11 fields needs to be created and save
   const { createMatch } = useMatchOperator();
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Transform data to match backend format
     const transformedData = {
-      homeTeam: formData.homeTeam,
-      awayTeam: formData.awayTeam,
-      homeScore: 0,
-      awayScore: 0,
-      competition: formData.competition,
-      venue: formData.venue,
-      matchDate: `${formData.date}T${formData.startTime}:00Z`,
-      startTime: `${formData.date}T${formData.startTime}:00Z`,
-      status: formData.status, // De
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };                
+      "homeTeam": formData.homeTeam || "Rwanda National Team",
+      "awayTeam": formData.awayTeam || "Argentina National Team", 
+      "homeScore": formData.homeScore || 0,  
+      "awayScore": formData.awayScore || 0,  
+      "competition": formData.competition || "International Friendly",  
+      "venue": formData.venue || "Maracanã Stadium", 
+      "matchDate": `${formData.date}T${formData.startTime}:00Z` || "2024-07-15T19:00:00Z", 
+      "startTime": `${formData.date}T${formData.startTime}:00Z` || "2024-07-15T19:00:00Z", 
+      "gameType": formData.gameType, 
+      "status" :   formData.status
+    }
+
+    formData.status
+    
+    
+
+    // const transformedData = {
+    //   "homeTeam": formData.homeTeam || "Rwanda National Team",  // Default to empty string if not provided
+    //   "awayTeam": formData.awayTeam || "Argentina National Team",  // Default to empty string if not provided
+    //   "homeScore": formData.homeScore || 0,  // Default to 0 if not provided
+    //   "awayScore": formData.awayScore || 0,  // Default to 0 if not providedformData.homeScore
+    //   "competition": formData.competition || "International Friendly",  // Default to empty string if not provided
+    //   "venue": formData.venue || "Maracanã Stadium",  // Default to empty string if not provided
+    //   "matchDate": "2024-07-15T19:00:00Z",  // Ensure this is correctly formatted
+    //   "startTime": "2024-07-15T19:00:00Z",  // Matches ISO 8601 format
+    //   "gameType": "FOOTBALL",  // Default to "FOOTBALL" if not provided
+    //   "status" :  "ONGOING"
+    // }
 
     setLoading(true);
 
     try {
       // POST request to your backend API
       // const response = await axiosInstance.post('/live-matches') // Replace with your actual endpoint
-      console.log('data', transformedData);
-      const response = await axiosInstance.post('/live-matches', transformedData, {
-        headers: {
-          'Content-Type': 'application/json',  // Ensure JSON content-type
-        }
-      });
+      // await console.log('data', transformedData);
+      await console.log('data', transformedData);
+      const response = await axiosInstance.post('/live-matches', transformedData
+      );
       console.log('Responsejlknlkllk:', response.data);
       if (response.status === 200 || response.status === 201) {
         toast.success('Match created successfully');
@@ -72,6 +88,7 @@ export function CreateMatchModal({ open, onClose }) {
       setLoading(false);
     }
   };
+  // some commentd
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -86,44 +103,44 @@ export function CreateMatchModal({ open, onClose }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2 flex flex-cols-2">
             <div className='w-1/2 p-2'>
-            <label className="text-sm font-medium">Game Type</label>
-            <Select
-              value={formData.gameType}
-              onValueChange={(value) => {
-                setFormData({ ...formData, gameType: value });
-                console.log("you selected gameType :", value);
-            }}
-              
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select game type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="football">Football</SelectItem>
-                <SelectItem value="basketball">Basketball</SelectItem>
-                <SelectItem value="volleyball">Volleyball</SelectItem>
-              </SelectContent>
-            </Select>
+              <label className="text-sm font-medium">Game Type</label>
+              <Select
+                value={formData.gameType}
+                onValueChange={(value) => {
+                  setFormData({ ...formData, gameType: value });
+                  console.log("you selected gameType :", value);
+                }}
+
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select game type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Football">Football</SelectItem>
+                  <SelectItem value="Basketball">Basketball</SelectItem>
+                  <SelectItem value="Volleyball">Volleyball</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className='w-1/2'>
-            <label className="text-sm font-medium">Status</label>
-            <Select
-              value={formData.status}
-              onValueChange={(value) => { 
-                setFormData({ ...formData, status: value })
-                console.log('you selected status: ', value)
-              }
-            }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="In Progress">In Progress</SelectItem>
-                <SelectItem value="LIVE">LIVE</SelectItem>
-                <SelectItem value="UPCOMING">UPCOMING</SelectItem>
-              </SelectContent>
-            </Select>
+              <label className="text-sm font-medium">Status</label>
+              <Select
+                value={formData.status}
+                onValueChange={(value) => {
+                  setFormData({ ...formData, status: value })
+                  console.log('you selected status: ', value)
+                }
+                }
+               >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="IN PROGRESS">IN PROGRESS</SelectItem>
+                  <SelectItem value="LIVE">LIVE</SelectItem>
+                  <SelectItem value="UPCOMING">UPCOMING</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

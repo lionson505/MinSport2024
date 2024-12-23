@@ -4,9 +4,11 @@ import FootballScoreboard from './FootballScoreboard';
 import BasketballScoreboard from './BasketballScoreboard';
 import VolleyballScoreboard from './VolleyballScoreboard';
 
-export function MatchScoreboard({ match, onClose }) {
+export function MatchScoreboard({ match, homeTeamPlayers, awayTeamPlayers, onClose }) {
   const [teamAPlayers, setTeamAPlayers] = useState([]);
+  console.log("match : ", match);
   const [teamBPlayers, setTeamBPlayers] = useState([]);
+
 
   // Load players from match setup data
   useEffect(() => {
@@ -27,12 +29,12 @@ export function MatchScoreboard({ match, onClose }) {
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto p-4">
-          {match.gameType === 'football' && (
+          {match.gameType === 'Football' && (
             <FootballScoreboard 
               match={match} 
               onClose={onClose}
-              teamAPlayers={teamAPlayers}
-              teamBPlayers={teamBPlayers}
+              teamAPlayers={homeTeamPlayers}
+              teamBPlayers={awayTeamPlayers}
             />
           )}
           {match.gameType === 'basketball' && (
