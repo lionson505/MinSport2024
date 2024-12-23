@@ -51,16 +51,47 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
     setShowPlayerSelect(true);
   };
 
+  // for searching Player 
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Filter players based on the search term
+  const filteredPlayers =
+    pendingEvent?.team === 'B'
+      ? teamBPlayers.filter((player) =>
+        `${player.playerStaff.firstName} ${player.playerStaff.lastName}`
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())
+      )
+      : [];
+
+
   const confirmEventWithPlayer = (playerId) => {
-    const player = pendingEvent.team === 'A' 
+    console.log('ID of the player who scored:', playerId);
+
+    // Find the player based on the team
+    const player = pendingEvent.team === 'A'
       ? teamAPlayers.find(p => p.id === playerId)
       : teamBPlayers.find(p => p.id === playerId);
 
-    addEvent(pendingEvent.type, pendingEvent.team, player);
+    // Create a formatted object or string with full name
+    const playerDetails = player
+      ? {
+        id: player.playerStaff.id,
+        fullName: `${player.playerStaff.lastName} ${player.playerStaff.firstName}`,
+      }
+      : null;
+
+    console.log('Selected player details:', playerDetails);
+
+    // Add event and reset states
+    if (playerDetails) {
+      addEvent(pendingEvent.type, pendingEvent.team, playerDetails.fullName);
+    }
     setShowPlayerSelect(false);
     setPendingEvent(null);
     setSelectedPlayer(null);
   };
+
 
   const handlePeriodChange = (newStatus) => {
     setMatchData(prev => ({
@@ -133,16 +164,16 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
       <div className="grid grid-cols-3 gap-4">
         {/* Team A */}
         <div className="text-center">
-          <h3 className="font-medium mb-2">{match.homeTeam?.name || 'Home Team'}</h3>
-          <div className="text-5xl font-bold mb-2">{matchData.teamAScore}</div>
+          <h3 className="font-medium mb-2">{match.homeTeam || 'Home Team'}</h3>
+          <div className="text-5xl font-bold mb-2">{match.homeScore}</div>
           <div className="flex justify-center gap-2">
-            <Button
+            {/* <Button
               size="sm"
               variant="outline"
               onClick={() => addEvent('GOAL', 'A')}
             >
               ⚽ Goal
-            </Button>
+            </Button> */}
           </div>
         </div>
 
@@ -161,16 +192,16 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
 
         {/* Team B */}
         <div className="text-center">
-          <h3 className="font-medium mb-2">{match.awayTeam?.name || 'Away Team'}</h3>
-          <div className="text-5xl font-bold mb-2">{matchData.teamBScore}</div>
+          <h3 className="font-medium mb-2">{match.awayTeam || 'Away Team'}</h3>
+          <div className="text-5xl font-bold mb-2">{match.awayScore}</div>
           <div className="flex justify-center gap-2">
-            <Button
+            {/* <Button
               size="sm"
               variant="outline"
               onClick={() => addEvent('GOAL', 'B')}
             >
               ⚽ Goal
-            </Button>
+            </Button> */}
           </div>
         </div>
       </div>
@@ -181,7 +212,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
     <div className="grid grid-cols-2 gap-6 mb-6">
       {/* Team A Controls */}
       <div className="space-y-4">
-        <h3 className="font-medium">{match.homeTeam?.name || 'Home Team'} Controls</h3>
+        <h3 className="font-medium">{match.homeTeam || 'Home Team'} Controls</h3>
         <div className="grid grid-cols-2 gap-2">
           <Button
             onClick={() => handleEventWithPlayer('GOAL', 'A')}
@@ -206,7 +237,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
 
       {/* Team B Controls */}
       <div className="space-y-4">
-        <h3 className="font-medium">{match.awayTeam?.name || 'Away Team'} Controls</h3>
+        <h3 className="font-medium">{match.awayTeam || 'Away Team'} Controls</h3>
         <div className="grid grid-cols-2 gap-2">
           <Button
             onClick={() => handleEventWithPlayer('GOAL', 'B')}
@@ -281,18 +312,26 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
           </DialogDescription>
         </DialogHeader>
 
-        <Select value={selectedPlayer} onValueChange={confirmEventWithPlayer}>
+        <Select value={selectedPlayer} onValueChange={(value) => confirmEventWithPlayer(value)}>
           <SelectTrigger>
             <SelectValue placeholder="Select player" />
           </SelectTrigger>
-          <SelectContent>
-            {(pendingEvent?.team === 'A' ? teamAPlayers : teamBPlayers).map(player => (
-              <SelectItem key={player.id} value={player.id}>
-                #{player.number} - {player.name}
-              </SelectItem>
-            ))}
+          <SelectContent className="border-2 border-blue-500 h-80 overflow-y-auto mt-2">
+            {pendingEvent?.team === 'A' &&
+              teamAPlayers?.map(player => (
+                <SelectItem key={player.id} value={player.id}>
+                  #{player.playerStaff.id} - {player.playerStaff.lastName} {player.playerStaff.firstName}
+                </SelectItem>
+              ))}
+            {pendingEvent?.team === 'B' &&
+              teamBPlayers?.map(player => (
+                <SelectItem key={player.id} value={player.id}>
+                  #{player.playerStaff.id} - {player.playerStaff.lastName} {player.playerStaff.firstName}
+                </SelectItem>
+              ))}
           </SelectContent>
         </Select>
+
       </DialogContent>
     </Dialog>
   );

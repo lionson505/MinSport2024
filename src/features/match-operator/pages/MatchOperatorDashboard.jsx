@@ -17,6 +17,12 @@ export function MatchOperatorDashboard() {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('all');
   const [matches, setMatches] = useState([]);
+  const [nationalTeam, setNationalTeam] = useState([])
+  console.log('national team: ', nationalTeam);
+  
+  const [nationalTeamAPlayers, setNationalTeamAPlayers] = useState([])
+  const [nationalTeamBPlayers, setNationalTeamBPlayers] = useState([])
+  console.log('national team A players: ', nationalTeamAPlayers, 'national team B players : ', nationalTeamBPlayers)
 
   const {
     oldMatches = [],
@@ -40,24 +46,95 @@ export function MatchOperatorDashboard() {
   }, []); // Ensure the dependency array is empty to run this effect only once
 
 
-
-  const handleMatchClick = async (match) => {
+// fetch national teams
+useEffect(() => {
+  const fetchNationalTeam = async () => {
     try {
-      setError(null);
-      await checkMatchAvailability(match.id);
-
-      if (match.status === 'UPCOMING') {
-        await initializeMatchSetup(match.id);
-        setSelectedMatch(match);
-        setSetupMode(true);
-      } else if (match.status === 'LIVE') {
-        setSelectedMatch(match);
-        setSetupMode(false);
-      }
-    } catch (error) {
-      setError(error.message);
+      const response = await axiosInstance.get('/national-teams');
+      setNationalTeam(response.data); // Set all national teams in state
+    } catch (err) {
+      setError("Failed to fetch national teams. Please try again later.");
+      console.error(err);
     }
   };
+
+  fetchNationalTeam();
+}, []);
+
+const handleMatchClick = async (match) => {
+  try {
+    setError(null);
+    await checkMatchAvailability(match.id);
+
+    // Find the national team that matches the home and away teams
+    const awayTeam = nationalTeam.find(team => team.teamName === match.awayTeam);
+    const homeTeam = nationalTeam.find(team => team.teamName === match.homeTeam);
+
+    if (!homeTeam || !awayTeam) {
+      console.warn("No matching national team found for one or both teams.");
+      return;
+    }
+
+    const homeTeamPlayersId = homeTeam.id;
+    const awayTeamPlayersId = awayTeam.id;
+
+    console.log("Home team ID:", homeTeamPlayersId, "Away team ID:", awayTeamPlayersId);
+
+    // Fetch players for the respective teams
+    fetchNationalTeamPlayers(homeTeamPlayersId, awayTeamPlayersId);
+
+    if (match.status === 'UPCOMING') {
+      await initializeMatchSetup(match.id);
+      setSelectedMatch(match);
+      setSetupMode(true);
+    } else if (match.status === 'LIVE') {
+      setSelectedMatch(match);
+      console.log('Selected match:', match);
+      setSetupMode(false);
+    }
+  } catch (error) {
+    setError(error.message);
+    console.error("Error in handleMatchClick:", error);
+  }
+};
+
+// Refactor fetchNationalTeamPlayers to accept team IDs as arguments
+const fetchNationalTeamPlayers = async (homeTeamPlayersId, awayTeamPlayersId) => {
+  try {
+    const response = await axiosInstance.get('/national-team-player-staff');
+    const filteredAPlayers = response.data.filter(player => player.team?.id === homeTeamPlayersId);
+    setNationalTeamAPlayers(filteredAPlayers);
+
+    const filteredBPlayers = response.data.filter(player => player.team?.id === awayTeamPlayersId);
+    setNationalTeamBPlayers(filteredBPlayers);
+  } catch (err) {
+    setError("Failed to fetch national-team players. Please try again later.");
+    console.error(err);
+  }
+};
+
+
+
+  // national team players
+  // useEffect(() => {
+  //   const fetchNationalTeamPlayers = async () => {
+  //     try {
+  //       const response = await axiosInstance.get('/national-team-player-staff');
+  //       const filteredAPlayers = response.data.filter(player => player.team?.id === 77); // Filter by team id
+  //       setNationalTeamAPlayers(filteredAPlayers);
+  //       const filteredBPlayers = response.data.filter(player => player.team?.id === 76); // Filter by team id
+  //       setNationalTeamBPlayers(filteredBPlayers);
+  //     } catch (err) {
+  //       setError("Failed to fetch national-team players. Please try again later.");
+  //       console.error(err);
+  //     }
+  //   };
+  
+  //   fetchNationalTeamPlayers();
+  // }, []);
+
+
+
 
   const handleSetupComplete = () => {
     setSetupMode(false);
@@ -222,6 +299,8 @@ export function MatchOperatorDashboard() {
       {selectedMatch && !setupMode && (
         <MatchScoreboard
           match={selectedMatch}
+          homeTeamPlayers={nationalTeamAPlayers}
+          awayTeamPlayers={nationalTeamBPlayers}
           onClose={() => setSelectedMatch(null)}
         />
       )}
