@@ -113,12 +113,18 @@ function Login() {
           }
         `}
       </style>
-      <div className="w-1/2 flex flex-col items-center justify-center p-4">
-        <div className="w-full max-w-md">
+      <div className="w-full md:w-1/2 flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-md flex flex-col items-center">
+          <div className="w-1/2 md:w-0 md:hidden flex flex-col items-center justify-center">
+            <img src="/logo/logo.svg" alt="MINISPORTS" className="h-32" />
+            <h1 className="text-2xl font-bold text-black mb-8 animate-title">
+              MINISPORT
+            </h1>
+          </div>
           <div className="bg-white rounded-lg shadow-sm p-8">
             <h2 className="text-xl font-semibold mb-2">Login to continue</h2>
             <p className="text-gray-500 mb-6">Welcome back, enter your credentials to continue</p>
-            
+
             {errorMessage && (
               <div className="text-red-500 align-center center flex justify-center font-semibold w-full h-25 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 text-sm">
                 {
@@ -204,7 +210,7 @@ function Login() {
           </div>
         </div>
       </div>
-      <div className="w-1/2 bg-blue-600 flex flex-col items-center justify-center">
+      <div className="w-0 md:w-1/2 hidden md:flex flex-col items-center justify-center bg-blue-600 ">
         <h1 className="text-2xl font-bold text-white mb-8 animate-title">
           {Array.from("MIS - MINISPORTS").map((char, index) => (
             <span key={index}>{char}</span>
