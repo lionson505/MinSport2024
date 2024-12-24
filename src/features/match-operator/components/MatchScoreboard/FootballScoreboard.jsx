@@ -4,6 +4,7 @@ import { TimerDisplay } from '../../../../components/scoreboards/TimerDisplay';
 import { PlayerStatsDisplay } from '../../../../components/scoreboards/PlayerStatsDisplay';
 import { TeamStatsDisplay } from '../../../../components/scoreboards/TeamStatsDisplay';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../../../../components/ui/dialog';
+import axiosInstance from '../../../../utils/axiosInstance';
 import { Timer, Users, ChevronRight } from 'lucide-react';
 import {
   Select,
@@ -33,44 +34,70 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
   // const [anotherGoal, setAnotherGoal] = useState()
   // console.log('another goal :', anotherGoal)
 
-  const addEvent = (type,  team, teamScore, player = null) => {
-    if (type === 'GOAL' && team === 'A' ) {
+
+  // setMatchData(prev => {
+  //   const updatedData = {
+  //     ...prev,
+  //     events: [
+  //       ...prev.events,
+  //       {
+  //         type,
+  //         team,
+  //         player,
+  //         minute: prev.currentTime,
+  //         timestamp: new Date().toISOString(),
+  //       },
+  //     ],
+  //   };
+
+  //   if (type === 'GOAL' && team === 'A') {
+  //     console.log('current goal number is:', match.homeScore + 1);
+  //     matchData.homeScore = match.homeScore + 1;
+  //   }
+
+  //   return updatedData;
+  // });
+
+  const addEvent = async (type, team, teamScore, matchId, player = null) => {
+    if (type === 'GOAL') {
+      try {
+
+        let updatedMatchData = {};
+
+        /* there is some confusion a little bit about 
+           updatedMatchData = { {the value i used are was supposed to be used in opposite positions }: anotherGoal };this was */
+        if (team === 'A') {
+          console.log("team : ", team)
           console.log('TEAM A current goal number is:', teamScore);
-          const anotherGoal =  teamScore + 1;
-          setMatchData(prev => ({ ...prev, teamAScore: anotherGoal }))
-          console.log('current teamAScore: ', anotherGoal)
-        }
-    else if(type === 'GOAL' && team === 'B' ) {
+          let anotherGoal = teamScore + 1;
+          setMatchData(prev => ({ ...prev, teamAScore: anotherGoal }));
+          console.log('Updated teamAScore:', anotherGoal);
+          updatedMatchData = { awayScore: anotherGoal };
+          console.log("home team updatedmatch data : ", updatedMatchData)
+        } else if (team === 'B') {
+          console.log("team : ", team)
           console.log('TEAM B current goal number is:', teamScore);
-          const anotherGoal =  teamScore + 1;
-          setMatchData(prev => ({ ...prev, teamBScore: anotherGoal }))
-          console.log('current teamBScore: ', anotherGoal)
+          let anotherGoal = teamScore + 1;
+          setMatchData(prev => ({ ...prev, teamBScore: anotherGoal }));
+          console.log('Updated teamBScore:', anotherGoal);
+          updatedMatchData = { homeScore: anotherGoal };
+          console.log("away team updatedmatch data : ", updatedMatchData)
+        }
+
+        console.log('Match ID:', matchId);
+
+        // Corrected endpoint and method
+        const endpoint = `/live-matches/${matchId}/score`;
+        const response = await axiosInstance.patch(endpoint, updatedMatchData);
+        console.log('API Response:', response.data);
+      } catch (error) {
+        console.error('Error updating:', error.response ? error.response.data : error.message);
+      }
     }
   };
-    // setMatchData(prev => {
-    //   const updatedData = {
-    //     ...prev,
-    //     events: [
-    //       ...prev.events,
-    //       {
-    //         type,
-    //         team,
-    //         player,
-    //         minute: prev.currentTime,
-    //         timestamp: new Date().toISOString(),
-    //       },
-    //     ],
-    //   };
-  
-    //   if (type === 'GOAL' && team === 'A') {
-    //     console.log('current goal number is:', match.homeScore + 1);
-    //     matchData.homeScore = match.homeScore + 1;
-    //   }
-  
-    //   return updatedData;
-    // });
-  
-  
+
+
+
 
   const handleEventWithPlayer = (type, team) => {
     setPendingEvent({ type, team });
@@ -95,24 +122,42 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
     console.log('ID of the player who scored:', playerId);
 
     // Find the player based on the team
-    const player = pendingEvent.team === 'A'
-      ? teamAPlayers.find(p => p.id === playerId)
-      : teamBPlayers.find(p => p.id === playerId);
+    if (pendingEvent.team === 'A') {
+      const player = teamAPlayers.find(p => p.id === playerId)
+      // Create a formatted object or string with full name
+      const playerDetails = player
+        ? {
+          id: player.playerStaff.id,
+          fullName: `${player.playerStaff.lastName} ${player.playerStaff.firstName}`,
+        }
+        : null;
 
-    // Create a formatted object or string with full name
-    const playerDetails = player
-      ? {
-        id: player.playerStaff.id,
-        fullName: `${player.playerStaff.lastName} ${player.playerStaff.firstName}`,
+      console.log('Selected player details:', playerDetails);
+
+      // Add event and reset states
+      if (playerDetails) {
+        addEvent('GOAL', 'A', match.awayScore, match.id,);
       }
-      : null;
-
-    console.log('Selected player details:', playerDetails);
-
-    // Add event and reset states
-    if (playerDetails) {
-      addEvent(pendingEvent.type, pendingEvent.team, playerDetails.fullName);
     }
+    else if (pendingEvent.team === 'B') {
+      const player = teamBPlayers.find(p => p.id === playerId);
+      // Create a formatted object or string with full name
+      const playerDetails = player
+        ? {
+          id: player.playerStaff.id,
+          fullName: `${player.playerStaff.lastName} ${player.playerStaff.firstName}`,
+        }
+        : null;
+
+      console.log('Selected player details:', playerDetails);
+
+      // Add event and reset states
+      if (playerDetails) {
+        addEvent('GOAL', 'B', match.awayScore, match.id,);
+      }
+    }
+
+
     setShowPlayerSelect(false);
     setPendingEvent(null);
     setSelectedPlayer(null);
@@ -196,7 +241,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
             <Button
               size="sm"
               variant="outline"
-              onClick={() => addEvent('GOAL', 'A', match.homeScore)}
+              onClick={() => addEvent('GOAL', 'A', match.homeScore, match.id)}
             >
               ⚽ Goal
             </Button>
@@ -224,7 +269,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
             <Button
               size="sm"
               variant="outline"
-              onClick={() => addEvent('GOAL', 'B', match.awayScore)}
+              onClick={() => addEvent('GOAL', 'B', match.awayScore, match.id)}
             >
               ⚽ Goal
             </Button>
@@ -241,7 +286,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
         <h3 className="font-medium">{match.homeTeam || 'Home Team'} Controls</h3>
         <div className="grid grid-cols-2 gap-2">
           <Button
-            onClick={() => handleEventWithPlayer('GOAL', 'A')}
+            onClick={() => handleEventWithPlayer('GOAL', 'A', match.homeScore, match.id)}
             className="w-full col-span-2"
           >
             ⚽ Goal
