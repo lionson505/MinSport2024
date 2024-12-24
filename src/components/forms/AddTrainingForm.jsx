@@ -2,37 +2,40 @@ import React, { useState, useEffect } from 'react';
 import { Info } from 'lucide-react';
 import Select from 'react-select';
 import axiosInstance from '../../utils/axiosInstance';
+import { toast } from 'react-hot-toast';
 
 const AddTrainingForm = ({ onSubmit, onCancel, isSubmitting, initialData }) => {
   const [availableProfessionals, setAvailableProfessionals] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Fetch employees from the API
+  // Fetch official referees from the API
   useEffect(() => {
-    const fetchEmployees = async () => {
+    const fetchOfficialReferees = async () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await axiosInstance.get('/employees');
-        if (response.data && Array.isArray(response.data.employees)) {
-          const employees = response.data.employees.map((employee) => ({
-            value: employee.id, // Use employee ID as the 'value'
-            label: `${employee.firstname} ${employee.lastname}`,
+        const response = await axiosInstance.get('/official-referees');
+        if (response.data && Array.isArray(response.data)) {
+          const referees = response.data.map((referee) => ({
+            value: referee.id,
+            label: `${referee.firstName} ${referee.lastName}`,
           }));
-          setAvailableProfessionals(employees);
+          setAvailableProfessionals(referees);
         } else {
-          setError('Failed to load employees. Invalid data format.');
+          setError('Failed to load referees. Invalid data format.');
+          toast.error('Failed to load referees. Invalid data format.');
         }
       } catch (err) {
-        console.error('Error fetching employees:', err);
-        setError('Failed to load employees. Please try again later.');
+        console.error('Error fetching referees:', err);
+        setError('Failed to load referees. Please try again later.');
+        toast.error('Failed to load referees. Please try again later.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchEmployees();
+    fetchOfficialReferees();
   }, []);
 
   // Initialize form data
@@ -41,7 +44,10 @@ const AddTrainingForm = ({ onSubmit, onCancel, isSubmitting, initialData }) => {
     fromDate: initialData?.fromDate || '',
     toDate: initialData?.toDate || '',
     organiser: initialData?.organiser || '',
-    participants: initialData?.participants?.map(id => ({ value: id, label: '' })) || [],
+    participants: initialData?.participants?.map(id => {
+      const professional = availableProfessionals.find(p => p.value === id);
+      return professional ? { value: id, label: professional.label } : { value: id, label: '' };
+    }) || [],
   });
 
   // Update form data when initialData changes
@@ -52,12 +58,15 @@ const AddTrainingForm = ({ onSubmit, onCancel, isSubmitting, initialData }) => {
         fromDate: initialData.fromDate || '',
         toDate: initialData.toDate || '',
         organiser: initialData.organiser || '',
-        participants: initialData.participants?.map(id => ({ value: id, label: '' })) || [],
+        participants: initialData.participants?.map(id => {
+          const professional = availableProfessionals.find(p => p.value === id);
+          return professional ? { value: id, label: professional.label } : { value: id, label: '' };
+        }) || [],
       });
     }
-  }, [initialData]);
+  }, [initialData, availableProfessionals]);
 
-  // Add this new effect to update participant labels once we have the available professionals
+  // Update participant labels once we have the available professionals
   useEffect(() => {
     if (availableProfessionals.length > 0 && formData.participants.length > 0) {
       setFormData(prev => ({
@@ -82,7 +91,7 @@ const AddTrainingForm = ({ onSubmit, onCancel, isSubmitting, initialData }) => {
   const handleParticipantChange = (selectedOptions) => {
     setFormData(prev => ({
       ...prev,
-      participants: selectedOptions ? selectedOptions.map(option => option.value) : [],
+      participants: selectedOptions || [],
     }));
   };
 
@@ -103,16 +112,24 @@ const AddTrainingForm = ({ onSubmit, onCancel, isSubmitting, initialData }) => {
         fromDate: formData.fromDate,
         toDate: formData.toDate || formData.fromDate,
         organiser: formData.organiser.toUpperCase(),
-        participants: formData.participants.length > 0 
-          ? formData.participants.map(id => parseInt(id, 10))
-          : [0],
+        participants: formData.participants.map(participant => participant.value),
       };
 
       // Log the exact data being sent
       console.log('Attempting to submit:', JSON.stringify(submissionData, null, 2));
 
-      const response = await axiosInstance.post('/trainings', submissionData);
-      
+      let response;
+      if (initialData) {
+        // Perform PUT request for updating
+        response = await axiosInstance.put(`/trainings/${initialData.id}`, submissionData);
+        toast.success('Training updated successfully');
+        window.location.reload();
+      } else {
+        // Perform POST request for adding
+        response = await axiosInstance.post('/trainings', submissionData);
+        toast.success('Training added successfully');
+      }
+
       if (response.data) {
         // Reset form if successful
         setFormData({
@@ -137,12 +154,12 @@ const AddTrainingForm = ({ onSubmit, onCancel, isSubmitting, initialData }) => {
       });
 
       // Set a more specific error message
-      setError(
-        err.response?.data?.message || 
+      const errorMessage = err.response?.data?.message || 
         err.response?.statusText || 
         err.message || 
-        'Failed to submit training. Please check your input and try again.'
-      );
+        'Failed to submit training. Please check your input and try again.';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

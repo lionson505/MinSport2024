@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
-import { Loader2, Edit, Trash2, Pencil, AlertTriangle } from 'lucide-react';
+import { Loader2, Pencil, Trash2, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import AddUserModal from '../components/AddUserModal';
 import EditUserModal from '../components/EditUserModal'; 
 import ManageGroups from './ManageGroups';
 import axiosInstance from '../utils/axiosInstance';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog'; // Assuming Dialog component exists
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 
 function Users() {
   const [loading, setLoading] = useState(true);
@@ -15,18 +15,26 @@ function Users() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false); 
   const [selectedUser, setSelectedUser] = useState(null); 
   const [userData, setUserData] = useState([]);
-  const [groupData, setGroupData] = useState([]); 
+  const [groupData, setGroupData] = useState([]);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('users'); 
   const [searchName, setSearchName] = useState(''); 
   const [searchGroup, setSearchGroup] = useState(''); 
   const [searchStatus, setSearchStatus] = useState('');
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);  // State for delete modal
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const navigate = useNavigate();
 
-  // Get the group name based on the groupId
-  const getGroupName = (groupId) => {
-    const group = groupData.find((group) => group.id === groupId);
+  // Get the group name based on the userGroup object
+  const getGroupName = (userGroup) => {
+    if (!Array.isArray(groupData)) {
+      console.error('groupData is not an array:', groupData);
+      return 'N/A';
+    }
+    if (!userGroup) {
+      console.warn('User does not have a userGroup:', userGroup);
+      return 'N/A';
+    }
+    const group = groupData.find((group) => group.id === userGroup.id);
     return group ? group.name : 'N/A';
   };
 
@@ -52,7 +60,10 @@ function Users() {
       });
 
       setUserData(userResponse.data);
-      setGroupData(groupResponse.data);
+      setGroupData(Array.isArray(groupResponse.data.data) ? groupResponse.data.data : []); // Adjusted to access the nested data array
+
+      console.log('User Data:', userResponse.data);
+      console.log('Group Data:', groupResponse.data.data);
     } catch (err) {
       setError(err.message || 'Failed to load users or groups data. Please try again later.');
       console.error('Fetch Error:', err);
@@ -65,49 +76,42 @@ function Users() {
     fetchData();
   }, []);
 
-  // Modify the filter for pending users to show inactive users
   const pendingUsers = userData.filter(user => !user.active);
 
-  // Update the status display in the filtered users
   const filteredUsers = userData.filter((user) => {
-    const matchesName = user.name.toLowerCase().includes(searchName.toLowerCase());
-    const matchesGroup = !searchGroup || getGroupName(user.groupId).toLowerCase().includes(searchGroup.toLowerCase());
-    
-    // Convert boolean active status to string for filtering
-    const userStatus = !user.active ? 'inactive' : 'active';
+    const userName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+    const groupName = getGroupName(user.userGroup) || '';
+    const userStatus = user.active ? 'active' : 'inactive';
+
+    const matchesName = userName.toLowerCase().includes(searchName.toLowerCase());
+    const matchesGroup = !searchGroup || groupName.toLowerCase().includes(searchGroup.toLowerCase());
     const matchesStatus = !searchStatus || userStatus.toLowerCase().includes(searchStatus.toLowerCase());
-    
+
     return matchesName && matchesGroup && matchesStatus;
   });
 
-  // Helper function to get status string
   const getUserStatus = (user) => {
     return user.active ? 'active' : 'inactive';
   };
 
-  // Switch between users and groups tab
   const handleTabSwitch = (tab) => {
     setActiveTab(tab);
   };
 
-  // Handle Add User Modal
   const handleAddUser = () => {
     setIsAddModalOpen(true);
   };
 
-  // Handle Edit User Modal
   const handleEditUser = (user) => {
     setSelectedUser(user); 
     setIsEditModalOpen(true); 
   };
 
-  // Handle Delete User Modal
   const handleDeleteUser = (user) => {
     setSelectedUser(user); 
-    setDeleteModalOpen(true); // Open the delete confirmation modal
+    setDeleteModalOpen(true);
   };
 
-  // Handle Delete Confirmation
   const handleDeleteConfirm = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -121,17 +125,15 @@ function Users() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // After deleting, refresh the user list
       fetchData();
       toast.success('User deleted successfully!');
     } catch (err) {
       toast.error('Failed to delete user. Please try again.');
     } finally {
-      setDeleteModalOpen(false);  // Close the delete confirmation modal
+      setDeleteModalOpen(false);
     }
   };
 
-  // Clear all filters
   const clearFilters = () => {
     setSearchName('');
     setSearchGroup('');
@@ -142,7 +144,6 @@ function Users() {
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Manage Users and Groups</h1>
 
-      {/* Update Tab navigation to include Pending Users */}
       <div className="flex gap-4 mb-4">
         <Button
           onClick={() => handleTabSwitch('users')}
@@ -164,12 +165,10 @@ function Users() {
         </Button>
       </div>
 
-      {/* Display Filters */}
       {activeTab === 'users' && (
         <div className="mb-4">
           <h2 className="font-semibold text-lg mb-2">Filter Users</h2>
           <div className="flex gap-4">
-            {/* Search by Name */}
             <div className="flex flex-col">
               <label htmlFor="searchName" className="mb-1 text-sm">Search by Name</label>
               <input
@@ -182,7 +181,6 @@ function Users() {
               />
             </div>
 
-            {/* Search by Group */}
             <div className="flex flex-col">
               <label htmlFor="searchGroup" className="mb-1 text-sm">Search by Group</label>
               <input
@@ -195,7 +193,6 @@ function Users() {
               />
             </div>
 
-            {/* Search by Status */}
             <div className="flex flex-col">
               <label htmlFor="searchStatus" className="mb-1 text-sm">Search by Status</label>
               <input
@@ -209,41 +206,36 @@ function Users() {
             </div>
           </div>
 
-          {/* Button to Clear Filters */}
-          <s onClick={clearFilters}>
-            {/* Clear Filters */}
-          </s>
+          <Button variant="outline" onClick={clearFilters} className="mt-2">
+            Clear Filters
+          </Button>
         </div>
       )}
 
-      {/* Display Users Tab Content */}
       {activeTab === 'users' && (
         <>
-          {/* Button to Add User */}
           <Button onClick={handleAddUser} className="mb-4">
             Add User
           </Button>
 
-          {/* Display Loading Spinner */}
           {loading && (
             <div className="flex justify-center items-center">
               <Loader2 className="animate-spin text-blue-500" size={24} />
             </div>
           )}
 
-          {/* Display Error */}
           {error && (
             <div className="text-red-500 mb-4">
               <strong>Error:</strong> {error}
             </div>
           )}
 
-          {/* Display Filtered User Data in Table */}
           {!loading && !error && filteredUsers.length > 0 && (
             <table className="min-w-full table-auto border-collapse">
               <thead>
                 <tr className="bg-gray-100">
-                  <th className="border p-2 text-left">Name</th>
+                  <th className="border p-2 text-left">First Name</th>
+                  <th className="border p-2 text-left">Last Name</th>
                   <th className="border p-2 text-left">Email</th>
                   <th className="border p-2 text-left">Group</th>
                   <th className="border p-2 text-left">Status</th>
@@ -253,9 +245,10 @@ function Users() {
               <tbody>
                 {filteredUsers.map((user) => (
                   <tr key={user.id} className="hover:bg-gray-50">
-                    <td className="border p-2">{user.name}</td>
+                    <td className="border p-2">{user.firstName}</td>
+                    <td className="border p-2">{user.lastName}</td>
                     <td className="border p-2">{user.email}</td>
-                    <td className="border p-2">{getGroupName(user.groupId)}</td>
+                    <td className="border p-2">{getGroupName(user.userGroup)}</td>
                     <td className="border p-2">{getUserStatus(user)}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center space-x-2">
@@ -281,14 +274,12 @@ function Users() {
             </table>
           )}
 
-          {/* Display Message if No Users Found */}
           {!loading && !error && filteredUsers.length === 0 && (
             <div className="text-center text-gray-500">No users found</div>
           )}
         </>
       )}
 
-      {/* Add Pending Users Tab Content */}
       {activeTab === 'pending' && (
         <>
           {loading && (
@@ -303,11 +294,9 @@ function Users() {
             </div>
           )}
 
-          {/* Add Filters for Pending Users Tab */}
           <div className="mb-4">
             <h2 className="font-semibold text-lg mb-2">Filter Pending Users</h2>
             <div className="flex gap-4">
-              {/* Search by Name */}
               <div className="flex flex-col">
                 <label htmlFor="searchName" className="mb-1 text-sm">Search by Name</label>
                 <input
@@ -320,7 +309,6 @@ function Users() {
                 />
               </div>
 
-              {/* Search by Group */}
               <div className="flex flex-col">
                 <label htmlFor="searchGroup" className="mb-1 text-sm">Search by Group</label>
                 <input
@@ -333,7 +321,6 @@ function Users() {
                 />
               </div>
 
-              {/* Button to Clear Filters */}
               <div className="flex items-end">
                 <Button
                   variant="outline"
@@ -346,12 +333,12 @@ function Users() {
             </div>
           </div>
 
-          {/* Update the pendingUsers display to use filters */}
           {!loading && !error && pendingUsers.length > 0 && (
             <table className="min-w-full table-auto border-collapse">
               <thead>
                 <tr className="bg-gray-100">
-                  <th className="border p-2 text-left">Name</th>
+                  <th className="border p-2 text-left">First Name</th>
+                  <th className="border p-2 text-left">Last Name</th>
                   <th className="border p-2 text-left">Email</th>
                   <th className="border p-2 text-left">Group</th>
                   <th className="border p-2 text-left">Status</th>
@@ -361,15 +348,20 @@ function Users() {
               <tbody>
                 {pendingUsers
                   .filter((user) => {
-                    const matchesName = user.name.toLowerCase().includes(searchName.toLowerCase());
-                    const matchesGroup = !searchGroup || getGroupName(user.groupId).toLowerCase().includes(searchGroup.toLowerCase());
+                    const userName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+                    const groupName = getGroupName(user.userGroup) || '';
+
+                    const matchesName = userName.toLowerCase().includes(searchName.toLowerCase());
+                    const matchesGroup = !searchGroup || groupName.toLowerCase().includes(searchGroup.toLowerCase());
+
                     return matchesName && matchesGroup;
                   })
                   .map((user) => (
                     <tr key={user.id} className="hover:bg-gray-50">
-                      <td className="border p-2">{user.name}</td>
+                      <td className="border p-2">{user.firstName}</td>
+                      <td className="border p-2">{user.lastName}</td>
                       <td className="border p-2">{user.email}</td>
-                      <td className="border p-2">{getGroupName(user.groupId)}</td>
+                      <td className="border p-2">{getGroupName(user.userGroup)}</td>
                       <td className="border p-2">{getUserStatus(user)}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center space-x-2">
@@ -401,17 +393,14 @@ function Users() {
         </>
       )}
 
-      {/* Display Groups Tab Content */}
       {activeTab === 'groups' && <ManageGroups />}
 
-      {/* Add User Modal */}
       <AddUserModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onAdd={() => fetchData()}
       />
 
-      {/* Edit User Modal */}
       <EditUserModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
@@ -419,7 +408,6 @@ function Users() {
         userData={selectedUser}
       />
 
-      {/* Delete Confirmation Dialog */}
       <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -428,7 +416,7 @@ function Users() {
               Confirm Deletion
             </DialogTitle>
             <DialogDescription className="py-4">
-              Are you sure you want to delete <span className="font-semibold">{selectedUser?.name}</span>?
+              Are you sure you want to delete <span className="font-semibold">{selectedUser?.firstName} {selectedUser?.lastName}</span>?
               This action cannot be undone and will remove all associated data.
             </DialogDescription>
           </DialogHeader>

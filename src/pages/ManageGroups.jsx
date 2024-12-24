@@ -1,3 +1,4 @@
+/* src/pages/ManageGroups.jsx */
 import React, { useState, Fragment, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { Button } from '../components/ui/Button';
@@ -6,8 +7,8 @@ import { Loader2, Pencil, Trash2, AlertTriangle } from 'lucide-react';
 import { Dialog, Transition } from '@headlessui/react';
 import toast from 'react-hot-toast';
 import EditGroupModal from '../components/EditGroupModal';
-import AddGroupModal from '../components/AddGroupModal';  // Import AddGroupModal
-import axiosInstance from '../utils/axiosInstance'; // Import the axios instance
+import AddGroupModal from '../components/AddGroupModal';
+import axiosInstance from '../utils/axiosInstance';
 import PrintButton from '../components/reusable/Print';
 
 function ManageGroups() {
@@ -16,35 +17,27 @@ function ManageGroups() {
   const [currentPage, setCurrentPage] = useState(1);
   const { isDarkMode } = useTheme();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false); // For Add Group Modal
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [groupToDelete, setGroupToDelete] = useState(null);
 
   // State to hold groups data fetched from the API
   const [groupsData, setGroupsData] = useState([]);
-  const [loading, setLoading] = useState(true); // To handle loading state
-  const [error, setError] = useState(null); // To handle error messages
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Fetch groups data from the API
   const fetchGroups = async () => {
     try {
       setLoading(true);
       setError(null);
-      
-      const token = localStorage.getItem('token');
-      if (!token) {
-        toast.error('Session expired. Please log in again.');
-        return;
-      }
 
-      const response = await axiosInstance.get('/groups', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const response = await axiosInstance.get('/groups');
 
-      setGroupsData(response.data);
+      // Access the array of groups from the response
+      const data = Array.isArray(response.data.data) ? response.data.data : [];
+      setGroupsData(data);
     } catch (err) {
       setError('Failed to load groups data.');
       console.error('Error fetching groups:', err);
@@ -60,7 +53,7 @@ function ManageGroups() {
   // Filter function for search term
   const filteredData = groupsData.filter(group =>
     Object.values(group).some(value =>
-      value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+      value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
 
@@ -81,15 +74,7 @@ function ManageGroups() {
 
   const handleEditSubmit = async (updatedGroup) => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        toast.error('Session expired. Please log in again.');
-        return;
-      }
-
-      const response = await axiosInstance.put(`/groups/${updatedGroup.id}`, updatedGroup, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axiosInstance.put(`/groups/${updatedGroup.id}`, updatedGroup);
 
       // Update the group data with the updated group
       setGroupsData(prev => 
@@ -111,15 +96,7 @@ function ManageGroups() {
 
   const handleDeleteConfirm = async () => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        toast.error('Session expired. Please log in again.');
-        return;
-      }
-
-      await axiosInstance.delete(`/groups/${groupToDelete.id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axiosInstance.delete(`/groups/${groupToDelete.id}`);
 
       setGroupsData(prev => prev.filter(group => group.id !== groupToDelete.id));
       setIsDeleteModalOpen(false);
@@ -130,9 +107,8 @@ function ManageGroups() {
     }
   };
 
-  // Handle Add Group button click
   const handleAddGroup = () => {
-    setIsAddModalOpen(true); // Open Add Group Modal
+    setIsAddModalOpen(true);
   };
 
   return (
@@ -140,13 +116,11 @@ function ManageGroups() {
       <div className="mb-6">
         <h1 className="text-2xl font-semibold mb-6">Manage Groups</h1>
 
-        {/* Add Group Button */}
         <Button onClick={handleAddGroup} className="mb-4 flex items-center gap-2">
           <Loader2 className="h-5 w-5" />
           Add Group
         </Button>
 
-        {/* Table Controls */}
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center gap-4">
             <div>
@@ -192,7 +166,6 @@ function ManageGroups() {
           </div>
         </div>
 
-        {/* Groups Table */}
         <div className="bg-white rounded-lg shadow overflow-x-auto">
           {loading ? (
             <div className="flex justify-center items-center p-12">
@@ -251,7 +224,6 @@ function ManageGroups() {
           )}
         </div>
 
-        {/* Pagination */}
         <div className="flex items-center justify-between mt-4">
           <div className="text-sm text-gray-500">
             {totalEntries > 0 ? `Showing ${firstEntry} to ${lastEntry} of ${totalEntries} entries` : 'No entries to show'}
@@ -296,20 +268,18 @@ function ManageGroups() {
         isOpen={isEditModalOpen}
         onClose={() => {
           setIsEditModalOpen(false);
-          setSelectedGroup(null); // Clear selected group when closing
+          setSelectedGroup(null);
         }}
         onEdit={handleEditSubmit}
         groupData={selectedGroup}
       />
 
-      {/* Add Group Modal */}
       <AddGroupModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        onAdd={fetchGroups} // Reload groups after adding a new one
+        onAdd={fetchGroups}
       />
 
-      {/* Delete Confirmation Modal */}
       <Transition appear show={isDeleteModalOpen} as={Fragment}>
         <Dialog as="div" className="relative z-50" onClose={() => setIsDeleteModalOpen(false)}>
           <Transition.Child

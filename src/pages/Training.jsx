@@ -7,7 +7,7 @@ import {
   TableHead, 
   TableCell 
 } from '../components/ui/table';
-import { Search, Plus, Filter, X, AlertCircle, Edit } from 'lucide-react';
+import { Search, Plus, Edit, Eye } from 'lucide-react';
 import Modal from '../components/ui/Modal';
 import AddTrainingForm from '../components/forms/AddTrainingForm';
 import ActionMenu from '../components/ui/ActionMenu';
@@ -31,10 +31,12 @@ const Training = () => {
   const [trainings, setTrainings] = useState([]);
   const [filteredTrainings, setFilteredTrainings] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(5); // Set items per page to 5
+  const [itemsPerPage, setItemsPerPage] = useState(5);
   const [trainingToDelete, setTrainingToDelete] = useState(null);
   const [trainingToEdit, setTrainingToEdit] = useState(null);
+  const [trainingToView, setTrainingToView] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [participantsToView, setParticipantsToView] = useState(null); // New state for participant details
 
   // Fetch training data from API
   useEffect(() => {
@@ -62,7 +64,7 @@ const Training = () => {
       training.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
     setFilteredTrainings(filtered);
-    setCurrentPage(1); // Reset to first page when search query changes
+    setCurrentPage(1);
   }, [searchQuery, trainings]);
 
   // Handle adding or editing training
@@ -71,6 +73,7 @@ const Training = () => {
     try {
       let response;
       if (trainingToEdit) {
+        console.log(data);
         response = await axiosInstance.put(`/trainings/${trainingToEdit.id}`, data);
         const updatedTrainings = trainings.map((t) =>
           t.id === trainingToEdit.id ? response.data : t
@@ -192,7 +195,6 @@ const Training = () => {
               <TableHead className="min-w-[120px] text-[11px]">TRAINING PERIOD</TableHead>
               <TableHead className="w-[80px] text-[11px]">STATUS</TableHead>
               <TableHead className="min-w-[140px] text-[11px]">TRAINING ORGANISER</TableHead>
-              {/* <TableHead className="min-w-[120px] text-[11px]">VENUE</TableHead> */}
               <TableHead className="w-[80px] text-[11px]">PARTICIPANTS</TableHead>
               <TableHead className="operation w-[70px] text-[11px]">ACTION</TableHead>
             </TableRow>
@@ -214,19 +216,30 @@ const Training = () => {
                 <TableCell>{training.fromDate ? new Date(training.fromDate).toLocaleDateString() : 'N/A'}</TableCell>
                 <TableCell>{training.toDate ? new Date(training.toDate).toLocaleDateString() : 'N/A'}</TableCell>
                 <TableCell>{training.organiser}</TableCell>
-                {/* <TableCell>{training.venue}</TableCell> */}
-                <TableCell>{training.participants ? training.participants.join(', ') : 'N/A'}</TableCell>
+                <TableCell>
+                  <Button
+                    variant="link"
+                    onClick={() => setParticipantsToView(training.participants)}
+                  >
+                    {training.participants ? training.participants.length : 0}
+                  </Button>
+                </TableCell>
                 <TableCell className="operation">
                   <ActionMenu
-                    onDelete={() => {
-                      setTrainingToDelete(training);
-                      setShowDeleteDialog(true);
-                    }}
+                    onView={() => setTrainingToView(training)}
                     onEdit={() => {
                       setTrainingToEdit(training);
                       setShowAddModal(true);
                     }}
-                  />
+                    onDelete={() => {
+                      setTrainingToDelete(training);
+                      setShowDeleteDialog(true);
+                    }}
+                  >
+                    <Button onClick={() => setTrainingToView(training)}>
+                      <Eye className="h-5 w-5" />
+                    </Button>
+                  </ActionMenu>
                 </TableCell>
               </TableRow>
             ))}
@@ -269,7 +282,7 @@ const Training = () => {
       
       <Dialog open={showAddModal} onOpenChange={(open) => {
         setShowAddModal(open);
-        setTrainingToEdit(null); // Reset on closing modal
+        setTrainingToEdit(null);
       }}>
         <DialogContent>
           <DialogHeader>
@@ -281,12 +294,63 @@ const Training = () => {
           <AddTrainingForm
             onSubmit={handleAddOrEditTraining}
             onCancel={() => setShowAddModal(false)}
-            trainingToEdit={trainingToEdit}
+            initialData={trainingToEdit}
             isSubmitting={isSubmitting}
           />
         </DialogContent>
       </Dialog>
+
+      {/* View Training Modal */}
+      {trainingToView && (
+        <Dialog open={!!trainingToView} onOpenChange={() => setTrainingToView(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>View Training</DialogTitle>
+              <DialogDescription>
+                Detailed information about the training session.
+              </DialogDescription>
+            </DialogHeader>
+            <div>
+              <p><strong>Title:</strong> {trainingToView.title}</p>
+              <p><strong>Organiser:</strong> {trainingToView.organiser}</p>
+              <p><strong>Period:</strong> {new Date(trainingToView.fromDate).toLocaleDateString()} - {new Date(trainingToView.toDate).toLocaleDateString()}</p>
+              <p><strong>Participants:</strong></p>
+              <ul>
+                {trainingToView.participants.map(participant => (
+                  <li key={participant.id}>
+                    {participant.officialReferee.firstName} {participant.officialReferee.lastName}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Participant Details Modal */}
+      {participantsToView && (
+        <Dialog open={!!participantsToView} onOpenChange={() => setParticipantsToView(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Participants Details</DialogTitle>
+              <DialogDescription>
+                List of participants in this training session.
+              </DialogDescription>
+            </DialogHeader>
+            <div>
+              <ul>
+                {participantsToView.map(participant => (
+                  <li key={participant.id}>
+                    {participant.officialReferee.firstName} {participant.officialReferee.lastName}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
+
 export default Training;

@@ -11,10 +11,13 @@ const AddUserModal = ({ isOpen, onClose, onAdd }) => {
   const { isDarkMode } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
-    gender: '',
     password: '',
+    phoneNumber: '',
+    gender: '',
+    reasonForRegistration: '',
     groupId: '',
   });
 
@@ -30,11 +33,19 @@ const AddUserModal = ({ isOpen, onClose, onAdd }) => {
 
       axiosInstance.get('/groups')
         .then((response) => {
-          setGroupOptions(response.data);
+          console.log('API Response:', response.data); // Log the API response
+          // Access the array of groups from the response
+          if (Array.isArray(response.data.data)) {
+            setGroupOptions(response.data.data);
+          } else {
+            console.error('Unexpected API response format:', response.data);
+          }
         })
         .catch((error) => {
-          setErrorGroups(error.response?.data?.message || 'Failed to load groups');
-          toast.error(error.response?.data?.message || 'Failed to load groups');
+          const errorMessage = error.response?.data?.message || 'Failed to load groups';
+          setErrorGroups(errorMessage);
+          toast.error(errorMessage);
+          console.error('Error fetching groups:', error);
         })
         .finally(() => {
           setLoadingGroups(false);
@@ -53,37 +64,42 @@ const AddUserModal = ({ isOpen, onClose, onAdd }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       toast.error('Please enter a valid email address');
       return;
     }
 
-    // Password strength validation
     if (formData.password.length < 8) {
       toast.error('Password must be at least 8 characters long');
       return;
     }
 
-    // Ensure the groupId is selected
     if (!formData.groupId) {
       toast.error('Please select a group');
       return;
     }
 
     try {
-      // Sending data as JSON with appropriate headers
       const response = await axiosInstance.post('/auth/create-user', formData, {
         headers: {
-          'Content-Type': 'application/json',  // Ensure JSON content-type
+          'Content-Type': 'application/json',
         }
       });
 
       console.log('Response from API:', response.data);
       onAdd(response.data);
       toast.success('User created successfully');
-      setFormData({ name: '', email: '', gender: '', password: '', groupId: '' });
+      setFormData({
+        firstName: '',
+        lastName: '',
+        email: '',
+        password: '',
+        phoneNumber: '',
+        gender: '',
+        reasonForRegistration: '',
+        groupId: '',
+      });
       onClose();
     } catch (error) {
       console.error('Error creating user:', error.response);
@@ -107,12 +123,20 @@ const AddUserModal = ({ isOpen, onClose, onAdd }) => {
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block mb-1 text-sm font-medium">Name</label>
-                  <Input type="text" name="name" value={formData.name} onChange={handleChange} required placeholder="Enter full name" className="w-full" />
+                  <label className="block mb-1 text-sm font-medium">First Name</label>
+                  <Input type="text" name="firstName" value={formData.firstName} onChange={handleChange} required placeholder="Enter first name" className="w-full" />
+                </div>
+                <div>
+                  <label className="block mb-1 text-sm font-medium">Last Name</label>
+                  <Input type="text" name="lastName" value={formData.lastName} onChange={handleChange} required placeholder="Enter last name" className="w-full" />
                 </div>
                 <div>
                   <label className="block mb-1 text-sm font-medium">Email</label>
                   <Input type="email" name="email" value={formData.email} onChange={handleChange} required placeholder="Enter email address" className="w-full" />
+                </div>
+                <div>
+                  <label className="block mb-1 text-sm font-medium">Phone Number</label>
+                  <Input type="text" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} placeholder="Enter phone number" className="w-full" />
                 </div>
                 <div>
                   <label className="block mb-1 text-sm font-medium">Gender</label>
@@ -122,6 +146,10 @@ const AddUserModal = ({ isOpen, onClose, onAdd }) => {
                       <option key={option} value={option.toLowerCase()}>{option}</option>
                     ))}
                   </select>
+                </div>
+                <div>
+                  <label className="block mb-1 text-sm font-medium">Reason for Registration</label>
+                  <Input type="text" name="reasonForRegistration" value={formData.reasonForRegistration} onChange={handleChange} placeholder="Enter reason for registration" className="w-full" />
                 </div>
                 <div>
                   <label className="block mb-1 text-sm font-medium">Password</label>

@@ -4,7 +4,7 @@ import { X } from 'lucide-react';
 import axiosInstance from '../utils/axiosInstance';
 import { toast } from 'react-toastify';
 
-const AddDocumentModal = ({ isOpen, onClose, initialData = null, onDocumentSubmit }) => {
+const AddDocumentModal = ({ isOpen, onClose, initialData = '', onDocumentSubmit }) => {
   const [formData, setFormData] = useState({
     documentName: '',
     documentType: 'LETTER',
@@ -15,7 +15,7 @@ const AddDocumentModal = ({ isOpen, onClose, initialData = null, onDocumentSubmi
     dateOfRecording: new Date().toISOString().split('T')[0],
     dateOfReceptionOrSending: new Date().toISOString().split('T')[0],
     status: 'DRAFT',
-    documentFile: null,
+    documentFile: null, // Ensure this is initialized as null
   });
 
   const [errorMessage, setErrorMessage] = useState('');
@@ -40,48 +40,51 @@ const AddDocumentModal = ({ isOpen, onClose, initialData = null, onDocumentSubmi
   const handleFileChange = (e) => {
     setFormData({
       ...formData,
-      documentFile: e.target.files[0],
+      documentFile: e.target.files[0], // Use the first file
     });
   };
-
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const payload = {
-      documentName: formData.documentName || 'string',
-      documentType: formData.documentType || 'LETTER',
-      referenceNo: formData.referenceNo || 'string',
-      personOrInstitution: formData.personOrInstitution || 'string',
-      phone: formData.phone || 'string',
-      emailId: formData.emailId || 'string',
-      dateOfRecording: formData.dateOfRecording || new Date().toISOString().split('T')[0],
-      dateOfReceptionOrSending: formData.dateOfReceptionOrSending || new Date().toISOString().split('T')[0],
-      status: formData.status || '',
-      documentFileName: formData.documentFile ? formData.documentFile.name : '',
-    };
-
+  
+    const formDataToSend = new FormData();
+    formDataToSend.append('documentName', formData.documentName || 'string');
+    formDataToSend.append('documentType', formData.documentType || 'LETTER');
+    formDataToSend.append('referenceNo', formData.referenceNo || 'string');
+    formDataToSend.append('personOrInstitution', formData.personOrInstitution || 'string');
+    formDataToSend.append('phone', formData.phone || 'string');
+    formDataToSend.append('emailId', formData.emailId || 'string');
+    formDataToSend.append('dateOfRecording', formData.dateOfRecording || new Date().toISOString().split('T')[0]);
+    formDataToSend.append('dateOfReceptionOrSending', formData.dateOfReceptionOrSending || new Date().toISOString().split('T')[0]);
+    formDataToSend.append('status', formData.status || 'DRAFT');
+  
+    // Attach the file if it exists
+    if (formData.documentFile) {
+      formDataToSend.append('documentFile', formData.documentFile);
+    } else {
+      console.warn('No file selected');
+    }
+  
     try {
       let response;
       if (initialData) {
-        // Edit existing document
-        response = await axiosInstance.put(`/documents/${initialData.id}`, payload, {
+        response = await axiosInstance.put(`/documents/${initialData.id}`, formDataToSend, {
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'multipart/form-data',
           },
         });
         toast.success('Document updated successfully!');
         window.location.reload();
       } else {
-        // Add new document
-        response = await axiosInstance.post('/documents', payload, {
+        response = await axiosInstance.post('/documents', formDataToSend, {
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'multipart/form-data',
           },
         });
         toast.success('Document uploaded successfully!');
         window.location.reload();
       }
-
+  
       onDocumentSubmit(response.data);
       setFormData({
         documentName: '',
@@ -89,7 +92,7 @@ const AddDocumentModal = ({ isOpen, onClose, initialData = null, onDocumentSubmi
         referenceNo: '',
         personOrInstitution: '',
         phone: '',
-        emailId: 'giranezajeandedieu2@gmail.com',
+        emailId: '',
         dateOfRecording: new Date().toISOString().split('T')[0],
         dateOfReceptionOrSending: new Date().toISOString().split('T')[0],
         status: 'DRAFT',
@@ -102,7 +105,7 @@ const AddDocumentModal = ({ isOpen, onClose, initialData = null, onDocumentSubmi
       setErrorMessage('Failed to upload document. Please check your input and try again.');
     }
   };
-
+  
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>

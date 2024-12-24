@@ -10,8 +10,12 @@ import axiosInstance from '../utils/axiosInstance';
 const EditUserModal = ({ isOpen, onClose, onEdit, userData }) => {
   const { isDarkMode } = useTheme();
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
+    phoneNumber: '',
+    gender: '',
+    reasonForRegistration: '',
     groupId: '',
     active: false,
     emailVerified: false,
@@ -22,13 +26,16 @@ const EditUserModal = ({ isOpen, onClose, onEdit, userData }) => {
   const [errorGroups, setErrorGroups] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Handle modal open and reset form
   useEffect(() => {
     if (isOpen) {
       setFormData({
-        name: userData?.name || '',
+        firstName: userData?.firstName || '',
+        lastName: userData?.lastName || '',
         email: userData?.email || '',
-        groupId: userData?.groupId || '',
+        phoneNumber: userData?.phoneNumber || '',
+        gender: userData?.gender || '',
+        reasonForRegistration: userData?.reasonForRegistration || '',
+        groupId: userData?.userGroupId || '',
         active: userData?.active || false,
         emailVerified: userData?.emailVerified || false,
       });
@@ -39,11 +46,16 @@ const EditUserModal = ({ isOpen, onClose, onEdit, userData }) => {
 
       axiosInstance.get('/groups')
         .then((response) => {
-          setGroupOptions(response.data);
+          if (Array.isArray(response.data.data)) {
+            setGroupOptions(response.data.data);
+          } else {
+            console.error('Unexpected API response format:', response.data);
+          }
         })
         .catch((error) => {
-          setErrorGroups(error.response?.data?.message || 'Failed to load groups');
-          toast.error(error.response?.data?.message || 'Failed to load groups');
+          const errorMessage = error.response?.data?.message || 'Failed to load groups';
+          setErrorGroups(errorMessage);
+          toast.error(errorMessage);
         })
         .finally(() => {
           setLoadingGroups(false);
@@ -51,7 +63,6 @@ const EditUserModal = ({ isOpen, onClose, onEdit, userData }) => {
     }
   }, [isOpen, userData]);
 
-  // Handle form field changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -60,7 +71,6 @@ const EditUserModal = ({ isOpen, onClose, onEdit, userData }) => {
     }));
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -80,10 +90,18 @@ const EditUserModal = ({ isOpen, onClose, onEdit, userData }) => {
     }
 
     try {
+      console.log('Submitting data:', formData); // Log the data being submitted
+
       const response = await axiosInstance.put(`/users/${userData.id}`, {
-        ...formData,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phoneNumber: formData.phoneNumber,
+        gender: formData.gender,
+        reasonForRegistration: formData.reasonForRegistration,
+        userGroupId: formData.groupId,
         active: Boolean(formData.active),
-        emailVerified: Boolean(formData.emailVerified)
+        emailVerified: Boolean(formData.emailVerified),
       }, {
         headers: { 'Content-Type': 'application/json' },
       });
@@ -93,23 +111,26 @@ const EditUserModal = ({ isOpen, onClose, onEdit, userData }) => {
       toast.success('User updated successfully');
       onClose();
     } catch (error) {
-      console.error('Error updating user:', error.response);
+      console.error('Error updating user:', error.response?.data || error.message);
       toast.error(error.response?.data?.message || 'Failed to update user');
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle modal close and reset form state
   const handleClose = useCallback(() => {
     onClose();
     setFormData({
-      name: '',
+      firstName: '',
+      lastName: '',
       email: '',
+      phoneNumber: '',
+      gender: '',
+      reasonForRegistration: '',
       groupId: '',
       active: false,
       emailVerified: false,
-    }); // Reset form data when modal closes
+    });
   }, [onClose]);
 
   return (
@@ -134,15 +155,27 @@ const EditUserModal = ({ isOpen, onClose, onEdit, userData }) => {
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block mb-1 text-sm font-medium">Name</label>
+                  <label className="block mb-1 text-sm font-medium">First Name</label>
                   <Input
                     type="text"
-                    name="name"
-                    value={formData.name}
+                    name="firstName"
+                    value={formData.firstName}
                     onChange={handleChange}
                     required
                     className="w-full"
-                    placeholder="Enter full name"
+                    placeholder="Enter first name"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 text-sm font-medium">Last Name</label>
+                  <Input
+                    type="text"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    required
+                    className="w-full"
+                    placeholder="Enter last name"
                   />
                 </div>
                 <div>
@@ -155,6 +188,43 @@ const EditUserModal = ({ isOpen, onClose, onEdit, userData }) => {
                     required
                     className="w-full"
                     placeholder="Enter email address"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 text-sm font-medium">Phone Number</label>
+                  <Input
+                    type="text"
+                    name="phoneNumber"
+                    value={formData.phoneNumber}
+                    onChange={handleChange}
+                    className="w-full"
+                    placeholder="Enter phone number"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 text-sm font-medium">Gender</label>
+                  <select
+                    name="gender"
+                    value={formData.gender}
+                    onChange={handleChange}
+                    required
+                    className="w-full rounded-md border p-2"
+                  >
+                    <option value="">Select gender</option>
+                    {['Male', 'Female', 'Other'].map((option) => (
+                      <option key={option} value={option.toLowerCase()}>{option}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block mb-1 text-sm font-medium">Reason for Registration</label>
+                  <Input
+                    type="text"
+                    name="reasonForRegistration"
+                    value={formData.reasonForRegistration}
+                    onChange={handleChange}
+                    className="w-full"
+                    placeholder="Enter reason for registration"
                   />
                 </div>
                 <div>
