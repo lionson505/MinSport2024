@@ -142,7 +142,7 @@ const CategoryManagementModal = ({ isOpen, onClose }) => {
       onClose={onClose}
       title="Manage Categories and Subcategories"
       size="2xl"
-    >
+     >
       <div className="flex flex-col h-[calc(100vh-180px)]">
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
