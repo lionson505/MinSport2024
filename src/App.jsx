@@ -43,6 +43,17 @@ import 'react-toastify/dist/ReactToastify.css';
 import MyMap from './pages/Map.jsx';
 import PendingActivation from './pages/PendingActivation';
 import { MODULE_IDS } from './constants/modules';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 function App() {
   const [accessibleLinks, setAccessibleLinks] = useState(null);
@@ -105,40 +116,41 @@ function App() {
   ];
 
   return (
-    <ThemeProvider>
-      <DarkModeProvider>
-        <InfrastructureProvider>
-          <TourismProvider>
-            <MatchOperatorProvider>
-              <Router>
-                <AuthProvider>
-                  <Toaster 
-                    position="top-right"
-                    toastOptions={{
-                      duration: 3000,
-                      style: {
-                        background: '#333',
-                        color: '#fff',
-                      },
-                    }}
-                  />
-                  <ToastContainer />
-                  <Routes>
-                    {/* Public Routes - Always Accessible */}
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/forgot-password" element={<ForgotPassword />} />
-                    <Route path="/check-email" element={<CheckEmail />} />
-                    <Route path="/" element={<LandingPage />} />
-                    <Route path="/home" element={<LandingPage />} />
-                    <Route path="/sports-events" element={<AllSportsEvents />} />
-                    <Route path="/events" element={<EventsPage />} />
-                    <Route path="/federation" element={<LandingPageFederation />} />
-                    <Route path="/match" element={<LandingPageMatch />} />
-                    <Route path="/map" element={<MyMap/>} />
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        <ThemeProvider>
+          <DarkModeProvider>
+            <InfrastructureProvider>
+              <TourismProvider>
+                <MatchOperatorProvider>
+                  <AuthProvider>
+                    <Toaster 
+                      position="top-right"
+                      toastOptions={{
+                        duration: 3000,
+                        style: {
+                          background: '#333',
+                          color: '#fff',
+                        },
+                      }}
+                    />
+                    <ToastContainer />
+                    <Routes>
+                      {/* Public Routes - Always Accessible */}
+                      <Route path="/register" element={<Register />} />
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/forgot-password" element={<ForgotPassword />} />
+                      <Route path="/check-email" element={<CheckEmail />} />
+                      <Route path="/" element={<LandingPage />} />
+                      <Route path="/home" element={<LandingPage />} />
+                      <Route path="/sports-events" element={<AllSportsEvents />} />
+                      <Route path="/events" element={<EventsPage />} />
+                      <Route path="/federation" element={<LandingPageFederation />} />
+                      <Route path="/match" element={<LandingPageMatch />} />
+                      <Route path="/map" element={<MyMap/>} />
 
-                    {/* Protected Routes */}
-                    <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+                      {/* Protected Routes */}
+                      <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
                       <Route path="/dashboard" element={
                         <ProtectedRoute moduleId={MODULE_IDS.DASHBOARD}>
                           <Dashboard />
@@ -244,7 +256,7 @@ function App() {
                           <TeamManagement />
                         </ProtectedRoute>
                       } />
-                    </Route>
+                      </Route>
 
                     {/* Fallback Route */}
                     <Route path="*" element={
@@ -254,14 +266,15 @@ function App() {
                         <Navigate to="/notAuthorized" replace />
                       )
                     } />
-                  </Routes>
-                </AuthProvider>
-              </Router>
-            </MatchOperatorProvider>
-          </TourismProvider>
-        </InfrastructureProvider>
-      </DarkModeProvider>
-    </ThemeProvider>
+                    </Routes>
+                  </AuthProvider>
+                </MatchOperatorProvider>
+              </TourismProvider>
+            </InfrastructureProvider>
+          </DarkModeProvider>
+        </ThemeProvider>
+      </Router>
+    </QueryClientProvider>
   );
 }
 

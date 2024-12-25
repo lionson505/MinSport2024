@@ -11,43 +11,19 @@ import {
 import { AlertCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
-const StudentTransferForm = ({ isSubmitting, setIsSubmitting }) => {
-  const [schools, setSchools] = useState([]);
-  const [students, setStudents] = useState([]);
+const StudentTransferForm = ({ schools, students = [], isLoading, isSubmitting, setIsSubmitting }) => {
   const [fromSchool, setFromSchool] = useState('');
   const [transferStudent, setTransferStudent] = useState('');
   const [toSchool, setToSchool] = useState('');
   const [transferDate, setTransferDate] = useState('');
   const [showTransferConfirm, setShowTransferConfirm] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchSchools = async () => {
-      try {
-        const response = await axiosInstance.get('/institutions'); // Fetch schools from the institutions endpoint
-        setSchools(response.data || []);
-      } catch (error) {
-        console.error('Error fetching schools:', error);
-      }
-    };
+  const validStudents = Array.isArray(students) ? students : [];
 
-    const fetchStudents = async () => {
-      try {
-        const response = await axiosInstance.get('/students'); // Fetch students from the students endpoint
-        setStudents(response.data || []);
-      } catch (error) {
-        console.error('Error fetching students:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchSchools();
-    fetchStudents();
-  }, []);
-
-  const availableStudents = students.filter(student => student.schoolId !== parseInt(fromSchool));
+  const filteredStudents = validStudents.filter(student => {
+    return true;
+  });
 
   const handleTransferSubmit = (e) => {
     e.preventDefault();
@@ -157,7 +133,7 @@ const StudentTransferForm = ({ isSubmitting, setIsSubmitting }) => {
                     : 'Select school first'
                 }
               </option>
-              {availableStudents.map(student => (
+              {filteredStudents.map(student => (
                 <option key={student.id} value={student.id}>
                   {student.firstName} {student.lastName} - {student.class}
                 </option>
@@ -230,7 +206,7 @@ const StudentTransferForm = ({ isSubmitting, setIsSubmitting }) => {
                 <div className="space-y-2 text-sm bg-gray-50 p-4 rounded-lg">
                   <p>
                     <span className="font-semibold">Student:</span>{' '}
-                    {availableStudents.find(s => s.id === parseInt(transferStudent))?.firstName} {availableStudents.find(s => s.id === parseInt(transferStudent))?.lastName}
+                    {filteredStudents.find(s => s.id === parseInt(transferStudent))?.firstName} {filteredStudents.find(s => s.id === parseInt(transferStudent))?.lastName}
                   </p>
                   <p>
                     <span className="font-semibold">From:</span>{' '}

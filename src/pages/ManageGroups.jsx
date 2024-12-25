@@ -10,6 +10,9 @@ import EditGroupModal from '../components/EditGroupModal';
 import AddGroupModal from '../components/AddGroupModal';
 import axiosInstance from '../utils/axiosInstance';
 import PrintButton from '../components/reusable/Print';
+import { ActionButton } from '../components/ActionButton';
+import { MODULE_IDS, ACTIONS } from '../constants/modules';
+import { withRBAC } from '../hoc/withRBAC';
 
 function ManageGroups() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -116,10 +119,13 @@ function ManageGroups() {
       <div className="mb-6">
         <h1 className="text-2xl font-semibold mb-6">Manage Groups</h1>
 
-        <Button onClick={handleAddGroup} className="mb-4 flex items-center gap-2">
-          <Loader2 className="h-5 w-5" />
+        <ActionButton
+          moduleId={MODULE_IDS.USERS}
+          action={ACTIONS.CREATE}
+          onClick={handleAddGroup}
+        >
           Add Group
-        </Button>
+        </ActionButton>
 
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center gap-4">
@@ -193,20 +199,20 @@ function ManageGroups() {
                       <td className="px-4 py-3">{group.users}</td>
                       <td className="px-4 py-3 operation" >
                         <div className="flex items-center space-x-2">
-                          <Button
-                            size="icon"
-                            variant="ghost"
+                          <ActionButton
+                            moduleId={MODULE_IDS.USERS}
+                            action={ACTIONS.UPDATE}
                             onClick={() => handleEdit(group)}
                           >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
+                            Edit Group
+                          </ActionButton>
+                          <ActionButton
+                            moduleId={MODULE_IDS.USERS}
+                            action={ACTIONS.DELETE}
                             onClick={() => handleDelete(group)}
                           >
-                            <Trash2 className="h-4 w-4 text-red-500" />
-                          </Button>
+                            Delete Group
+                          </ActionButton>
                         </div>
                       </td>
                     </tr>
@@ -334,4 +340,4 @@ function ManageGroups() {
   );
 }
 
-export default ManageGroups;
+export default withRBAC(ManageGroups, MODULE_IDS.USERS);

@@ -12,6 +12,9 @@ import { Search, Plus, Filter } from 'lucide-react';
 import PageLoading from '../components/ui/PageLoading';
 import Message from '../components/ui/Message';
 import PrintButton from '../components/reusable/Print';
+import { ActionButton } from '../components/ActionButton';
+import { MODULE_IDS, ACTIONS } from '../constants/modules';
+import { withRBAC } from '../hoc/withRBAC';
 
 function SportsForAll() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -127,13 +130,16 @@ function SportsForAll() {
 
         {/* Search and Add Button Section */}
         <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
-          <Button
+          <ActionButton
+            moduleId={MODULE_IDS.SPORTS_FOR_ALL}
+            action={ACTIONS.CREATE}
             onClick={() => setIsAddModalOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
+            disabled={isAddModalOpen}
           >
-            <Plus className="h-4 w-4" />
-            Add Mass Sport
-          </Button>
+            <Plus className="h-5 w-5" />
+            <span>Add New</span>
+          </ActionButton>
 
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1 sm:flex-none">
@@ -202,30 +208,35 @@ function SportsForAll() {
                   <td className="px-4 py-2">{sport.numberFemaleParticipants}</td>
                   <td className="px-4 py-2">{sport.numberMaleParticipants}</td>
                   <td className="px-4 py-2 flex gap-1 operation">
-                    <button
+                    <ActionButton
+                      moduleId={MODULE_IDS.SPORTS_FOR_ALL}
+                      action={ACTIONS.READ}
+                      onClick={() => handleViewSport(sport)}
+                      className="p-1 rounded-lg hover:bg-gray-100"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </ActionButton>
+                    
+                    <ActionButton
+                      moduleId={MODULE_IDS.SPORTS_FOR_ALL}
+                      action={ACTIONS.UPDATE}
                       onClick={() => {
                         setSportToEdit(sport);
                         setIsAddModalOpen(true);
                       }}
                       className="p-1 rounded-lg hover:bg-gray-100"
-                      title="Edit"
                     >
                       <Pencil className="h-4 w-4" />
-                    </button>
-                    <button
+                    </ActionButton>
+                    
+                    <ActionButton
+                      moduleId={MODULE_IDS.SPORTS_FOR_ALL}
+                      action={ACTIONS.DELETE}
                       onClick={() => handleDeleteSport(sport.id)}
-                      className="p-1 rounded-lg hover:bg-red-50 text-red-600"
-                      title="Delete"
+                      className="p-1 rounded-lg hover:bg-red-50"
                     >
                       <Trash2 className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleViewSport(sport)}
-                      className="p-1 rounded-lg hover:bg-gray-100"
-                      title="View"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </button>
+                    </ActionButton>
                   </td>
                 </TableRow>
               ))}
@@ -339,4 +350,4 @@ function SportsForAll() {
   );
 }
 
-export default SportsForAll;
+export default withRBAC(SportsForAll, MODULE_IDS.SPORTS_FOR_ALL);

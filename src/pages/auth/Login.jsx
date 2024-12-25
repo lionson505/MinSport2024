@@ -4,11 +4,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import axiosInstance from '../../utils/axiosInstance';
 import { Button } from '../../components/ui/Button';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function Login() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [showOtpForm, setShowOtpForm] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   
   const [credentials, setCredentials] = useState({
@@ -91,123 +93,178 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
+    <div className="min-h-screen flex">
+      {/* Left side - Background with logo */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-r from-blue-50 to-blue-100 p-12 flex-col">
+        <div className="flex-1 flex flex-col justify-center items-center">
           <img
-            className="mx-auto h-12 w-auto"
             src="/logo/logo.svg"
             alt="Logo"
+            className="h-20 w-auto mb-8"
           />
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            {showOtpForm ? 'Enter OTP' : 'Login to continue'}
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            {showOtpForm 
-              ? 'Please check your email for the OTP'
-              : 'Welcome back, enter your credentials to continue'}
-          </p>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            MIS - MINISPORTS
+          </h1>
+          <div className="flex-1 flex items-center">
+            <img 
+              src="/sport.svg" 
+              alt="Login illustration"
+              className="max-w-md"
+            />
+          </div>
         </div>
+        <div className="flex space-x-4 text-sm text-gray-500">
+          <Link to="/terms">Terms of service</Link>
+          <span>•</span>
+          <Link to="/privacy">Privacy policy</Link>
+          <span>•</span>
+          <Link to="/support">Support</Link>
+        </div>
+      </div>
 
-        {!showOtpForm ? (
-          <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-            <div className="rounded-md shadow-sm -space-y-px">
+      {/* Right side - Login form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
+        <div className="w-full max-w-md space-y-8">
+          {/* Mobile logo - only shown on small screens */}
+          <div className="lg:hidden flex flex-col items-center mb-8">
+            <img
+              src="/logo/logo.svg"
+              alt="Logo"
+              className="h-16 w-auto mb-4"
+            />
+            <h1 className="text-2xl font-bold text-gray-900">
+              MIS - MINISPORTS
+            </h1>
+          </div>
+
+          <div className="text-center">
+            <h2 className="text-2xl font-semibold text-gray-900">
+              {showOtpForm ? 'Enter OTP' : 'Login to continue'}
+            </h2>
+            <p className="mt-2 text-sm text-gray-600">
+              {showOtpForm 
+                ? 'Please check your email for the OTP'
+                : 'Welcome back, enter your credentials to continue'}
+            </p>
+              </div>
+
+          {!showOtpForm ? (
+            <form onSubmit={handleLogin} className="mt-8 space-y-6">
+              <div className="space-y-4">
               <div>
-                <label htmlFor="email" className="sr-only">Email address</label>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                    Email address
+                  </label>
                 <input
-                  id="email"
-                  name="email"
+                    id="email"
+                    name="email"
                   type="email"
-                  required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                  placeholder="Email address"
-                  value={credentials.email}
-                  onChange={(e) => setCredentials({...credentials, email: e.target.value})}
+                    required
+                    className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder="Enter your email"
+                    value={credentials.email}
+                    onChange={(e) => setCredentials({...credentials, email: e.target.value})}
                 />
               </div>
-              <div>
-                <label htmlFor="password" className="sr-only">Password</label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                  placeholder="Password"
-                  value={credentials.password}
-                  onChange={(e) => setCredentials({...credentials, password: e.target.value})}
-                />
-              </div>
-            </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                  Remember me
+                <div>
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                    Password
+                  </label>
+                <div className="relative">
+                  <input
+                      id="password"
+                    name="password"
+                      type={showPassword ? "text" : "password"}
+                      required
+                      className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm pr-10"
+                    placeholder="Enter your password"
+                      value={credentials.password}
+                      onChange={(e) => setCredentials({...credentials, password: e.target.value})}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    {showPassword ? (
+                        <EyeOff className="h-5 w-5 text-gray-400" />
+                    ) : (
+                        <Eye className="h-5 w-5 text-gray-400" />
+                    )}
+                  </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <input
+                    id="remember-me"
+                    name="remember-me"
+                    type="checkbox"
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                  />
+                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+                    Remember me
                 </label>
-              </div>
+                </div>
 
-              <div className="text-sm">
-                <Link to="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
-                  Forgot your password?
+                <div className="text-sm">
+                  <Link to="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
+                    Forgot password?
                 </Link>
+                </div>
               </div>
-            </div>
 
-            <div>
               <Button
                 type="submit"
-                className="w-full flex justify-center py-2 px-4"
+                className="w-full bg-blue-600 hover:bg-blue-700"
                 disabled={isLoading}
               >
                 {isLoading ? 'Signing in...' : 'Login'}
               </Button>
+
+              <div className="text-center text-sm">
+                <span className="text-gray-600">
+              Don't have an account?{' '}
+                  <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
+                Register here
+              </Link>
+                </span>
+            </div>
+            </form>
+          ) : (
+            // OTP Form
+            <form onSubmit={handleVerifyOtp} className="mt-8 space-y-6">
+              <div>
+                <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-1">
+                  Enter OTP
+                </label>
+                <input
+                  id="otp"
+                  name="otp"
+                  type="text"
+                  required
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder="Enter OTP sent to your email"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                />
             </div>
 
-            <div className="text-center">
-              <span className="text-sm text-gray-600">
-                Don't have an account?{' '}
-                <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
-                  Register here
-                </Link>
-              </span>
-            </div>
-          </form>
-        ) : (
-          <form className="mt-8 space-y-6" onSubmit={handleVerifyOtp}>
-            <div>
-              <label htmlFor="otp" className="block text-sm font-medium text-gray-700">
-                Enter OTP sent to your email
-              </label>
-              <input
-                id="otp"
-                name="otp"
-                type="text"
-                required
-                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="Enter OTP"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-              />
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isLoading}
-            >
-              {isLoading ? 'Verifying...' : 'Verify OTP'}
-            </Button>
-          </form>
-        )}
+              <Button
+                type="submit"
+                className="w-full bg-blue-600 hover:bg-blue-700"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Verifying...' : 'Verify OTP'}
+              </Button>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );
