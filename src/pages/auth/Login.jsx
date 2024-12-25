@@ -26,12 +26,12 @@ export default function Login() {
       const response = await axiosInstance.post('/auth/login', credentials);
       
       if (response.data.userId) {
-        // Store userId in localStorage for OTP verification
         localStorage.setItem('tempUserId', response.data.userId);
         setShowOtpForm(true);
         toast.success(response.data.message || 'OTP sent to your email');
       }
     } catch (error) {
+      console.error('Login error:', error);
       toast.error(error.response?.data?.message || 'Login failed');
     } finally {
       setIsLoading(false);
@@ -69,16 +69,14 @@ export default function Login() {
         const defaultLinks = isAdmin ? [] : []; // You can set default links here
         localStorage.setItem('accessibleLinks', JSON.stringify(defaultLinks));
 
-        // Fetch user permissions if needed
-        if (!isAdmin) {
-          try {
-            const permissionsResponse = await axiosInstance.get(`/users/${response.data.user.id}/permissions`);
-            if (permissionsResponse.data) {
-              localStorage.setItem('accessibleLinks', JSON.stringify(permissionsResponse.data));
-            }
-          } catch (error) {
-            console.error('Error fetching permissions:', error);
-          }
+        // For non-admin users, fetch their permissions
+        if (response.data.user.userGroup.name !== 'admin') {
+          const permissionsResponse = await axiosInstance.get(
+            `/users/${response.data.user.id}/permissions`
+          );
+          localStorage.setItem('accessibleLinks', 
+            JSON.stringify(permissionsResponse.data)
+          );
         }
 
         toast.success(response.data.message || 'Login successful');

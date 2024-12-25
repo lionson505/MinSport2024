@@ -32,6 +32,8 @@ import { countries } from '../data/countries';
 import { gameTypes } from '../data/gameTypes';
 import { institutionTypes } from '../data/institutionTypes';
 import { classOptions } from '../data/classOptions';
+import { ActionButton } from '../components/ActionButton';
+import { MODULE_IDS, ACTIONS } from '../constants/modules';
 
 
 const IsongaPrograms = () => {
@@ -1288,6 +1290,33 @@ const IsongaPrograms = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* This button should NOT appear (no create permission) */}
+      <ActionButton 
+        moduleId={MODULE_IDS.ISONGA_PROGRAMS}
+        action={ACTIONS.CREATE}
+        onClick={handleCreate}
+      >
+        Add Program
+      </ActionButton>
+
+      {/* This button should appear (has update permission) */}
+      <ActionButton 
+        moduleId={MODULE_IDS.ISONGA_PROGRAMS}
+        action={ACTIONS.UPDATE}
+        onClick={handleEdit}
+      >
+        Edit Program
+      </ActionButton>
+
+      {/* This button should NOT appear (no delete permission) */}
+      <ActionButton 
+        moduleId={MODULE_IDS.ISONGA_PROGRAMS}
+        action={ACTIONS.DELETE}
+        onClick={handleDelete}
+      >
+        Delete Program
+      </ActionButton>
     </div>
   );
 };

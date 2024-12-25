@@ -1,74 +1,24 @@
-export const MODULES = {
-  DASHBOARD: {
-    id: 'dashboard',
-    name: 'Dashboard'
-  },
-  NATIONAL_TEAMS: {
-    id: 'national-teams',
-    name: 'National Teams'
-  },
-  FEDERATIONS: {
-    id: 'federations',
-    name: 'Federations'
-  },
-  SPORTS_PROFESSIONALS: {
-    id: 'sports-professionals',
-    name: 'Sports Professionals'
-  },
-  TRAININGS: {
-    id: 'trainings',
-    name: 'Trainings'
-  },
-  ISONGA_PROGRAMS: {
-    id: 'isonga-programs',
-    name: 'Isonga Programs'
-  },
-  ACADEMIES: {
-    id: 'academies',
-    name: 'Academies'
-  },
-  INFRASTRUCTURE: {
-    id: 'infrastructure',
-    name: 'Infrastructure'
-  },
-  SPORTS_TOURISM: {
-    id: 'sports-tourism',
-    name: 'Sports Tourism'
-  },
-  DOCUMENTS: {
-    id: 'documents',
-    name: 'Documents'
-  },
-  CONTRACTS: {
-    id: 'contracts',
-    name: 'Contracts'
-  },
-  APPOINTMENTS: {
-    id: 'appointments',
-    name: 'Appointments'
-  },
-  EMPLOYEE: {
-    id: 'employee',
-    name: 'Employee'
-  },
-  USERS: {
-    id: 'users',
-    name: 'Users'
-  },
-  PARTNERS: {
-    id: 'partners',
-    name: 'Partners'
-  },
-  REPORTS: {
-    id: 'reports',
-    name: 'Reports'
-  },
-  SPORTS_FOR_ALL: {
-    id: 'sports-for-all',
-    name: 'Sports for All'
-  },
-  MATCH_OPERATOR: {
-    id: 'match-operator',
-    name: 'Match Operator'
-  }
+export const MODULE_IDS = {
+  DASHBOARD: 5,
+  NATIONAL_TEAMS: 6,
+  FEDERATIONS: 7,
+  SPORTS_PROFESSIONALS: 8,
+  TRAININGS: 9,
+  ISONGA_PROGRAMS: 10,
+  ACADEMIES: 11,
+  INFRASTRUCTURE: 12,
+  SPORTS_TOURISM: 13,
+  DOCUMENTS: 14,
+  CONTRACTS: 15,
+  APPOINTMENTS: 16,
+  EMPLOYEE: 17,
+  USERS: 18,
+  SPORTS_FOR_ALL: 19
+};
+
+export const ACTIONS = {
+  CREATE: 'create',
+  READ: 'read',
+  UPDATE: 'update',
+  DELETE: 'delete'
 }; 

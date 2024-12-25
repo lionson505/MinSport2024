@@ -42,6 +42,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import MyMap from './pages/Map.jsx';
 import PendingActivation from './pages/PendingActivation';
+import { MODULE_IDS } from './constants/modules';
 
 function App() {
   const [accessibleLinks, setAccessibleLinks] = useState(null);
@@ -137,36 +138,112 @@ function App() {
                     <Route path="/map" element={<MyMap/>} />
 
                     {/* Protected Routes */}
-                    <Route element={
-                      <ProtectedRoute>
-                        {token && !isActivated && userRole !== 'admin' ? (
-                          <PendingActivation />
-                        ) : (
-                          <DashboardLayout />
-                        )}
-                      </ProtectedRoute>
-                    }>
-                      <Route path="/dashboard" element={<Dashboard />} />
-                      <Route path="/national-teams" element={isPathAllowed('/national-teams') ? <NationalTeams /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/federations" element={isPathAllowed('/federations') ? <Federations /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/sports-professionals" element={isPathAllowed('/sports-professionals') ? <SportsProfessionals /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/trainings" element={isPathAllowed('/trainings') ? <Training /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/isonga-programs" element={isPathAllowed('/isonga-programs') ? <IsongaPrograms /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/academies" element={isPathAllowed('/academies') ? <Academies /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/infrastructure" element={isPathAllowed('/infrastructure') ? <Infrastructure /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/sports-tourism" element={isPathAllowed('/sports-tourism') ? <SportsTourism /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/documents" element={isPathAllowed('/documents') ? <Documents /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/contracts" element={isPathAllowed('/contracts') ? <Contracts /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/appointments" element={isPathAllowed('/appointments') ? <Appointments /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/employee" element={isPathAllowed('/employee') ? <Employee /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/users" element={isPathAllowed('/users') ? <Users /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/partners" element={isPathAllowed('/partners') ? <Partners /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/reports" element={isPathAllowed('/reports') ? <Reports /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/sports-for-all" element={isPathAllowed('/sports-for-all') ? <SportsForAll /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/settings" element={<Settings />} />
-                      <Route path="/player-transfer-report" element={isPathAllowed('/player-transfer-report') ? <PlayerTransferReport /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/match-operator" element={isPathAllowed('/match-operator') ? <MatchOperatorDashboard /> : <Navigate to="/unauthorized" />} />
-                      <Route path="/match-operator/teams" element={isPathAllowed('/match-operator/teams') ? <TeamManagement /> : <Navigate to="/unauthorized" />} />
+                    <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+                      <Route path="/dashboard" element={
+                        <ProtectedRoute moduleId={MODULE_IDS.DASHBOARD}>
+                          <Dashboard />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/national-teams" element={
+                        <ProtectedRoute moduleId={MODULE_IDS.NATIONAL_TEAMS}>
+                          <NationalTeams />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/federations" element={
+                        <ProtectedRoute moduleId={MODULE_IDS.FEDERATIONS}>
+                          <Federations />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/sports-professionals" element={
+                        <ProtectedRoute moduleId={MODULE_IDS.SPORTS_PROFESSIONALS}>
+                          <SportsProfessionals />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/trainings" element={
+                        <ProtectedRoute moduleId={MODULE_IDS.TRAININGS}>
+                          <Training />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/isonga-programs" element={
+                        <ProtectedRoute moduleId={MODULE_IDS.ISONGA_PROGRAMS}>
+                          <IsongaPrograms />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/academies" element={
+                        <ProtectedRoute moduleId={MODULE_IDS.ACADEMIES}>
+                          <Academies />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/infrastructure" element={
+                        <ProtectedRoute moduleId={MODULE_IDS.INFRASTRUCTURE}>
+                          <Infrastructure />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/sports-tourism" element={
+                        <ProtectedRoute moduleId={MODULE_IDS.SPORTS_TOURISM}>
+                          <SportsTourism />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/documents" element={
+                        <ProtectedRoute moduleId={MODULE_IDS.DOCUMENTS}>
+                          <Documents />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/contracts" element={
+                        <ProtectedRoute moduleId={MODULE_IDS.CONTRACTS}>
+                          <Contracts />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/appointments" element={
+                        <ProtectedRoute moduleId={MODULE_IDS.APPOINTMENTS}>
+                          <Appointments />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/employee" element={
+                        <ProtectedRoute moduleId={MODULE_IDS.EMPLOYEE}>
+                          <Employee />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/users" element={
+                        <ProtectedRoute moduleId={MODULE_IDS.USERS}>
+                          <Users />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/partners" element={
+                        <ProtectedRoute moduleId={MODULE_IDS.PARTNERS}>
+                          <Partners />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/reports" element={
+                        <ProtectedRoute moduleId={MODULE_IDS.REPORTS}>
+                          <Reports />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/sports-for-all" element={
+                        <ProtectedRoute moduleId={MODULE_IDS.SPORTS_FOR_ALL}>
+                          <SportsForAll />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/settings" element={
+                        <ProtectedRoute moduleId={MODULE_IDS.SETTINGS}>
+                          <Settings />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/player-transfer-report" element={
+                        <ProtectedRoute moduleId={MODULE_IDS.PLAYER_TRANSFER_REPORT}>
+                          <PlayerTransferReport />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/match-operator" element={
+                        <ProtectedRoute moduleId={MODULE_IDS.MATCH_OPERATOR}>
+                          <MatchOperatorDashboard />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/match-operator/teams" element={
+                        <ProtectedRoute moduleId={MODULE_IDS.MATCH_OPERATOR_TEAMS}>
+                          <TeamManagement />
+                        </ProtectedRoute>
+                      } />
                     </Route>
 
                     {/* Fallback Route */}
