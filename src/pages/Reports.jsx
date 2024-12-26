@@ -1,171 +1,169 @@
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Bar, Line, Pie, Radar } from 'react-chartjs-2';
-import { Button } from '../components/ui/Button';
-import { Loader2 } from 'lucide-react';
-import axiosInstance from '../utils/axiosInstance';
+import React, { useState, useEffect } from 'react';
+import { 
+  BarChart, Bar, LineChart, Line, PieChart, Pie, 
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  Cell
+} from 'recharts';
+import axios from 'axios';
+import { toast } from 'sonner';
 
 const Reports = () => {
-  const [filters, setFilters] = useState({
-    startDate: '',
-    endDate: '',
-    federation: '',
-    region: '',
-    reportType: 'performance'
+  const [statsData, setStatsData] = useState({
+    playerDistribution: [],
+    clubPerformance: [],
+    facilityUsage: [],
+    competitionResults: []
   });
+  const [loading, setLoading] = useState(true);
 
-  // Fetch report data based on filters
-  const { data: reportData, isLoading } = useQuery({
-    queryKey: ['reports', filters],
-    queryFn: async () => {
-      const response = await axiosInstance.get('/reports', { params: filters });
-      return response.data;
+  useEffect(() => {
+    fetchReportData();
+  }, []);
+
+  const fetchReportData = async () => {
+    try {
+      const [players, clubs, federations] = await Promise.all([
+        axios.get('https://mis.minisports.gov.rw/api/player-staff'),
+        axios.get('https://mis.minisports.gov.rw/api/clubs'),
+        axios.get('https://mis.minisports.gov.rw/api/federations')
+      ]);
+
+      // Process player distribution data
+      const playersByDiscipline = players.data.reduce((acc, player) => {
+        const discipline = player.discipline || 'Unspecified';
+        acc[discipline] = (acc[discipline] || 0) + 1;
+        return acc;
+      }, {});
+
+      // Process club performance data
+      const clubStats = clubs.data.map(club => ({
+        name: club.name,
+        players: club.players?.length || 0,
+        staff: club.staff?.length || 0
+      }));
+
+      // Process facility usage data (using mock data for now)
+      const facilityData = [
+        { month: 'Jan', usage: 65 },
+        { month: 'Feb', usage: 75 },
+        { month: 'Mar', usage: 85 },
+        { month: 'Apr', usage: 70 },
+        { month: 'May', usage: 90 }
+      ];
+
+      // Process competition results
+      const competitionData = federations.data.map(federation => ({
+        name: federation.name,
+        events: federation.events?.length || 0,
+        participants: federation.participants?.length || 0
+      }));
+
+      setStatsData({
+        playerDistribution: Object.entries(playersByDiscipline).map(([name, value]) => ({
+          name,
+          value
+        })),
+        clubPerformance: clubStats,
+        facilityUsage: facilityData,
+        competitionResults: competitionData
+      });
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching report data:', error);
+      toast.error('Failed to load report data');
+      setLoading(false);
     }
-  });
-
-  // Fetch federations for filter dropdown
-  const { data: federations } = useQuery({
-    queryKey: ['federations'],
-    queryFn: async () => {
-      const response = await axiosInstance.get('/federations');
-      return response.data;
-    }
-  });
-
-  // Chart configurations
-  const performanceData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-    datasets: [{
-      label: 'Performance Metrics',
-      data: reportData?.performanceMetrics || [],
-      backgroundColor: 'rgba(59, 130, 246, 0.5)',
-      borderColor: 'rgb(59, 130, 246)',
-      borderWidth: 1
-    }]
   };
 
-  const athleteDistributionData = {
-    labels: reportData?.athleteDistribution?.map(item => item.category) || [],
-    datasets: [{
-      data: reportData?.athleteDistribution?.map(item => item.count) || [],
-      backgroundColor: [
-        'rgba(59, 130, 246, 0.8)',
-        'rgba(16, 185, 129, 0.8)',
-        'rgba(245, 158, 11, 0.8)',
-        'rgba(139, 92, 246, 0.8)'
-      ]
-    }]
-  };
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
-  const facilityUsageData = {
-    labels: reportData?.facilityUsage?.map(item => item.facility) || [],
-    datasets: [{
-      label: 'Usage Hours',
-      data: reportData?.facilityUsage?.map(item => item.hours) || [],
-      backgroundColor: 'rgba(16, 185, 129, 0.5)',
-      borderColor: 'rgb(16, 185, 129)',
-      borderWidth: 1
-    }]
-  };
-
-  const competitionResultsData = {
-    labels: ['Technical', 'Physical', 'Tactical', 'Mental'],
-    datasets: [{
-      label: 'Performance Metrics',
-      data: reportData?.competitionResults || [80, 70, 85, 75],
-      fill: true,
-      backgroundColor: 'rgba(139, 92, 246, 0.2)',
-      borderColor: 'rgb(139, 92, 246)',
-      pointBackgroundColor: 'rgb(139, 92, 246)',
-      pointBorderColor: '#fff',
-      pointHoverBackgroundColor: '#fff',
-      pointHoverBorderColor: 'rgb(139, 92, 246)'
-    }]
-  };
-
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">Reports</h1>
-      </div>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-6">Sports Analytics Reports</h1>
 
-      {/* Filters Section */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 bg-white p-4 rounded-lg shadow">
-        <input
-          type="date"
-          value={filters.startDate}
-          onChange={(e) => setFilters(prev => ({ ...prev, startDate: e.target.value }))}
-          className="border rounded p-2"
-        />
-        <input
-          type="date"
-          value={filters.endDate}
-          onChange={(e) => setFilters(prev => ({ ...prev, endDate: e.target.value }))}
-          className="border rounded p-2"
-        />
-        <select
-          value={filters.federation}
-          onChange={(e) => setFilters(prev => ({ ...prev, federation: e.target.value }))}
-          className="border rounded p-2"
-        >
-          <option value="">All Federations</option>
-          {federations?.map(fed => (
-            <option key={fed.id} value={fed.id}>{fed.name}</option>
-          ))}
-        </select>
-        <select
-          value={filters.reportType}
-          onChange={(e) => setFilters(prev => ({ ...prev, reportType: e.target.value }))}
-          className="border rounded p-2"
-        >
-          <option value="performance">Performance</option>
-          <option value="attendance">Attendance</option>
-          <option value="facilities">Facilities</option>
-        </select>
-        <Button 
-          onClick={() => setFilters(prev => ({...prev}))}
-          className="bg-blue-600 text-white"
-        >
-          Generate Report
-        </Button>
-      </div>
-
-      {/* Charts Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Performance Metrics */}
+        {/* Player Distribution by Sport */}
         <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-4">Performance Metrics</h3>
-          <Bar data={performanceData} />
+          <h3 className="text-lg font-semibold mb-4">Player Distribution by Sport</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={statsData.playerDistribution}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+              >
+                {statsData.playerDistribution.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
         </div>
 
-        {/* Athlete Distribution */}
+        {/* Club Performance */}
         <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-4">Athlete Distribution</h3>
-          <Pie data={athleteDistributionData} />
+          <h3 className="text-lg font-semibold mb-4">Club Performance</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={statsData.clubPerformance}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="players" fill="#8884d8" />
+              <Bar dataKey="staff" fill="#82ca9d" />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
 
-        {/* Facility Usage */}
+        {/* Facility Usage Trends */}
         <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-4">Facility Usage</h3>
-          <Line data={facilityUsageData} />
+          <h3 className="text-lg font-semibold mb-4">Facility Usage Trends</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={statsData.facilityUsage}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="usage" stroke="#8884d8" />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
 
         {/* Competition Results */}
         <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-4">Competition Results</h3>
-          <Radar data={competitionResultsData} />
+          <h3 className="text-lg font-semibold mb-4">Federation Activity</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={statsData.competitionResults}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="events" fill="#8884d8" />
+              <Bar dataKey="participants" fill="#82ca9d" />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
     </div>
   );
 };
 
-export default Reports; 
+export default Reports;
