@@ -72,7 +72,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
           let anotherGoal = teamScore + 1;
           setMatchData(prev => ({ ...prev, teamAScore: anotherGoal }));
           console.log('Updated teamAScore:', anotherGoal);
-          updatedMatchData = { awayScore: anotherGoal };
+          updatedMatchData = { homeScore: anotherGoal };
           console.log("home team updatedmatch data : ", updatedMatchData)
         } else if (team === 'B') {
           console.log("team : ", team)
@@ -80,7 +80,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
           let anotherGoal = teamScore + 1;
           setMatchData(prev => ({ ...prev, teamBScore: anotherGoal }));
           console.log('Updated teamBScore:', anotherGoal);
-          updatedMatchData = { homeScore: anotherGoal };
+          updatedMatchData = { awayScore: anotherGoal };
           console.log("away team updatedmatch data : ", updatedMatchData)
         }
 
@@ -156,7 +156,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
         addEvent('GOAL', 'B', match.awayScore, match.id,);
       }
     }
-
+ 
 
     setShowPlayerSelect(false);
     setPendingEvent(null);

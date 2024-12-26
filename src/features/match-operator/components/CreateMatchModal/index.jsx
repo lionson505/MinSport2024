@@ -153,6 +153,7 @@ export function CreateMatchModal({ open, onClose }) {
                   <SelectItem value="IN PROGRESS">IN PROGRESS</SelectItem>
                   <SelectItem value="LIVE">LIVE</SelectItem>
                   <SelectItem value="UPCOMING">UPCOMING</SelectItem>
+                  <SelectItem value="ONGOING">ONGOING</SelectItem>
                 </SelectContent>
               </Select>
             </div>

@@ -87,7 +87,7 @@ const handleMatchClick = async (match) => {
       await initializeMatchSetup(match.id);
       setSelectedMatch(match);
       setSetupMode(true);
-    } else if (match.status === 'LIVE') {
+    } else if (match.status === 'ONGOING') {
       setSelectedMatch(match);
       console.log('Selected match:', match);
       setSetupMode(false);
@@ -247,7 +247,7 @@ const fetchNationalTeamPlayers = async (homeTeamPlayersId, awayTeamPlayersId) =>
                           </span>
                         </div>
                         <span className="text-xl font-bold">
-                          {currentMatch.awayScore || '0'}
+                          {currentMatch.homeScore || '0'}
                         </span>
                       </div>
 
@@ -258,7 +258,7 @@ const fetchNationalTeamPlayers = async (homeTeamPlayersId, awayTeamPlayersId) =>
                           </span>
                         </div>
                         <span className="text-xl font-bold">
-                          {currentMatch.homeScore || '0'}
+                          {currentMatch.awayScore || '0'}
                         </span>
                       </div>
                     </div>
