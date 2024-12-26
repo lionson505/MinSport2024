@@ -57,8 +57,10 @@ export function PlayerSelectDialog({
           </SelectTrigger>
           <SelectContent>
             {players.map(player => (
-              <SelectItem key={player.id} value={player.id}>
-                #{player.number} - {player.name} ({player.position})
+              <SelectItem key={player.id} value={player.playerStaff.lastName}>
+                #{player.playerStaff.id} - {player.playerStaff.lastName} ({player.playerStaff.
+positionInClub
+})
               </SelectItem>
             ))}
           </SelectContent>

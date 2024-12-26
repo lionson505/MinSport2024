@@ -7,6 +7,7 @@ import { PlayerSelectDialog } from '../PlayerSelectDialog';
 import { ScoreInput } from '../../../../components/scoreboards/ScoreInput';
 
 export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPlayers = [], onUpdate }) {
+  console.log('teamAPlayers: ', teamAPlayers)
   const [matchData, setMatchData] = useState({
     status: 'NOT_STARTED',
     currentQuarter: 1,
@@ -68,49 +69,62 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
     }
   };
 
-  const handleEventWithPlayer = (type, team, points = null) => {
-    setPendingEvent({ type, team, points });
+  const handleEventWithPlayer = (type, team, points = null, player) => {
+    console.log('player : ',player ,'type : ', type, 'team : ', team, 'points : ', points)
+    setPendingEvent({ type, team, points, player });
+    console.log('player : ', player)
     setShowPlayerSelect(true);
   };
 
-  const confirmEventWithPlayer = (playerId) => {
-    const player = pendingEvent.team === 'A' 
-      ? teamAPlayers.find(p => p.id === playerId)
-      : teamBPlayers.find(p => p.id === playerId);
-
-    if (pendingEvent.type === 'POINTS') {
-      setMatchData(prev => ({
-        ...prev,
-        [`team${pendingEvent.team}Score`]: prev[`team${pendingEvent.team}Score`] + pendingEvent.points,
-        events: [...prev.events, {
-          type: 'POINTS',
-          team: pendingEvent.team,
-          player,
-          points: pendingEvent.points,
-          time: new Date().toISOString(),
-          score: `${pendingEvent.team === 'A' ? 
-            prev.teamAScore + pendingEvent.points : 
-            prev.teamAScore}-${pendingEvent.team === 'B' ? 
-            prev.teamBScore + pendingEvent.points : 
-            prev.teamBScore}`
-        }]
-      }));
-    } else if (pendingEvent.type === 'FOUL') {
-      setMatchData(prev => ({
-        ...prev,
-        [`team${pendingEvent.team}Fouls`]: prev[`team${pendingEvent.team}Fouls`] + 1,
-        events: [...prev.events, {
-          type: 'FOUL',
-          team: pendingEvent.team,
-          player,
-          time: new Date().toISOString()
-        }]
-      }));
+  const confirmEventWithPlayer = (playerName) => {
+    console.log('player Name: ', playerName);
+  
+    // If playerName exists, we proceed with handling the event
+    if (playerName) {
+      // Find the player object based on the name
+      const player = pendingEvent.team === 'A' 
+        ? teamAPlayers.find(p => p.lastName === playerName)
+        : teamBPlayers.find(p => p.lastName === playerName);
+  
+      // Now call the handleEventWithPlayer function with the necessary parameters, including player
+      handleEventWithPlayer(pendingEvent.type, pendingEvent.team, pendingEvent.points, playerName);
+      
+      // Continue with the event processing (adding points, fouls, etc.)
+      if (pendingEvent.type === 'POINTS') {
+        setMatchData(prev => ({
+          ...prev,
+          [`team${pendingEvent.team}Score`]: prev[`team${pendingEvent.team}Score`] + pendingEvent.points,
+          events: [...prev.events, {
+            type: 'POINTS',
+            team: pendingEvent.team,
+            player,
+            points: pendingEvent.points,
+            time: new Date().toISOString(),
+            score: `${pendingEvent.team === 'A' ? 
+              prev.teamAScore + pendingEvent.points : 
+              prev.teamAScore}-${pendingEvent.team === 'B' ? 
+              prev.teamBScore + pendingEvent.points : 
+              prev.teamBScore}`
+          }]
+        }));
+      } else if (pendingEvent.type === 'FOUL') {
+        setMatchData(prev => ({
+          ...prev,
+          [`team${pendingEvent.team}Fouls`]: prev[`team${pendingEvent.team}Fouls`] + 1,
+          events: [...prev.events, {
+            type: 'FOUL',
+            team: pendingEvent.team,
+            player,
+            time: new Date().toISOString()
+          }]
+        }));
+      }
+  
+      setShowPlayerSelect(false); // Close the player selection dialog
+      setPendingEvent(null); // Clear the pending event
     }
-
-    setShowPlayerSelect(false);
-    setPendingEvent(null);
   };
+  
 
   const handleScoreChange = (team, newScore) => {
     const prevScore = matchData[`team${team}Score`];
@@ -136,9 +150,9 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
       <div className="grid grid-cols-3 gap-4">
         {/* Team A */}
         <div className="text-center space-y-4">
-          <h3 className="font-medium mb-2">{match.homeTeam?.name || 'Home Team'}</h3>
+          <h3 className="font-medium mb-2">{match.homeTeam|| 'Home Team'}</h3>
           <ScoreInput
-            value={matchData.teamAScore}
+            value={match.homeScore || 0}
             onChange={(value) => handleScoreChange('A', value)}
             label="Score"
           />
@@ -159,9 +173,9 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
 
         {/* Team B */}
         <div className="text-center space-y-4">
-          <h3 className="font-medium mb-2">{match.awayTeam?.name || 'Away Team'}</h3>
+          <h3 className="font-medium mb-2">{match.awayTeam || 'Away Team'}</h3>
           <ScoreInput
-            value={matchData.teamBScore}
+            value={match.awayScore || 0}
             onChange={(value) => handleScoreChange('B', value)}
             label="Score"
           />

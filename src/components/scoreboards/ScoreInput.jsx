@@ -6,12 +6,14 @@ import { Plus, Minus } from 'lucide-react';
 
 export function ScoreInput({ 
   value = 0, 
+  scoreInfo,
   onChange, 
   min = 0, 
   max = 999,
   step = 1,
   label = "Score"
 }) {
+  console.log('scoreInfo : ', onChange);
   const [showManualInput, setShowManualInput] = useState(false);
   const [tempValue, setTempValue] = useState(value.toString());
 
