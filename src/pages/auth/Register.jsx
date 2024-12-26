@@ -168,7 +168,6 @@ export default function Register() {
                   onChange={(e) => setFormData({...formData, idType: e.target.value})}
                 >
                   <option value="nid">National ID</option>
-                  <option value="passport">Passport</option>
                 </select>
               </div>
 

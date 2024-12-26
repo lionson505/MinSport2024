@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ChartDownloadWrapper from '../components/reusable/chartDownloader';
 import { 
   BarChart, Bar, LineChart, Line, PieChart, Pie, 
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -234,17 +235,18 @@ const Reports = () => {
 
   return (
     <div className="p-6">
+
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Sports Analytics Reports</h1>
         <div className="flex gap-2">
-          <Button onClick={() => handleExport('pdf')} className="flex items-center gap-2">
+          {/* <Button onClick={() => handleExport('pdf')} className="flex items-center gap-2">
             <Download className="h-4 w-4" />
             Export PDF
           </Button>
           <Button onClick={() => handleExport('excel')} className="flex items-center gap-2">
             <Download className="h-4 w-4" />
             Export Excel
-          </Button>
+          </Button> */}
         </div>
       </div>
 
@@ -337,8 +339,11 @@ const Reports = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Player Distribution by Sport */}
         <div className="bg-white p-4 rounded-lg shadow">
+        
           <h3 className="text-lg font-semibold mb-4">Player Distribution by Sport</h3>
+          <ChartDownloadWrapper chartData={statsData.playerDistribution} fileName="player_distribution">
           <ResponsiveContainer width="100%" height={300}>
+          
             <PieChart>
               <Pie
                 data={statsData.playerDistribution}
@@ -354,15 +359,20 @@ const Reports = () => {
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
+
               <Tooltip />
               <Legend />
             </PieChart>
+           
           </ResponsiveContainer>
+          </ChartDownloadWrapper>
         </div>
+        
 
         {/* Gender Distribution */}
         <div className="bg-white p-4 rounded-lg shadow">
           <h3 className="text-lg font-semibold mb-4">Gender Distribution</h3>
+          <ChartDownloadWrapper chartData={statsData.genderDistribution} fileName="gender_distribution">
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -388,11 +398,13 @@ const Reports = () => {
               <Legend />
             </PieChart>
           </ResponsiveContainer>
+        </ChartDownloadWrapper>
         </div>
 
         {/* Club Performance */}
         <div className="bg-white p-4 rounded-lg shadow">
           <h3 className="text-lg font-semibold mb-4">Club Performance</h3>
+          <ChartDownloadWrapper chartData={statsData.clubPerformance} fileName="club_performance">
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={statsData.clubPerformance}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -404,11 +416,13 @@ const Reports = () => {
               <Bar dataKey="staff" fill="#82ca9d" />
             </BarChart>
           </ResponsiveContainer>
+          </ChartDownloadWrapper>
         </div>
 
         {/* Federation Activity with Events and Participants */}
         <div className="bg-white p-4 rounded-lg shadow">
           <h3 className="text-lg font-semibold mb-4">Federation Activity</h3>
+          <ChartDownloadWrapper chartData={statsData.competitionResults} fileName="federation_activity">
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={statsData.competitionResults}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -420,6 +434,7 @@ const Reports = () => {
               <Bar dataKey="participants" fill="#82ca9d" name="Participants" />
             </BarChart>
           </ResponsiveContainer>
+          </ChartDownloadWrapper>
         </div>
 
         {/* Monthly Registrations */}
