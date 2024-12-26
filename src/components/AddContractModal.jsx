@@ -23,7 +23,8 @@ function AddContractModal({ isOpen, onClose, onAdd, initialData }) {
       value: '',
       unit: 'Days'
     },
-    endDate: ''
+    endDate: '',
+    contractFile: null // New state for the file
   });
 
   const [employees, setEmployees] = useState([]);
@@ -53,7 +54,8 @@ function AddContractModal({ isOpen, onClose, onAdd, initialData }) {
           value: initialData.duration_of_contract || '',
           unit: 'Days'
         },
-        endDate: initialData.contract_end_date || ''
+        endDate: initialData.contract_end_date || '',
+        contractFile: null // Reset file when editing
       });
     }
   }, [initialData, isOpen]);
@@ -111,10 +113,17 @@ function AddContractModal({ isOpen, onClose, onAdd, initialData }) {
         duration_of_contract: parseInt(formData.duration.value),
         contract_end_date: formData.endDate,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
+        updatedAt: new Date().toISOString(),
+        contractFile: formData.contractFile // Include the file in the data
+ };
 
-      await onAdd(transformedData);
+      const formDataToSend = new FormData();
+      for (const key in transformedData) {
+        formDataToSend.append(key, transformedData[key]);
+      }
+
+      await onAdd(formDataToSend);
+      // console.log(formDataToSend);
       onClose();
       toast.success('Contract added successfully');
     } catch (error) {
@@ -172,6 +181,13 @@ function AddContractModal({ isOpen, onClose, onAdd, initialData }) {
     }
 
     setFormData(updatedFormData);
+  };
+
+  const handleFileChange = (e) => {
+    setFormData(prev => ({
+      ...prev,
+      contractFile: e.target.files[0] // Update the file state
+    }));
   };
 
   return (
@@ -358,7 +374,7 @@ function AddContractModal({ isOpen, onClose, onAdd, initialData }) {
                               <button
                                 key={employee.id}
                                 type="button"
-                                className="w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                                className="w-full text-left px-4 py-2 hover:bg -gray-100 focus:bg-gray-100 focus:outline-none"
                                 onClick={() => handleAdministratorSelect(employee)}
                               >
                                 <div className="font-medium">{`${employee.firstname} ${employee.lastname}`}</div>
@@ -430,6 +446,19 @@ function AddContractModal({ isOpen, onClose, onAdd, initialData }) {
                         className="bg-gray-100"
                       />
                     </div>
+                  </div>
+
+                  {/* File Upload */}
+                  <div>
+                    <label className="block mb-1 text-sm font-medium">
+                      Contract File <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      onChange={handleFileChange}
+                      required
+                    />
                   </div>
 
                   {/* Action Buttons */}

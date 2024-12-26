@@ -1,4 +1,3 @@
-/* src/pages/Federations.jsx */
 import React, { useState, useEffect } from 'react';
 import {
   Table,
@@ -22,7 +21,6 @@ import {
   History,
   AlertCircle,
   ArrowRight,
-  Pencil,
   PencilLine,
 } from 'lucide-react';
 import Modal from '../components/ui/Modal';
@@ -629,6 +627,7 @@ const Federations = () => {
       toast.success('Player/Staff deleted successfully');
       setRefreshPlayerStaffData(prev => prev + 1);
     } catch (error) {
+      console.error('Failed to delete player/staff:', error);
       toast.error('Failed to delete player/staff');
     } finally {
       setIsSubmitting(false);
@@ -979,7 +978,7 @@ const Federations = () => {
                   {filteredPlayersStaff.length} entries
                 </div>
                 <div className="flex gap-2">
-                  <Button
+                <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}

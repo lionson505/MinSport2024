@@ -21,6 +21,11 @@ function EditContractModal({ isOpen, onClose, onEdit, contractData }) {
     start_date: '',
     duration_of_contract: 0,
     contract_end_date: '',
+    completion_percentage: 0,
+    contract_file_path: null,
+    contract_file_name: null,
+    contract_file_type: null,
+    contract_file_size: null,
   });
 
   const currencies = [
@@ -93,6 +98,19 @@ function EditContractModal({ isOpen, onClose, onEdit, contractData }) {
     }));
     setShowAdministratorDropdown(false);
     setAdministratorSearch('');
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData(prev => ({
+        ...prev,
+        contract_file_name: file.name,
+        contract_file_type: file.type,
+        contract_file_size: file.size,
+        contract_file_path: URL.createObjectURL(file), // Temporary URL for preview
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -389,6 +407,23 @@ function EditContractModal({ isOpen, onClose, onEdit, contractData }) {
                         className="bg-gray-100"
                       />
                     </div>
+                  </div>
+
+                  {/* File Upload */}
+                  <div>
+                    <label className="block mb-1 text-sm font-medium">
+                      Contract File
+                    </label>
+                    <Input
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      onChange={handleFileChange}
+                    />
+                    {formData.contract_file_name && (
+                      <div className="mt-2 text-sm text-gray-500">
+                        Current file: {formData.contract_file_name}
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex justify-end space-x-4 pt-4">

@@ -59,6 +59,8 @@ function NationalTeams() {
   const [selectedGames, setSelectedGames] = useState([]);
   const [playerStaffList, setPlayerStaffList] = useState([]);
   const [selectedPlayerStaff, setSelectedPlayerStaff] = useState('');
+  const [selectedFederationForPlayer, setSelectedFederationForPlayer] = useState('');
+
 
   const [playerSearchFilters, setPlayerSearchFilters] = useState({
     name: '',
@@ -209,33 +211,33 @@ function NationalTeams() {
     }
   };
 
-  const handleAddPlayerSubmit = async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const federationId = parseInt(formData.get('federationId'));
+  // Function to handle adding a player
+const handleAddPlayerSubmit = async (e) => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  const federationId = parseInt(formData.get('federationId'));
 
-    const playerData = {
-      federationId: federationId,
-      teamId: parseInt(selectedTeamForPlayer),
-      clubId: parseInt(selectedClub),
-      playerStaffId: parseInt(selectedPlayerStaff),
-      games: selectedGames,
-    };
-
-    try {
-      const response = await axiosInstance.post('/national-team-player-staff', playerData);
-      setPlayers(prev => [...prev, response.data]);
-      toast.success('Player added successfully');
-      setShowAddPlayerModal(false);
-      
-      setSelectedTeamForPlayer('');
-      setSelectedClub('');
-      setAvailableGames([]);
-      setRefreshTrigger(prev => prev + 1);
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to add player');
-    }
+  const playerData = {
+    federationId: federationId,
+    teamId: parseInt(selectedTeamForPlayer),
+    clubId: parseInt(selectedClub),
+    playerStaffId: parseInt(selectedPlayerStaff),
+    games: selectedGames,
   };
+  try {
+    const response = await axiosInstance.post('/national-team-player-staff', playerData);
+    setPlayers(prev => [...prev, response.data]);
+    toast.success('Player added successfully');
+    setShowAddPlayerModal(false);
+    
+    setSelectedTeamForPlayer('');
+    setSelectedClub('');
+    setAvailableGames([]);
+    setRefreshTrigger(prev => prev + 1);
+  } catch (error) {
+    toast.error(error.response?.data?.message || 'Failed to add player');
+  }
+};
 
   const handlePlayerEditSubmit = async (e) => {
     e.preventDefault();
@@ -970,84 +972,96 @@ function NationalTeams() {
             }} className="space-y-6">
               
               <div>
-                <label className="block text-sm font-medium mb-1">
-                  Federation <span className="text-red-500">*</span>
-                </label>
-                <select
-                  name="federationId"
-                  className="w-full border rounded-lg p-2"
-                  required
-                >
-                  <option value="">Select Federation</option>
-                  {federations.map(federation => (
-                    <option key={federation.id} value={federation.id}>
-                      {federation.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+        <label className="block text-sm font-medium mb-1">
+          Federation <span className="text-red-500">*</span>
+        </label>
+        <select
+          name="federationId"
+          value={selectedFederationForPlayer}
+          onChange={(e) => {
+            const federationId = e.target.value;
+            setSelectedFederationForPlayer(federationId);
+            setSelectedTeamForPlayer('');
+          }}
+          className="w-full border rounded-lg p-2"
+          required
+        >
+          <option value="">Select Federation</option>
+          {federations.map(federation => (
+            <option key={federation.id} value={federation.id}>
+              {federation.name}
+            </option>
+          ))}
+        </select>
+      </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Team <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={selectedTeamForPlayer}
-                  onChange={(e) => {
-                    const teamId = parseInt(e.target.value);
-                    setSelectedTeamForPlayer(teamId);
-                    const team = teams.find(t => t.id === teamId);
-                    setAvailableGames(team?.games || []);
-                    setSelectedGames([]);
-                  }}
-                  className="w-full border rounded-lg p-2"
-                  required
-                >
-                  <option value="">Select Team</option>
-                  {teams.map(team => (
-                    <option key={team.id} value={team.id}>{team.teamName}</option>
-                  ))}
-                </select>
-              </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">
+          Team <span className="text-red-500">*</span>
+        </label>
+        <select
+          value={selectedTeamForPlayer}
+          onChange={(e) => {
+            const teamId = parseInt(e.target.value);
+            setSelectedTeamForPlayer(teamId);
+            const team = teams.find(t => t.id === teamId);
+            setAvailableGames(team?.games || []);
+            setSelectedGames([]);
+          }}
+          className="w-full border rounded-lg p-2"
+          required
+          disabled={!selectedFederationForPlayer}
+        >
+          <option value="">Select Team</option>
+          {teams
+            .filter(team => team.federation.id === parseInt(selectedFederationForPlayer))
+            .map(team => (
+              <option key={team.id} value={team.id}>{team.teamName}</option>
+            ))}
+        </select>
+      </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Club <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={selectedClub}
-                  onChange={(e) => setSelectedClub(e.target.value)}
-                  className="w-full border rounded-lg p-2"
-                  required
-                  disabled={!selectedTeamForPlayer}
-                >
-                  <option value="">Select Club</option>
-                  {clubs.map(club => (
-                    <option key={club.id} value={club.id}>{club.name}</option>
-                  ))}
-                </select>
-              </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">
+          Club <span className="text-red-500">*</span>
+        </label>
+        <select
+          value={selectedClub}
+          onChange={(e) => setSelectedClub(e.target.value)}
+          className="w-full border rounded-lg p-2"
+          required
+          disabled={!selectedFederationForPlayer}
+        >
+          <option value="">Select Club</option>
+          {clubs
+            .filter(club => club.federationId === parseInt(selectedFederationForPlayer))
+            .map(club => (
+              <option key={club.id} value={club.id}>{club.name}</option>
+            ))}
+        </select>
+      </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Player/Staff <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={selectedPlayerStaff}
-                  onChange={(e) => setSelectedPlayerStaff(e.target.value)}
-                  className="w-full border rounded-lg p-2"
-                  required
-                >
-                  <option value="">Select Player/Staff</option>
-                  {playerStaffList.map(staff => (
-                    <option key={staff.id} value={staff.id}>
-                      {`${staff.firstName} ${staff.lastName}`}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
+      <div>
+  <label className="block text-sm font-medium mb-1">
+    Player/Staff <span className="text-red-500">*</span>
+  </label>
+  <select
+    value={selectedPlayerStaff}
+    onChange={(e) => setSelectedPlayerStaff(e.target.value)}
+    className="w-full border rounded-lg p-2"
+    required
+    disabled={!selectedClub} // Disable until club is selected
+  >
+    <option value="">Select Player/Staff</option>
+    {playerStaffList
+      .filter(staff => staff.originClubId === parseInt(selectedClub))
+      .map(staff => (
+        <option key={staff.id} value={staff.id}>
+          {`${staff.firstName} ${staff.lastName}`}
+        </option>
+    ))}
+  </select>
+</div>           <div>
                 <h3 className="text-md font-medium mb-3">Games</h3>
                 {availableGames.length > 0 ? (
                   <div className="space-y-2">
