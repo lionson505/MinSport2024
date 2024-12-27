@@ -31,13 +31,14 @@ export function MatchOperatorDashboard() {
     const fetchMatches = async () => {
       try {
         const response = await axiosInstance.get('/live-matches');
-        setMatches(response.data);
+        setMatches(response.data); // Set matches state with the fetched data
+        return response.data; // Return the data for additional usage if needed
       } catch (err) {
-        setError("Failed to fetch matches. Please try again later.");
-        console.error(err);
+        setError("Failed to fetch matches. Please try again later."); // Set error state
+        console.error("Error fetching matches:", err);
       }
     };
-
+    
     fetchMatches();
 
     // Set up polling to fetch matches every 30 seconds

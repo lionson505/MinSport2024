@@ -56,66 +56,68 @@ export default function VolleyballScoreboard({ match, teamAPlayers = [], teamBPl
   };
 
   const confirmEventWithPlayer = (playerName) => {
-    console.log('volley pending team who scored : ', pendingEvent.team)
-    // const player = pendingEvent.team === 'A' 
-    //   ? teamAPlayers.find(p => p.id === playerId)
-    //   : teamBPlayers.find(p => p.id === playerId);
-
-
-    const updateScores = async () => {
+    console.log('Volley pending team who scored:', pendingEvent.team);
+  
+    const updateScores = async (updatedScore) => {
       try {
-        await axiosInstance.patch(`/live-matches/${match.id}/score`, newScore);
+        console.log('Match ID:', match.id, 'New score:', updatedScore);
+        await axiosInstance.patch(`/live-matches/${match.id}/score`, updatedScore);
         console.log('Match score updated successfully.');
       } catch (error) {
         console.error('Failed to update match score:', error);
       }
-    }
-
+    };
+  
     if (pendingEvent.type === 'POINT') {
-      setMatchData(prev => {
-        // const newScore = match.homeScore + 1;
-        if(pendingEvent.team === 'A'){
-             setNewScore ({
-              homeScore: match.homeScore + 1,
-              awayScore: match.awayScore,
-            });
-            setIsSetPoint ((newScore.homeScore >= 25 && newScore.homeScore - prev[`team${pendingEvent.team === 'A' ? 'B' : 'A'}Score`] >= 2) ||
-                          (prev.currentSet === 5 && newScore.homeScore >= 15 && newScore.homeScore - prev[`team${pendingEvent.team === 'A' ? 'B' : 'A'}Score`] >= 2));
-            updateScores()
-        }
-        else if(pendingEvent.team === 'B'){
-             setNewScore ({
-              homeScore: match.homeScore,
-              awayScore: match.awayScore + 1,
-            });
-             setIsSetPoint ((newScore.awayScore >= 25 && newScore.awayScore - prev[`team${pendingEvent.team === 'A' ? 'B' : 'A'}Score`] >= 2) ||
-                          (prev.currentSet === 5 && newScore.awayScore >= 15 && newScore.awayScore - prev[`team${pendingEvent.team === 'A' ? 'B' : 'A'}Score`] >= 2));
-
-            updateScores()
-        }
-
+      setMatchData((prev) => {
+        // Calculate new scores based on the team that scored
+        const isTeamA = pendingEvent.team === 'A';
+        const updatedScore = {
+          homeScore: isTeamA ? match.homeScore + 1 : match.homeScore,
+          awayScore: isTeamA ? match.awayScore : match.awayScore + 1,
+        };
+  
+        setNewScore(updatedScore);
+  
+        // Determine if it's a set point
+        const opponentScore = prev[`team${isTeamA ? 'B' : 'A'}Score`];
+        const isSetPoint = 
+          (updatedScore.homeScore >= 25 && updatedScore.homeScore - opponentScore >= 2) ||
+          (prev.currentSet === 5 && updatedScore.homeScore >= 15 && updatedScore.homeScore - opponentScore >= 2);
+  
+        setIsSetPoint(isSetPoint);
+  
+        // Update scores in the API
+        updateScores(updatedScore);
+  
+        // Handle set win if it's a set point
         if (isSetPoint) {
           return handleSetWin(pendingEvent.team, prev, playerName);
         }
-
+  
+        // Return the updated match data
         return {
           ...prev,
-          [`team${pendingEvent.team}Score`]: newScore,
+          [`team${pendingEvent.team}Score`]: isTeamA ? updatedScore.homeScore : updatedScore.awayScore,
           serving: pendingEvent.team,
-          events: [...prev.events, {
-            type: 'POINT',
-            team: pendingEvent.team,
-            playerName,
-            time: new Date().toISOString(),
-            score: `${pendingEvent.team === 'A' ? newScore : prev.teamAScore}-${pendingEvent.team === 'B' ? newScore : prev.teamBScore}`
-          }]
+          events: [
+            ...prev.events,
+            {
+              type: 'POINT',
+              team: pendingEvent.team,
+              playerName,
+              time: new Date().toISOString(),
+              score: `${updatedScore.homeScore}-${updatedScore.awayScore}`,
+            },
+          ],
         };
       });
     }
-
+  
     setShowPlayerSelect(false);
     setPendingEvent(null);
   };
+  
 
   const handleSetWin = (team, prevData, player) => {
     const newSetScores = [...prevData.setScores, {
