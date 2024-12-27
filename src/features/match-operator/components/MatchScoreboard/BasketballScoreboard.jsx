@@ -239,13 +239,7 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
         <div className="text-center space-y-4">
           <h3 className="font-medium mb-2">{match.homeTeam || 'Home Team'}</h3>
           <ScoreInput
-<<<<<<< HEAD
-            value={match.homeScore || 0}
-            match={match}
-            team='A'
-=======
             value={matchData.teamAScore || 0}
->>>>>>> origin/noel
             onChange={(value) => handleScoreChange('A', value)}
             label="Score"
           />
@@ -270,13 +264,7 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
         <div className="text-center space-y-4">
           <h3 className="font-medium mb-2">{match.awayTeam || 'Away Team'}</h3>
           <ScoreInput
-<<<<<<< HEAD
-            value={match.awayScore || 0}
-            match={match}
-            team='B'
-=======
             value={matchData.teamBScore || 0}
->>>>>>> origin/noel
             onChange={(value) => handleScoreChange('B', value)}
             label="Score"
           />

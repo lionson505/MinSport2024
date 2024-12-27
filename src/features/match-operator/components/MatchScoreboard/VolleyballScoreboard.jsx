@@ -27,6 +27,8 @@ export default function VolleyballScoreboard({ match, teamAPlayers = [], teamBPl
   const [showPlayerStats, setShowPlayerStats] = useState(false);
   const [pendingEvent, setPendingEvent] = useState(null);
   const [showPlayerSelect, setShowPlayerSelect] = useState(false);
+  const [newScore, setNewScore] = useState({})
+  const [isSetPoint, setIsSetPoint] = useState()
 
   // Fetch updated match data from the API
   useEffect(() => {
@@ -53,19 +55,47 @@ export default function VolleyballScoreboard({ match, teamAPlayers = [], teamBPl
     setShowPlayerSelect(true);
   };
 
-  const confirmEventWithPlayer = (playerId) => {
-    const player = pendingEvent.team === 'A' 
-      ? teamAPlayers.find(p => p.id === playerId)
-      : teamBPlayers.find(p => p.id === playerId);
+  const confirmEventWithPlayer = (playerName) => {
+    console.log('volley pending team who scored : ', pendingEvent.team)
+    // const player = pendingEvent.team === 'A' 
+    //   ? teamAPlayers.find(p => p.id === playerId)
+    //   : teamBPlayers.find(p => p.id === playerId);
+
+
+    const updateScores = async () => {
+      try {
+        await axiosInstance.patch(`/live-matches/${match.id}/score`, newScore);
+        console.log('Match score updated successfully.');
+      } catch (error) {
+        console.error('Failed to update match score:', error);
+      }
+    }
 
     if (pendingEvent.type === 'POINT') {
       setMatchData(prev => {
-        const newScore = prev[`team${pendingEvent.team}Score`] + 1;
-        const isSetPoint = (newScore >= 25 && newScore - prev[`team${pendingEvent.team === 'A' ? 'B' : 'A'}Score`] >= 2) ||
-                          (prev.currentSet === 5 && newScore >= 15 && newScore - prev[`team${pendingEvent.team === 'A' ? 'B' : 'A'}Score`] >= 2);
+        // const newScore = match.homeScore + 1;
+        if(pendingEvent.team === 'A'){
+             setNewScore ({
+              homeScore: match.homeScore + 1,
+              awayScore: match.awayScore,
+            });
+            setIsSetPoint ((newScore.homeScore >= 25 && newScore.homeScore - prev[`team${pendingEvent.team === 'A' ? 'B' : 'A'}Score`] >= 2) ||
+                          (prev.currentSet === 5 && newScore.homeScore >= 15 && newScore.homeScore - prev[`team${pendingEvent.team === 'A' ? 'B' : 'A'}Score`] >= 2));
+            updateScores()
+        }
+        else if(pendingEvent.team === 'B'){
+             setNewScore ({
+              homeScore: match.homeScore,
+              awayScore: match.awayScore + 1,
+            });
+             setIsSetPoint ((newScore.awayScore >= 25 && newScore.awayScore - prev[`team${pendingEvent.team === 'A' ? 'B' : 'A'}Score`] >= 2) ||
+                          (prev.currentSet === 5 && newScore.awayScore >= 15 && newScore.awayScore - prev[`team${pendingEvent.team === 'A' ? 'B' : 'A'}Score`] >= 2));
+
+            updateScores()
+        }
 
         if (isSetPoint) {
-          return handleSetWin(pendingEvent.team, prev, player);
+          return handleSetWin(pendingEvent.team, prev, playerName);
         }
 
         return {
@@ -75,7 +105,7 @@ export default function VolleyballScoreboard({ match, teamAPlayers = [], teamBPl
           events: [...prev.events, {
             type: 'POINT',
             team: pendingEvent.team,
-            player,
+            playerName,
             time: new Date().toISOString(),
             score: `${pendingEvent.team === 'A' ? newScore : prev.teamAScore}-${pendingEvent.team === 'B' ? newScore : prev.teamBScore}`
           }]
@@ -139,7 +169,8 @@ export default function VolleyballScoreboard({ match, teamAPlayers = [], teamBPl
   const renderControls = () => (
     <div className="grid grid-cols-2 gap-6">
       <div className="space-y-4">
-        <h3 className="font-medium">{match.homeTeam?.name || 'Home Team'} Controls</h3>
+        <h3 className="font-medium">{match.homeTeam || 'Home Team'} Controls</h3>
+        {/* TEAM A */}
         <div className="grid grid-cols-2 gap-2">
           <Button 
             onClick={() => handleEventWithPlayer('POINT', 'A')} 
@@ -166,8 +197,9 @@ export default function VolleyballScoreboard({ match, teamAPlayers = [], teamBPl
         </div>
       </div>
 
+      {/* Team B */}
       <div className="space-y-4">
-        <h3 className="font-medium">{match.awayTeam?.name || 'Away Team'} Controls</h3>
+        <h3 className="font-medium">{match.awayTeam || 'Away Team'} Controls</h3>
         <div className="grid grid-cols-2 gap-2">
           <Button 
             onClick={() => handleEventWithPlayer('POINT', 'B')} 
