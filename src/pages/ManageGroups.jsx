@@ -1,5 +1,4 @@
-/* src/pages/ManageGroups.jsx */
-import React, { useState, Fragment, useEffect } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/input';
@@ -21,9 +20,14 @@ function ManageGroups() {
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [groupToDelete, setGroupToDelete] = useState(null);
+  const [isModulesModalOpen, setIsModulesModalOpen] = useState(false);
+  const [selectedModules, setSelectedModules] = useState([]);
+  const [isUsersModalOpen, setIsUsersModalOpen] = useState(false);
+  const [selectedUsers, setSelectedUsers] = useState([]);
 
-  // State to hold groups data fetched from the API
+  // State to hold groups and users data fetched from the API
   const [groupsData, setGroupsData] = useState([]);
+  const [usersData, setUsersData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -34,8 +38,6 @@ function ManageGroups() {
       setError(null);
 
       const response = await axiosInstance.get('/groups');
-
-      // Access the array of groups from the response
       const data = Array.isArray(response.data.data) ? response.data.data : [];
       setGroupsData(data);
     } catch (err) {
@@ -46,12 +48,31 @@ function ManageGroups() {
     }
   };
 
+  // Fetch users data from the API
+  const fetchUsers = async () => {
+    try {
+      const response = await axiosInstance.get('/users');
+      const data = Array.isArray(response.data.data) ? response.data.data : [];
+      setUsersData(data);
+    } catch (err) {
+      console.error('Error fetching users:', err);
+    }
+  };
+
   useEffect(() => {
     fetchGroups();
+    fetchUsers();
   }, []);
 
+  const associateUsersWithGroups = () => {
+    return groupsData.map(group => {
+      const usersInGroup = usersData.filter(user => user.userGroup?.id === group.id);
+      return { ...group, userCount: usersInGroup.length };
+    });
+  };
+
   // Filter function for search term
-  const filteredData = groupsData.filter(group =>
+  const filteredData = associateUsersWithGroups().filter(group =>
     Object.values(group).some(value =>
       value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
     )
@@ -109,6 +130,17 @@ function ManageGroups() {
 
   const handleAddGroup = () => {
     setIsAddModalOpen(true);
+  };
+
+  const handleModulesClick = (modules) => {
+    setSelectedModules(modules || []);
+    setIsModulesModalOpen(true);
+  };
+
+  const handleUsersClick = (group) => {
+    const usersInGroup = usersData.filter(user => user.userGroup?.id === group.id);
+    setSelectedUsers(usersInGroup);
+    setIsUsersModalOpen(true);
   };
 
   return (
@@ -189,8 +221,22 @@ function ManageGroups() {
                   {paginatedData.map((group) => (
                     <tr key={group.id} className="hover:bg-gray-50">
                       <td className="px-4 py-3">{group.name}</td>
-                      <td className="px-4 py-3">{group.accessibleModules}</td>
-                      <td className="px-4 py-3">{group.users}</td>
+                      <td className="px-4 py-3">
+                        <button
+                          className="text-blue-500 underline"
+                          onClick={() => handleModulesClick(group.accessibleModules)}
+                        >
+                          {group.accessibleModules ? group.accessibleModules.length : 0}
+                        </button>
+                      </td>
+                      <td className="px-4 py-3">
+                        <button
+                          className="text-blue-500 underline"
+                          onClick={() => handleUsersClick(group)}
+                        >
+                          {group.userCount}
+                        </button>
+                      </td>
                       <td className="px-4 py-3 operation" >
                         <div className="flex items-center space-x-2">
                           <Button
@@ -323,6 +369,100 @@ function ManageGroups() {
                     <Button className="bg-red-600 hover:bg-red-700 text-white" onClick={handleDeleteConfirm}>
                       Delete Group
                     </Button>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
+
+      <Transition appear show={isModulesModalOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={() => setIsModulesModalOpen(false)}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black bg-opacity-25" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4 text-center">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
+                  <Dialog.Title className="text-lg font-medium text-gray-900 mb-4">
+                    Modules and Permissions
+                  </Dialog.Title>
+                  <div className="space-y-2">
+                    {(selectedModules || []).map((module, index) => (
+                      <div key={index} className="flex justify-between">
+                        <span>{module.name}</span>
+                        <span>{module.permission}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-end mt-4">
+                    <Button variant="outline" onClick={() => setIsModulesModalOpen(false)}>Close</Button>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
+
+      <Transition appear show={isUsersModalOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={() => setIsUsersModalOpen(false)}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black bg-opacity-25" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4 text-center">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
+                  <Dialog.Title className="text-lg font-medium text-gray-900 mb-4">
+                    Users
+                  </Dialog.Title>
+                  <div className="space-y-2">
+                    {(selectedUsers || []).map((user, index) => (
+                      <div key={index} className="flex justify-between">
+                        <span>{user.firstName} {user.lastName}</span>
+                        <span>{user.email}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-end mt-4">
+                    <Button variant="outline" onClick={() => setIsUsersModalOpen(false)}>Close</Button>
                   </div>
                 </Dialog.Panel>
               </Transition.Child>

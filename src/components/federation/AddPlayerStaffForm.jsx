@@ -15,8 +15,8 @@ const educationLevelOptions = [
   { value: 'PRIMARY', label: 'Primary Education' },
   { value: 'SECONDARY', label: 'Secondary Education' },
   { value: 'DIPLOMA', label: 'Diploma' },
-  { value: 'BACHELORS', label: 'Bachelor\'s Degree' },
-  { value: 'MASTERS', label: 'Master\'s Degree' },
+  { value: 'BACHELORS', label: "Bachelor's Degree" },
+  { value: 'MASTERS', label: "Master's Degree" },
   { value: 'PHD', label: 'PhD' },
   { value: 'OTHER', label: 'Other' }
 ];
@@ -24,6 +24,12 @@ const educationLevelOptions = [
 const fitnessStatusOptions = [
   { value: 'Fit', label: 'Fit' },
   { value: 'Unfit', label: 'Unfit' },
+];
+
+const genderOptions = [
+  { value: 'MALE', label: 'Male' },
+  { value: 'FEMALE', label: 'Female' },
+  { value: 'OTHER', label: 'Other' },
 ];
 
 const inputClassName = "h-14 w-full px-6 border border-gray-300 rounded-md text-base";
@@ -50,6 +56,7 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
     fitnessStatus: initialData.fitnessStatus || '',
     levelOfEducation: initialData.levelOfEducation || '',
     cvResume: initialData.cvResume || '',
+    gender: initialData.gender || '', // Added gender field
   });
 
   const [federations, setFederations] = useState([]);
@@ -157,13 +164,25 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
       });
 
       console.log('Submitting formatted data:', formattedData);
-      await onSubmit(formattedData);
+
+      if (initialData.id) {
+        // If there's an ID, we assume it's an update
+        await axiosInstance.put(`/player-staff/${initialData.id}`, formattedData);
+        toast.success('Player/Staff updated successfully');
+        window.location.reload();
+      } else {
+        // Otherwise, it's a new entry
+        await axiosInstance.post('/player-staff', formattedData);
+        toast.success('Player/Staff added successfully');
+        window.location.reload();
+      }
 
       // Update form data with the submitted data
       setFormData(formattedData);
     } catch (error) {
       console.error('Submission error:', error);
       const errorMessage = error.response?.data?.message || error.message || 'Failed to save data. Please try again.';
+      toast.error(errorMessage);
     }
   };
 
@@ -262,6 +281,22 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
             onChange={handleChange}
             className={`${inputClassName} mt-1 block w-full border rounded-md`}
           />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Gender</label>
+          <select
+            name="gender"
+            value={formData.gender}
+            onChange={handleChange}
+            className={inputClassName}
+          >
+            <option value="">Select Gender</option>
+            {genderOptions.map((gender) => (
+              <option key={gender.value} value={gender.value}>
+                {gender.label}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Marital Status</label>
