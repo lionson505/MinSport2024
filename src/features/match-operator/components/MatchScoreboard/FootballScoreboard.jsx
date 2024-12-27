@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Button } from '../../../../components/ui/Button';
-import { TimerDisplay } from '../../../../components/scoreboards/TimerDisplay';
 import { PlayerStatsDisplay } from '../../../../components/scoreboards/PlayerStatsDisplay';
 import { TeamStatsDisplay } from '../../../../components/scoreboards/TeamStatsDisplay';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../../../../components/ui/dialog';
 import axiosInstance from '../../../../utils/axiosInstance';
-import { Timer, Users, ChevronRight } from 'lucide-react';
+import { Timer, Users, ChevronRight, Play, Pause } from 'lucide-react'; // Import Play and Pause icons
 import {
   Select,
   SelectContent,
@@ -17,7 +16,7 @@ import { Input } from '../../../../components/ui/input';
 
 export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlayers = [], onUpdate }) {
   const [matchData, setMatchData] = useState({
-    status: 'NOT_STARTED', // NOT_STARTED, FIRST_HALF, HALF_TIME, SECOND_HALF, ADDED_TIME_1, ADDED_TIME_2, FULL_TIME
+    status: 'NOT_STARTED',
     period: 'FIRST_HALF',
     currentTime: '00:00',
     addedTime: 0,
@@ -30,63 +29,69 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [showPlayerSelect, setShowPlayerSelect] = useState(false);
   const [pendingEvent, setPendingEvent] = useState(null);
-  // console.log('number of goal is ', match.homeScore)
-  // const [anotherGoal, setAnotherGoal] = useState()
-  // console.log('another goal :', anotherGoal)
+  const [timerRunning, setTimerRunning] = useState(false);
+  const [intervalId, setIntervalId] = useState(null);
 
+  // Fetch updated match data from the API
+  useEffect(() => {
+    const fetchMatchData = async () => {
+      try {
+        const response = await axiosInstance.get(`/live-matches/${match.id}`);
+        const updatedData = response.data;
+        setMatchData(prev => ({
+          ...prev,
+          teamAScore: updatedData.homeScore,
+          teamBScore: updatedData.awayScore,
+          events: updatedData.events || []
+        }));
+      } catch (error) {
+        console.error('Error fetching match data:', error.response ? error.response.data : error.message);
+      }
+    };
 
-  // setMatchData(prev => {
-  //   const updatedData = {
-  //     ...prev,
-  //     events: [
-  //       ...prev.events,
-  //       {
-  //         type,
-  //         team,
-  //         player,
-  //         minute: prev.currentTime,
-  //         timestamp: new Date().toISOString(),
-  //       },
-  //     ],
-  //   };
+    fetchMatchData();
+  }, [match.id]);
 
-  //   if (type === 'GOAL' && team === 'A') {
-  //     console.log('current goal number is:', match.homeScore + 1);
-  //     matchData.homeScore = match.homeScore + 1;
-  //   }
+  const startTimer = () => {
+    if (!timerRunning) {
+      setTimerRunning(true);
+      const id = setInterval(() => {
+        setMatchData(prev => {
+          const [minutes, seconds] = prev.currentTime.split(':').map(Number);
+          const newSeconds = seconds + 1;
+          const newMinutes = minutes + Math.floor(newSeconds / 60);
+          return {
+            ...prev,
+            currentTime: `${String(newMinutes).padStart(2, '0')}:${String(newSeconds % 60).padStart(2, '0')}`
+          };
+        });
+      }, 1000);
+      setIntervalId(id);
+    }
+  };
 
-  //   return updatedData;
-  // });
+  const stopTimer = () => {
+    if (timerRunning) {
+      clearInterval(intervalId);
+      setTimerRunning(false);
+    }
+  };
 
   const addEvent = async (type, team, teamScore, matchId, player = null) => {
     if (type === 'GOAL') {
       try {
-
         let updatedMatchData = {};
 
-        /* there is some confusion a little bit about 
-           updatedMatchData = { {the value i used are was supposed to be used in opposite positions }: anotherGoal };this was */
         if (team === 'A') {
-          console.log("team : ", team)
-          console.log('TEAM A current goal number is:', teamScore);
           let anotherGoal = teamScore + 1;
           setMatchData(prev => ({ ...prev, teamAScore: anotherGoal }));
-          console.log('Updated teamAScore:', anotherGoal);
           updatedMatchData = { homeScore: anotherGoal };
-          console.log("home team updatedmatch data : ", updatedMatchData)
         } else if (team === 'B') {
-          console.log("team : ", team)
-          console.log('TEAM B current goal number is:', teamScore);
           let anotherGoal = teamScore + 1;
           setMatchData(prev => ({ ...prev, teamBScore: anotherGoal }));
-          console.log('Updated teamBScore:', anotherGoal);
           updatedMatchData = { awayScore: anotherGoal };
-          console.log("away team updatedmatch data : ", updatedMatchData)
         }
 
-        console.log('Match ID:', matchId);
-
-        // Corrected endpoint and method
         const endpoint = `/live-matches/${matchId}/score`;
         const response = await axiosInstance.patch(endpoint, updatedMatchData);
         console.log('API Response:', response.data);
@@ -96,18 +101,13 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
     }
   };
 
-
-
-
   const handleEventWithPlayer = (type, team) => {
     setPendingEvent({ type, team });
     setShowPlayerSelect(true);
   };
 
-  // for searching Player 
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Filter players based on the search term
   const filteredPlayers =
     pendingEvent?.team === 'B'
       ? teamBPlayers.filter((player) =>
@@ -117,14 +117,11 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
       )
       : [];
 
-
   const confirmEventWithPlayer = (playerId) => {
     console.log('ID of the player who scored:', playerId);
 
-    // Find the player based on the team
     if (pendingEvent.team === 'A') {
-      const player = teamAPlayers.find(p => p.id === playerId)
-      // Create a formatted object or string with full name
+      const player = teamAPlayers.find(p => p.id === playerId);
       const playerDetails = player
         ? {
           id: player.playerStaff.id,
@@ -134,14 +131,11 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
 
       console.log('Selected player details:', playerDetails);
 
-      // Add event and reset states
       if (playerDetails) {
-        addEvent('GOAL', 'A', match.awayScore, match.id,);
+        addEvent('GOAL', 'A', match.awayScore, match.id);
       }
-    }
-    else if (pendingEvent.team === 'B') {
+    } else if (pendingEvent.team === 'B') {
       const player = teamBPlayers.find(p => p.id === playerId);
-      // Create a formatted object or string with full name
       const playerDetails = player
         ? {
           id: player.playerStaff.id,
@@ -151,18 +145,15 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
 
       console.log('Selected player details:', playerDetails);
 
-      // Add event and reset states
       if (playerDetails) {
-        addEvent('GOAL', 'B', match.awayScore, match.id,);
+        addEvent('GOAL', 'B', match.awayScore, match.id);
       }
     }
- 
 
     setShowPlayerSelect(false);
     setPendingEvent(null);
     setSelectedPlayer(null);
   };
-
 
   const handlePeriodChange = (newStatus) => {
     setMatchData(prev => ({
@@ -233,43 +224,44 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
   const renderScoreboard = () => (
     <div className="bg-gray-50 p-6 rounded-xl mb-6">
       <div className="grid grid-cols-3 gap-4">
-        {/* Team A */}
         <div className="text-center">
           <h3 className="font-medium mb-2">{match.homeTeam || 'Home Team'}</h3>
-          <div className="text-5xl font-bold mb-2">{match.homeScore}</div>
+          <div className="text-5xl font-bold mb-2">{matchData.teamAScore}</div>
           <div className="flex justify-center gap-2">
             <Button
               size="sm"
               variant="outline"
-              onClick={() => addEvent('GOAL', 'A', match.homeScore, match.id)}
+              onClick={() => addEvent('GOAL', 'A', matchData.teamAScore, match.id)}
             >
               ⚽ Goal
             </Button>
           </div>
         </div>
 
-        {/* Match Info */}
         <div className="text-center">
-          <TimerDisplay
-            initialTime="00:00"
-            isCountdown={false}
-            onTimeUpdate={(time) => setMatchData(prev => ({ ...prev, currentTime: time }))}
-            disabled={matchData.status === 'FULL_TIME'}
-          />
+          <div className="text-5xl font-bold mb-2">{matchData.currentTime}</div>
+          <div className="flex justify-center gap-2">
+            <Button
+              size="sm"
+              variant={timerRunning ? 'default' : 'outline'}
+              onClick={timerRunning ? stopTimer : startTimer}
+            >
+              {timerRunning ? <Pause /> : <Play />} {/* Use icons instead of text */}
+            </Button>
+          </div>
           <div className="mt-2 text-sm text-gray-500">
             {matchData.status.replace(/_/g, ' ')}
           </div>
         </div>
 
-        {/* Team B */}
         <div className="text-center">
           <h3 className="font-medium mb-2">{match.awayTeam || 'Away Team'}</h3>
-          <div className="text-5xl font-bold mb-2">{match.awayScore}</div>
+          <div className="text-5xl font-bold mb-2">{matchData.teamBScore}</div>
           <div className="flex justify-center gap-2">
             <Button
               size="sm"
               variant="outline"
-              onClick={() => addEvent('GOAL', 'B', match.awayScore, match.id)}
+              onClick={() => addEvent('GOAL', 'B', matchData.teamBScore, match.id)}
             >
               ⚽ Goal
             </Button>
@@ -281,12 +273,11 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
 
   const renderControls = () => (
     <div className="grid grid-cols-2 gap-6 mb-6">
-      {/* Team A Controls */}
       <div className="space-y-4">
         <h3 className="font-medium">{match.homeTeam || 'Home Team'} Controls</h3>
         <div className="grid grid-cols-2 gap-2">
           <Button
-            onClick={() => handleEventWithPlayer('GOAL', 'A', match.homeScore, match.id)}
+            onClick={() => handleEventWithPlayer('GOAL', 'A', matchData.teamAScore, match.id)}
             className="w-full col-span-2"
           >
             ⚽ Goal
@@ -306,7 +297,6 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
         </div>
       </div>
 
-      {/* Team B Controls */}
       <div className="space-y-4">
         <h3 className="font-medium">{match.awayTeam || 'Away Team'} Controls</h3>
         <div className="grid grid-cols-2 gap-2">
@@ -435,4 +425,4 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
       </Dialog>
     </div>
   );
-} 
+}
