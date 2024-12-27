@@ -184,8 +184,8 @@ export default function VolleyballScoreboard({ match, teamAPlayers = [], teamBPl
         <div className="grid grid-cols-3 gap-4">
           {/* Team A */}
           <div className="text-center">
-            <h3 className="font-medium mb-2">{match.homeTeam?.name || 'Home Team'}</h3>
-            <div className="text-5xl font-bold mb-2">{matchData.teamAScore}</div>
+            <h3 className="font-medium mb-2">{match.homeTeam || 'Home Team'}</h3>
+            <div className="text-5xl font-bold mb-2">{match.homeScore || 0}</div>
             <div className="text-xl font-semibold">Sets: {matchData.teamASets}</div>
             <div className="mt-2">
               <span className="text-sm">Timeouts: {matchData.timeouts.A}</span>
@@ -209,8 +209,8 @@ export default function VolleyballScoreboard({ match, teamAPlayers = [], teamBPl
 
           {/* Team B */}
           <div className="text-center">
-            <h3 className="font-medium mb-2">{match.awayTeam?.name || 'Away Team'}</h3>
-            <div className="text-5xl font-bold mb-2">{matchData.teamBScore}</div>
+            <h3 className="font-medium mb-2">{match.awayTeam || 'Away Team'}</h3>
+            <div className="text-5xl font-bold mb-2">{match.awayScore || 0}</div>
             <div className="text-xl font-semibold">Sets: {matchData.teamBSets}</div>
             <div className="mt-2">
               <span className="text-sm">Timeouts: {matchData.timeouts.B}</span>

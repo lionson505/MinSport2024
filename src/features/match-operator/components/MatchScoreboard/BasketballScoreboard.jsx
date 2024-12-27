@@ -206,6 +206,8 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
           <h3 className="font-medium mb-2">{match.homeTeam || 'Home Team'}</h3>
           <ScoreInput
             value={match.homeScore || 0}
+            match={match}
+            team='A'
             onChange={(value) => handleScoreChange('A', value)}
             label="Score"
           />
@@ -229,6 +231,8 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
           <h3 className="font-medium mb-2">{match.awayTeam || 'Away Team'}</h3>
           <ScoreInput
             value={match.awayScore || 0}
+            match={match}
+            team='B'
             onChange={(value) => handleScoreChange('B', value)}
             label="Score"
           />

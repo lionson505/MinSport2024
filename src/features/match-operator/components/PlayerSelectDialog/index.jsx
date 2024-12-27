@@ -22,7 +22,7 @@ export function PlayerSelectDialog({
   onSelect,
   players = [],
   title = "Select Player",
-  description = "Choose the player for this eventaaaaaa",
+  description = "Choose the player for this event",
 }) {
   const [playersList, setPlayersList] = useState([]);
   const [error, setError] = useState(null); // State for error handling

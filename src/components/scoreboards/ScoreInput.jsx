@@ -3,34 +3,78 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
 import { Plus, Minus } from 'lucide-react';
+import axiosInstance from '../../utils/axiosInstance';
 
 export function ScoreInput({ 
   value = 0, 
-  scoreInfo,
+  match,
+  team,
   onChange, 
   min = 0, 
   max = 999,
   step = 1,
   label = "Score"
 }) {
-  console.log('scoreInfo : ', onChange);
   const [showManualInput, setShowManualInput] = useState(false);
   const [tempValue, setTempValue] = useState(value.toString());
 
-  const increment = () => {
+  // Increment the score
+  const increment = async () => {
     const newValue = value + step;
     if (newValue <= max) {
-      onChange(newValue);
+      try {
+        // Prepare updated scores
+        const updatedScores = {
+          homeScore: match.homeScore,
+          awayScore: match.awayScore,
+        };
+
+        if (team === 'A') updatedScores.homeScore += step;
+        else if (team === 'B') updatedScores.awayScore += step;
+
+        console.log('Updated Scores:', updatedScores);
+
+        // Update the match score via API
+        await axiosInstance.patch(`/live-matches/${match.id}/score`, updatedScores);
+        console.log('Match score updated successfully.');
+
+        // Call the onChange handler
+        onChange(newValue);
+      } catch (error) {
+        console.error('Failed to update match score:', error);
+      }
     }
   };
 
-  const decrement = () => {
+  // Decrement the score
+  const decrement = async () => {
     const newValue = value - step;
-    if (newValue >= min) {
-      onChange(newValue);
+    if (newValue <= max) {
+      try {
+        // Prepare updated scores
+        const updatedScores = {
+          homeScore: match.homeScore,
+          awayScore: match.awayScore,
+        };
+
+        if (team === 'A') updatedScores.homeScore -= step;
+        else if (team === 'B') updatedScores.awayScore -= step;
+
+        console.log('Updated Scores:', updatedScores);
+
+        // Update the match score via API
+        await axiosInstance.patch(`/live-matches/${match.id}/score`, updatedScores);
+        console.log('Match score updated successfully.');
+
+        // Call the onChange handler
+        onChange(newValue);
+      } catch (error) {
+        console.error('Failed to update match score:', error);
+      }
     }
   };
 
+  // Handle manual input submission
   const handleManualSubmit = () => {
     const numValue = parseInt(tempValue, 10);
     if (!isNaN(numValue) && numValue >= min && numValue <= max) {
@@ -105,4 +149,4 @@ export function ScoreInput({
       </Dialog>
     </div>
   );
-} 
+}
