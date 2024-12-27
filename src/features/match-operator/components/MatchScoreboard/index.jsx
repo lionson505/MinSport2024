@@ -44,7 +44,7 @@ export function MatchScoreboard({ match, homeTeamPlayers, awayTeamPlayers, onClo
               teamBPlayers={awayTeamPlayers}
             />
           )}
-          {match.gameType === 'volleyball' && (
+          {match.gameType === 'Volleyball' && (
             <VolleyballScoreboard 
               match={match} 
               onClose={onClose}

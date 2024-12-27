@@ -5,9 +5,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Users } from 'lucide-react';
 import { PlayerSelectDialog } from '../PlayerSelectDialog';
 import { ScoreInput } from '../../../../components/scoreboards/ScoreInput';
+import axiosInstance from '../../../../utils/axiosInstance';
 
 export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPlayers = [], onUpdate }) {
-  console.log('teamAPlayers: ', teamAPlayers)
   const [matchData, setMatchData] = useState({
     status: 'NOT_STARTED',
     currentQuarter: 1,
@@ -69,59 +69,113 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
     }
   };
 
-  const handleEventWithPlayer = (type, team, points = null, player) => {
-    console.log('player : ',player ,'type : ', type, 'team : ', team, 'points : ', points)
-    setPendingEvent({ type, team, points, player });
-    console.log('player : ', player)
-    setShowPlayerSelect(true);
-  };
+
+
+
 
   const confirmEventWithPlayer = (playerName) => {
-    console.log('player Name: ', playerName);
+    console.log('Player Name:', playerName);
+
   
-    // If playerName exists, we proceed with handling the event
-    if (playerName) {
-      // Find the player object based on the name
-      const player = pendingEvent.team === 'A' 
-        ? teamAPlayers.find(p => p.lastName === playerName)
-        : teamBPlayers.find(p => p.lastName === playerName);
+    if (!playerName) {
+      console.error('No player name provided.');
+      return;
+    }
   
-      // Now call the handleEventWithPlayer function with the necessary parameters, including player
-      handleEventWithPlayer(pendingEvent.type, pendingEvent.team, pendingEvent.points, playerName);
-      
-      // Continue with the event processing (adding points, fouls, etc.)
+    // Determine the player based on the team
+    const player = playerName
+
+    if (!player) {
+      console.error('Player not found in the selected team.');
+      return;
+    }
+  
+    // Handle the event with the selected player
+    handleEventWithPlayer(pendingEvent.type, pendingEvent.team, pendingEvent.points, player);
+    let matchId = match.id,
+    event = `${pendingEvent.points} ${pendingEvent.type}`,
+    nationalTeamPlayerStaffId = player;
+    console.log('handle event with player details : ', { matchId, event, nationalTeamPlayerStaffId })
+    // Update match data based on event type
+    setMatchData(prev => {
+      const teamScoreKey = `team${pendingEvent.team}Score`;
+      const teamFoulsKey = `team${pendingEvent.team}Fouls`;
+      const updatedEvents = [...prev.events];
+  
       if (pendingEvent.type === 'POINTS') {
-        setMatchData(prev => ({
+        updatedEvents.push({
+          type: 'POINTS',
+          team: pendingEvent.team,
+          player,
+          points: pendingEvent.points,
+          time: new Date().toISOString(),
+          score: `${pendingEvent.team === 'A' ? prev.teamAScore + pendingEvent.points : prev.teamAScore}-${
+            pendingEvent.team === 'B' ? prev.teamBScore + pendingEvent.points : prev.teamBScore
+          }`
+        });
+  
+        return {
           ...prev,
-          [`team${pendingEvent.team}Score`]: prev[`team${pendingEvent.team}Score`] + pendingEvent.points,
-          events: [...prev.events, {
-            type: 'POINTS',
-            team: pendingEvent.team,
-            player,
-            points: pendingEvent.points,
-            time: new Date().toISOString(),
-            score: `${pendingEvent.team === 'A' ? 
-              prev.teamAScore + pendingEvent.points : 
-              prev.teamAScore}-${pendingEvent.team === 'B' ? 
-              prev.teamBScore + pendingEvent.points : 
-              prev.teamBScore}`
-          }]
-        }));
+          [teamScoreKey]: prev[teamScoreKey] + pendingEvent.points,
+          events: updatedEvents
+        };
       } else if (pendingEvent.type === 'FOUL') {
-        setMatchData(prev => ({
+        updatedEvents.push({
+          type: 'FOUL',
+          team: pendingEvent.team,
+          player,
+          time: new Date().toISOString()
+        });
+  
+        return {
           ...prev,
-          [`team${pendingEvent.team}Fouls`]: prev[`team${pendingEvent.team}Fouls`] + 1,
-          events: [...prev.events, {
-            type: 'FOUL',
-            team: pendingEvent.team,
-            player,
-            time: new Date().toISOString()
-          }]
-        }));
+          [teamFoulsKey]: prev[teamFoulsKey] + 1,
+          events: updatedEvents
+        };
       }
   
-      setShowPlayerSelect(false); // Close the player selection dialog
-      setPendingEvent(null); // Clear the pending event
+      return prev; // Fallback in case of unknown event type
+    });
+  
+    // Reset states after processing the event
+    setShowPlayerSelect(false);
+    setPendingEvent(null);
+  };
+  
+  const handleEventWithPlayer = async (type, team, points = 1, player) => {
+    /* if (!player) {
+      console.error('Player not found or invalid player name.');
+      return;
+    } */
+
+
+  
+    try {
+      console.log('Event Details:', { player, type, team, points });
+      
+      // Update the pending event
+      setPendingEvent({ type, team, points, player });
+      setShowPlayerSelect(true);
+  
+      // Update scores based on the event
+      const updatedScores = {
+        homeScore: match.homeScore,
+        awayScore: match.awayScore,
+      };
+  
+      if (type === 'POINTS') {
+        if (team === 'A') updatedScores.homeScore += points;
+        else if (team === 'B') updatedScores.awayScore += points;
+      }
+  
+      console.log('Points:', points);
+      console.log('Updated Scores:', updatedScores);
+  
+      // Update the match score via API
+      await axiosInstance.patch(`/live-matches/${match.id}/score`, updatedScores);
+      console.log('Match score updated successfully.');
+    } catch (error) {
+      console.error('Failed to update match score:', error);
     }
   };
   
@@ -129,7 +183,6 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
   const handleScoreChange = (team, newScore) => {
     const prevScore = matchData[`team${team}Score`];
     const points = newScore - prevScore;
-    
     if (points !== 0) {
       setMatchData(prev => ({
         ...prev,
@@ -150,7 +203,7 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
       <div className="grid grid-cols-3 gap-4">
         {/* Team A */}
         <div className="text-center space-y-4">
-          <h3 className="font-medium mb-2">{match.homeTeam|| 'Home Team'}</h3>
+          <h3 className="font-medium mb-2">{match.homeTeam || 'Home Team'}</h3>
           <ScoreInput
             value={match.homeScore || 0}
             onChange={(value) => handleScoreChange('A', value)}
@@ -195,14 +248,14 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
           <Button onClick={() => handleEventWithPlayer('POINTS', 'A', 1)}>+1</Button>
           <Button onClick={() => handleEventWithPlayer('POINTS', 'A', 2)}>+2</Button>
           <Button onClick={() => handleEventWithPlayer('POINTS', 'A', 3)}>+3</Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => handleEventWithPlayer('FOUL', 'A')}
           >
             Foul
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => useTimeout('A')}
           >
             Timeout
@@ -217,14 +270,14 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
           <Button onClick={() => handleEventWithPlayer('POINTS', 'B', 1)}>+1</Button>
           <Button onClick={() => handleEventWithPlayer('POINTS', 'B', 2)}>+2</Button>
           <Button onClick={() => handleEventWithPlayer('POINTS', 'B', 3)}>+3</Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => handleEventWithPlayer('FOUL', 'B')}
           >
             Foul
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => useTimeout('B')}
           >
             Timeout
@@ -245,11 +298,10 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
         onSelect={confirmEventWithPlayer}
         players={pendingEvent?.team === 'A' ? teamAPlayers : teamBPlayers}
         title={`Select Player for ${pendingEvent?.type}`}
-        description={`Choose the player who ${
-          pendingEvent?.type === 'POINTS' ? `scored ${pendingEvent.points} points` :
-          pendingEvent?.type === 'FOUL' ? 'committed the foul' :
-          'for this event'
-        }`}
+        description={`Choose the player who ${pendingEvent?.type === 'POINTS' ? `scored ${pendingEvent.points} points` :
+            pendingEvent?.type === 'FOUL' ? 'committed the foul' :
+              'for this event'
+          }`}
       />
     </div>
   );

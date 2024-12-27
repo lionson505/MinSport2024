@@ -59,8 +59,8 @@ export function PlayerSelectDialog({
             {players.map(player => (
               <SelectItem key={player.id} value={player.playerStaff.lastName}>
                 #{player.playerStaff.id} - {player.playerStaff.lastName} ({player.playerStaff.
-positionInClub
-})
+                    positionInClub
+                    })
               </SelectItem>
             ))}
           </SelectContent>
