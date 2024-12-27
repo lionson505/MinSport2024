@@ -36,27 +36,27 @@ const inputClassName = "h-14 w-full px-6 border border-gray-300 rounded-md text-
 
 const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
   const [formData, setFormData] = useState({
-    type: initialData.type || 'PLAYER',
-    idPassportNo: initialData.idPassportNo || '',
-    passportPicture: initialData.passportPicture || '',
-    firstName: initialData.firstName || '',
-    lastName: initialData.lastName || '',
-    dateOfBirth: initialData.dateOfBirth || '',
-    maritalStatus: initialData.maritalStatus || '',
-    placeOfResidence: initialData.placeOfResidence || '',
-    discipline: initialData.discipline || '',
-    nationality: initialData.nationality || '',
-    otherNationality: initialData.otherNationality || '',
-    positionInClub: initialData.positionInClub || '',
-    federationId: initialData.federationId || 0,
-    currentClubId: initialData.currentClubId || 0,
-    originClubId: initialData.originClubId || 0,
-    joinDate: initialData.joinDate || '',
-    placeOfBirth: initialData.placeOfBirth || '',
-    fitnessStatus: initialData.fitnessStatus || '',
-    levelOfEducation: initialData.levelOfEducation || '',
-    cvResume: initialData.cvResume || '',
-    gender: initialData.gender || '', // Added gender field
+    type: 'PLAYER',
+    idPassportNo: '',
+    passportPicture: '',
+    firstName: '',
+    lastName: '',
+    dateOfBirth: '',
+    maritalStatus: '',
+    placeOfResidence: '',
+    discipline: '',
+    nationality: '',
+    otherNationality: '',
+    positionInClub: '',
+    federationId: 0,
+    currentClubId: 0,
+    originClubId: 0,
+    joinDate: '',
+    placeOfBirth: '',
+    fitnessStatus: '',
+    levelOfEducation: '',
+    cvResume: '',
+    gender: '',
   });
 
   const [federations, setFederations] = useState([]);
@@ -66,6 +66,33 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
   const [isLoadingID, setIsLoadingID] = useState(false);
   const [idData, setIdData] = useState(null);
   const [idType, setIdType] = useState('passport');
+
+  useEffect(() => {
+    // Update form data when initialData changes
+    setFormData({
+      type: initialData?.type || 'PLAYER',
+      idPassportNo: initialData?.idPassportNo || '',
+      passportPicture: initialData?.passportPicture || '',
+      firstName: initialData?.firstName || '',
+      lastName: initialData?.lastName || '',
+      dateOfBirth: initialData?.dateOfBirth || '',
+      maritalStatus: initialData?.maritalStatus || '',
+      placeOfResidence: initialData?.placeOfResidence || '',
+      discipline: initialData?.discipline || '',
+      nationality: initialData?.nationality || '',
+      otherNationality: initialData?.otherNationality || '',
+      positionInClub: initialData?.positionInClub || '',
+      federationId: initialData?.federationId || 0,
+      currentClubId: initialData?.currentClubId || 0,
+      originClubId: initialData?.originClubId || 0,
+      joinDate: initialData?.joinDate || '',
+      placeOfBirth: initialData?.placeOfBirth || '',
+      fitnessStatus: initialData?.fitnessStatus || '',
+      levelOfEducation: initialData?.levelOfEducation || '',
+      cvResume: initialData?.cvResume || '',
+      gender: initialData?.gender || '',
+    });
+  }, [initialData]);
 
   useEffect(() => {
     const fetchData = async () => {

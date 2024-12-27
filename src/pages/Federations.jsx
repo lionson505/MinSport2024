@@ -558,24 +558,71 @@ const Federations = () => {
     fetchPlayersStaff();
   }, [refreshPlayerStaffData]);
 
-  const handlePlayerSearch = async (value) => {
-    const newFilters = { ...playerFilters, search: value };
-    setPlayerFilters(newFilters);
+  const handlePlayerSearch = (value) => {
+    setPlayerFilters((prevFilters) => ({
+      ...prevFilters,
+      search: value,
+    }));
+
+    const searchLower = value.toLowerCase();
+    const filtered = playersStaffData.filter((person) => {
+      return (
+        person.firstName.toLowerCase().includes(searchLower) ||
+        person.lastName.toLowerCase().includes(searchLower) ||
+        person.federation.name.toLowerCase().includes(searchLower) ||
+        person.currentClub.name.toLowerCase().includes(searchLower)
+      );
+    });
+
+    setFilteredPlayersStaff(filtered);
   };
 
-  const handleTypeFilter = async (value) => {
-    const newFilters = { ...playerFilters, type: value };
-    setPlayerFilters(newFilters);
+  const handleTypeFilter = (value) => {
+    setPlayerFilters((prevFilters) => ({
+      ...prevFilters,
+      type: value,
+    }));
+
+    const filtered = playersStaffData.filter((person) => {
+      return (
+        (value === '' || person.type === value) &&
+        (playerFilters.search === '' || person.firstName.toLowerCase().includes(playerFilters.search.toLowerCase()) || person.lastName.toLowerCase().includes(playerFilters.search.toLowerCase()))
+      );
+    });
+
+    setFilteredPlayersStaff(filtered);
   };
 
-  const handleFederationFilter = async (value) => {
-    const newFilters = { ...playerFilters, federation: value };
-    setPlayerFilters(newFilters);
+  const handleFederationFilter = (value) => {
+    setPlayerFilters((prevFilters) => ({
+      ...prevFilters,
+      federation: value,
+    }));
+
+    const filtered = playersStaffData.filter((person) => {
+      return (
+        (value === '' || person.federation.id === value) &&
+        (playerFilters.search === '' || person.firstName.toLowerCase().includes(playerFilters.search.toLowerCase()) || person.lastName.toLowerCase().includes(playerFilters.search.toLowerCase()))
+      );
+    });
+
+    setFilteredPlayersStaff(filtered);
   };
 
-  const handleClubFilter = async (value) => {
-    const newFilters = { ...playerFilters, club: value };
-    setPlayerFilters(newFilters);
+  const handleClubFilter = (value) => {
+    setPlayerFilters((prevFilters) => ({
+      ...prevFilters,
+      club: value,
+    }));
+
+    const filtered = playersStaffData.filter((person) => {
+      return (
+        (value === '' || person.currentClub.name === value) &&
+        (playerFilters.search === '' || person.firstName.toLowerCase().includes(playerFilters.search.toLowerCase()) || person.lastName.toLowerCase().includes(playerFilters.search.toLowerCase()))
+      );
+    });
+
+    setFilteredPlayersStaff(filtered);
   };
 
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
@@ -808,7 +855,7 @@ const Federations = () => {
                       type="text"
                       placeholder="Quick search..."
                       className="pl-10 pr-4 py-2 border rounded-lg w-full sm:w-64"
-                      onChange={(e) => handlePlayerSearch(e.target.value, 'all')}
+                      onChange={(e) => handlePlayerSearch(e.target.value)}
                     />
                   </div>
 
@@ -1212,15 +1259,19 @@ const Federations = () => {
       </Dialog>
 
       <Modal
-        isOpen={isAddPlayerModalOpen}
-        onClose={() => {
-          setIsAddPlayerModalOpen(false);
-          setPlayerToEdit(null);
-        }}
-        title={playerToEdit ? 'Edit Player/Staff' : 'Add Player/Staff'}
-      >
-        <AddPlayerStaffForm onSubmit={handleAddPlayerStaff} onCancel={() => setIsAddPlayerModalOpen(false)} />
-      </Modal>
+  isOpen={isAddPlayerModalOpen}
+  onClose={() => {
+    setIsAddPlayerModalOpen(false);
+    setPlayerToEdit(null);
+  }}
+  title={playerToEdit ? 'Edit Player/Staff' : 'Add Player/Staff'}
+>
+  <AddPlayerStaffForm
+    initialData={playerToEdit} // Pass initial data here
+    onSubmit={handleAddPlayerStaff}
+    onCancel={() => setIsAddPlayerModalOpen(false)}
+  />
+</Modal>
 
       <TransferHistoryModal
         isOpen={showTransferHistoryModal}
