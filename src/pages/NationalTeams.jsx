@@ -1054,7 +1054,7 @@ const handleAddPlayerSubmit = async (e) => {
   >
     <option value="">Select Player/Staff</option>
     {playerStaffList
-      .filter(staff => staff.originClubId === parseInt(selectedClub))
+      .filter(staff => staff.currentClubId === parseInt(selectedClub))
       .map(staff => (
         <option key={staff.id} value={staff.id}>
           {`${staff.firstName} ${staff.lastName}`}

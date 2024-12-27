@@ -6,7 +6,7 @@ import { Input } from "../components/ui/input";
 import { Search } from "react-feather";
 import { Calendar, Eye, Trash2, XIcon, Check, X } from 'lucide-react';
 import AddAppointmentForm from "../components/forms/AddAppointmentForm"; // Import the form
-import PrintButton from "../components/reusable/Print"
+import PrintButton from "../components/reusable/Print";
 
 const Toast = ({ message, onClose }) => {
   useEffect(() => {
@@ -26,6 +26,7 @@ function Appointments() {
   const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("minister");
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [rescheduleData, setRescheduleData] = useState({
@@ -58,7 +59,7 @@ function Appointments() {
     setIsLoading(true);
     try {
       const response = await axiosInstance.get("/appointments", {
-        params: { page: currentPage, search: searchTerm },
+        params: { page: currentPage },
       });
       setAppointments(response.data);
     } catch (error) {
@@ -71,7 +72,7 @@ function Appointments() {
 
   useEffect(() => {
     fetchAppointments();
-  }, [currentPage, searchTerm]);
+  }, [currentPage]);
 
   const handleReschedule = (appointment) => {
     setSelectedAppointment(appointment);
@@ -212,12 +213,26 @@ function Appointments() {
     }
   };
 
+  // Filter appointments based on the active tab and search term
+  const filteredAppointments = appointments.filter(appointment => {
+    const searchLower = searchTerm.toLowerCase();
+    const matchesSearch = appointment.names.toLowerCase().includes(searchLower) ||
+                          appointment.purpose.toLowerCase().includes(searchLower) ||
+                          appointment.institution.toLowerCase().includes(searchLower);
+
+    if (activeTab === "minister") {
+      return appointment.person_to_meet.toLowerCase() === "minister" && matchesSearch;
+    } else if (activeTab === "ps") {
+      return appointment.person_to_meet.toLowerCase() === "ps" && matchesSearch;
+    }
+    return false;
+  });
+
   return (
     <div className="p-4">
       {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage('')} />}
       <div className="flex justify-between items-center mb-4">
-        
-      <h1 className={`text-2xl font-semibold $`}>Appointments</h1>
+        <h1 className={`text-2xl font-semibold`}>Appointments</h1>
         <div className="relative w-80">
           <Input
             type="text"
@@ -234,92 +249,107 @@ function Appointments() {
         <Button onClick={() => setAddModalOpen(true)}>Add Appointment</Button>
       </div>
 
+      <div className="flex mb-4">
+        <button
+          className={`px-4 py-2 ${activeTab === "minister" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+          onClick={() => setActiveTab("minister")}
+        >
+          Appointment of Minister
+        </button>
+        <button
+          className={`px-4 py-2 ${activeTab === "ps" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+          onClick={() => setActiveTab("ps")}
+        >
+          Appointment of PS
+        </button>
+      </div>
+
       <div className="bg-white rounded-lg shadow">
         <PrintButton title="APPOINTMENTS REPORT">
-        <table className="w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="w-10 px-3 py-2">
-                <input 
-                  type="checkbox" 
-                  className="rounded border-gray-300"
-                  checked={selectedRows.length === appointments.length}
-                  onChange={(e) => {
-                    setSelectedRows(e.target.checked ? appointments.map(a => a.id) : []);
-                  }}
-                />
-              </th>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">TIME</th>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">NAMES</th>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Gender</th>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Cellphone</th>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Purpose</th>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Institution</th>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Function</th>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Status</th>
-              <th className="w-24 px-3 py-2 text-left text-xs font-medium operation text-gray-500">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {appointments.map((appointment) => (
-              <tr key={appointment.id} className="hover:bg-gray-50">
-                <td className="px-3 py-2">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="w-10 px-3 py-2">
                   <input 
                     type="checkbox" 
                     className="rounded border-gray-300"
-                    checked={selectedRows.includes(appointment.id)}
+                    checked={selectedRows.length === filteredAppointments.length}
                     onChange={(e) => {
-                      setSelectedRows(prev => 
-                        e.target.checked 
-                          ? [...prev, appointment.id]
-                          : prev.filter(id => id !== appointment.id)
-                      );
+                      setSelectedRows(e.target.checked ? filteredAppointments.map(a => a.id) : []);
                     }}
                   />
-                </td>
-                <td className="px-3 py-2 text-sm whitespace-nowrap">
-                  {new Date(appointment.request_time).toLocaleTimeString()}
-                </td>
-                <td className="px-3 py-2 text-sm">{appointment.names}</td>
-                <td className="px-3 py-2 text-sm">{appointment.gender}</td>
-                <td className="px-3 py-2 text-sm">{appointment.cellphone}</td>
-                <td className="px-3 py-2 text-sm">{appointment.purpose}</td>
-                <td className="px-3 py-2 text-sm">{appointment.institution}</td>
-                <td className="px-3 py-2 text-sm">{appointment.function}</td>
-                <td className="px-3 py-2 text-sm">{renderStatusBadge(appointment.status)}</td>
-                <td className="px-3 py-2 flex space-x-2 operation" >
-                  <button onClick={() => handleView(appointment)}>
-                    <Eye className="h-4 w-4" />
-                  </button>
-                  <button onClick={() => {
-                    setSelectedAppointment(appointment);
-                    setIsApproveModalOpen(true);
-                  }}>
-                    <Check className="h-4 w-4 text-green-600" />
-                  </button>
-                  <button onClick={() => {
-                    setSelectedAppointment(appointment);
-                    setIsRejectModalOpen(true);
-                  }}>
-                    <X className="h-4 w-4 text-red-600" />
-                  </button>
-                  <button
-                    className="text-yellow-600 text-sm hover:underline"
-                    onClick={() => handleReschedule(appointment)}
-                  >
-                    <Calendar className="h-4 w-4 mr-1" />
-                  </button>
-                  <button
-                    className="text-red-600 text-sm hover:underline"
-                    onClick={() => handleDelete(appointment)}
-                  >
-                    <Trash2 className="h-4 w-4 mr-1" />
-                  </button>
-                </td>
+                </th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">TIME</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">NAMES</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Gender</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Cellphone</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Purpose</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Institution</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Function</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Status</th>
+                <th className="w-24 px-3 py-2 text-left text-xs font-medium operation text-gray-500">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {filteredAppointments.map((appointment) => (
+                <tr key={appointment.id} className="hover:bg-gray-50">
+                  <td className="px-3 py-2">
+                    <input 
+                      type="checkbox" 
+                      className="rounded border-gray-300"
+                      checked={selectedRows.includes(appointment.id)}
+                      onChange={(e) => {
+                        setSelectedRows(prev => 
+                          e.target.checked 
+                            ? [...prev, appointment.id]
+                            : prev.filter(id => id !== appointment.id)
+                        );
+                      }}
+                    />
+                  </td>
+                  <td className="px-3 py-2 text-sm whitespace-nowrap">
+                    {new Date(appointment.request_time).toLocaleTimeString()}
+                  </td>
+                  <td className="px-3 py-2 text-sm">{appointment.names}</td>
+                  <td className="px-3 py-2 text-sm">{appointment.gender}</td>
+                  <td className="px-3 py-2 text-sm">{appointment.cellphone}</td>
+                  <td className="px-3 py-2 text-sm">{appointment.purpose}</td>
+                  <td className="px-3 py-2 text-sm">{appointment.institution}</td>
+                  <td className="px-3 py-2 text-sm">{appointment.function}</td>
+                  <td className="px-3 py-2 text-sm">{renderStatusBadge(appointment.status)}</td>
+                  <td className="px-3 py-2 flex space-x-2 operation" >
+                    <button onClick={() => handleView(appointment)}>
+                      <Eye className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => {
+                      setSelectedAppointment(appointment);
+                      setIsApproveModalOpen(true);
+                    }}>
+                      <Check className="h-4 w-4 text-green-600" />
+                    </button>
+                    <button onClick={() => {
+                      setSelectedAppointment(appointment);
+                      setIsRejectModalOpen(true);
+                    }}>
+                      <X className="h-4 w-4 text-red-600" />
+                    </button>
+                    <button
+                      className="text-yellow-600 text-sm hover:underline"
+                      onClick={() => handleReschedule(appointment)}
+                    >
+                      <Calendar className="h-4 w-4 mr-1" />
+                    </button>
+                    <button
+                      className="text-red-600 text-sm hover:underline"
+                      onClick={() => handleDelete(appointment)}
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </PrintButton>
       </div>
 
@@ -335,7 +365,7 @@ function Appointments() {
         <Button
           variant="outline"
           onClick={() => handlePageChange(currentPage + 1)}
-          disabled={appointments.length < 10}
+          disabled={filteredAppointments.length < 10}
         >
           Next
         </Button>

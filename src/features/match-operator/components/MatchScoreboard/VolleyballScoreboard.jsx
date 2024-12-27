@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '../../../../components/ui/Button';
 import { TimerDisplay } from '../../../../components/scoreboards/TimerDisplay';
 import { PlayerStatsDisplay } from '../../../../components/scoreboards/PlayerStatsDisplay';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../../../../components/ui/dialog';
 import { Users } from 'lucide-react';
 import { PlayerSelectDialog } from '../PlayerSelectDialog';
+import axiosInstance from '../../../../utils/axiosInstance';
 
 export default function VolleyballScoreboard({ match, teamAPlayers = [], teamBPlayers = [], onUpdate }) {
   const [matchData, setMatchData] = useState({
@@ -14,8 +15,8 @@ export default function VolleyballScoreboard({ match, teamAPlayers = [], teamBPl
     teamBScore: 0,
     teamASets: 0,
     teamBSets: 0,
-    setScores: [], // [{teamA: 25, teamB: 23}, {teamA: 25, teamB: 20}, etc]
-    serving: null, // 'A' or 'B'
+    setScores: [],
+    serving: null,
     timeouts: {
       A: 2,
       B: 2
@@ -26,6 +27,26 @@ export default function VolleyballScoreboard({ match, teamAPlayers = [], teamBPl
   const [showPlayerStats, setShowPlayerStats] = useState(false);
   const [pendingEvent, setPendingEvent] = useState(null);
   const [showPlayerSelect, setShowPlayerSelect] = useState(false);
+
+  // Fetch updated match data from the API
+  useEffect(() => {
+    const fetchMatchData = async () => {
+      try {
+        const response = await axiosInstance.get(`/live-matches/${match.id}`);
+        const updatedData = response.data;
+        setMatchData(prev => ({
+          ...prev,
+          teamAScore: updatedData.homeScore,
+          teamBScore: updatedData.awayScore,
+          events: updatedData.events || []
+        }));
+      } catch (error) {
+        console.error('Error fetching match data:', error.response ? error.response.data : error.message);
+      }
+    };
+
+    fetchMatchData();
+  }, [match.id]);
 
   const handleEventWithPlayer = (type, team) => {
     setPendingEvent({ type, team });
@@ -117,7 +138,6 @@ export default function VolleyballScoreboard({ match, teamAPlayers = [], teamBPl
 
   const renderControls = () => (
     <div className="grid grid-cols-2 gap-6">
-      {/* Team A Controls */}
       <div className="space-y-4">
         <h3 className="font-medium">{match.homeTeam?.name || 'Home Team'} Controls</h3>
         <div className="grid grid-cols-2 gap-2">
@@ -146,7 +166,6 @@ export default function VolleyballScoreboard({ match, teamAPlayers = [], teamBPl
         </div>
       </div>
 
-      {/* Team B Controls */}
       <div className="space-y-4">
         <h3 className="font-medium">{match.awayTeam?.name || 'Away Team'} Controls</h3>
         <div className="grid grid-cols-2 gap-2">
@@ -179,10 +198,8 @@ export default function VolleyballScoreboard({ match, teamAPlayers = [], teamBPl
 
   return (
     <div className="space-y-6">
-      {/* Scoreboard */}
       <div className="bg-gray-50 p-6 rounded-xl">
         <div className="grid grid-cols-3 gap-4">
-          {/* Team A */}
           <div className="text-center">
             <h3 className="font-medium mb-2">{match.homeTeam || 'Home Team'}</h3>
             <div className="text-5xl font-bold mb-2">{match.homeScore || 0}</div>
@@ -195,7 +212,6 @@ export default function VolleyballScoreboard({ match, teamAPlayers = [], teamBPl
             </div>
           </div>
 
-          {/* Center Info */}
           <div className="text-center">
             <div className="text-xl font-medium mb-2">Set {matchData.currentSet}</div>
             <div className="space-y-2">
@@ -207,7 +223,6 @@ export default function VolleyballScoreboard({ match, teamAPlayers = [], teamBPl
             </div>
           </div>
 
-          {/* Team B */}
           <div className="text-center">
             <h3 className="font-medium mb-2">{match.awayTeam || 'Away Team'}</h3>
             <div className="text-5xl font-bold mb-2">{match.awayScore || 0}</div>
@@ -224,7 +239,6 @@ export default function VolleyballScoreboard({ match, teamAPlayers = [], teamBPl
 
       {renderControls()}
 
-      {/* Player Stats Dialog */}
       <Dialog open={showPlayerStats} onOpenChange={setShowPlayerStats}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
@@ -254,4 +268,4 @@ export default function VolleyballScoreboard({ match, teamAPlayers = [], teamBPl
       />
     </div>
   );
-} 
+}
