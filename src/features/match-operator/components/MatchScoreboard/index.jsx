@@ -5,7 +5,6 @@ import BasketballScoreboard from './BasketballScoreboard';
 import VolleyballScoreboard from './VolleyballScoreboard';
 export function MatchScoreboard({ match, homeTeamPlayers, awayTeamPlayers, onClose }) {
   const [teamAPlayers, setTeamAPlayers] = useState([]);
-  console.log("match : ", match);
   const [teamBPlayers, setTeamBPlayers] = useState([]);
 
 

@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Users } from 'lucide-react';
 import { PlayerSelectDialog } from '../PlayerSelectDialog';
 import axiosInstance from '../../../../utils/axiosInstance';
+import useFetchLiveMatches from '../../../../utils/fetchLiveMatches';
 
 export default function VolleyballScoreboard({ match, teamAPlayers = [], teamBPlayers = [], onUpdate }) {
   const [matchData, setMatchData] = useState({
@@ -29,6 +30,7 @@ export default function VolleyballScoreboard({ match, teamAPlayers = [], teamBPl
   const [showPlayerSelect, setShowPlayerSelect] = useState(false);
   const [newScore, setNewScore] = useState({})
   const [isSetPoint, setIsSetPoint] = useState()
+  const { matches = [], liveMatchError } = useFetchLiveMatches()
 
   // Fetch updated match data from the API
   useEffect(() => {
@@ -54,27 +56,32 @@ export default function VolleyballScoreboard({ match, teamAPlayers = [], teamBPl
     setPendingEvent({ type, team });
     setShowPlayerSelect(true);
   };
+ 
+
+  const updatedMatch = matches.filter((updatedMatch) => updatedMatch.id === match.id)
+  if (!updatedMatch.length > 0) {
+    return <div>no match id found</div>;
+  }
 
   const confirmEventWithPlayer = (playerName) => {
-    console.log('Volley pending team who scored:', pendingEvent.team);
   
     const updateScores = async (updatedScore) => {
       try {
-        console.log('Match ID:', match.id, 'New score:', updatedScore);
         await axiosInstance.patch(`/live-matches/${match.id}/score`, updatedScore);
-        console.log('Match score updated successfully.');
       } catch (error) {
         console.error('Failed to update match score:', error);
       }
     };
   
+
+
     if (pendingEvent.type === 'POINT') {
       setMatchData((prev) => {
         // Calculate new scores based on the team that scored
         const isTeamA = pendingEvent.team === 'A';
         const updatedScore = {
-          homeScore: isTeamA ? match.homeScore + 1 : match.homeScore,
-          awayScore: isTeamA ? match.awayScore : match.awayScore + 1,
+          homeScore: isTeamA ? updatedMatch[0].homeScore + 1 : updatedMatch[0].homeScore,
+          awayScore: isTeamA ? updatedMatch[0].awayScore : updatedMatch[0].awayScore + 1,
         };
   
         setNewScore(updatedScore);
@@ -236,7 +243,7 @@ export default function VolleyballScoreboard({ match, teamAPlayers = [], teamBPl
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center">
             <h3 className="font-medium mb-2">{match.homeTeam || 'Home Team'}</h3>
-            <div className="text-5xl font-bold mb-2">{match.homeScore || 0}</div>
+            <div className="text-5xl font-bold mb-2">{updatedMatch[0].homeScore || 0}</div>
             <div className="text-xl font-semibold">Sets: {matchData.teamASets}</div>
             <div className="mt-2">
               <span className="text-sm">Timeouts: {matchData.timeouts.A}</span>
@@ -259,7 +266,7 @@ export default function VolleyballScoreboard({ match, teamAPlayers = [], teamBPl
 
           <div className="text-center">
             <h3 className="font-medium mb-2">{match.awayTeam || 'Away Team'}</h3>
-            <div className="text-5xl font-bold mb-2">{match.awayScore || 0}</div>
+            <div className="text-5xl font-bold mb-2">{updatedMatch[0].awayScore || 0}</div>
             <div className="text-xl font-semibold">Sets: {matchData.teamBSets}</div>
             <div className="mt-2">
               <span className="text-sm">Timeouts: {matchData.timeouts.B}</span>

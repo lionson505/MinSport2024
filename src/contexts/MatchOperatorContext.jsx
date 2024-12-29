@@ -25,7 +25,6 @@ export function MatchOperatorProvider({ children }) {
     const fetchMatches = async () => {
       try {
         const data = await matchOperatorService.getMatches();
-        console.log('Fetched matches:', data); // Log fetched matches
         setMatches(data);
       } catch (error) {
         console.error('Error fetching matches:', error);

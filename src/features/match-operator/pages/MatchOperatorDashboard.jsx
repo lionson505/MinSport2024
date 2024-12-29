@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React,{ useState, useEffect } from 'react';
 import { useMatchOperator } from '../../../contexts/MatchOperatorContext';
 import { CreateMatchModal } from '../components/CreateMatchModal';
 import { MatchSetupWizard } from '../components/MatchSetupWizard';
@@ -8,45 +8,33 @@ import { Plus, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '../../../components/ui/alert';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../../components/ui/tabs';
 import axiosInstance from '../../../utils/axiosInstance';
+import useFetchLiveMatches from '../../../utils/fetchLiveMatches';
 
 export function MatchOperatorDashboard() {
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [selectedMatch, setSelectedMatch] = useState(null);
+  const [selectedMatch, setSelectedMatch] = useState({
+    gameType: '',
+    homeScore: 0,
+    awayScore: 0,
+    setupData: {
+      homeTeam: { players: [] },
+      awayTeam: { players: [] },
+    },
+  });
   const [setupMode, setSetupMode] = useState(false);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('all');
-  const [matches, setMatches] = useState([]);
+  // const [matches, setMatches] = useState([]);
   const [nationalTeam, setNationalTeam] = useState([]);
   const [nationalTeamAPlayers, setNationalTeamAPlayers] = useState([]);
   const [nationalTeamBPlayers, setNationalTeamBPlayers] = useState([]);
+  const { matches = [], liveMatchError } = useFetchLiveMatches();
 
   const {
     oldMatches = [],
     initializeMatchSetup,
     checkMatchAvailability
   } = useMatchOperator();
-
-  // Fetch matches from API
-  useEffect(() => {
-    const fetchMatches = async () => {
-      try {
-        const response = await axiosInstance.get('/live-matches');
-        setMatches(response.data); // Set matches state with the fetched data
-        return response.data; // Return the data for additional usage if needed
-      } catch (err) {
-        setError("Failed to fetch matches. Please try again later."); // Set error state
-        console.error("Error fetching matches:", err);
-      }
-    };
-    
-    fetchMatches();
-
-    // Set up polling to fetch matches every 30 seconds
-    const intervalId = setInterval(fetchMatches, 30000);
-
-    // Clear the interval on component unmount
-    return () => clearInterval(intervalId);
-  }, []);
 
   // Fetch national teams
   useEffect(() => {
@@ -95,6 +83,17 @@ export function MatchOperatorDashboard() {
     }
   };
 
+  // live match
+
+
+  if(liveMatchError) {
+    return <div>Error In live match fetching </div>;
+  }
+
+  if(!matches.length) {
+    return <div>No matches fetched </div>;
+  }
+
   const fetchNationalTeamPlayers = async (homeTeamPlayersId, awayTeamPlayersId) => {
     try {
       const response = await axiosInstance.get('/national-team-player-staff');
@@ -112,6 +111,7 @@ export function MatchOperatorDashboard() {
   const handleSetupComplete = () => {
     setSetupMode(false);
   };
+  
 
   const formatDate = (dateString) => {
     try {
