@@ -32,9 +32,6 @@ import { countries } from '../data/countries';
 import { gameTypes } from '../data/gameTypes';
 import { institutionTypes } from '../data/institutionTypes';
 import { classOptions } from '../data/classOptions';
-import { ActionButton } from '../components/ActionButton';
-import { MODULE_IDS, ACTIONS } from '../constants/modules';
-import { withRBAC } from '../hoc/withRBAC';
 
 
 const IsongaPrograms = () => {
@@ -101,9 +98,7 @@ const IsongaPrograms = () => {
         setPrograms(programsResponse?.data || []);
         setFilteredPrograms(programsResponse?.data || []);
 
-        const studentData = Array.isArray(studentsResponse?.data?.data)
-            ? studentsResponse.data.data
-            : [];
+        const studentData = studentsResponse?.data?.data || [];
         setStudents(studentData);
         setFilteredStudents(studentData);
 
@@ -384,35 +379,27 @@ const IsongaPrograms = () => {
                               {/* <TableCell className="text-xs">{program.legalRepresentativeName}</TableCell> */}
                               <TableCell>
                                 <div className="flex items-center gap-1">
-                                  <ActionButton
-                                      moduleId={MODULE_IDS.ISONGA_PROGRAMS}
-                                      action={ACTIONS.READ}
+                                  <button
                                       onClick={() => handleViewDetails(program)}
                                       className="p-1 rounded-lg hover:bg-gray-100"
                                       title="View Details"
                                   >
                                     <Eye className="h-4 w-4" />
-                                  </ActionButton>
-
-                                  <ActionButton
-                                      moduleId={MODULE_IDS.ISONGA_PROGRAMS}
-                                      action={ACTIONS.UPDATE}
+                                  </button>
+                                  <button
                                       onClick={() => handleEditInstitution(program)}
                                       className="p-1 rounded-lg hover:bg-gray-100"
                                       title="Edit"
                                   >
                                     <Pencil className="h-4 w-4" />
-                                  </ActionButton>
-
-                                  <ActionButton
-                                      moduleId={MODULE_IDS.ISONGA_PROGRAMS}
-                                      action={ACTIONS.DELETE}
+                                  </button>
+                                  <button
                                       onClick={() => handleDeleteInstitution(program)}
                                       className="p-1 rounded-lg hover:bg-red-50 text-red-600"
                                       title="Delete"
                                   >
                                     <Trash2 className="h-4 w-4" />
-                                  </ActionButton>
+                                  </button>
                                   <button
                                       onClick={() => handleViewStudents(program)}
                                       className="p-1 rounded-lg hover:bg-gray-100"
@@ -555,7 +542,7 @@ const IsongaPrograms = () => {
         return (
             <StudentTransferForm
                 schools={schools}
-                students={students || []}
+                students={students}
                 isLoading={isLoading}
                 isSubmitting={isSubmitting}
                 setIsSubmitting={setIsSubmitting}
@@ -615,38 +602,6 @@ const IsongaPrograms = () => {
     setShowDetailsModal(true);
   };
 
-  const handleCreate = async (formData) => {
-    try {
-      await axiosInstance.post('/isonga-programs', formData);
-      toast.success('Program created successfully');
-      // Refresh data after creation
-      fetchData();
-    } catch (error) {
-      toast.error('Failed to create program');
-      console.error(error);
-    }
-  };
-
-  const handleEdit = async (program) => {
-    try {
-      setSelectedProgram(program);
-      setShowInstitutionModal(true);
-    } catch (error) {
-      toast.error('Failed to edit program');
-      console.error(error);
-    }
-  };
-
-  const handleDelete = async (program) => {
-    try {
-      setInstitutionToDelete(program);
-      setShowDeleteInstitutionModal(true);
-    } catch (error) {
-      toast.error('Failed to delete program');
-      console.error(error);
-    }
-  };
-
   if (isLoading) {
     return <PageLoading />;
   }
@@ -665,17 +620,14 @@ const IsongaPrograms = () => {
           <h1 className={`text-2xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
             Isonga Programs
           </h1>
-
-          <ActionButton
-              moduleId={MODULE_IDS.ISONGA_PROGRAMS}
-              action={ACTIONS.CREATE}
+          <Button
               onClick={handleAddInstitution}
               className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
               disabled={isSubmitting}
           >
             <Plus className="h-5 w-5" />
             <span>Add Institution</span>
-          </ActionButton>
+          </Button>
         </div>
 
         {/* Navigation Tabs */}
@@ -1305,9 +1257,7 @@ const IsongaPrograms = () => {
                             <TableCell className="text-xs">{student.contact}</TableCell>
                             <TableCell>
                               <div className="flex items-center gap-1">
-                                <ActionButton
-                                    moduleId={MODULE_IDS.ISONGA_PROGRAMS}
-                                    action={ACTIONS.READ}
+                                <button
                                     onClick={() => {
                                       setShowStudentsModal(false);
                                       handleViewStudentDetails(student);
@@ -1316,7 +1266,7 @@ const IsongaPrograms = () => {
                                     title="View Details"
                                 >
                                   <Eye className="h-4 w-4" />
-                                </ActionButton>
+                                </button>
                               </div>
                             </TableCell>
                           </TableRow>
@@ -1338,41 +1288,8 @@ const IsongaPrograms = () => {
             </div>
           </DialogContent>
         </Dialog>
-
-        <div className="flex gap-2 mt-4">
-          <ActionButton
-              moduleId={MODULE_IDS.ISONGA_PROGRAMS}
-              action={ACTIONS.CREATE}
-              onClick={handleCreate}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            Add Program
-          </ActionButton>
-
-          {selectedProgram && (
-              <>
-                <ActionButton
-                    moduleId={MODULE_IDS.ISONGA_PROGRAMS}
-                    action={ACTIONS.UPDATE}
-                    onClick={() => handleEdit(selectedProgram)}
-                    className="bg-yellow-600 hover:bg-yellow-700 text-white"
-                >
-                  Edit Program
-                </ActionButton>
-
-                <ActionButton
-                    moduleId={MODULE_IDS.ISONGA_PROGRAMS}
-                    action={ACTIONS.DELETE}
-                    onClick={() => handleDelete(selectedProgram)}
-                    className="bg-red-600 hover:bg-red-700 text-white"
-                >
-                  Delete Program
-                </ActionButton>
-              </>
-          )}
-        </div>
       </div>
   );
 };
 
-export default withRBAC(IsongaPrograms, MODULE_IDS.ISONGA_PROGRAMS);
+export default IsongaPrograms;
