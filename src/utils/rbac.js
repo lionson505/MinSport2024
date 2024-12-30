@@ -18,41 +18,50 @@ export const MODULES = {
   SPORTS_FOR_ALL: 'sports-for-all'
 };
 
-export const getPermissions = () => {
+export const fetchPermissions = async (groupId) => {
   try {
-    const token = localStorage.getItem('token');
-    if (!token) return [];
-    
-    const decoded = jwtDecode(token);
-    
-    // Fallback: If no permissions in token, return empty array
-    if (!decoded || !decoded.permissions) {
-      console.warn('No permissions found in token');
-      return [];
-    }
-    
-    return decoded.permissions;
+    const response = await fetch(`https://mis.minisports.gov.rw/api/permissions/groups/${groupId}`);
+    if (!response.ok) throw new Error('Failed to fetch permissions');
+    return await response.json();
   } catch (error) {
-    console.error('Error getting permissions:', error);
-    return []; // Fallback: Return empty array on error
+    console.error('Error fetching permissions:', error);
+    return [];
+  }
+};
+
+export const getStoredPermissions = () => {
+  try {
+    const perms = localStorage.getItem('permissions');
+    return perms ? JSON.parse(perms) : [];
+  } catch (error) {
+    console.error('Error getting stored permissions:', error);
+    return [];
+  }
+};
+
+export const storePermissions = (permissions) => {
+  try {
+    localStorage.setItem('permissions', JSON.stringify(permissions));
+  } catch (error) {
+    console.error('Error storing permissions:', error);
   }
 };
 
 export const hasPermission = (moduleName, action) => {
   try {
-    // Fallback: Admin override (optional)
-    if (localStorage.getItem('userRole') === 'admin') {
+    // Admin check (group ID 1)
+    if (localStorage.getItem('groupId') === '1') {
       return true;
     }
 
-    const permissions = getPermissions();
+    const permissions = getStoredPermissions();
     const modulePermission = permissions.find(p => p.module?.name === moduleName);
-    
+
     if (!modulePermission) {
       console.warn(`No permissions found for module: ${moduleName}`);
       return false;
     }
-    
+
     switch (action) {
       case 'read':
         return !!modulePermission.canRead;
@@ -68,6 +77,16 @@ export const hasPermission = (moduleName, action) => {
     }
   } catch (error) {
     console.error('Error checking permission:', error);
-    return false; // Fallback: Deny access on error
+    return false;
   }
-}; 
+};
+
+export const initializePermissions = async () => {
+  const groupId = localStorage.getItem('groupId');
+  if (!groupId) return;
+
+  const permissions = await fetchPermissions(groupId);
+  if (permissions.length) {
+    storePermissions(permissions);
+  }
+};

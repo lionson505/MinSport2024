@@ -101,7 +101,9 @@ function App() {
     '/events',
     '/federation',
     '/match',
-    '/map'
+    '/map',
+    '/pending-activation'
+
   ];
 
   return (
@@ -136,6 +138,7 @@ function App() {
                     <Route path="/federation" element={<LandingPageFederation />} />
                     <Route path="/match" element={<LandingPageMatch />} />
                     <Route path="/map" element={<MyMap/>} />
+                    <Route path="/pending-activation" element={<PendingActivation />} />
 
                     {/* Protected Routes */}
                     <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>

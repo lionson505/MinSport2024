@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast';
 import axiosInstance from '../../utils/axiosInstance';
 import { Button } from '../../components/ui/Button';
 import { Eye, EyeOff } from 'lucide-react';
+import {initializePermissions} from "../../utils/rbac.js";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ export default function Login() {
       const response = await axiosInstance.post('/auth/login', credentials);
 
       if (response.data.userId) {
+        console.log("user logged in has id", response.data.userId);
         localStorage.setItem('tempUserId', response.data.userId);
         setShowOtpForm(true);
         toast.success(response.data.message || 'OTP sent to your email');
@@ -40,58 +42,136 @@ export default function Login() {
     }
   };
 
+  // const handleVerifyOtp = async (e) => {
+  //   e.preventDefault();
+  //   setIsLoading(true);
+  //
+  //   try {
+  //     // Get userId from localStorage
+  //     const userId = localStorage.getItem('tempUserId');
+  //
+  //     console.log("Verifying user ", userId + otp);
+  //
+  //     const response = await axiosInstance.post('/auth/verify-otp', {
+  //       userId: String(userId),
+  //       otp: String(otp)
+  //     });
+  //
+  //     if (response.data.token && response.data.user) {
+  //       // Clear temporary userId
+  //       localStorage.removeItem('tempUserId');
+  //
+  //       // Store user data
+  //       localStorage.setItem('token', response.data.token);
+  //       localStorage.setItem('userRole', response.data.user.userGroup.name);
+  //       localStorage.setItem('userId', response.data.user.id);
+  //       localStorage.setItem('user', JSON.stringify(response.data.user));
+  //       localStorage.setItem("groupId", response.data.user.userGroup.id)
+  //
+  //       // Set activation status based on user group
+  //       const isAdmin = response.data.user.userGroup.name === 'admin';
+  //       localStorage.setItem('isActivated', isAdmin ? 'true' : 'false');
+  //
+  //       // Set rememberMe flag if checkbox is checked
+  //       if (rememberMe) {
+  //         localStorage.setItem('rememberMe', true);
+  //       } else {
+  //         localStorage.removeItem('rememberMe');
+  //
+  //       }
+  //
+  //       await initializePermissions();
+  //       // Initialize accessible links
+  //       const defaultLinks = isAdmin ? [] : []; // You can set default links here
+  //       localStorage.setItem('accessibleLinks', JSON.stringify(defaultLinks));
+  //
+  //       // For non-admin users, fetch their permissions
+  //       if (response.data.user.userGroup.name !== 'admin') {
+  //
+  //         try {
+  //
+  //
+  //           const permissionsResponse = await axiosInstance.get(
+  //               `/permissions/groups/${response.data.user.userGroup.id}`
+  //           );
+  //
+  //           // Check if the permissions response is an empty array
+  //           if (permissionsResponse.data.length === 0) {
+  //             // If no permissions, navigate to pending activation page
+  //             navigate('/pending-activation');
+  //           } else {
+  //             // Handle the case where permissions are not empty,
+  //             // for example, save the permissions to localStorage or process them further
+  //             console.log('Permissions found:', permissionsResponse.data);
+  //             // localStorage.setItem('accessibleLinks', JSON.stringify(permissionsResponse.data));
+  //           }
+  //         } catch (error) {
+  //           console.error('Error fetching permissions:', error);
+  //           // Handle error appropriately, possibly redirect to an error page
+  //         }
+  //       }
+  //
+  //
+  //       toast.success(response.data.message || 'Login successful');
+  //       navigate('/dashboard');
+  //     }
+  //   } catch (error) {
+  //     toast.error(error.response?.data?.message || 'OTP verification failed');
+  //     setOtp(''); // Clear OTP field on error
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      // Get userId from localStorage
       const userId = localStorage.getItem('tempUserId');
-
       const response = await axiosInstance.post('/auth/verify-otp', {
-        userId: userId,
-        otp: otp
+        userId: String(userId),
+        otp: String(otp)
       });
 
       if (response.data.token && response.data.user) {
-        // Clear temporary userId
         localStorage.removeItem('tempUserId');
-
-        // Store user data
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('userRole', response.data.user.userGroup.name);
         localStorage.setItem('userId', response.data.user.id);
         localStorage.setItem('user', JSON.stringify(response.data.user));
+        localStorage.setItem("groupId", response.data.user.userGroup.id);
+        localStorage.setItem('isActivated', response.data.user.userGroup.name === 'admin' ? 'true' : 'false');
 
-        // Set activation status based on user group
-        const isAdmin = response.data.user.userGroup.name === 'admin';
-        localStorage.setItem('isActivated', isAdmin ? 'true' : 'false');
-
-        // Initialize accessible links
-        const defaultLinks = isAdmin ? [] : []; // You can set default links here
-        localStorage.setItem('accessibleLinks', JSON.stringify(defaultLinks));
-
-        // For non-admin users, fetch their permissions
-        if (response.data.user.userGroup.name !== 'admin') {
-          const permissionsResponse = await axiosInstance.get(
-              `/users/${response.data.user.id}/permissions`
-          );
-          localStorage.setItem('accessibleLinks',
-              JSON.stringify(permissionsResponse.data)
-          );
+        if (rememberMe) {
+          localStorage.setItem('rememberMe', true);
+        } else {
+          localStorage.removeItem('rememberMe');
         }
 
+        if (response.data.user.userGroup.name !== 'admin') {
+          const permissionsResponse = await axiosInstance.get(
+              `/permissions/groups/${response.data.user.userGroup.id}`
+          );
+
+          if (!permissionsResponse.data || permissionsResponse.data.length === 0) {
+            await initializePermissions();
+            navigate('/pending-activation');
+            return;
+          }
+        }
+
+        await initializePermissions();
         toast.success(response.data.message || 'Login successful');
         navigate('/dashboard');
       }
     } catch (error) {
       toast.error(error.response?.data?.message || 'OTP verification failed');
-      setOtp(''); // Clear OTP field on error
+      setOtp('');
     } finally {
       setIsLoading(false);
     }
   };
-
   return (
       <div className="min-h-screen flex">
         {/* Left side - Background with logo */}

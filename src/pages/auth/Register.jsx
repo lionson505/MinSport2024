@@ -20,7 +20,7 @@ export default function Register() {
     phoneNumber: '',
     gender: 'male', // Default value
     reasonForRegistration: '',
-    federationId: 0
+    federationId:Number(0)
   });
 
   const handleChange = (e) => {
@@ -36,11 +36,14 @@ export default function Register() {
 
     setIsLoading(true);
     try {
+      console.log("sending form data", formData)
       const response = await axiosInstance.post('/auth/register', formData);
       toast.success('Registration successful! Please check your email for verification.');
-      navigate('/login');
+      navigate('/check-email');
+
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Registration failed');
+      toast.error(error.response?.data?.error  || 'Registration failed');
+      console.error(error.request.response )
     } finally {
       setIsLoading(false);
     }
@@ -256,7 +259,7 @@ export default function Register() {
                   placeholder="Please explain why you want to register..."
                 />
               </div>
-              <div>
+              <div className="hidden">
                 <label htmlFor="federationId" className="block text-sm font-medium text-gray-700 mb-1">
                   Federation ID
                 </label>

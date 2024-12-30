@@ -7,6 +7,13 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
+interface Permissions {
+  canread : boolean;
+  cancreate: boolean;
+  canupdate: boolean;
+  candelete: boolean;
+}
+
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ moduleName, children }) => {
   if (!hasPermission(moduleName, 'read')) {
     return <Navigate to="/unauthorized" replace />;

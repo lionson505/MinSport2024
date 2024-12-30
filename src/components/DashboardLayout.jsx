@@ -1,7 +1,7 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
 import { useDarkMode } from "../contexts/DarkModeContext";
-import Sidebar from "./Sidebar";
+import {Sidebar} from "./Sidebar";
 import ProfileMenu from "./ui/ProfileMenu";
 import SearchBar from "./SearchBar";
 
