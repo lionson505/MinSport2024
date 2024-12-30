@@ -5,7 +5,6 @@ import BasketballScoreboard from './BasketballScoreboard';
 import VolleyballScoreboard from './VolleyballScoreboard';
 export function MatchScoreboard({ match, homeTeamPlayers, awayTeamPlayers, onClose }) {
   const [teamAPlayers, setTeamAPlayers] = useState([]);
-  console.log("match : ", match);
   const [teamBPlayers, setTeamBPlayers] = useState([]);
 
 
@@ -29,27 +28,27 @@ export function MatchScoreboard({ match, homeTeamPlayers, awayTeamPlayers, onClo
 
         <div className="flex-1 overflow-y-auto p-4">
           {match.gameType === 'Football' && (
-            <FootballScoreboard 
-              match={match} 
+            <FootballScoreboard
+              match={match}
               onClose={onClose}
               teamAPlayers={homeTeamPlayers}
               teamBPlayers={awayTeamPlayers}
             />
           )}
           {match.gameType === 'Basketball' && (
-            <BasketballScoreboard 
-              match={match} 
+            <BasketballScoreboard
+              match={match}
               onClose={onClose}
               teamAPlayers={homeTeamPlayers}
               teamBPlayers={awayTeamPlayers}
             />
           )}
           {match.gameType === 'Volleyball' && (
-            <VolleyballScoreboard 
-              match={match} 
+            <VolleyballScoreboard
+              match={match}
               onClose={onClose}
-              teamAPlayers={teamAPlayers}
-              teamBPlayers={teamBPlayers}
+              teamAPlayers={homeTeamPlayers}
+              teamBPlayers={awayTeamPlayers}
             />
           )}
         </div>

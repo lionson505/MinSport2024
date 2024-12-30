@@ -1,17 +1,18 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '../../../../components/ui/Button';
 import { TimerDisplay } from '../../../../components/scoreboards/TimerDisplay';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../../../../components/ui/dialog';
-import { Users, Play, Pause } from 'lucide-react'; // Import Play and Pause icons
+import { Users } from 'lucide-react';
 import { PlayerSelectDialog } from '../PlayerSelectDialog';
 import { ScoreInput } from '../../../../components/scoreboards/ScoreInput';
 import axiosInstance from '../../../../utils/axiosInstance';
+import useFetchLiveMatches from '../../../../utils/fetchLiveMatches';
+import toast from 'react-hot-toast';
 
 export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPlayers = [], onUpdate }) {
   const [matchData, setMatchData] = useState({
     status: 'NOT_STARTED',
     currentQuarter: 1,
-    currentTime: '10:00',
     teamAScore: 0,
     teamBScore: 0,
     teamAFouls: 0,
@@ -26,59 +27,8 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
   const [showPlayerStats, setShowPlayerStats] = useState(false);
   const [pendingEvent, setPendingEvent] = useState(null);
   const [showPlayerSelect, setShowPlayerSelect] = useState(false);
-  const [timerRunning, setTimerRunning] = useState(false);
-  const [intervalId, setIntervalId] = useState(null);
+  const { matches, liveMatchError } = useFetchLiveMatches()
 
-  // Fetch updated match data from the API
-  useEffect(() => {
-    const fetchMatchData = async () => {
-      try {
-        const response = await axiosInstance.get(`/live-matches/${match.id}`);
-        const updatedData = response.data;
-        setMatchData(prev => ({
-          ...prev,
-          teamAScore: updatedData.homeScore,
-          teamBScore: updatedData.awayScore,
-          events: updatedData.events || []
-        }));
-      } catch (error) {
-        console.error('Error fetching match data:', error.response ? error.response.data : error.message);
-      }
-    };
-
-    fetchMatchData();
-  }, [match.id]);
-
-  const startTimer = () => {
-    if (!timerRunning) {
-      setTimerRunning(true);
-      const id = setInterval(() => {
-        setMatchData(prev => {
-          const [minutes, seconds] = prev.currentTime.split(':').map(Number);
-          const newSeconds = seconds - 1;
-          const newMinutes = newSeconds < 0 ? minutes - 1 : minutes;
-          const updatedSeconds = newSeconds < 0 ? 59 : newSeconds;
-          if (newMinutes < 0) {
-            clearInterval(id);
-            setTimerRunning(false);
-            return prev;
-          }
-          return {
-            ...prev,
-            currentTime: `${String(newMinutes).padStart(2, '0')}:${String(updatedSeconds).padStart(2, '0')}`
-          };
-        });
-      }, 1000);
-      setIntervalId(id);
-    }
-  };
-
-  const stopTimer = () => {
-    if (timerRunning) {
-      clearInterval(intervalId);
-      setTimerRunning(false);
-    }
-  };
 
   const addPoints = (team, points) => {
     setMatchData(prev => ({
@@ -123,27 +73,34 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
     }
   };
 
+
+
+
+
   const confirmEventWithPlayer = (playerName) => {
-    console.log('Player Name:', playerName);
+    // console.log('Player Name:', playerName);
+
 
     if (!playerName) {
       console.error('No player name provided.');
       return;
     }
 
-    const player = playerName;
+    // Determine the player based on the team
+    const player = playerName
 
     if (!player) {
       console.error('Player not found in the selected team.');
       return;
     }
 
+    // Handle the event with the selected player
     handleEventWithPlayer(pendingEvent.type, pendingEvent.team, pendingEvent.points, player);
     let matchId = match.id,
       event = `${pendingEvent.points} ${pendingEvent.type}`,
       nationalTeamPlayerStaffId = player;
-    console.log('handle event with player details : ', { matchId, event, nationalTeamPlayerStaffId });
-
+    // console.log('handle event with player details : ', { matchId, event, nationalTeamPlayerStaffId })
+    // Update match data based on event type
     setMatchData(prev => {
       const teamScoreKey = `team${pendingEvent.team}Score`;
       const teamFoulsKey = `team${pendingEvent.team}Fouls`;
@@ -156,9 +113,8 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
           player,
           points: pendingEvent.points,
           time: new Date().toISOString(),
-          score: `${pendingEvent.team === 'A' ? prev.teamAScore + pendingEvent.points : prev.teamAScore}-${
-            pendingEvent.team === 'B' ? prev.teamBScore + pendingEvent.points : prev.teamBScore
-          }`
+          score: `${pendingEvent.team === 'A' ? prev.teamAScore + pendingEvent.points : prev.teamAScore}-${pendingEvent.team === 'B' ? prev.teamBScore + pendingEvent.points : prev.teamBScore
+            }`
         });
 
         return {
@@ -181,23 +137,43 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
         };
       }
 
-      return prev;
+      return prev; // Fallback in case of unknown event type
     });
 
+    // Reset states after processing the event
     setShowPlayerSelect(false);
     setPendingEvent(null);
   };
 
+
+
+  const updatedMatch = matches.filter((updatedMatch) => updatedMatch.id === match.id)
+
+
+  if (!updatedMatch.length > 0) {
+    return <div>no match id found</div>;
+  }
+  // console.log('updated Match ', updatedMatch[0].homeScore)
+
   const handleEventWithPlayer = async (type, team, points = 1, player) => {
+
+   
+
     try {
-      console.log('Event Details:', { player, type, team, points });
+      // // console.log('Event Details:', { player, type, team, points });
 
+      // Update the pending event
       setPendingEvent({ type, team, points, player });
-      setShowPlayerSelect(true);
+      if (!player) {
+        setShowPlayerSelect(true);
+        console.error('Player not found or invalid player name.');
+        return;
+      } 
 
+      // Update scores based on the event
       const updatedScores = {
-        homeScore: match.homeScore,
-        awayScore: match.awayScore,
+        homeScore: updatedMatch[0].homeScore,
+        awayScore: updatedMatch[0].awayScore,
       };
 
       if (type === 'POINTS') {
@@ -205,15 +181,24 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
         else if (team === 'B') updatedScores.awayScore += points;
       }
 
-      console.log('Points:', points);
-      console.log('Updated Scores:', updatedScores);
-
+      // Update the match score via API
       await axiosInstance.patch(`/live-matches/${match.id}/score`, updatedScores);
-      console.log('Match score updated successfully.');
-    } catch (error) {
+      // // console.log('Match score updated successfully.');
+      console.log('points', points)
+     if(points === 1 ) {
+      toast.success('Point added successfully!', {
+        description: `Score added successfully`
+      });
+     } else {
+      toast.success('Points added successfully!', {
+        description: `Score added successfully`
+      });
+     }
+    } catch (error) {if(!points === 1 ) 
       console.error('Failed to update match score:', error);
     }
   };
+
 
   const handleScoreChange = (team, newScore) => {
     const prevScore = matchData[`team${team}Score`];
@@ -236,10 +221,11 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
   const renderScoreboard = () => (
     <div className="bg-gray-50 p-6 rounded-xl">
       <div className="grid grid-cols-3 gap-4">
+        {/* Team A */}
         <div className="text-center space-y-4">
           <h3 className="font-medium mb-2">{match.homeTeam || 'Home Team'}</h3>
           <ScoreInput
-            value={matchData.teamAScore || 0}
+            value={updatedMatch[0].homeScore || 0}
             onChange={(value) => handleScoreChange('A', value)}
             label="Score"
           />
@@ -247,24 +233,22 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
           <div className="text-sm text-gray-500">Timeouts: {matchData.timeouts.A}</div>
         </div>
 
+        {/* Center Info */}
         <div className="text-center">
           <div className="text-xl font-medium mb-2">Quarter {matchData.currentQuarter}</div>
-          <div className="text-5xl font-bold mb-2">{matchData.currentTime}</div>
-          <div className="flex justify-center gap-2">
-            <Button
-              size="sm"
-              variant={timerRunning ? 'default' : 'outline'}
-              onClick={timerRunning ? stopTimer : startTimer}
-            >
-              {timerRunning ? <Pause /> : <Play />} {/* Use icons instead of text */}
-            </Button>
-          </div>
+          <TimerDisplay
+            initialTime="10:00"
+            isCountdown={true}
+            onTimeUpdate={(time) => setMatchData(prev => ({ ...prev, currentTime: time }))}
+            disabled={matchData.status === 'FINISHED'}
+          />
         </div>
 
+        {/* Team B */}
         <div className="text-center space-y-4">
           <h3 className="font-medium mb-2">{match.awayTeam || 'Away Team'}</h3>
           <ScoreInput
-            value={matchData.teamBScore || 0}
+            value={updatedMatch[0].awayScore || 0}
             onChange={(value) => handleScoreChange('B', value)}
             label="Score"
           />
@@ -277,8 +261,9 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
 
   const renderControls = () => (
     <div className="grid grid-cols-2 gap-6">
+      {/* Team A Controls */}
       <div className="space-y-4">
-        <h3 className="font-medium">{match.homeTeam?.name || 'Home Team'} Controls</h3>
+        <h3 className="font-medium">{match.homeTeam || 'Home Team'} Controls</h3>
         <div className="grid grid-cols-3 gap-2">
           <Button onClick={() => handleEventWithPlayer('POINTS', 'A', 1)}>+1</Button>
           <Button onClick={() => handleEventWithPlayer('POINTS', 'A', 2)}>+2</Button>
@@ -298,8 +283,9 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
         </div>
       </div>
 
+      {/* Team B Controls */}
       <div className="space-y-4">
-        <h3 className="font-medium">{match.awayTeam?.name || 'Away Team'} Controls</h3>
+        <h3 className="font-medium">{match.awayTeam || 'Away Team'} Controls</h3>
         <div className="grid grid-cols-3 gap-2">
           <Button onClick={() => handleEventWithPlayer('POINTS', 'B', 1)}>+1</Button>
           <Button onClick={() => handleEventWithPlayer('POINTS', 'B', 2)}>+2</Button>
@@ -333,10 +319,10 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
         players={pendingEvent?.team === 'A' ? teamAPlayers : teamBPlayers}
         title={`Select Player for ${pendingEvent?.type}`}
         description={`Choose the player who ${pendingEvent?.type === 'POINTS' ? `scored ${pendingEvent.points} points` :
-            pendingEvent?.type === 'FOUL' ? 'committed the foul' :
-              'for this event'
+          pendingEvent?.type === 'FOUL' ? 'committed the foul' :
+            'for this event'
           }`}
       />
     </div>
   );
-}
+} 

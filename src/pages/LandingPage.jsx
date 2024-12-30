@@ -19,8 +19,6 @@ function LandingPage() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [events, setEvents] = useState([])
   const [categories, setCategories] = useState([])
-  console.log('the following are all events: ', events)
-  console.log("the following are federrations:", federations)
 
   // fetch federation 
   useEffect(() => {

@@ -13,6 +13,8 @@ import {
   SelectValue,
 } from "../../../../components/ui/select";
 import { Input } from '../../../../components/ui/input';
+import useFetchLiveMatches from '../../../../utils/fetchLiveMatches';
+import toast from 'react-hot-toast';
 
 export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlayers = [], onUpdate }) {
   const [matchData, setMatchData] = useState({
@@ -31,7 +33,14 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
   const [pendingEvent, setPendingEvent] = useState(null);
   const [timerRunning, setTimerRunning] = useState(false);
   const [intervalId, setIntervalId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const { matches = [], liveMatchError } = useFetchLiveMatches()
+  const updatedMatch = matches.filter((updatedMatch) => updatedMatch.id === match.id)
+  // console.log('here is matches : ', updatedMatch)
 
+
+
+  /*
   // Fetch updated match data from the API
   useEffect(() => {
     const fetchMatchData = async () => {
@@ -47,10 +56,12 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
       } catch (error) {
         console.error('Error fetching match data:', error.response ? error.response.data : error.message);
       }
+
     };
 
     fetchMatchData();
   }, [match.id]);
+  */
 
   const startTimer = () => {
     if (!timerRunning) {
@@ -77,24 +88,33 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
     }
   };
 
+
+  if (!updatedMatch.length > 0) {
+    return <div>no match id found</div>;
+  }
+  // console.log('updated Match ', updatedMatch[0].homeScore)
+
   const addEvent = async (type, team, teamScore, matchId, player = null) => {
     if (type === 'GOAL') {
       try {
         let updatedMatchData = {};
 
         if (team === 'A') {
-          let anotherGoal = teamScore + 1;
+          let anotherGoal = updatedMatch[0].homeScore + 1;
           setMatchData(prev => ({ ...prev, teamAScore: anotherGoal }));
           updatedMatchData = { homeScore: anotherGoal };
         } else if (team === 'B') {
-          let anotherGoal = teamScore + 1;
+          let anotherGoal = updatedMatch[0].awayScore + 1;
           setMatchData(prev => ({ ...prev, teamBScore: anotherGoal }));
           updatedMatchData = { awayScore: anotherGoal };
         }
 
         const endpoint = `/live-matches/${matchId}/score`;
         const response = await axiosInstance.patch(endpoint, updatedMatchData);
-        console.log('API Response:', response.data);
+        // console.log('API Response:', response.data);
+        toast.success('Score added successfully!', {
+          description: `Score added successfully`
+        });
       } catch (error) {
         console.error('Error updating:', error.response ? error.response.data : error.message);
       }
@@ -106,7 +126,6 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
     setShowPlayerSelect(true);
   };
 
-  const [searchTerm, setSearchTerm] = useState('');
 
   const filteredPlayers =
     pendingEvent?.team === 'B'
@@ -118,7 +137,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
       : [];
 
   const confirmEventWithPlayer = (playerId) => {
-    console.log('ID of the player who scored:', playerId);
+    // console.log('ID of the player who scored:', playerId);
 
     if (pendingEvent.team === 'A') {
       const player = teamAPlayers.find(p => p.id === playerId);
@@ -129,7 +148,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
         }
         : null;
 
-      console.log('Selected player details:', playerDetails);
+      // console.log('Selected player details:', playerDetails);
 
       if (playerDetails) {
         addEvent('GOAL', 'A', match.awayScore, match.id);
@@ -143,7 +162,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
         }
         : null;
 
-      console.log('Selected player details:', playerDetails);
+      // console.log('Selected player details:', playerDetails);
 
       if (playerDetails) {
         addEvent('GOAL', 'B', match.awayScore, match.id);
@@ -220,13 +239,14 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
       </div>
     </div>
   );
+  // console.log('home score : ', updatedMatch[0])
 
   const renderScoreboard = () => (
     <div className="bg-gray-50 p-6 rounded-xl mb-6">
       <div className="grid grid-cols-3 gap-4">
         <div className="text-center">
           <h3 className="font-medium mb-2">{match.homeTeam || 'Home Team'}</h3>
-          <div className="text-5xl font-bold mb-2">{matchData.teamAScore}</div>
+          <div className="text-5xl font-bold mb-2">{updatedMatch[0].homeScore || 0}</div>
           <div className="flex justify-center gap-2">
             <Button
               size="sm"
@@ -256,7 +276,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
 
         <div className="text-center">
           <h3 className="font-medium mb-2">{match.awayTeam || 'Away Team'}</h3>
-          <div className="text-5xl font-bold mb-2">{matchData.teamBScore}</div>
+          <div className="text-5xl font-bold mb-2">{updatedMatch[0].awayScore || 0}</div>
           <div className="flex justify-center gap-2">
             <Button
               size="sm"
