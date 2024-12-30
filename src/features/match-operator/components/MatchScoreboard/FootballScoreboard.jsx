@@ -90,7 +90,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
   if (!updatedMatch.length > 0) {
     return <div>no match id found</div>;
   }
-  console.log('updated Match ', updatedMatch[0].homeScore)
+  // console.log('updated Match ', updatedMatch[0].homeScore)
 
   const addEvent = async (type, team, teamScore, matchId, player = null) => {
     if (type === 'GOAL') {

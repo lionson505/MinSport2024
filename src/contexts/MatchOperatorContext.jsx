@@ -37,7 +37,7 @@ export function MatchOperatorProvider({ children }) {
   const checkMatchAvailability = async (matchId) => {
     try {
       const isAvailable = await matchOperatorService.checkMatchAvailability(matchId);
-      console.log(`Match ${matchId} availability:`, isAvailable); // Log match availability
+      // console.log(`Match ${matchId} availability:`, isAvailable); // Log match availability
       return isAvailable;
     } catch (error) {
       console.error('Match availability check failed:', error);

@@ -33,7 +33,7 @@ export function PlayerSelectDialog({
       try {
         const response = await axiosInstance.get("/national-team-player-staff");
         setPlayersList(response.data);
-        console.log('the following are playerlist: ', playersList)
+        // console.log('the following are playerlist: ', playersList)
       } catch (err) {
         setError("Failed to fetch national team players. Please try again later.");
         console.error(err);
