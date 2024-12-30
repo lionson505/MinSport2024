@@ -1,21 +1,19 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
 import { PermissionButton } from '../components/PermissionButton';
+import { withPermission } from '../components/withPermission';
 import { MODULES } from '../utils/rbac';
-import { usePagePermissions } from '../hooks/usePagePermissions';
 
 const UsersPage = () => {
-  const permissions = usePagePermissions(MODULES.USERS);
-
   const handleCreate = () => {
     // Your create handler
   };
 
-  const handleEdit = (id) => {
+  const handleEdit = (id: number) => {
     // Your edit handler
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = (id: number) => {
     // Your delete handler
   };
 
@@ -30,7 +28,6 @@ const UsersPage = () => {
           variant="contained"
           color="primary"
           onClick={handleCreate}
-          showTooltip
         >
           Add New User
         </PermissionButton>
@@ -44,7 +41,6 @@ const UsersPage = () => {
           action="update"
           size="small"
           onClick={() => handleEdit(1)}
-          showTooltip
         >
           Edit
         </PermissionButton>
@@ -55,7 +51,6 @@ const UsersPage = () => {
           size="small"
           color="error"
           onClick={() => handleDelete(1)}
-          showTooltip
         >
           Delete
         </PermissionButton>
@@ -64,4 +59,4 @@ const UsersPage = () => {
   );
 };
 
-export default UsersPage;
+export default withPermission(UsersPage, MODULES.USERS); 

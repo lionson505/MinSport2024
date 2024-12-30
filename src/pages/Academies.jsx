@@ -10,8 +10,12 @@ import EditAcademyModal from '../components/EditAcademyModal';
 import axiosInstance from '../utils/axiosInstance';
 import PrintButton from "../components/reusable/Print";
 import EditAcademyStudentModal from '../components/EditAcademyStudentModal';
+import { usePagePermissions } from '../hooks/usePagePermissions';
+import { PermissionButton } from '../components/PermissionButton';
+import { MODULES } from '../utils/rbac';
 
 function Academies() {
+  const permissions = usePagePermissions(MODULES.ACADEMIES);
   const [activeTab, setActiveTab] = useState('manage');
   const [searchTerm, setSearchTerm] = useState('');
   const [studentSearchTerm, setStudentSearchTerm] = useState('');
@@ -290,13 +294,14 @@ function Academies() {
                 />
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               </div>
-              <Button
+              <PermissionButton
+                moduleName={MODULES.ACADEMIES}
+                action="create"
                 onClick={() => setIsAddModalOpen(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                showTooltip
               >
-                <Plus className="h-4 w-4 mr-2" />
                 Add Academy
-              </Button>
+              </PermissionButton>
             </div>
 
             <div className="bg-white rounded-lg shadow overflow-x-auto">
@@ -332,24 +337,28 @@ function Academies() {
                           >
                             <Eye className="h-4 w-4 text-black" />
                           </Button>
-                          <Button
-                            variant="ghost"
+                          <PermissionButton
+                            moduleName={MODULES.ACADEMIES}
+                            action="update"
                             onClick={() => {
                               setSelectedAcademy(academy);
                               setIsEditModalOpen(true);
                             }}
+                            showTooltip
                           >
                             <PencilIcon className="h-4 w-4 text-black" />
-                          </Button>
-                          <Button
-                            variant="ghost"
+                          </PermissionButton>
+                          <PermissionButton
+                            moduleName={MODULES.ACADEMIES}
+                            action="delete"
                             onClick={() => {
                               setSelectedAcademy(academy);
                               setIsDeleteModalOpen(true);
                             }}
+                            showTooltip
                           >
                             <Trash2 className="h-4 w-4 text-red-600" />
-                          </Button>
+                          </PermissionButton>
                         </td>
                       </tr>
                     );

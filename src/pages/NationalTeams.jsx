@@ -10,6 +10,9 @@ import PrintButton from '../components/reusable/Print';
 import { usePermissions } from '../utils/permissions';
 import { ActionButton } from '../components/ActionButton';
 import { MODULE_IDS } from '../utils/permissions';
+import { PermissionButton } from '../components/PermissionButton';
+import { MODULES } from '../utils/rbac';
+import { usePagePermissions } from '../hooks/usePagePermissions';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -34,7 +37,8 @@ class ErrorBoundary extends React.Component {
 }
 
 function NationalTeams() {
-  const { permissions, modules, isPermissionLoading } = usePermissions();
+  const permissions = usePagePermissions(MODULES.NATIONAL_TEAMS);
+  const { modules, isPermissionLoading } = usePermissions();
   const [activeTab, setActiveTab] = useState('Manage National Teams');
   const [teams, setTeams] = useState([]);
   const [players, setPlayers] = useState([]);
@@ -903,15 +907,15 @@ const handleAddPlayerSubmit = async (e) => {
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-semibold">Manage National Team</h1>
-          <ActionButton 
-            moduleId={MODULE_IDS.NATIONAL_TEAMS}
+          <PermissionButton
+            moduleName={MODULES.NATIONAL_TEAMS}
             action="create"
-            permissions={permissions}
             onClick={() => setShowAddModal(true)}
+            showTooltip
           >
             <Plus className="h-5 w-5" />
             Add National Team
-          </ActionButton>
+          </PermissionButton>
         </div>
 
         <div className="mb-6">

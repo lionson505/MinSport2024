@@ -1,30 +1,20 @@
+import React from 'react';
 import { Navigate } from 'react-router-dom';
+import { hasPermission } from '../utils/rbac';
 
-const ProtectedRoute = ({ moduleId, children }) => {
+export const ProtectedRoute = ({ moduleName, children }) => {
   const token = localStorage.getItem('token');
-  const userRole = localStorage.getItem('userRole');
   
-  const checkAccess = () => {
-    if (!token) return false;
-    if (userRole === 'admin') return true;
+  // First fallback: No token -> redirect to login
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
 
-    try {
-      const accessibleLinks = localStorage.getItem('accessibleLinks');
-      if (!accessibleLinks) return false;
+  // Second fallback: No permission -> redirect to unauthorized
+  if (!hasPermission(moduleName, 'read')) {
+    return <Navigate to="/unauthorized" replace />;
+  }
 
-      const parsedLinks = JSON.parse(accessibleLinks);
-      return parsedLinks.some(link => 
-        link.moduleId === moduleId && link.canRead
-      );
-    } catch (error) {
-      return false;
-    }
-  };
-
-  if (!token) return <Navigate to="/login" />;
-  if (!checkAccess()) return <Navigate to="/unauthorized" />;
-
+  // All checks passed -> render children
   return children;
-};
-
-export default ProtectedRoute; 
+}; 

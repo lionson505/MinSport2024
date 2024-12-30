@@ -12,6 +12,9 @@ import { Search, Plus, Filter } from 'lucide-react';
 import PageLoading from '../components/ui/PageLoading';
 import Message from '../components/ui/Message';
 import PrintButton from '../components/reusable/Print';
+import { usePagePermissions } from '../hooks/usePagePermissions';
+import { PermissionButton } from '../components/PermissionButton';
+import { MODULES } from '../utils/rbac';
 
 function SportsForAll() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -31,6 +34,8 @@ function SportsForAll() {
 
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [sportToView, setSportToView] = useState(null);
+
+  const permissions = usePagePermissions(MODULES.SPORTS_FOR_ALL);
 
   useEffect(() => {
     const fetchSportsData = async () => {
@@ -127,13 +132,17 @@ function SportsForAll() {
 
         {/* Search and Add Button Section */}
         <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
-          <Button
-            onClick={() => setIsAddModalOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Add Mass Sport
-          </Button>
+          {permissions.canCreate && (
+            <PermissionButton
+              moduleName={MODULES.SPORTS_FOR_ALL}
+              action="create"
+              onClick={() => setIsAddModalOpen(true)}
+              showTooltip
+            >
+              <Plus className="h-4 w-4" />
+              Add Mass Sport
+            </PermissionButton>
+          )}
 
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1 sm:flex-none">

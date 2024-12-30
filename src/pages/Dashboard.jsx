@@ -17,6 +17,8 @@ import federationImage from '../components/liveMatch/federationImgFallBack.png';
 import { format } from 'date-fns';
 import { Clock } from 'lucide-react';
 import { useDarkMode } from '../contexts/DarkModeContext';
+import { usePagePermissions } from '../hooks/usePagePermissions';
+import { MODULES } from '../utils/rbac';
 
 const Dashboard = () => {
   const [statsData, setStatsData] = useState({
@@ -59,6 +61,8 @@ const Dashboard = () => {
     const accessibleLinks = JSON.parse(localStorage.getItem("accessibleLinks") || "[]");
     return accessibleLinks.some((link) => link.path === path);
   };
+
+  const permissions = usePagePermissions(MODULES.DASHBOARD);
 
   useEffect(() => {
     const fetchStats = async () => {

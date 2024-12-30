@@ -40,6 +40,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import PlayerStaffTransfer from '../components/federation/PlayerStaffTransfer';
 import axiosInstance from '../utils/axiosInstance';
 import PrintButton from '../components/reusable/Print';
+import { PermissionButton } from '../components/PermissionButton';
+import { MODULES } from '../utils/rbac';
+import { usePagePermissions } from '../hooks/usePagePermissions';
 
 const TransferHistoryModal = ({ isOpen, onClose, player }) => {
   const [transferHistory, setTransferHistory] = useState([]);
@@ -229,6 +232,7 @@ const Federations = () => {
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [refreshPlayerStaffData, setRefreshPlayerStaffData] = useState(0);
   const [showPlayerDetailsModal, setShowPlayerDetailsModal] = useState(false);
+  const permissions = usePagePermissions(MODULES.FEDERATIONS);
 
   const tabs = [
     'Manage Federations and associations',
@@ -686,13 +690,16 @@ const Federations = () => {
       return (
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
-            <Button
+            <PermissionButton 
+              moduleName={MODULES.FEDERATIONS}
+              action="create"
               onClick={() => setIsAddFederationModalOpen(true)}
               className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+              showTooltip
             >
               <Plus className="h-4 w-4" />
               Add Federation
-            </Button>
+            </PermissionButton>
 
             <div className="flex flex-col sm:flex-row gap-4 items-center">
               <div className="relative">
@@ -768,10 +775,22 @@ const Federations = () => {
                     <TableCell className="text-xs">{federation.address}</TableCell>
                     <TableCell className="operation">
                       <div className="flex items-center gap-0.5">
-                        <ActionMenu
-                          onEdit={() => handleEdit(federation)}
-                          onDelete={() => handleDeleteClick(federation)}
-                        />
+                        <PermissionButton
+                          moduleName={MODULES.FEDERATIONS}
+                          action="update"
+                          onClick={() => handleEdit(federation)}
+                          showTooltip
+                        >
+                          Edit
+                        </PermissionButton>
+                        <PermissionButton
+                          moduleName={MODULES.FEDERATIONS}
+                          action="delete"
+                          onClick={() => handleDeleteClick(federation)}
+                          showTooltip
+                        >
+                          Delete
+                        </PermissionButton>
                       </div>
                     </TableCell>
                   </TableRow>
