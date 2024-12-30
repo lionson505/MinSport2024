@@ -90,7 +90,7 @@ const EditUserModal = ({ isOpen, onClose, onEdit, userData }) => {
     }
 
     try {
-      console.log('Submitting data:', formData); // Log the data being submitted
+      console.log('Submitting data:', formData);
 
       const response = await axiosInstance.put(`/users/${userData.id}`, {
         firstName: formData.firstName,

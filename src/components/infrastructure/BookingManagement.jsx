@@ -128,7 +128,7 @@ const BookingManagement = () => {
     try {
       const response = await axiosInstance.get('/booking-requests');
       setBookings(response.data);
-      // toast.success('Bookings fetched successfully');a
+      // toast.success('Bookings fetched successfully');
     } catch (error) {
       console.error('Error fetching bookings:', error);
       toast.error('Failed to fetch bookings');
@@ -158,7 +158,7 @@ const BookingManagement = () => {
   const handleAction = async () => {
     try {
       const endpoint = `/booking-requests/${selectedBookingId}/${actionType}`;
-      await axiosInstance.put(endpoint);
+      await axiosInstance.post(endpoint); // Changed from put to post
       setBookings(prev => prev.map(booking => 
         booking.id === selectedBookingId ? { ...booking, status: actionType === 'grant' ? 'Approved' : 'Rejected' } : booking
       ));
