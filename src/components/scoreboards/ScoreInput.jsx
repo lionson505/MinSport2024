@@ -86,8 +86,8 @@ export function ScoreInput({
   return (
     <div className="space-y-2">
       <label className="text-sm font-medium">{label}</label>
-      <div className="flex items-center gap-2">
-        <Button 
+      <div className="flex flex-col items-center gap-2">
+        {/* <Button 
           type="button" 
           variant="outline" 
           size="icon"
@@ -95,16 +95,16 @@ export function ScoreInput({
           disabled={value <= min}
         >
           <Minus className="h-4 w-4" />
-        </Button>
+        </Button> */}
         <Button
           type="button"
           variant="outline"
           className="w-20 font-mono"
-          onClick={() => setShowManualInput(true)}
+          // onClick={() => setShowManualInput(true)}
         >
           {value}
         </Button>
-        <Button 
+        {/* <Button 
           type="button" 
           variant="outline" 
           size="icon"
@@ -112,7 +112,7 @@ export function ScoreInput({
           disabled={value >= max}
         >
           <Plus className="h-4 w-4" />
-        </Button>
+        </Button> */}
       </div>
 
       <Dialog open={showManualInput} onOpenChange={setShowManualInput}>

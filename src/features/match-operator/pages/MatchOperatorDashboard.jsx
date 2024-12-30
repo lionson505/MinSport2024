@@ -12,15 +12,7 @@ import useFetchLiveMatches from '../../../utils/fetchLiveMatches';
 
 export function MatchOperatorDashboard() {
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [selectedMatch, setSelectedMatch] = useState({
-    gameType: '',
-    homeScore: 0,
-    awayScore: 0,
-    setupData: {
-      homeTeam: { players: [] },
-      awayTeam: { players: [] },
-    },
-  });
+  const [selectedMatch, setSelectedMatch] = useState();
   const [setupMode, setSetupMode] = useState(false);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('all');

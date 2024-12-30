@@ -77,7 +77,7 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
 
 
   const confirmEventWithPlayer = (playerName) => {
-    console.log('Player Name:', playerName);
+    // console.log('Player Name:', playerName);
 
 
     if (!playerName) {
@@ -98,7 +98,7 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
     let matchId = match.id,
       event = `${pendingEvent.points} ${pendingEvent.type}`,
       nationalTeamPlayerStaffId = player;
-    console.log('handle event with player details : ', { matchId, event, nationalTeamPlayerStaffId })
+    // console.log('handle event with player details : ', { matchId, event, nationalTeamPlayerStaffId })
     // Update match data based on event type
     setMatchData(prev => {
       const teamScoreKey = `team${pendingEvent.team}Score`;
@@ -152,23 +152,22 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
   if (!updatedMatch.length > 0) {
     return <div>no match id found</div>;
   }
-  console.log('updated Match ', updatedMatch[0].homeScore)
+  // console.log('updated Match ', updatedMatch[0].homeScore)
 
   const handleEventWithPlayer = async (type, team, points = 1, player) => {
-    /* if (!player) {
-      console.error('Player not found or invalid player name.');
-      return;
-    } */
 
-
+   
 
     try {
-      console.log('Event Details:', { player, type, team, points });
+      // // console.log('Event Details:', { player, type, team, points });
 
       // Update the pending event
       setPendingEvent({ type, team, points, player });
-      setShowPlayerSelect(true);
-
+      if (!player) {
+        setShowPlayerSelect(true);
+        console.error('Player not found or invalid player name.');
+        return;
+      } 
 
       // Update scores based on the event
       const updatedScores = {
@@ -181,12 +180,9 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
         else if (team === 'B') updatedScores.awayScore += points;
       }
 
-      console.log('Points:', points);
-      console.log('Updated Scores:', updatedScores);
-
       // Update the match score via API
       await axiosInstance.patch(`/live-matches/${match.id}/score`, updatedScores);
-      console.log('Match score updated successfully.');
+      // // console.log('Match score updated successfully.');
     } catch (error) {
       console.error('Failed to update match score:', error);
     }
@@ -256,7 +252,7 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
     <div className="grid grid-cols-2 gap-6">
       {/* Team A Controls */}
       <div className="space-y-4">
-        <h3 className="font-medium">{match.homeTeam?.name || 'Home Team'} Controls</h3>
+        <h3 className="font-medium">{match.homeTeam || 'Home Team'} Controls</h3>
         <div className="grid grid-cols-3 gap-2">
           <Button onClick={() => handleEventWithPlayer('POINTS', 'A', 1)}>+1</Button>
           <Button onClick={() => handleEventWithPlayer('POINTS', 'A', 2)}>+2</Button>
@@ -278,7 +274,7 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
 
       {/* Team B Controls */}
       <div className="space-y-4">
-        <h3 className="font-medium">{match.awayTeam?.name || 'Away Team'} Controls</h3>
+        <h3 className="font-medium">{match.awayTeam || 'Away Team'} Controls</h3>
         <div className="grid grid-cols-3 gap-2">
           <Button onClick={() => handleEventWithPlayer('POINTS', 'B', 1)}>+1</Button>
           <Button onClick={() => handleEventWithPlayer('POINTS', 'B', 2)}>+2</Button>
