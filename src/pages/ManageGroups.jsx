@@ -24,22 +24,32 @@ function ManageGroups() {
   const [selectedModules, setSelectedModules] = useState([]);
   const [isUsersModalOpen, setIsUsersModalOpen] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState([]);
+  const [isManageModulesPermissionsModalOpen, setIsManageModulesPermissionsModalOpen] = useState(false);
+  const [availableModules, setAvailableModules] = useState([]);
 
-  // State to hold groups and users data fetched from the API
   const [groupsData, setGroupsData] = useState([]);
   const [usersData, setUsersData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch groups data from the API
   const fetchGroups = async () => {
     try {
       setLoading(true);
       setError(null);
 
       const response = await axiosInstance.get('/groups');
-      const data = Array.isArray(response.data.data) ? response.data.data : [];
-      setGroupsData(data);
+      const groups = Array.isArray(response.data.data) ? response.data.data : [];
+      console.log('Fetched groups:', groups); // Debugging log
+
+      // Fetch permissions for each group and count modules
+      const groupsWithModuleCounts = await Promise.all(groups.map(async (group) => {
+        const permissionsResponse = await axiosInstance.get(`/permissions/groups/${group.id}`);
+        const permissions = Array.isArray(permissionsResponse.data) ? permissionsResponse.data : [];
+        const moduleCount = permissions.length; // Count the number of modules
+        return { ...group, moduleCount, permissions };
+      }));
+
+      setGroupsData(groupsWithModuleCounts);
     } catch (err) {
       setError('Failed to load groups data.');
       console.error('Error fetching groups:', err);
@@ -48,37 +58,69 @@ function ManageGroups() {
     }
   };
 
-  // Fetch users data from the API
   const fetchUsers = async () => {
     try {
       const response = await axiosInstance.get('/users');
       const data = Array.isArray(response.data.data) ? response.data.data : [];
+      console.log('Fetched users:', data); // Debugging log
       setUsersData(data);
     } catch (err) {
       console.error('Error fetching users:', err);
     }
   };
 
+  const fetchModules = async () => {
+    try {
+      const response = await axiosInstance.get('/modules');
+      const data = Array.isArray(response.data) ? response.data : [];
+      const modules = data.map(module => ({
+        id: module.id,
+        name: module.name
+      }));
+      setAvailableModules(modules);
+    } catch (err) {
+      console.error('Error fetching modules:', err);
+    }
+  };
+
+  const fetchGroupPermissions = async (groupId) => {
+    try {
+      const response = await axiosInstance.get(`/permissions/groups/${groupId}`);
+      const data = Array.isArray(response.data) ? response.data : [];
+      const permissionsWithModules = data.map(permission => ({
+        ...permission,
+        moduleName: permission.module.name
+      }));
+      setSelectedModules(permissionsWithModules);
+    } catch (err) {
+      console.error('Error fetching group permissions:', err);
+    }
+  };
+
   useEffect(() => {
     fetchGroups();
     fetchUsers();
+    fetchModules();
   }, []);
 
   const associateUsersWithGroups = () => {
+    console.log('Associating users with groups...');
     return groupsData.map(group => {
-      const usersInGroup = usersData.filter(user => user.userGroup?.id === group.id);
-      return { ...group, userCount: usersInGroup.length };
+      const usersInGroup = usersData.filter(user => {
+        // Ensure userGroup exists and has an id before comparing
+        return user.userGroup && user.userGroup.id === group.id;
+      });
+      console.log(`Group: ${group.name}, User Count: ${usersInGroup.length}`); // Debugging log
+      return { ...group, userCount: usersInGroup.length }; // Count users in the group
     });
   };
 
-  // Filter function for search term
   const filteredData = associateUsersWithGroups().filter(group =>
     Object.values(group).some(value =>
       value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
 
-  // Pagination logic
   const totalPages = Math.ceil(filteredData.length / entriesPerPage);
   const startIndex = (currentPage - 1) * entriesPerPage;
   const paginatedData = filteredData.slice(startIndex, startIndex + entriesPerPage);
@@ -88,8 +130,9 @@ function ManageGroups() {
   const lastEntry = Math.min(startIndex + entriesPerPage, totalEntries);
 
   const handleEdit = (group) => {
-    const groupToEdit = { ...group, permissions: group.permissions || {} };
+    const groupToEdit = { ...group, permissions: group.permissions || [] };
     setSelectedGroup(groupToEdit);
+    setSelectedModules(groupToEdit.permissions);
     setIsEditModalOpen(true);
   };
 
@@ -97,7 +140,6 @@ function ManageGroups() {
     try {
       const response = await axiosInstance.put(`/groups/${updatedGroup.id}`, updatedGroup);
 
-      // Update the group data with the updated group
       setGroupsData(prev => 
         prev.map(group => group.id === updatedGroup.id ? response.data : group)
       );
@@ -132,15 +174,65 @@ function ManageGroups() {
     setIsAddModalOpen(true);
   };
 
-  const handleModulesClick = (modules) => {
-    setSelectedModules(modules || []);
-    setIsModulesModalOpen(true);
+  const handleModulesClick = (groupId) => {
+    fetchGroupPermissions(groupId); // Fetch permissions for the selected group
+    setIsModulesModalOpen(true); // Open the modal
   };
 
   const handleUsersClick = (group) => {
-    const usersInGroup = usersData.filter(user => user.userGroup?.id === group.id);
+    const usersInGroup = usersData.filter(user => user.userGroup && user.userGroup.id === group.id);
     setSelectedUsers(usersInGroup);
     setIsUsersModalOpen(true);
+  };
+
+  const handleManageModulesPermissions = (group) => {
+    setSelectedGroup(group);
+    fetchGroupPermissions(group.id);
+    setIsManageModulesPermissionsModalOpen(true);
+  };
+
+  const handleAddModule = () => {
+    const newModule = { moduleId: '', canRead: false, canCreate: false, canUpdate: false, canDelete: false };
+    setSelectedModules([...selectedModules, newModule]);
+  };
+
+  const handleModuleChange = (index, field, value) => {
+    const updatedModules = [...selectedModules];
+    updatedModules[index][field] = value;
+    setSelectedModules(updatedModules);
+  };
+
+  const handleSavePermissions = async () => {
+    try {
+      const payload = {
+        permissions: selectedModules.map(module => ({
+          moduleId: Number(module.moduleId), // Ensure moduleId is a number
+          canRead: module.canRead,
+          canCreate: module.canCreate,
+          canUpdate: module.canUpdate,
+          canDelete: module.canDelete
+        }))
+      };
+
+      console.log('Payload being sent:', JSON.stringify(payload, null, 2));
+
+      const response = await axiosInstance.post(`/permissions/groups/${selectedGroup.id}`, payload);
+
+      if (response.status === 200 || response.status === 201) {
+        toast.success('Permissions updated successfully');
+        setIsManageModulesPermissionsModalOpen(false);
+      } else {
+        toast.error('Failed to update permissions');
+      }
+    } catch (err) {
+      console.error('Error updating permissions:', err);
+      if (err.response) {
+        console.error('Error response data:', err.response.data);
+        console.error('Error response status:', err.response.status);
+        console.error('Error response headers:', err.response.headers);
+      }
+      toast.error('Failed to update permissions');
+    }
   };
 
   return (
@@ -208,57 +300,64 @@ function ManageGroups() {
           ) : (
             paginatedData.length > 0 ? (
               <PrintButton title='Manage Groups Report'>
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Group Name</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Modules</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Users</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium operation text-gray-500 uppercase">Operation</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {paginatedData.map((group) => (
-                    <tr key={group.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3">{group.name}</td>
-                      <td className="px-4 py-3">
-                        <button
-                          className="text-blue-500 underline"
-                          onClick={() => handleModulesClick(group.accessibleModules)}
-                        >
-                          {group.accessibleModules ? group.accessibleModules.length : 0}
-                        </button>
-                      </td>
-                      <td className="px-4 py-3">
-                        <button
-                          className="text-blue-500 underline"
-                          onClick={() => handleUsersClick(group)}
-                        >
-                          {group.userCount}
-                        </button>
-                      </td>
-                      <td className="px-4 py-3 operation" >
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => handleEdit(group)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => handleDelete(group)}
-                          >
-                            <Trash2 className="h-4 w-4 text-red-500" />
-                          </Button>
-                        </div>
-                      </td>
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Group Name</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Modules</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Users</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Operation</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {paginatedData.map((group) => (
+                      <tr key={group.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3">{group.name}</td>
+                        <td className="px-4 py-3">
+                          <button
+                            className="text-blue-500 underline"
+                            onClick={() => handleModulesClick(group.id)} // Pass the group ID
+                          >
+                            {group.moduleCount} {/* Display the module count */}
+                          </button>
+                        </td>
+                        <td className="px-4 py-3">
+                          <button
+                            className="text-blue-500 underline"
+                            onClick={() => handleUsersClick(group)}
+                          >
+                            {group.userCount} {/* Display the user count */}
+                          </button>
+                        </td>
+                        <td className="px-4 py-3 operation">
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => handleEdit(group)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => handleDelete(group)}
+                            >
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => handleManageModulesPermissions(group)}
+                            >
+                              <span className="h-4 w-4">🔧</span>
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </PrintButton>
             ) : (
               <div className="flex flex-col items-center justify-center py-12">
@@ -397,7 +496,7 @@ function ManageGroups() {
                 as={Fragment}
                 enter="ease-out duration-300"
                 enterFrom="opacity-0 scale-95"
-                enterTo="opacity-100 scale-100"
+                enterTo="opacity-100"
                 leave="ease-in duration-200"
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
@@ -409,8 +508,8 @@ function ManageGroups() {
                   <div className="space-y-2">
                     {(selectedModules || []).map((module, index) => (
                       <div key={index} className="flex justify-between">
-                        <span>{module.name}</span>
-                        <span>{module.permission}</span>
+                        <span>{module.moduleName}</span>
+                        <span>{module.canRead ? 'Read' : ''} {module.canCreate ? 'Create' : ''} {module.canUpdate ? 'Update' : ''} {module.canDelete ? 'Delete' : ''}</span>
                       </div>
                     ))}
                   </div>
@@ -444,7 +543,7 @@ function ManageGroups() {
                 as={Fragment}
                 enter="ease-out duration-300"
                 enterFrom="opacity-0 scale-95"
-                enterTo="opacity-100 scale-100"
+                enterTo="opacity-100"
                 leave="ease-in duration-200"
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
@@ -463,6 +562,97 @@ function ManageGroups() {
                   </div>
                   <div className="flex justify-end mt-4">
                     <Button variant="outline" onClick={() => setIsUsersModalOpen(false)}>Close</Button>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
+
+      <Transition appear show={isManageModulesPermissionsModalOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={() => setIsManageModulesPermissionsModalOpen(false)}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black bg-opacity-25" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4 text-center">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white p-6 text-left align-middle shadow-xl transition-all">
+                  <Dialog.Title className="text-lg font-medium text-gray-900 mb-4">
+                    Manage Modules and Permissions for {selectedGroup?.name}
+                  </Dialog.Title>
+                  <div className="space-y-4">
+                    {(selectedModules || []).map((module, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <select
+                          value={module.moduleId}
+                          onChange={(e) => handleModuleChange(index, 'moduleId', e.target.value)}
+                          className="flex-1 border rounded p-1"
+                        >
+                          <option value="">Select Module</option>
+                          {availableModules.map((mod) => (
+                            <option key={mod.id} value={mod.id}>
+                              {mod.name}
+                            </option>
+                          ))}
+                        </select>
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={module.canRead}
+                            onChange={(e) => handleModuleChange(index, 'canRead', e.target.checked)}
+                          />
+                          Read
+                        </label>
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={module.canCreate}
+                            onChange={(e) => handleModuleChange(index, 'canCreate', e.target.checked)}
+                          />
+                          Create
+                        </label>
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={module.canUpdate}
+                            onChange={(e) => handleModuleChange(index, 'canUpdate', e.target.checked)}
+                          />
+                          Update
+                        </label>
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={module.canDelete}
+                            onChange={(e) => handleModuleChange(index, 'canDelete', e.target.checked)}
+                          />
+                          Delete
+                        </label>
+                      </div>
+                    ))}
+                    <Button variant="outline" onClick={handleAddModule}>Add Module</Button>
+                  </div>
+                  <div className="flex justify-end mt-4">
+                    <Button variant="outline" onClick={() => setIsManageModulesPermissionsModalOpen(false)}>Cancel</Button>
+                    <Button className="ml-2" onClick={handleSavePermissions}>Save</Button>
                   </div>
                 </Dialog.Panel>
               </Transition.Child>
