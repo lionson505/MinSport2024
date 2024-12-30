@@ -7,6 +7,7 @@ import { PlayerSelectDialog } from '../PlayerSelectDialog';
 import { ScoreInput } from '../../../../components/scoreboards/ScoreInput';
 import axiosInstance from '../../../../utils/axiosInstance';
 import useFetchLiveMatches from '../../../../utils/fetchLiveMatches';
+import toast from 'react-hot-toast';
 
 export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPlayers = [], onUpdate }) {
   const [matchData, setMatchData] = useState({
@@ -183,7 +184,17 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
       // Update the match score via API
       await axiosInstance.patch(`/live-matches/${match.id}/score`, updatedScores);
       // // console.log('Match score updated successfully.');
-    } catch (error) {
+      console.log('points', points)
+     if(points === 1 ) {
+      toast.success('Point added successfully!', {
+        description: `Score added successfully`
+      });
+     } else {
+      toast.success('Points added successfully!', {
+        description: `Score added successfully`
+      });
+     }
+    } catch (error) {if(!points === 1 ) 
       console.error('Failed to update match score:', error);
     }
   };

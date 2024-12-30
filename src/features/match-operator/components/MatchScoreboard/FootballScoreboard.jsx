@@ -14,6 +14,7 @@ import {
 } from "../../../../components/ui/select";
 import { Input } from '../../../../components/ui/input';
 import useFetchLiveMatches from '../../../../utils/fetchLiveMatches';
+import toast from 'react-hot-toast';
 
 export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlayers = [], onUpdate }) {
   const [matchData, setMatchData] = useState({
@@ -35,7 +36,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
   const [searchTerm, setSearchTerm] = useState('');
   const { matches = [], liveMatchError } = useFetchLiveMatches()
   const updatedMatch = matches.filter((updatedMatch) => updatedMatch.id === match.id)
-  console.log('here is matches : ', updatedMatch)
+  // console.log('here is matches : ', updatedMatch)
 
 
 
@@ -55,6 +56,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
       } catch (error) {
         console.error('Error fetching match data:', error.response ? error.response.data : error.message);
       }
+
     };
 
     fetchMatchData();
@@ -109,7 +111,10 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
 
         const endpoint = `/live-matches/${matchId}/score`;
         const response = await axiosInstance.patch(endpoint, updatedMatchData);
-        console.log('API Response:', response.data);
+        // console.log('API Response:', response.data);
+        toast.success('Score added successfully!', {
+          description: `Score added successfully`
+        });
       } catch (error) {
         console.error('Error updating:', error.response ? error.response.data : error.message);
       }
@@ -132,7 +137,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
       : [];
 
   const confirmEventWithPlayer = (playerId) => {
-    console.log('ID of the player who scored:', playerId);
+    // console.log('ID of the player who scored:', playerId);
 
     if (pendingEvent.team === 'A') {
       const player = teamAPlayers.find(p => p.id === playerId);
@@ -143,7 +148,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
         }
         : null;
 
-      console.log('Selected player details:', playerDetails);
+      // console.log('Selected player details:', playerDetails);
 
       if (playerDetails) {
         addEvent('GOAL', 'A', match.awayScore, match.id);
@@ -157,7 +162,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
         }
         : null;
 
-      console.log('Selected player details:', playerDetails);
+      // console.log('Selected player details:', playerDetails);
 
       if (playerDetails) {
         addEvent('GOAL', 'B', match.awayScore, match.id);
@@ -234,7 +239,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
       </div>
     </div>
   );
-  console.log('home score : ', updatedMatch[0])
+  // console.log('home score : ', updatedMatch[0])
 
   const renderScoreboard = () => (
     <div className="bg-gray-50 p-6 rounded-xl mb-6">

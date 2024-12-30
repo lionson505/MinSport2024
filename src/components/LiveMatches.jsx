@@ -4,11 +4,13 @@ import axiosInstance from '../utils/axiosInstance';
 import aprLogo from './liveMatch/aprLogo.jpeg';
 import rayonLogo from './liveMatch/rayonLogo.jpg';
 // import "./../assets/livematchmodal.css";
+import useFetchLiveMatches from '../utils/fetchLiveMatches';
 
 const LiveMatches = () => {
-  const [matches, setMatches] = useState([]);
+  // const [matches, setMatches] = useState([]);
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [activeTab, setActiveTab] = useState("Summary");
+  const { matches = [], liveMatchError } = useFetchLiveMatches()
 
   const dummyData = {
     homeTeam: "Manchester United",
@@ -55,18 +57,18 @@ const LiveMatches = () => {
 
 
 
-  useEffect(() => {
-    const fetchMatches = async () => {
-      try {
-        const response = await axiosInstance.get('/live-matches');
-        setMatches(response.data);
-      } catch (error) {
-        console.error('Error fetching matches:', error);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchMatches = async () => {
+  //     try {
+  //       const response = await axiosInstance.get('/live-matches');
+  //       setMatches(response.data);
+  //     } catch (error) {
+  //       console.error('Error fetching matches:', error);
+  //     }
+  //   };
 
-    fetchMatches();
-  }, []);
+  //   fetchMatches();
+  // }, []);
 
   const groupMatches = (matches) => {
     const liveMatches = matches.filter((match) => match.status === "LIVE");

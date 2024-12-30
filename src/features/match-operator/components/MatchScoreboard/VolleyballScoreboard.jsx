@@ -7,6 +7,7 @@ import { Users } from 'lucide-react';
 import { PlayerSelectDialog } from '../PlayerSelectDialog';
 import axiosInstance from '../../../../utils/axiosInstance';
 import useFetchLiveMatches from '../../../../utils/fetchLiveMatches';
+import toast from 'react-hot-toast';
 
 export default function VolleyballScoreboard({ match, teamAPlayers = [], teamBPlayers = [], onUpdate }) {
   const [matchData, setMatchData] = useState({
@@ -68,6 +69,9 @@ export default function VolleyballScoreboard({ match, teamAPlayers = [], teamBPl
     const updateScores = async (updatedScore) => {
       try {
         await axiosInstance.patch(`/live-matches/${match.id}/score`, updatedScore);
+        toast.success('Point added successfully!', {
+          description: `Point added successfully`
+        });
       } catch (error) {
         console.error('Failed to update match score:', error);
       }

@@ -15,7 +15,7 @@ const useFetchLiveMatches = () => {
                 
             } catch (err) {
                 setError(err);
-                console.error('Error fetching matches:', err);  // Use console.error instead of console.err
+                console.error('Error fetching matches:', err);  
             }
         };
 
@@ -23,10 +23,10 @@ const useFetchLiveMatches = () => {
 
         // Pulling logic to update live matches data
         const interval = setInterval(fetchMatches, 2000);
-        return () => clearInterval(interval);  // Clean up the interval on component unmount
-    }, []);  // Empty dependency array to run only once when the component mounts
+        return () => clearInterval(interval);  
+    }, []);  
 
-    return { matches, liveMatchError };  // Return matches and error
+    return { matches, liveMatchError };  
 };
 
 export default useFetchLiveMatches;
