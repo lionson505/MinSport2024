@@ -43,6 +43,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import MyMap from './pages/Map.jsx';
 import PendingActivation from './pages/PendingActivation';
 import { MODULE_IDS } from './constants/modules';
+import MinisterAppointments from "./pages/AppointmentsMinister.jsx";
+import PSAppointments from "./pages/AppointmentsPs.jsx";
 
 function App() {
   const [accessibleLinks, setAccessibleLinks] = useState(null);
@@ -200,17 +202,17 @@ function App() {
                             <Contracts />
                           </ProtectedRoute>
                         } />
-                        <Route path="/appointments" element={
-                          <ProtectedRoute moduleId={MODULE_IDS.APPOINTMENTS}>
-                            <Appointments />
-                          </ProtectedRoute>
+                        {/*<Route path="/appointments" element={*/}
+                        {/*  <ProtectedRoute moduleId={MODULE_IDS.APPOINTMENTS}>*/}
+                        {/*    <Appointments />*/}
+                        {/*  </ProtectedRoute>*/}
                         } /> <Route path="/appointments-ministers" element={
-                          <ProtectedRoute moduleId={MODULE_IDS.APPOINTMENTS}>
-                            <Appointments />
+                          <ProtectedRoute moduleId={MODULE_IDS.APPOINTMENTS_MINISTER}>
+                            <MinisterAppointments />
                           </ProtectedRoute>
                         } /> <Route path="/appointments-ps" element={
-                          <ProtectedRoute moduleId={MODULE_IDS.APPOINTMENTS}>
-                            <Appointments />
+                          <ProtectedRoute moduleId={MODULE_IDS.APPOINTMENTS_PS}>
+                            <PSAppointments/>
                           </ProtectedRoute>
                         } />
                         <Route path="/employee" element={
