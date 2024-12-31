@@ -33,7 +33,7 @@ function LandingPageMatch() {
         if (activeTab === 'live') return match.status === 'LIVE';
         if (activeTab === 'upcoming') return match.status === 'UPCOMING'; // Matches yet to happen
         if (activeTab === 'past') return match.status === 'In Progress'; // Matches that have already happened
-        return false;en
+        return false;
     });
 
     //Filter matches based on search inputs

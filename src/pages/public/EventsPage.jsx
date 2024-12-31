@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import HeaderTwo from '../../components/headerTwo';
 import { sportsEventService } from '../../services/sportsEventService';
-import { 
-  Dialog, 
-  DialogContent, 
+import {
+  Dialog,
+  DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription
@@ -12,72 +12,32 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui/ta
 import { format } from 'date-fns';
 import { Loader2, MapPin, Calendar, Clock, Trophy, ClipboardList, Radio } from 'lucide-react';
 import PublicLayout from '../../components/layouts/PublicLayout';
+import useFetchSportEvents from '../../utils/fetchSportEvents';
 
 function EventsPage() {
-  const [events, setEvents] = useState([]);
+  // const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showDialog, setShowDialog] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
   const [eventResults, setEventResults] = useState(null);
+  const { events = [], eventError } = useFetchSportEvents([]);
 
-  const tempEvents = [
-    {
-      id: 1,
-      title: 'BASKETBALL AFRICA LEAGUE 2024',
-      subtitle: 'The biggest show in basketball is coming to Kigali',
-      image: '/events/bal.jpg',
-      startDate: '2024-03-25T10:00:00',
-      endDate: '2024-04-10T18:00:00',
-      category: 'BASKETBALL AFRICA LEAGUE 2024',
-      status: 'UPCOMING',
-      time: '04:22'
-    },
-    {
-      id: 2,
-      title: 'VETERANS CLUB WORLD CUP 2024',
-      subtitle: '150 football legends live in Kigali',
-      image: '/events/vcwc.jpg',
-      startDate: '2024-03-15T14:00:00',
-      endDate: '2024-03-20T22:00:00',
-      category: 'VETERANS CLUB WORLD CUP 2024',
-      status: 'LIVE',
-      time: '04:22'
-    },
-    {
-      id: 3,
-      title: 'FIFA CONGRESS',
-      subtitle: '73rd fifa congress',
-      image: '/events/fifa.jpg',
-      startDate: '2024-05-17T09:00:00',
-      endDate: '2024-05-17T17:00:00',
-      category: 'FIFA CONGRESS',
-      status: 'UPCOMING',
-      time: '04:22'
-    },
-    {
-      id: 4,
-      title: 'RWANDA SUMMER GOLF',
-      subtitle: 'Falcon & Country club presents Rwanda summer golf',
-      image: '/events/golf.jpg',
-      startDate: '2024-06-01T09:00:00',
-      endDate: '2024-06-03T17:00:00',
-      category: 'RWANDA SUMMER GOLF',
-      status: 'UPCOMING',
-      time: '04:22'
-    },
-    {
-      id: 5,
-      title: 'WORLD TENNIS TOUR JUNIORS',
-      subtitle: 'IPRC Kigali ecology club',
-      image: '/events/tennis.jpg',
-      startDate: '2024-04-22T09:00:00',
-      endDate: '2024-04-24T17:00:00',
-      category: 'WORLD TENNIS TOUR JUNIORS',
-      status: 'PAST',
-      time: '04:22'
-    }
-  ];
+  console.log('id, title, subtitle, image, startDate, endDate, category, status, time', { events })
+
+  // const events = [
+  //   {
+  //     id: 1,
+  //     title: 'BASKETBALL AFRICA LEAGUE 2024',
+  //     subtitle: 'The biggest show in basketball is coming to Kigali',
+  //     image: '/events/bal.jpg',
+  //     startDate: '2024-03-25T10:00:00',
+  //     endDate: '2024-04-10T18:00:00',
+  //     category: 'BASKETBALL AFRICA LEAGUE 2024',
+  //     status: 'UPCOMING',
+  //     time: '04:22'
+  //   }
+  // ];
 
   useEffect(() => {
     fetchEvents();
@@ -87,10 +47,10 @@ function EventsPage() {
     try {
       setLoading(true);
       // const data = await sportsEventService.getAllEvents();
-      setEvents(tempEvents);
+      setEvents(events);
     } catch (error) {
       console.error('Error fetching events:', error);
-      setEvents(tempEvents);
+      setEvents(events);
     } finally {
       setLoading(false);
     }
@@ -102,29 +62,30 @@ function EventsPage() {
     return events.filter(event => event.status === status);
   };
 
+  console.log('here is event : ',  events.id)
+
   const renderEventCard = (event) => (
-    <div 
-      key={event.id} 
+    <div
+      key={event.id}
       className="relative group cursor-pointer"
       onClick={() => setSelectedEvent(event)}
-    >
+     >
       <div className="relative overflow-hidden rounded-lg">
-        <img 
-          src={event.image} 
-          alt={event.title} 
+        <img
+          src={event.image}
+          alt={event.title}
           className="w-full aspect-[3/4] object-cover transition-transform duration-300 group-hover:scale-110"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black opacity-90"></div>
-        
+
         {/* Status badge */}
-        <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-medium ${
-          event.status === 'LIVE' ? 'bg-red-500 text-white' :
-          event.status === 'UPCOMING' ? 'bg-green-500 text-white' :
-          'bg-gray-500 text-white'
-        }`}>
+        <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-medium ${event.status === 'LIVE' ? 'bg-red-500 text-white' :
+            event.status === 'UPCOMING' ? 'bg-green-500 text-white' :
+              'bg-gray-500 text-white'
+          }`}>
           {event.status}
         </div>
-        
+
         {/* Time badge */}
         <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded text-xs flex items-center">
           <svg className="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -133,12 +94,12 @@ function EventsPage() {
           </svg>
           {event.time}
         </div>
-        
+
         {/* Text content */}
         <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-          <div className="text-xs mb-2">{event.category}</div>
-          <h3 className="font-bold mb-1">{event.title}</h3>
-          <p className="text-sm text-gray-200">{event.subtitle}</p>
+          <div className="text-xs mb-2">{event.province}</div>
+          <h3 className="font-bold mb-1">{event.name}</h3>
+          <p className="text-sm text-gray-200">{event.description}</p>
         </div>
       </div>
     </div>
@@ -157,22 +118,21 @@ function EventsPage() {
                 {selectedEvent.category}
               </DialogDescription>
             </div>
-            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-              selectedEvent.status === 'LIVE' ? 'bg-red-500 text-white' :
-              selectedEvent.status === 'UPCOMING' ? 'bg-green-500 text-white' :
-              'bg-gray-500 text-white'
-            }`}>
+            <span className={`px-3 py-1 rounded-full text-xs font-medium ${selectedEvent.status === 'LIVE' ? 'bg-red-500 text-white' :
+                selectedEvent.status === 'UPCOMING' ? 'bg-green-500 text-white' :
+                  'bg-gray-500 text-white'
+              }`}>
               {selectedEvent.status}
             </span>
           </div>
         </DialogHeader>
-        
+
         <div className="flex-1 overflow-y-auto">
           <div className="p-6">
             <div className="relative h-[400px] rounded-lg overflow-hidden mb-8">
-              <img 
-                src={selectedEvent.image} 
-                alt={selectedEvent.title} 
+              <img
+                src={selectedEvent.image}
+                alt={selectedEvent.title}
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
@@ -278,7 +238,7 @@ function EventsPage() {
                 <h3 className="font-semibold text-gray-900 mb-4">Event Description</h3>
                 <p className="text-gray-600 text-sm leading-relaxed">
                   {selectedEvent.subtitle}
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
                   Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
                 </p>
               </div>
@@ -345,10 +305,10 @@ function EventsPage() {
           </TabsContent>
         </Tabs>
 
-        <Dialog 
-          open={!!selectedEvent} 
+        <Dialog
+          open={!!selectedEvent}
           onOpenChange={(open) => !open && setSelectedEvent(null)}
-        >
+         >
           {renderEventDetails()}
         </Dialog>
       </div>
