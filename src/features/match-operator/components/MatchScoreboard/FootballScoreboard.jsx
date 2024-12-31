@@ -36,32 +36,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
   const [searchTerm, setSearchTerm] = useState('');
   const { matches = [], liveMatchError } = useFetchLiveMatches()
   const updatedMatch = matches.filter((updatedMatch) => updatedMatch.id === match.id)
-  // console.log('here is matches : ', updatedMatch)
-
-
-
-  /*
-  // Fetch updated match data from the API
-  useEffect(() => {
-    const fetchMatchData = async () => {
-      try {
-        const response = await axiosInstance.get(`/live-matches/${match.id}`);
-        const updatedData = response.data;
-        setMatchData(prev => ({
-          ...prev,
-          teamAScore: updatedData.homeScore,
-          teamBScore: updatedData.awayScore,
-          events: updatedData.events || []
-        }));
-      } catch (error) {
-        console.error('Error fetching match data:', error.response ? error.response.data : error.message);
-      }
-
-    };
-
-    fetchMatchData();
-  }, [match.id]);
-  */
+  
 
   const startTimer = () => {
     if (!timerRunning) {
