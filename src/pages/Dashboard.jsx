@@ -17,6 +17,7 @@ import federationImage from '../components/liveMatch/federationImgFallBack.png';
 import { format } from 'date-fns';
 import { Clock } from 'lucide-react';
 import { useDarkMode } from '../contexts/DarkModeContext';
+import {usePermissionLogger} from "../utils/permissionLogger.js";
 
 const Dashboard = () => {
   const [statsData, setStatsData] = useState({
@@ -40,6 +41,14 @@ const Dashboard = () => {
   const [federations, setFederations] = useState([]);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const navigate = useNavigate();
+  const logPermissions = usePermissionLogger('dashboard')
+
+  const[permissions, setPermissions] = useState({
+    canCreate: false,
+    canRead: false,
+    canUpdate: false,
+    canDelete: false
+  })
   const jl = localStorage.getItem("jl");
   if(jl ){
     window.location.reload();
@@ -55,10 +64,7 @@ const Dashboard = () => {
     "bg-[#041779]",
   ];
 
-  const isStatsAllowed = (path) => {
-    const accessibleLinks = JSON.parse(localStorage.getItem("accessibleLinks") || "[]");
-    return accessibleLinks.some((link) => link.path === path);
-  };
+
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -72,7 +78,9 @@ const Dashboard = () => {
           axiosInstance.get('/appointments'),
           axiosInstance.get('/employees'),
         ]);
-
+        const currentPermissions = logPermissions();
+        setPermissions(currentPermissions);
+        console.log("perms:", permissions)
         const clubData = clubs.data || [];
         const employeeData = Array.isArray(employees.data?.employees) ? employees.data.employees : [];
         const studentData = Array.isArray(students.data?.data) ? students.data.data : [];
@@ -115,6 +123,7 @@ const Dashboard = () => {
 
     fetchStats();
   }, []);
+
 
   useEffect(() => {
     const fetchFederations = async () => {
@@ -238,6 +247,10 @@ const Dashboard = () => {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
 
+
+
+
+
   return (
     <div className="p-6 space-y-6 bg-gray-50">
       {/* Existing Dashboard Content */}
@@ -259,6 +272,20 @@ const Dashboard = () => {
         </div>
       </div>
 
+
+
+      {permissions.canCreate && (
+          <div className="bg-red-500  ">THIS SAYS I HAVE CREATE PERMISSIONS</div>
+      )}
+      {permissions.canDelete && (
+          <div className="bg-amber-300  ">THIS SAYS I HAVE CREATE PERMISSIONS</div>
+      )}
+      {permissions.canRead && (
+          <div className="bg-black text-white  ">THIS SAYS I HAVE CREATE PERMISSIONS</div>
+      )}
+      {permissions.canUpdate && (
+          <div className="bg-green-800  ">THIS SAYS I HAVE CREATE PERMISSIONS</div>
+      )}
       {/* Upcoming Appointments and Appointment Requests Section */}
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Upcoming Appointments Section */}

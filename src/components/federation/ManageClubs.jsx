@@ -17,6 +17,7 @@ import {
   Trash2
 } from 'lucide-react';
 import PrintButton from '../reusable/Print';
+import {usePermissionLogger} from "../../utils/permissionLogger.js";
 
 const ManageClubs = ({ onAdd, onEdit, onDelete, federations, isLoading, actionIcons }) => {
   const { isDarkMode } = useDarkMode();
@@ -31,6 +32,14 @@ const ManageClubs = ({ onAdd, onEdit, onDelete, federations, isLoading, actionIc
   const [showAddClubModal, setShowAddClubModal] = useState(false);
   const [clubs, setClubs] = useState([]);
   const [error, setError] = useState(null);
+  const logPermissions = usePermissionLogger('federations')
+
+  const[permissions, setPermissions] = useState({
+    canCreate: false,
+    canRead: false,
+    canUpdate: false,
+    canDelete: false
+  })
 
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 5;
@@ -51,6 +60,9 @@ const ManageClubs = ({ onAdd, onEdit, onDelete, federations, isLoading, actionIc
   };
 
   useEffect(() => {
+    const currentPermissions = logPermissions();
+    setPermissions(currentPermissions);
+    console.log("perms:", permissions)
     fetchClubsAndFederations();
   }, []);
 
@@ -238,19 +250,20 @@ const ManageClubs = ({ onAdd, onEdit, onDelete, federations, isLoading, actionIc
 
       {/* Add Club Button */}
       <div className="flex justify-end">
-        <button
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 focus:outline-none"
-          onClick={handleAddClub}
+        {permissions.canCreate && (<button
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 focus:outline-none"
+            onClick={handleAddClub}
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-5 h-5"/>
           Add Club
-        </button>
+        </button>)}
+
       </div>
 
       {/* Clubs Table */}
       <div className={`p-6 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow`}>
         <h2 className={`text-xl font-semibold mb-4 ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-          Clubs List
+        Clubs List
         </h2>
 
         {isLoading ? (
@@ -290,24 +303,26 @@ const ManageClubs = ({ onAdd, onEdit, onDelete, federations, isLoading, actionIc
                         >
                           <Eye className="h-4 w-4" />
                         </button>
-                        <button
-                          onClick={() => handleEdit(club)}
-                          className="p-1 rounded-lg hover:bg-gray-100"
-                          title="Edit"
+                        {permissions.canUpdate && (<button
+                            onClick={() => handleEdit(club)}
+                            className="p-1 rounded-lg hover:bg-gray-100"
+                            title="Edit"
                         >
-                          <Pen className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteClick(club)}
-                          className="p-1 rounded-lg hover:bg-red-50 text-red-600"
-                          title="Delete"
+                          <Pen className="h-4 w-4"/>
+                        </button>)}
+
+                        {permissions.canDelete && (<button
+                            onClick={() => handleDeleteClick(club)}
+                            className="p-1 rounded-lg hover:bg-red-50 text-red-600"
+                            title="Delete"
                         >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                          <Trash2 className="h-4 w-4"/>
+                        </button>)}
+
                         <button
-                          onClick={() => handleViewPlayers(club)}
-                          className="p-1 rounded-lg hover:bg-gray-100"
-                          title="View Players"
+                            onClick={() => handleViewPlayers(club)}
+                            className="p-1 rounded-lg hover:bg-gray-100"
+                            title="View Players"
                         >
                           <Users className="h-4 w-4" />
                         </button>

@@ -17,6 +17,10 @@ import axiosInstance from '../../utils/axiosInstance';
 import { Dialog, Transition } from '@headlessui/react';
 import { locations } from '../../data/locations';
 import PrintButton from '../reusable/Print';
+import { usePermissionLogger } from '../../utils/permissionLogger.js';
+
+
+
 
 const InfrastructureList = () => {
   const [infrastructures, setInfrastructures] = useState([]);
@@ -29,6 +33,13 @@ const InfrastructureList = () => {
     province: '',
     district: ''
   });
+  const logPermissions = usePermissionLogger('infrastructure')
+  const [permissions, setPermissions] = useState({
+    canCreate: false,
+    canRead: false,
+    canUpdate: false,
+    canDelete: false
+  })
   const [showFilters, setShowFilters] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -78,6 +89,9 @@ const InfrastructureList = () => {
   };
 
   useEffect(() => {
+    const currentPermissions = logPermissions();
+    setPermissions(currentPermissions);
+    console.log("perms:", permissions)
     fetchInfrastructures();
     fetchCategories();
   }, []);
@@ -557,18 +571,22 @@ const InfrastructureList = () => {
                     <Button size="sm" variant="ghost" title="View Details" onClick={() => openViewModal(infra)}>
                       <Eye className="h-4 w-4" />
                     </Button>
-                    <Button size="sm" variant="ghost" title="Edit" onClick={() => openEditModal(infra)}>
+                    {permissions.canUpdate && (<Button size="sm" variant="ghost" title="Edit" onClick={() => openEditModal(infra)}>
                       <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="ghost" 
-                      className="text-red-600" 
-                      title="Delete"
-                      onClick={() => openDeleteModal(infra)}
-                    >
+                    </Button>)}
+                    {permissions.canDelete && (
+                        <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-red-600"
+                            title="Delete"
+                            onClick={() => openDeleteModal(infra)}
+                        >
+
+
                       <Trash2 className="h-4 w-4" />
                     </Button>
+                    )}
                     <Button size="sm" variant="ghost" title="View on Map">
                       <MapPin className="h-4 w-4" />
                     </Button>

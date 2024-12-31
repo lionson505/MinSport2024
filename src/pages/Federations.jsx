@@ -40,6 +40,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import PlayerStaffTransfer from '../components/federation/PlayerStaffTransfer';
 import axiosInstance from '../utils/axiosInstance';
 import PrintButton from '../components/reusable/Print';
+import {usePermissionLogger} from "../utils/permissionLogger.js";
 
 const TransferHistoryModal = ({ isOpen, onClose, player }) => {
   const [transferHistory, setTransferHistory] = useState([]);
@@ -229,6 +230,14 @@ const Federations = () => {
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [refreshPlayerStaffData, setRefreshPlayerStaffData] = useState(0);
   const [showPlayerDetailsModal, setShowPlayerDetailsModal] = useState(false);
+  const logPermissions = usePermissionLogger('federations')
+
+  const[permissions, setPermissions] = useState({
+    canCreate: false,
+    canRead: false,
+    canUpdate: false,
+    canDelete: false
+  })
 
   const tabs = [
     'Manage Federations and associations',
@@ -257,6 +266,9 @@ const Federations = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const currentPermissions = logPermissions();
+        setPermissions(currentPermissions);
+        console.log("perms:", permissions)
         setIsLoading(true);
         const filters = {
           page: currentPage,
@@ -686,13 +698,14 @@ const Federations = () => {
       return (
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
-            <Button
-              onClick={() => setIsAddFederationModalOpen(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+            {permissions.canCreate && (<Button
+                onClick={() => setIsAddFederationModalOpen(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
             >
               <Plus className="h-4 w-4" />
               Add Federation
-            </Button>
+            </Button>)}
+
 
             <div className="flex flex-col sm:flex-row gap-4 items-center">
               <div className="relative">
@@ -836,16 +849,17 @@ const Federations = () => {
         return (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
-              <Button
-                onClick={() => {
-                  setPlayerToEdit(null);
-                  setIsAddPlayerModalOpen(true);
-                }}
-                className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                Add Player/Staff
-              </Button>
+              {permissions.canCreate && (<Button
+                      onClick={() => {
+                        setPlayerToEdit(null);
+                        setIsAddPlayerModalOpen(true);
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add Player/Staff
+                  </Button>
+              )}
 
               <div className="flex flex-col gap-4 w-full sm:w-auto">
                 <div className="flex items-center gap-4">
@@ -991,26 +1005,27 @@ const Federations = () => {
                           >
                             <Eye className="h-4 w-4" />
                           </button>
-                          <button
-                            onClick={() => handleEditPlayerStaff(person)}
-                            className="p-1 rounded-lg hover:bg-gray-100 text-gray-900"
-                            title="Edit"
+                          {permissions.canUpdate && (<button
+                              onClick={() => handleEditPlayerStaff(person)}
+                              className="p-1 rounded-lg hover:bg-gray-100 text-gray-900"
+                              title="Edit"
                           >
                             <PencilLine className="h-4 w-4 stroke-[1.5]" />
-                          </button>
-                          <button
-                            onClick={() => handleDeletePlayerStaffClick(person)}
-                            className="p-1 rounded-lg hover:bg-red-50 text-red-600"
-                            title="Delete"
+                          </button>)}
+                          {permissions.canDelete && (<button
+                              onClick={() => handleDeletePlayerStaffClick(person)}
+                              className="p-1 rounded-lg hover:bg-red-50 text-red-600"
+                              title="Delete"
                           >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
+                            <Trash2 className="h-4 w-4"/>
+                          </button>)}
+
                           <button
-                            onClick={() => handleViewTransferHistory(person)}
-                            className="p-1 rounded-lg hover:bg-gray-100"
-                            title="View Transfer History"
+                              onClick={() => handleViewTransferHistory(person)}
+                              className="p-1 rounded-lg hover:bg-gray-100"
+                              title="View Transfer History"
                           >
-                            <History className="h-4 w-4" />
+                            <History className="h-4 w-4"/>
                           </button>
                         </div>
                       </TableCell>

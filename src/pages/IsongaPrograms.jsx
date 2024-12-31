@@ -16,6 +16,7 @@ import Message from '../components/ui/Message';
 import { useDarkMode } from '../contexts/DarkModeContext';
 import { Button } from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
+import {usePermissionLogger} from "../utils/permissionLogger.js";
 import {
   Dialog,
   DialogContent,
@@ -55,7 +56,13 @@ const IsongaPrograms = () => {
   const [studentToDelete, setStudentToDelete] = useState(null);
   const [institutionToDelete, setInstitutionToDelete] = useState(null);
   const [showDeleteInstitutionModal, setShowDeleteInstitutionModal] = useState(false);
- // Add institutionId to the initial state
+  const  logPermissions = usePermissionLogger('isonga_programs')
+ const[permissions, setPermissions] = useState({
+      canCreate: false,
+      canRead: false,
+      canUpdate: false,
+      canDelete: false
+    })
 const [studentFormData, setStudentFormData] = useState({
   firstName: '',
   lastName: '',
@@ -96,7 +103,9 @@ const [studentFormData, setStudentFormData] = useState({
           axiosInstance.get('/students'),
           // axiosInstance.get('/schools') // Assuming there's an endpoint for schools
         ]);
-
+        const currentPermissions = logPermissions();
+        setPermissions(currentPermissions);
+        console.log("perms:", permissions);
         setPrograms(programsResponse?.data || []);
         setFilteredPrograms(programsResponse?.data || []);
         
@@ -316,6 +325,15 @@ const [studentFormData, setStudentFormData] = useState({
       case 'Manage Institution':
         return (
           <div className="transition-all duration-300 ease-in-out">
+            {permissions.canCreate && (<Button
+                onClick={handleAddInstitution}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
+                disabled={isSubmitting}
+            >
+              <Plus className="h-5 w-5" />
+              <span>Add Institution</span>
+            </Button>)}
+
             <div className="space-y-6">
               {/* Search and Entries Section */}
               <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
@@ -388,24 +406,25 @@ const [studentFormData, setStudentFormData] = useState({
                             >
                               <Eye className="h-4 w-4" />
                             </button>
-                            <button
-                              onClick={() => handleEditInstitution(program)}
-                              className="p-1 rounded-lg hover:bg-gray-100"
-                              title="Edit"
+                            {permissions.canUpdate && (<button
+                                onClick={() => handleEditInstitution(program)}
+                                className="p-1 rounded-lg hover:bg-gray-100"
+                                title="Edit"
                             >
-                              <Pencil className="h-4 w-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteInstitution(program)}
-                              className="p-1 rounded-lg hover:bg-red-50 text-red-600"
-                              title="Delete"
+                              <Pencil className="h-4 w-4"/>
+                            </button>)}
+                            {permissions.canDelete && (<button
+                                onClick={() => handleDeleteInstitution(program)}
+                                className="p-1 rounded-lg hover:bg-red-50 text-red-600"
+                                title="Delete"
                             >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
+                              <Trash2 className="h-4 w-4"/>
+                            </button>)}
+
                             <button
-                              onClick={() => handleViewStudents(program)}
-                              className="p-1 rounded-lg hover:bg-gray-100"
-                              title="View Students"
+                                onClick={() => handleViewStudents(program)}
+                                className="p-1 rounded-lg hover:bg-gray-100"
+                                title="View Students"
                             >
                               <Users className="h-4 w-4" />
                             </button>
@@ -427,13 +446,14 @@ const [studentFormData, setStudentFormData] = useState({
             <div className="space-y-6">
               {/* Search and Entries Section */}
               <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
-                <Button
-                  onClick={handleAddStudent}
-                  className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+                {permissions.canCreate && (<Button
+                    onClick={handleAddStudent}
+                    className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
                 >
                   <Plus className="h-4 w-4" />
                   Add Student
-                </Button>
+                </Button>)}
+
 
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
@@ -514,20 +534,21 @@ const [studentFormData, setStudentFormData] = useState({
                             >
                               <Eye className="h-4 w-4" />
                             </button>
-                            <button
-                              onClick={() => handleEditStudent(student)}
-                              className="p-1 rounded-lg hover:bg-gray-100"
-                              title="Edit"
+                            {permissions.canUpdate && (<button
+                                onClick={() => handleEditStudent(student)}
+                                className="p-1 rounded-lg hover:bg-gray-100"
+                                title="Edit"
                             >
-                              <Pencil className="h-4 w-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteStudent(student)}
-                              className="p-1 rounded-lg hover:bg-red-50 text-red-600"
-                              title="Delete"
+                              <Pencil className="h-4 w-4"/>
+                            </button>)}
+                            {permissions.canDelete && (<button
+                                onClick={() => handleDeleteStudent(student)}
+                                className="p-1 rounded-lg hover:bg-red-50 text-red-600"
+                                title="Delete"
                             >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
+                              <Trash2 className="h-4 w-4"/>
+                            </button>)}
+
                           </div>
                         </TableCell>
                       </TableRow>
@@ -622,14 +643,7 @@ const [studentFormData, setStudentFormData] = useState({
         <h1 className={`text-2xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
           Isonga Programs
         </h1>
-        <Button 
-          onClick={handleAddInstitution}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
-          disabled={isSubmitting}
-        >
-          <Plus className="h-5 w-5" />
-          <span>Add Institution</span>
-        </Button>
+
       </div>
 
       {/* Navigation Tabs */}

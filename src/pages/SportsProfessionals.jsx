@@ -10,8 +10,18 @@ import Modal from '../components/ui/Modal';
 import AddSportsProfessionalForm from '../components/forms/AddSportsProfessionalForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 import PrintButton from '../components/reusable/Print';
+import {usePermissionLogger} from "../utils/permissionLogger.js";
 
 const SportsProfessionals = () => {
+
+  const logPermissions = usePermissionLogger('sports_professionals')
+
+  const[permissions, setPermissions] = useState({
+    canCreate: false,
+    canRead: false,
+    canUpdate: false,
+    canDelete: false
+  })
   const [professionals, setProfessionals] = useState([]);
   const [disciplines, setDisciplines] = useState([]);
   const [functions, setFunctions] = useState([]);
@@ -46,8 +56,12 @@ const SportsProfessionals = () => {
   const [viewingFunction, setViewingFunction] = useState(null);
 
   useEffect(() => {
+    const currentPermissions = logPermissions();
+    setPermissions(currentPermissions);
+    console.log("perms:", permissions);
     const fetchDisciplines = async () => {
       try {
+
         setIsLoading(true);
         const response = await axiosInstance.get('/disciplines');
         setDisciplines(response.data);
@@ -127,6 +141,7 @@ const SportsProfessionals = () => {
     const indexOfFirstRow = indexOfLastRow - rowsPerPage;
     return data.slice(indexOfFirstRow, indexOfLastRow);
   };
+
 
   const handleAddDiscipline = async () => {
     try {
@@ -294,37 +309,39 @@ const SportsProfessionals = () => {
           >
             <Eye className="w-4 h-4" />
           </button>
-          <button
-            onClick={() => {
-              setEditingDiscipline(discipline);
-              setDisciplineForm({ name: discipline.name, type: discipline.type });
-            }}
-            className="p-2 text-gray-900 hover:bg-gray-100 rounded-md focus:outline-none"
-            title="Edit Discipline"
+          {permissions.canUpdate && ( <button
+              onClick={() => {
+                setEditingDiscipline(discipline);
+                setDisciplineForm({ name: discipline.name, type: discipline.type });
+              }}
+              className="p-2 text-gray-900 hover:bg-gray-100 rounded-md focus:outline-none"
+              title="Edit Discipline"
           >
             <PencilLine className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => {
-              setItemToDelete(discipline);
-              setDeleteModalOpen(true);
-            }}
-            className="p-2 text-red-500 hover:bg-red-100 rounded-md focus:outline-none"
-            title="Delete Discipline"
+          </button>)}
+
+          {permissions.canDelete && (<button
+              onClick={() => {
+                setItemToDelete(discipline);
+                setDeleteModalOpen(true);
+              }}
+              className="p-2 text-red-500 hover:bg-red-100 rounded-md focus:outline-none"
+              title="Delete Discipline"
           >
-            <Trash2 className="w-4 h-4" />
-          </button>
+            <Trash2 className="w-4 h-4"/>
+          </button>)}
+
         </div>
       </TableCell>
     </TableRow>
   );
 
   const renderFunctionRow = (func) => (
-    <TableRow key={func.id}>
-      <TableCell>{func.name}</TableCell>
-      <TableCell>{disciplines.find((d) => d.id === func.disciplineId)?.name}</TableCell>
-      <TableCell className="operation">
-        <div className="flex items-center gap-2">
+      <TableRow key={func.id}>
+        <TableCell>{func.name}</TableCell>
+        <TableCell>{disciplines.find((d) => d.id === func.disciplineId)?.name}</TableCell>
+        <TableCell className="operation">
+          <div className="flex items-center gap-2">
           <button
             onClick={() => setViewingFunction(func)}
             className="p-2 text-gray-900 hover:bg-gray-100 rounded-md focus:outline-none"
@@ -332,26 +349,30 @@ const SportsProfessionals = () => {
           >
             <Eye className="w-4 h-4" />
           </button>
-          <button
-            onClick={() => {
-              setEditingFunction(func);
-              setFunctionForm({ name: func.name, disciplineId: func.disciplineId });
-            }}
-            className="p-2 text-gray-900 hover:bg-gray-100 rounded-md focus:outline-none"
-            title="Edit Function"
+          {permissions.canUpdate && (<button
+              onClick={() => {
+                setEditingFunction(func);
+                setFunctionForm({name: func.name, disciplineId: func.disciplineId});
+              }}
+              className="p-2 text-gray-900 hover:bg-gray-100 rounded-md focus:outline-none"
+              title="Edit Function"
           >
-            <PencilLine className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => {
-              setItemToDelete(func);
-              setDeleteModalOpen(true);
-            }}
-            className="p-2 text-red-500 hover:bg-red-100 rounded-md focus:outline-none"
-            title="Delete Function"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+            <PencilLine className="w-4 h-4"/>
+          </button>)}
+          {permissions.canDelete && (
+              <button
+                  onClick={() => {
+                    setItemToDelete(func);
+                    setDeleteModalOpen(true);
+                  }}
+                  className="p-2 text-red-500 hover:bg-red-100 rounded-md focus:outline-none"
+                  title="Delete Function"
+              >
+                <Trash2 className="w-4 h-4"/>
+              </button>
+
+          )}
+
         </div>
       </TableCell>
     </TableRow>
@@ -374,40 +395,44 @@ const SportsProfessionals = () => {
           >
             <Eye className="w-4 h-4" />
           </button>
-          <button
-            onClick={() => {
-              setEditingProfessional(professional);
-              setAddingProfessional(true);
-            }}
-            className="p-2 text-gray-900 hover:bg-gray-100 rounded-md focus:outline-none"
-            title="Edit Professional"
+          {permissions.canUpdate && (
+              <button
+                  onClick={() => {
+                    setEditingProfessional(professional);
+                    setAddingProfessional(true);
+                  }}
+                  className="p-2 text-gray-900 hover:bg-gray-100 rounded-md focus:outline-none"
+                  title="Edit Professional"
+              >
+                <PencilLine className="w-4 h-4"/>
+              </button>
+          )}
+
+          {permissions.canDelete && (<button
+              onClick={() => {
+                setItemToDelete(professional);
+                setDeleteModalOpen(true);
+              }}
+              className="p-2 text-red-500 hover:bg-red-100 rounded-md focus:outline-none"
+              title="Delete Professional"
           >
-            <PencilLine className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => {
-              setItemToDelete(professional);
-              setDeleteModalOpen(true);
-            }}
-            className="p-2 text-red-500 hover:bg-red-100 rounded-md focus:outline-none"
-            title="Delete Professional"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+            <Trash2 className="w-4 h-4"/>
+          </button>)}
+
         </div>
       </TableCell>
     </TableRow>
   );
 
   return (
-    <div className="p-6 bg-gray-50">
-      {message && (
-        <Message type={message.type} message={message.text} onClose={() => setMessage(null)} />
-      )}
+      <div className="p-6 bg-gray-50">
+        {message && (
+            <Message type={message.type} message={message.text} onClose={() => setMessage(null)}/>
+        )}
 
-      {/* Navigation Tabs */}
-      <div className="mb-6 overflow-x-auto">
-        <nav className="flex space-x-4 min-w-max">
+        {/* Navigation Tabs */}
+        <div className="mb-6 overflow-x-auto">
+          <nav className="flex space-x-4 min-w-max">
           {['Professionals', 'Disciplines', 'Functions'].map((tab) => (
             <button
               key={tab}
@@ -429,16 +454,19 @@ const SportsProfessionals = () => {
 
       {/* Search and Add Button Section */}
       <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
-        <Button 
-          onClick={() => activeTab === 'Professionals' ? setAddingProfessional(true) : 
-                        activeTab === 'Disciplines' ? setAddingDiscipline(true) : 
-                        setAddingFunction(true)} 
-          className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
-        >
-          <Plus className="h-4 w-4" />
-          Add {activeTab === 'Professionals' ? 'Professional' : 
-               activeTab === 'Disciplines' ? 'Discipline' : 'Function'}
-        </Button>
+        {
+          permissions.canCreate && ( <Button
+                onClick={() => activeTab === 'Professionals' ? setAddingProfessional(true) :
+                    activeTab === 'Disciplines' ? setAddingDiscipline(true) :
+                        setAddingFunction(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Add {activeTab === 'Professionals' ? 'Professional' :
+                activeTab === 'Disciplines' ? 'Discipline' : 'Function'}
+            </Button>)
+        }
+
 
         <div className="flex flex-col sm:flex-row gap-4 items-center">
           <div className="relative flex-1 sm:flex-none">

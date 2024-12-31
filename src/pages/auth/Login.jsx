@@ -5,6 +5,7 @@ import axiosInstance from '../../utils/axiosInstance';
 import { Button } from '../../components/ui/Button';
 import { Eye, EyeOff } from 'lucide-react';
 
+
 // Debug logging helper
 const debugLog = (label, data) => {
   console.group(`🔍 ${label}`);
@@ -180,12 +181,12 @@ export default function Login() {
         localStorage.removeItem('tempUserId');
 
         // Store user session data directly
-        storeValue('token', response.data.token);
-        storeValue('user', response.data.user);
-        storeValue('userRole', response.data.user.userGroup.name);
-        storeValue('userId', response.data.user.id);
-        storeValue('groupId', response.data.user.userGroup.id);
-        storeValue('isActivated', response.data.user.userGroup.name === 'admin' ? 'true' : 'false');
+        await storeValue('token', response.data.token);
+        await storeValue('user', response.data.user);
+        await storeValue('userRole', response.data.user.userGroup.name);
+        await storeValue('userId', response.data.user.id);
+        await storeValue('groupId', response.data.user.userGroup.id);
+        await storeValue('isActivated', response.data.user.userGroup.name === 'admin' ? 'true' : 'false');
 
         if (rememberMe) {
           storeValue('rememberMe', 'true');

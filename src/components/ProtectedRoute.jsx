@@ -122,17 +122,28 @@ import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../utils/permissionUtils';
 import { MODULE_IDS } from '../constants/modules';
 
-const ProtectedRoute = ({ children, moduleId }) => {
-  const { user } = useAuth();
-  const location = useLocation();
-  const { hasModuleAccess } = usePermissions();
+const ProtectedRoute =  ({ children, moduleId }) => {
+
+  const { user } =  useAuth();
+  const location =  useLocation();
+  const { hasModuleAccess } =  usePermissions();
 
   console.log('ProtectedRoute - Checking access for module:', moduleId);
   console.log('Current user:', user);
 
+  //fallback for getting user
+
+
+
+
+
   if (!user) {
-    console.log('No user found, redirecting to login');
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    const user = localStorage.getItem('user')
+    if(user === null || user === undefined ){
+      console.log('No user found, redirecting to login');
+      return <Navigate to="/login" state={{ from: location }} replace />;
+    }
+
   }
 
   const numericModuleId = MODULE_IDS[moduleId] || moduleId;

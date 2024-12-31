@@ -10,6 +10,7 @@ import { useDarkMode } from '../contexts/DarkModeContext';
 import CategoryManagementModal from '../components/infrastructure/CategoryManagementModal';
 import axiosInstance from '../utils/axiosInstance';
 import { toast } from 'react-hot-toast';
+import { usePermissionLogger } from '../utils/permissionLogger.js';
 
 const Infrastructure = () => {
   const [showAddModal, setShowAddModal] = useState(false);
@@ -19,11 +20,22 @@ const Infrastructure = () => {
   const [categories, setCategories] = useState([]);
   const [infrastructure, setInfrastructure] = useState([]);
   const [lastUpdate, setLastUpdate] = useState(Date.now());
+  const logPermissions = usePermissionLogger('infrastructure')
+  const [permissions, setPermissions] = useState({
+    canCreate: false,
+    canRead: false,
+    canUpdate: false,
+    canDelete: false
+  })
 
   useEffect(() => {
     const fetchData = async () => {
       await fetchCategories();
+
       await fetchInfrastructure();
+      const currentPermissions = logPermissions();
+      setPermissions(currentPermissions);
+      console.log("perms:", permissions)
     };
     
     fetchData();
@@ -92,13 +104,16 @@ const Infrastructure = () => {
               >
                 Manage Categories
               </Button>
-              <Button
-                onClick={() => setShowAddModal(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                <Plus className="h-5 w-5 mr-2" />
-                Add Infrastructure
-              </Button>
+              {permissions.canCreate && (
+                  <Button
+                      onClick={() => setShowAddModal(true)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    <Plus className="h-5 w-5 mr-2" />
+                    Add Infrastructure
+                  </Button>
+              )}
+
             </>
           )}
         </div>

@@ -206,10 +206,10 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUser = async () => {
     try {
-      const storedUser = localStorage.getItem('user');
+      const storedUser =  localStorage.getItem('user');
       if (storedUser) {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
+        const parsedUser = await JSON.parse(storedUser);
+        await setUser(parsedUser);
         await fetchPermissions(parsedUser.userGroup.id);
       }
     } catch (error) {
