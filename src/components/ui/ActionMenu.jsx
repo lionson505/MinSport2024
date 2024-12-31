@@ -35,6 +35,12 @@ const ActionMenu = ({ onEdit, onDelete, onDownload }) => {
             const currentPermissions = logPermissions();
             setPermissions(currentPermissions);
         }
+        else if (currentLocation === "partners") {
+        const logPermissions = usePermissionLogger("federations");
+        const currentPermissions = logPermissions();
+        setPermissions(currentPermissions);
+    }
+
     }, [currentLocation]);
 
     return (

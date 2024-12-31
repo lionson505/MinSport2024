@@ -9,6 +9,7 @@ import EditGroupModal from '../components/EditGroupModal';
 import AddGroupModal from '../components/AddGroupModal';
 import axiosInstance from '../utils/axiosInstance';
 import PrintButton from '../components/reusable/Print';
+import { usePermissionLogger } from '../utils/permissionLogger.js';
 
 function ManageGroups() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -31,8 +32,17 @@ function ManageGroups() {
   const [usersData, setUsersData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const logPermissions = usePermissionLogger("users")
+  const [permissions, setPermissions] = useState({
+    canCreate: false,
+    canRead: false,
+    canUpdate: false,
+    canDelete: false
+  })
 
   const fetchGroups = async () => {
+    const permissionsCurrent = logPermissions()
+    setPermissions(permissionsCurrent)
     try {
       setLoading(true);
       setError(null);
@@ -331,27 +341,35 @@ function ManageGroups() {
                         </td>
                         <td className="px-4 py-3 operation">
                           <div className="flex items-center space-x-2">
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              onClick={() => handleEdit(group)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              onClick={() => handleDelete(group)}
-                            >
-                              <Trash2 className="h-4 w-4 text-red-500" />
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              onClick={() => handleManageModulesPermissions(group)}
-                            >
-                              <span className="h-4 w-4">🔧</span>
-                            </Button>
+                            {[permissions.canDelete && (
+                                <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    onClick={() => handleDelete(group)}
+                                >
+                                  <Trash2 className="h-4 w-4 text-red-500" />
+                                </Button>
+                            )]}
+                            {permissions.canUpdate && (
+                                <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    onClick={() => handleEdit(group)}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                            )}
+
+                            {permissions.canUpdate && (
+                                <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    onClick={() => handleManageModulesPermissions(group)}
+                                >
+                                  <span className="h-4 w-4">🔧</span>
+                                </Button>
+                            )}
+
                           </div>
                         </td>
                       </tr>

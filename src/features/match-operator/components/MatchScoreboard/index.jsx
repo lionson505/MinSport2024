@@ -55,4 +55,4 @@ export function MatchScoreboard({ match, homeTeamPlayers, awayTeamPlayers, onClo
       </DialogContent>
     </Dialog>
   );
-} 
+}

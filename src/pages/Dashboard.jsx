@@ -274,18 +274,18 @@ const Dashboard = () => {
 
 
 
-      {permissions.canCreate && (
-          <div className="bg-red-500  ">THIS SAYS I HAVE CREATE PERMISSIONS</div>
-      )}
-      {permissions.canDelete && (
-          <div className="bg-amber-300  ">THIS SAYS I HAVE CREATE PERMISSIONS</div>
-      )}
-      {permissions.canRead && (
-          <div className="bg-black text-white  ">THIS SAYS I HAVE CREATE PERMISSIONS</div>
-      )}
-      {permissions.canUpdate && (
-          <div className="bg-green-800  ">THIS SAYS I HAVE CREATE PERMISSIONS</div>
-      )}
+      {/*{permissions.canCreate && (*/}
+      {/*    <div className="bg-red-500  ">THIS SAYS I HAVE CREATE PERMISSIONS</div>*/}
+      {/*)}*/}
+      {/*{permissions.canDelete && (*/}
+      {/*    <div className="bg-amber-300  ">THIS SAYS I HAVE CREATE PERMISSIONS</div>*/}
+      {/*)}*/}
+      {/*{permissions.canRead && (*/}
+      {/*    <div className="bg-black text-white  ">THIS SAYS I HAVE CREATE PERMISSIONS</div>*/}
+      {/*)}*/}
+      {/*{permissions.canUpdate && (*/}
+      {/*    <div className="bg-green-800  ">THIS SAYS I HAVE CREATE PERMISSIONS</div>*/}
+      {/*)}*/}
       {/* Upcoming Appointments and Appointment Requests Section */}
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Upcoming Appointments Section */}

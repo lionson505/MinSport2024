@@ -8,6 +8,7 @@ import EditUserModal from '../components/EditUserModal';
 import ManageGroups from './ManageGroups';
 import axiosInstance from '../utils/axiosInstance';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
+import {usePermissionLogger} from "../utils/permissionLogger.js";
 
 function Users() {
   const [loading, setLoading] = useState(true);
@@ -17,13 +18,20 @@ function Users() {
   const [userData, setUserData] = useState([]);
   const [groupData, setGroupData] = useState([]);
   const [error, setError] = useState(null);
+
   const [activeTab, setActiveTab] = useState('users'); 
   const [searchName, setSearchName] = useState(''); 
   const [searchGroup, setSearchGroup] = useState(''); 
   const [searchStatus, setSearchStatus] = useState('');
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const navigate = useNavigate();
-
+  const logPermissions = usePermissionLogger("users")
+  const [permissions, setPermissions] = useState({
+    canCreate: false,
+    canRead: false,
+    canUpdate: false,
+    canDelete: false
+  })
   // Get the group name based on the userGroup object
   const getGroupName = (userGroup) => {
     if (!Array.isArray(groupData)) {
@@ -73,6 +81,8 @@ function Users() {
   };
 
   useEffect(() => {
+    const currentPermissions = logPermissions();
+    setPermissions(currentPermissions);
     fetchData();
   }, []);
 
@@ -145,24 +155,33 @@ function Users() {
       <h1 className="text-2xl font-bold mb-4">Manage Users and Groups</h1>
 
       <div className="flex gap-4 mb-4">
-        <Button
-          onClick={() => handleTabSwitch('users')}
-          className={activeTab === 'users' ? 'bg-blue-600 text-white' : ''}
-        >
-          Manage Users
-        </Button>
+        {permissions.canRead && (
+
+
+
+            <Button
+                onClick={() => handleTabSwitch('users')}
+                className={activeTab === 'users' ? 'bg-blue-600 text-white' : ''}
+            >
+              Manage Users
+            </Button>
+        )}
+
         <Button
           onClick={() => handleTabSwitch('pending')}
           className={activeTab === 'pending' ? 'bg-blue-600 text-white' : ''}
         >
           Pending Users
         </Button>
-        <Button
-          onClick={() => handleTabSwitch('groups')}
-          className={activeTab === 'groups' ? 'bg-blue-600 text-white' : ''}
-        >
-          Manage Groups
-        </Button>
+        {permissions.canRead && (
+            <Button
+                onClick={() => handleTabSwitch('groups')}
+                className={activeTab === 'groups' ? 'bg-blue-600 text-white' : ''}
+            >
+              Manage Groups
+            </Button>
+        )}
+
       </div>
 
       {activeTab === 'users' && (
@@ -214,9 +233,11 @@ function Users() {
 
       {activeTab === 'users' && (
         <>
-          <Button onClick={handleAddUser} className="mb-4">
+          {permissions.canCreate && (<Button onClick={handleAddUser} className="mb-4">
             Add User
-          </Button>
+          </Button>)
+          }
+
 
           {loading && (
             <div className="flex justify-center items-center">
@@ -252,20 +273,26 @@ function Users() {
                     <td className="border p-2">{getUserStatus(user)}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center space-x-2">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleEditUser(user)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleDeleteUser(user)}
-                        >
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
+                        {permissions.canUpdate && (
+                            <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => handleEditUser(user)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                        )}
+
+                        {permissions.canDelete && (
+                            <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => handleDeleteUser(user)}
+                            >
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                        )}
+
                       </div>
                     </td>
                   </tr>

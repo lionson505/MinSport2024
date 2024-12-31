@@ -10,6 +10,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../../components/ui
 import axiosInstance from '../../../utils/axiosInstance';
 import useFetchLiveMatches from '../../../utils/fetchLiveMatches';
 import { useFetchNationalTeam, useFetchPlayers } from '../../../utils/fetchMatchAndPlayers';
+import {usePermissionLogger} from "../../../utils/permissionLogger.js";
 
 export function MatchOperatorDashboard() {
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -22,12 +23,25 @@ export function MatchOperatorDashboard() {
   const { matches = [], liveMatchError } = useFetchLiveMatches();
   const { nationalTeam = [], nationalTeamError } = useFetchNationalTeam([])
   const { players = [], playerError } = useFetchPlayers([])
+  const permissionsLog = usePermissionLogger('match_operator')
+  const [permissions,setPermissions] = useState({
+    canCreate: false,
+    canRead: false,
+    canUpdate: false,
+    canDelete: false
+  })
 
   const {
     oldMatches = [],
     initializeMatchSetup,
     checkMatchAvailability
   } = useMatchOperator();
+
+
+  useEffect(() => {
+    const permissions = permissionsLog()
+    setPermissions(permissions)
+  }, []);
   const handleMatchClick = async (match) => {
     try {
       setError(null);
@@ -123,10 +137,11 @@ export function MatchOperatorDashboard() {
           <h1 className="text-2xl font-bold">Match Operator Dashboard</h1>
           <p className="text-gray-500 mt-1">Manage live matches and upcoming events</p>
         </div>
-        <Button onClick={() => setShowCreateModal(true)}>
+        {permissions.canCreate && (<Button onClick={() => setShowCreateModal(true)}>
           <Plus className="w-4 h-4 mr-2" />
           Create Match
-        </Button>
+        </Button>)}
+
       </div>
 
       {error && (
