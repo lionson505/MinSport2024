@@ -102,167 +102,174 @@ function App() {
     '/federation',
     '/match',
     '/map'
+
   ];
 
   return (
-    <ThemeProvider>
-      <DarkModeProvider>
-        <InfrastructureProvider>
-          <TourismProvider>
-            <MatchOperatorProvider>
-              <Router>
-                <AuthProvider>
-                  <Toaster 
-                    position="top-right"
-                    toastOptions={{
-                      duration: 3000,
-                      style: {
-                        background: '#333',
-                        color: '#fff',
-                      },
-                    }}
-                  />
-                  <ToastContainer />
-                  <Routes>
-                    {/* Public Routes - Always Accessible */}
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/forgot-password" element={<ForgotPassword />} />
-                    <Route path="/check-email" element={<CheckEmail />} />
-                    <Route path="/" element={<LandingPage />} />
-                    <Route path="/home" element={<LandingPage />} />
-                    <Route path="/sports-events" element={<AllSportsEvents />} />
-                    <Route path="/events" element={<EventsPage />} />
-                    <Route path="/federation" element={<LandingPageFederation />} />
-                    <Route path="/match" element={<LandingPageMatch />} />
-                    <Route path="/map" element={<MyMap/>} />
+      <ThemeProvider>
+        <DarkModeProvider>
+          <InfrastructureProvider>
+            <TourismProvider>
+              <MatchOperatorProvider>
+                <Router>
+                  <AuthProvider>
+                    <Toaster
+                        position="top-right"
+                        toastOptions={{
+                          duration: 3000,
+                          style: {
+                            background: '#333',
+                            color: '#fff',
+                          },
+                        }}
+                    />
+                    <ToastContainer />
+                    <Routes>
+                      {/* Public Routes - Always Accessible */}
+                      <Route path="/register" element={<Register />} />
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/forgot-password" element={<ForgotPassword />} />
+                      <Route path="/check-email" element={<CheckEmail />} />
+                      <Route path="/" element={<LandingPage />} />
+                      <Route path="/home" element={<LandingPage />} />
+                      <Route path="/sports-events" element={<AllSportsEvents />} />
+                      <Route path="/events" element={<EventsPage />} />
+                      <Route path="/federation" element={<LandingPageFederation />} />
+                      <Route path="/match" element={<LandingPageMatch />} />
+                      <Route path="/map" element={<MyMap/>} />
+                      <Route path="/pending-activation" element={<PendingActivation />} />
+                      <Route path="/notAuthorized" element={<NoPageFound/>} />
 
-                    {/* Protected Routes */}
-                    <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-                      <Route path="/dashboard" element={
-                        <ProtectedRoute moduleId={MODULE_IDS.DASHBOARD}>
-                          <Dashboard />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/national-teams" element={
-                        <ProtectedRoute moduleId={MODULE_IDS.NATIONAL_TEAMS}>
-                          <NationalTeams />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/federations" element={
-                        <ProtectedRoute moduleId={MODULE_IDS.FEDERATIONS}>
-                          <Federations />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/sports-professionals" element={
-                        <ProtectedRoute moduleId={MODULE_IDS.SPORTS_PROFESSIONALS}>
-                          <SportsProfessionals />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/trainings" element={
-                        <ProtectedRoute moduleId={MODULE_IDS.TRAININGS}>
-                          <Training />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/isonga-programs" element={
-                        <ProtectedRoute moduleId={MODULE_IDS.ISONGA_PROGRAMS}>
-                          <IsongaPrograms />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/academies" element={
-                        <ProtectedRoute moduleId={MODULE_IDS.ACADEMIES}>
-                          <Academies />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/infrastructure" element={
-                        <ProtectedRoute moduleId={MODULE_IDS.INFRASTRUCTURE}>
-                          <Infrastructure />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/sports-tourism" element={
-                        <ProtectedRoute moduleId={MODULE_IDS.SPORTS_TOURISM}>
-                          <SportsTourism />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/documents" element={
-                        <ProtectedRoute moduleId={MODULE_IDS.DOCUMENTS}>
-                          <Documents />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/contracts" element={
-                        <ProtectedRoute moduleId={MODULE_IDS.CONTRACTS}>
-                          <Contracts />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/appointments" element={
-                        <ProtectedRoute moduleId={MODULE_IDS.APPOINTMENTS}>
-                          <Appointments />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/employee" element={
-                        <ProtectedRoute moduleId={MODULE_IDS.EMPLOYEE}>
-                          <Employee />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/users" element={
-                        <ProtectedRoute moduleId={MODULE_IDS.USERS}>
-                          <Users />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/partners" element={
-                        <ProtectedRoute moduleId={MODULE_IDS.PARTNERS}>
-                          <Partners />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/reports" element={
-                        <ProtectedRoute moduleId={MODULE_IDS.REPORTS}>
-                          <Reports />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/sports-for-all" element={
-                        <ProtectedRoute moduleId={MODULE_IDS.SPORTS_FOR_ALL}>
-                          <SportsForAll />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/settings" element={
-                        <ProtectedRoute moduleId={MODULE_IDS.SETTINGS}>
-                          <Settings />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/player-transfer-report" element={
-                        <ProtectedRoute moduleId={MODULE_IDS.PLAYER_TRANSFER_REPORT}>
-                          <PlayerTransferReport />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/match-operator" element={
-                        <ProtectedRoute moduleId={MODULE_IDS.MATCH_OPERATOR}>
-                          <MatchOperatorDashboard />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/match-operator/teams" element={
-                        <ProtectedRoute moduleId={MODULE_IDS.MATCH_OPERATOR_TEAMS}>
-                          <TeamManagement />
-                        </ProtectedRoute>
-                      } />
-                    </Route>
+                      {/* Protected Routes */}
+                      <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+                        <Route
+                            path="/dashboard"
+                            element={
+                              <ProtectedRoute moduleId={MODULE_IDS.DASHBOARD}>
+                                <Dashboard />
+                              </ProtectedRoute>
+                            }
+                        />
+                        <Route path="/national-teams" element={
+                          <ProtectedRoute moduleId={MODULE_IDS.NATIONAL_TEAMS}>
+                            <NationalTeams />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/federations" element={
+                          <ProtectedRoute moduleId={MODULE_IDS.FEDERATIONS}>
+                            <Federations />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/sports-professionals" element={
+                          <ProtectedRoute moduleId={MODULE_IDS.SPORTS_PROFESSIONALS}>
+                            <SportsProfessionals />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/trainings" element={
+                          <ProtectedRoute moduleId={MODULE_IDS.TRAININGS}>
+                            <Training />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/isonga-programs" element={
+                          <ProtectedRoute moduleId={MODULE_IDS.ISONGA_PROGRAMS}>
+                            <IsongaPrograms />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/academies" element={
+                          <ProtectedRoute moduleId={MODULE_IDS.ACADEMIES}>
+                            <Academies />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/infrastructure" element={
+                          <ProtectedRoute moduleId={MODULE_IDS.INFRASTRUCTURE}>
+                            <Infrastructure />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/sports-tourism" element={
+                          <ProtectedRoute moduleId={MODULE_IDS.SPORTS_TOURISM}>
+                            <SportsTourism />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/documents" element={
+                          <ProtectedRoute moduleId={MODULE_IDS.DOCUMENTS}>
+                            <Documents />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/contracts" element={
+                          <ProtectedRoute moduleId={MODULE_IDS.CONTRACTS}>
+                            <Contracts />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/appointments" element={
+                          <ProtectedRoute moduleId={MODULE_IDS.APPOINTMENTS}>
+                            <Appointments />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/employee" element={
+                          <ProtectedRoute moduleId={MODULE_IDS.EMPLOYEE}>
+                            <Employee />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/users" element={
+                          <ProtectedRoute moduleId={MODULE_IDS.USERS}>
+                            <Users />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/partners" element={
+                          <ProtectedRoute moduleId={MODULE_IDS.PARTNERS}>
+                            <Partners />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/reports" element={
+                          <ProtectedRoute moduleId={MODULE_IDS.REPORTS}>
+                            <Reports />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/sports-for-all" element={
+                          <ProtectedRoute moduleId={MODULE_IDS.SPORTS_FOR_ALL}>
+                            <SportsForAll />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/settings" element={
+                          <ProtectedRoute moduleId={MODULE_IDS.SETTINGS}>
+                            <Settings />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/player-transfer-report" element={
+                          <ProtectedRoute moduleId={MODULE_IDS.PLAYER_TRANSFER_REPORT}>
+                            <PlayerTransferReport />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/match-operator" element={
+                          <ProtectedRoute moduleId={MODULE_IDS.MATCH_OPERATOR}>
+                            <MatchOperatorDashboard />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/match-operator/teams" element={
+                          <ProtectedRoute moduleId={MODULE_IDS.MATCH_OPERATOR_TEAMS}>
+                            <TeamManagement />
+                          </ProtectedRoute>
+                        } />
+                      </Route>
 
-                    {/* Fallback Route */}
-                    <Route path="*" element={
-                      publicRoutes.includes(window.location.pathname) ? (
-                        <Navigate to={window.location.pathname} />
-                      ) : (
-                        <Navigate to="/notAuthorized" replace />
-                      )
-                    } />
-                  </Routes>
-                </AuthProvider>
-              </Router>
-            </MatchOperatorProvider>
-          </TourismProvider>
-        </InfrastructureProvider>
-      </DarkModeProvider>
-    </ThemeProvider>
+                      {/* Fallback Route */}
+                      <Route path="*" element={
+                        publicRoutes.includes(window.location.pathname) ? (
+                            <Navigate to={window.location.pathname} />
+                        ) : (
+                            <Navigate to="/notAuthorized" replace />
+                        )
+                      } />
+                    </Routes>
+                  </AuthProvider>
+                </Router>
+              </MatchOperatorProvider>
+            </TourismProvider>
+          </InfrastructureProvider>
+        </DarkModeProvider>
+      </ThemeProvider>
   );
 }
 
 export default App;
+
