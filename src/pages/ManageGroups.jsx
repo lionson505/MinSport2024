@@ -315,7 +315,7 @@ function ManageGroups() {
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Group Name</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Modules</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Users</th>
+                      {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Users</th> */}
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Operation</th>
                     </tr>
                   </thead>
@@ -331,14 +331,7 @@ function ManageGroups() {
                             {group.moduleCount} {/* Display the module count */}
                           </button>
                         </td>
-                        <td className="px-4 py-3">
-                          <button
-                            className="text-blue-500 underline"
-                            onClick={() => handleUsersClick(group)}
-                          >
-                            {group.userCount} {/* Display the user count */}
-                          </button>
-                        </td>
+
                         <td className="px-4 py-3 operation">
                           <div className="flex items-center space-x-2">
                             {[permissions.canDelete && (
