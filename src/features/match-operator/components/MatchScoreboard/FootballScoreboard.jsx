@@ -37,6 +37,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
   const [searchTerm, setSearchTerm] = useState('');
   const { matches = [], liveMatchError } = useFetchLiveMatches()
   const updatedMatch = matches.filter((updatedMatch) => updatedMatch.id === match.id)
+
   const permissionLogger = usePermissionLogger('match_operator')
   const [permissions, setPermissions] = useState({
     canCreate: false,
@@ -74,6 +75,9 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
     const currentPermissions = permissionLogger()
     setPermissions(currentPermissions);
   }, []);
+
+
+  
 
 
   const startTimer = () => {
