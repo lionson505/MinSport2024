@@ -19,6 +19,7 @@ import { useDarkMode } from '../contexts/DarkModeContext';
 import AddPartnerForm from '../components/forms/AddPartnerForm';
 import { getPartners, addPartner, deletePartner, editPartner } from '../services/patern';
 import PrintButton from '../components/reusable/Print';
+import {usePermissionLogger} from "../utils/permissionLogger.js";
 
 const Partners = () => {
   const { isDarkMode } = useDarkMode();
@@ -33,8 +34,17 @@ const Partners = () => {
   const [filters, setFilters] = useState({ discipline: '', status: '' });
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const permissionsLog = usePermissionLogger("partners")
+  const [permissions, setPermissions] = useState({
+    canCreate: false,
+    canView: false,
+    canEdit: false,
+    canDelete: false
+  })
 
   useEffect(() => {
+    const permissionsCurrent = permissionsLog()
+    setPermissions(permissionsCurrent)
     const fetchData = async () => {
       setIsLoading(true);
       try {
@@ -154,42 +164,45 @@ const Partners = () => {
               }`}
             />
           </div>
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
-            disabled={isSubmitting}
-          >
-            <Plus className="h-5 w-5" />
-            <span>Add Partner</span>
-          </button>
+          {permissions.canCreate && (
+              <button
+                  onClick={() => setShowAddModal(true)}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
+                  disabled={isSubmitting}
+              >
+                <Plus className="h-5 w-5"/>
+                <span>Add Partner</span>
+              </button>
+          )}
+
         </div>
       </div>
 
-      <div className="mb-6 flex items-center space-x-4">
-        <div className="flex items-center space-x-2">
-          <Filter className="h-4 w-4 text-gray-500" />
-          <span className="text-sm font-medium">Filters:</span>
-        </div>
-        <select
-          value={filters.discipline}
-          onChange={(e) => handleFilterChange('discipline', e.target.value)}
-          className="border rounded-lg px-3 py-1.5 text-sm bg-white border-gray-300 text-gray-900"
-        >
-          <option value="">Discipline</option>
-          <option value="Football">Football</option>
-          <option value="Basketball">Basketball</option>
-          <option value="Tennis">Tennis</option>
-        </select>
-        <select
-          value={filters.status}
-          onChange={(e) => handleFilterChange('status', e.target.value)}
-          className="border rounded-lg px-3 py-1.5 text-sm bg-white border-gray-300 text-gray-900"
-        >
-          <option value="">Status</option>
-          <option value="Active">Active</option>
-          <option value="Inactive">Inactive</option>
-        </select>
-      </div>
+      {/*<div className="mb-6 flex items-center space-x-4">*/}
+      {/*  <div className="flex items-center space-x-2">*/}
+      {/*    <Filter className="h-4 w-4 text-gray-500"/>*/}
+      {/*    <span className="text-sm font-medium">Filters:</span>*/}
+      {/*  </div>*/}
+      {/*  <select*/}
+      {/*      value={filters.discipline}*/}
+      {/*    onChange={(e) => handleFilterChange('discipline', e.target.value)}*/}
+      {/*    className="border rounded-lg px-3 py-1.5 text-sm bg-white border-gray-300 text-gray-900"*/}
+      {/*  >*/}
+      {/*    <option value="">Discipline</option>*/}
+      {/*    <option value="Football">Football</option>*/}
+      {/*    <option value="Basketball">Basketball</option>*/}
+      {/*    <option value="Tennis">Tennis</option>*/}
+      {/*  </select>*/}
+      {/*  <select*/}
+      {/*    value={filters.status}*/}
+      {/*    onChange={(e) => handleFilterChange('status', e.target.value)}*/}
+      {/*    className="border rounded-lg px-3 py-1.5 text-sm bg-white border-gray-300 text-gray-900"*/}
+      {/*  >*/}
+      {/*    <option value="">Status</option>*/}
+      {/*    <option value="Active">Active</option>*/}
+      {/*    <option value="Inactive">Inactive</option>*/}
+      {/*  </select>*/}
+      {/*</div>*/}
 
       <div className="rounded-lg bg-white shadow">
         <PrintButton title='Partners Report'>

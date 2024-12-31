@@ -11,6 +11,7 @@ import AddEmployeeVoting from '../components/AddEmployeeVoting';
 import ManageEmployeeVoting from '../components/ManageEmployeeVoting';
 import { fetchEmployees, createEmployee, updateEmployee, deleteEmployee } from '../services/employee';
 import PrintButton from '../components/reusable/Print';
+import {usePermissionLogger} from "../utils/permissionLogger.js";
 
 function Employee() {
   const [loading, setLoading] = useState(true);
@@ -26,8 +27,16 @@ function Employee() {
   const [employeesData, setEmployeesData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 5;
-
+  const logPermissions = usePermissionLogger('contracts')
+  const [permissions, setPermissions] = useState({
+    canCreate: false,
+    canRead: false,
+    canUpdate: false,
+    canDelete: false
+  })
   useEffect(() => {
+    const currentPermissions = logPermissions();
+    setPermissions(currentPermissions);
     const fetchEmployeesData = async () => {
       try {
         setLoading(true);
@@ -323,12 +332,15 @@ function Employee() {
                   />
                 </svg>
               </div>
-              <Button
-                onClick={() => setIsAddModalOpen(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                Add Employee
-              </Button>
+              {permissions.canCreate && (
+                  <Button
+                      onClick={() => setIsAddModalOpen(true)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    Add Employee
+                  </Button>
+              )}
+
             </div>
 
             {/* Employee Count */}
@@ -380,27 +392,31 @@ function Employee() {
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              onClick={() => handleEdit(employee)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              onClick={() => handleDownload(employee)}
-                            >
-                              <Download className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              onClick={() => handleDelete(employee)}
+                            {permissions.canUpdate && (
+                                <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    onClick={() => handleEdit(employee)}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                            )}
+
+                            {/*<Button*/}
+                            {/*  size="icon"*/}
+                            {/*  variant="ghost"*/}
+                            {/*  onClick={() => handleDownload(employee)}*/}
+                            {/*>*/}
+                            {/*  <Download className="h-4 w-4" />*/}
+                            {/*</Button>*/}
+                            {permissions.canDelete && (<Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => handleDelete(employee)}
                             >
                               <Trash2 className="h-4 w-4 text-red-500" />
-                            </Button>
+                            </Button>)}
+
                           </div>
                         </td>
                       </tr>

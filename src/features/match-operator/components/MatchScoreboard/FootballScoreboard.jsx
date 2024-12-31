@@ -15,6 +15,7 @@ import {
 import { Input } from '../../../../components/ui/input';
 import useFetchLiveMatches from '../../../../utils/fetchLiveMatches';
 import toast from 'react-hot-toast';
+import {usePermissionLogger} from "../../../../utils/permissionLogger.js";
 
 export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlayers = [], onUpdate }) {
   const [matchData, setMatchData] = useState({
@@ -36,7 +37,48 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
   const [searchTerm, setSearchTerm] = useState('');
   const { matches = [], liveMatchError } = useFetchLiveMatches()
   const updatedMatch = matches.filter((updatedMatch) => updatedMatch.id === match.id)
+
+  const permissionLogger = usePermissionLogger('match_operator')
+  const [permissions, setPermissions] = useState({
+    canCreate: false,
+    canRead: false,
+    canUpdate: false,
+    canDelete: false
+  })
+  // console.log('here is matches : ', updatedMatch)
+
+
+
+  /*
+  // Fetch updated match data from the API
+  useEffect(() => {
+    const fetchMatchData = async () => {
+      try {
+        const response = await axiosInstance.get(`/live-matches/${match.id}`);
+        const updatedData = response.data;
+        setMatchData(prev => ({
+          ...prev,
+          teamAScore: updatedData.homeScore,
+          teamBScore: updatedData.awayScore,
+          events: updatedData.events || []
+        }));
+      } catch (error) {
+        console.error('Error fetching match data:', error.response ? error.response.data : error.message);
+      }
+
+    };
+
+    fetchMatchData();
+  }, [match.id]);
+  */
+  useEffect(() => {
+    const currentPermissions = permissionLogger()
+    setPermissions(currentPermissions);
+  }, []);
+
+
   
+
 
   const startTimer = () => {
     if (!timerRunning) {
@@ -223,6 +265,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
           <h3 className="font-medium mb-2">{match.homeTeam || 'Home Team'}</h3>
           <div className="text-5xl font-bold mb-2">{updatedMatch[0].homeScore || 0}</div>
           <div className="flex justify-center gap-2">
+            {permissions.canUpdate && (
             <Button
               size="sm"
               variant="outline"
@@ -230,19 +273,25 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
             >
               ⚽ Goal
             </Button>
+                )}
           </div>
         </div>
 
         <div className="text-center">
           <div className="text-5xl font-bold mb-2">{matchData.currentTime}</div>
           <div className="flex justify-center gap-2">
-            <Button
-              size="sm"
-              variant={timerRunning ? 'default' : 'outline'}
-              onClick={timerRunning ? stopTimer : startTimer}
-            >
-              {timerRunning ? <Pause /> : <Play />} {/* Use icons instead of text */}
-            </Button>
+            {permissions.canUpdate && (
+
+                <Button
+                    size="sm"
+                    variant={timerRunning ? 'default' : 'outline'}
+                    onClick={timerRunning ? stopTimer : startTimer}
+                >
+                  {timerRunning ? <Pause /> : <Play />} {/* Use icons instead of text */}
+                </Button>
+
+            )}
+
           </div>
           <div className="mt-2 text-sm text-gray-500">
             {matchData.status.replace(/_/g, ' ')}
@@ -253,13 +302,16 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
           <h3 className="font-medium mb-2">{match.awayTeam || 'Away Team'}</h3>
           <div className="text-5xl font-bold mb-2">{updatedMatch[0].awayScore || 0}</div>
           <div className="flex justify-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => addEvent('GOAL', 'B', matchData.teamBScore, match.id)}
-            >
-              ⚽ Goal
-            </Button>
+            {permissions.canUpdate && (
+
+                <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => addEvent('GOAL', 'B', matchData.teamBScore, match.id)}
+                >
+                  ⚽ Goal
+                </Button>
+            )}
           </div>
         </div>
       </div>
@@ -277,18 +329,22 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
           >
             ⚽ Goal
           </Button>
-          <Button
-            variant="destructive"
-            onClick={() => handleEventWithPlayer('YELLOW_CARD', 'A')}
+          {permissions.canUpdate && (<Button
+              variant="destructive"
+              onClick={() => handleEventWithPlayer('YELLOW_CARD', 'A')}
           >
             🟨 Yellow Card
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={() => handleEventWithPlayer('RED_CARD', 'A')}
-          >
-            🟥 Red Card
-          </Button>
+          </Button>)}
+
+          {permissions.canUpdate && (
+              <Button
+                  variant="destructive"
+                  onClick={() => handleEventWithPlayer('RED_CARD', 'A')}
+              >
+                🟥 Red Card
+              </Button>
+          )}
+
         </div>
       </div>
 
@@ -301,18 +357,21 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
           >
             ⚽ Goal
           </Button>
-          <Button
-            variant="destructive"
-            onClick={() => handleEventWithPlayer('YELLOW_CARD', 'B')}
+          {permissions.canUpdate && (<Button
+              variant="destructive"
+              onClick={() => handleEventWithPlayer('YELLOW_CARD', 'B')}
           >
             🟨 Yellow Card
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={() => handleEventWithPlayer('RED_CARD', 'B')}
-          >
-            🟥 Red Card
-          </Button>
+          </Button>)}
+
+          {permissions.canUpdate && (
+              <Button
+                  variant="destructive"
+                  onClick={() => handleEventWithPlayer('RED_CARD', 'B')}
+              >
+                🟥 Red Card
+              </Button>
+          )}
         </div>
       </div>
     </div>
