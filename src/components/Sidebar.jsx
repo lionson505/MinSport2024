@@ -85,6 +85,18 @@ const Sidebar = () => {
       moduleId: MODULE_IDS.APPOINTMENTS
     },
     {
+      title: "Appointments-Ps",
+      path: "/appointments-ps",
+      icon: CircleUser,
+      moduleId: MODULE_IDS.APPOINTMENTS
+    },
+    {
+      title: "Appointments-Ministers",
+      path: "/appointments-ministers",
+      icon: CircleUser,
+      moduleId: MODULE_IDS.APPOINTMENTS
+    },
+    {
       title: "Employee",
       path: "/employee",
       icon: UsersRound,

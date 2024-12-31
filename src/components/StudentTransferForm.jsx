@@ -1,3 +1,4 @@
+// src/components/StudentTransferForm.jsx
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../utils/axiosInstance'; // Ensure this path is correct
 import { Button } from './ui/Button';
@@ -35,7 +36,7 @@ const StudentTransferForm = ({ isLoading, isSubmitting, setIsSubmitting }) => {
     const fetchStudents = async () => {
       try {
         const response = await axiosInstance.get('/students');
-        setStudents(response.data);
+        setStudents(response.data.data); // Ensure you access the correct data structure
       } catch (error) {
         console.error('Error fetching students:', error);
         setErrorMessage('Failed to fetch students. Please try again later.');
@@ -48,8 +49,9 @@ const StudentTransferForm = ({ isLoading, isSubmitting, setIsSubmitting }) => {
 
   const validStudents = Array.isArray(students) ? students : [];
 
+  // Filter students based on the selected institution (fromSchool)
   const filteredStudents = validStudents.filter(student => {
-    return student.schoolId === parseInt(fromSchool);
+    return student.institutionId === parseInt(fromSchool);
   });
 
   const handleTransferSubmit = (e) => {
@@ -87,8 +89,8 @@ const StudentTransferForm = ({ isLoading, isSubmitting, setIsSubmitting }) => {
 
       const transferData = {
         studentId: parseInt(transferStudent),
-        fromSchool: fromSchoolData.id,
-        toSchool: toSchoolData.id,
+        fromInstitutionId: fromSchoolData.id,
+        toInstitutionId: toSchoolData.id,
         transferDate: new Date(transferDate).toISOString(),
       };
 

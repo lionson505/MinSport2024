@@ -16,7 +16,7 @@ import Message from '../components/ui/Message';
 import { useDarkMode } from '../contexts/DarkModeContext';
 import { Button } from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
-import {usePermissionLogger} from "../utils/permissionLogger.js";
+import { usePermissionLogger } from "../utils/permissionLogger.js";
 import {
   Dialog,
   DialogContent,
@@ -33,7 +33,6 @@ import { countries } from '../data/countries';
 import { gameTypes } from '../data/gameTypes';
 import { institutionTypes } from '../data/institutionTypes';
 import { classOptions } from '../data/classOptions';
-
 
 const IsongaPrograms = () => {
   const { isDarkMode } = useDarkMode();
@@ -56,31 +55,32 @@ const IsongaPrograms = () => {
   const [studentToDelete, setStudentToDelete] = useState(null);
   const [institutionToDelete, setInstitutionToDelete] = useState(null);
   const [showDeleteInstitutionModal, setShowDeleteInstitutionModal] = useState(false);
-  const  logPermissions = usePermissionLogger('isonga_programs')
- const[permissions, setPermissions] = useState({
-      canCreate: false,
-      canRead: false,
-      canUpdate: false,
-      canDelete: false
-    })
-const [studentFormData, setStudentFormData] = useState({
-  firstName: '',
-  lastName: '',
-  gender: '',
-  dateOfBirth: '',
-  placeOfBirth: '',
-  placeOfResidence: '',
-  idPassportNo: '',
-  nationality: '',
-  otherNationality: '',
-  namesOfParentsGuardian: '',
-  nameOfSchoolAcademyTrainingCenter: '',
-  typeOfSchoolAcademyTrainingCenter: '',
-  class: '',
-  typeOfGame: '',
-  contact: '',
-  institutionId: null // Add institutionId here
-});
+  const logPermissions = usePermissionLogger('isonga_programs');
+  const [permissions, setPermissions] = useState({
+    canCreate: false,
+    canRead: false,
+    canUpdate: false,
+    canDelete: false
+  });
+
+  const [studentFormData, setStudentFormData] = useState({
+    firstName: '',
+    lastName: '',
+    gender: 'MALE',
+    dateOfBirth: '2024-12-31',
+    placeOfBirth: '',
+    placeOfResidence: '',
+    idPassportNo: '',
+    nationality: '',
+    otherNationality: '',
+    namesOfParentsGuardian: '',
+    typeOfSchoolAcademyTrainingCenter: '',
+    class: '',
+    typeOfGame: '',
+    contact: '',
+    institutionId: 0
+  });
+
   const [showEditStudentModal, setShowEditStudentModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showStudentsModal, setShowStudentsModal] = useState(false);
@@ -108,7 +108,7 @@ const [studentFormData, setStudentFormData] = useState({
         console.log("perms:", permissions);
         setPrograms(programsResponse?.data || []);
         setFilteredPrograms(programsResponse?.data || []);
-        
+
         const studentData = studentsResponse?.data?.data || [];
         setStudents(studentData);
         setFilteredStudents(studentData);
@@ -171,14 +171,14 @@ const [studentFormData, setStudentFormData] = useState({
     }
 
     if (type === 'programs') {
-      const filtered = programs.filter(program => 
+      const filtered = programs.filter(program =>
         program.name?.toLowerCase().includes(searchValue.toLowerCase()) ||
         JSON.stringify(program.location)?.toLowerCase().includes(searchValue.toLowerCase()) ||
         program.category?.toLowerCase().includes(searchValue.toLowerCase())
       );
       setFilteredPrograms(filtered);
     } else if (type === 'students') {
-      const filtered = students.filter(student => 
+      const filtered = students.filter(student =>
         student.firstName?.toLowerCase().includes(searchValue.toLowerCase()) ||
         student.lastName?.toLowerCase().includes(searchValue.toLowerCase()) ||
         student.nationality?.toLowerCase().includes(searchValue.toLowerCase())
@@ -194,7 +194,7 @@ const [studentFormData, setStudentFormData] = useState({
       if (selectedInstitution) {
         // Update institution
         await axiosInstance.put(`/institutions/${selectedInstitution.id}`, institutionData);
-        const updatedPrograms = programs.map(p => 
+        const updatedPrograms = programs.map(p =>
           p.id === selectedInstitution.id ? { ...p, ...institutionData } : p
         );
         setPrograms(updatedPrograms);
@@ -219,19 +219,19 @@ const [studentFormData, setStudentFormData] = useState({
     setStudentFormData({
       firstName: '',
       lastName: '',
-      gender: '',
-      dateOfBirth: '',
+      gender: 'MALE',
+      dateOfBirth: '2024-12-31',
       placeOfBirth: '',
       placeOfResidence: '',
       idPassportNo: '',
       nationality: '',
       otherNationality: '',
       namesOfParentsGuardian: '',
-      nameOfSchoolAcademyTrainingCenter: '',
       typeOfSchoolAcademyTrainingCenter: '',
       class: '',
       typeOfGame: '',
-      contact: ''
+      contact: '',
+      institutionId: 0
     });
     setSelectedStudent(null);
     setShowStudentModal(true);
@@ -257,7 +257,7 @@ const [studentFormData, setStudentFormData] = useState({
       const response = await axiosInstance.get('/students');
       setStudents(response?.data?.data || []);
       setFilteredStudents(response?.data?.data || []);
-      
+
       toast.success('Student deleted successfully');
       setShowDeleteStudentModal(false);
     } catch (error) {
@@ -279,24 +279,29 @@ const [studentFormData, setStudentFormData] = useState({
     e.preventDefault();
     setIsSubmitting(true);
     try {
+      const formData = {
+        ...studentFormData,
+        institutionId: parseInt(studentFormData.institutionId, 10) // Ensure institutionId is an integer
+      };
+  
       if (selectedStudent) {
-        const { photo_passport, transfers, ...updateData } = studentFormData;
+        const { photo_passport, transfers, ...updateData } = formData;
         await axiosInstance.put(`/students/${selectedStudent.id}`, updateData);
-        
+  
         // Fetch fresh data after update
         const response = await axiosInstance.get('/students');
         setStudents(response?.data?.data || []);
         setFilteredStudents(response?.data?.data || []);
-        
+  
         toast.success('Student updated successfully');
       } else {
-        await axiosInstance.post('/students', studentFormData);
-        
+        await axiosInstance.post('/students', formData);
+  
         // Fetch fresh data after creation
         const response = await axiosInstance.get('/students');
         setStudents(response?.data?.data || []);
         setFilteredStudents(response?.data?.data || []);
-        
+  
         toast.success('Student added successfully');
       }
       setShowStudentModal(false);
@@ -306,7 +311,7 @@ const [studentFormData, setStudentFormData] = useState({
       setIsSubmitting(false);
     }
   };
-
+  
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentPrograms = Array.isArray(filteredPrograms) ? filteredPrograms.slice(indexOfFirstItem, indexOfLastItem) : [];
@@ -326,9 +331,9 @@ const [studentFormData, setStudentFormData] = useState({
         return (
           <div className="transition-all duration-300 ease-in-out">
             {permissions.canCreate && (<Button
-                onClick={handleAddInstitution}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
-                disabled={isSubmitting}
+              onClick={handleAddInstitution}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
+              disabled={isSubmitting}
             >
               <Plus className="h-5 w-5" />
               <span>Add Institution</span>
@@ -337,14 +342,6 @@ const [studentFormData, setStudentFormData] = useState({
             <div className="space-y-6">
               {/* Search and Entries Section */}
               <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
-                {/* <Button
-                  onClick={handleAddInstitution}
-                  className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add Institution
-                </Button> */}
-
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-gray-600">Show entries:</span>
@@ -375,65 +372,59 @@ const [studentFormData, setStudentFormData] = useState({
 
               {/* Table */}
               <div className={`rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow'}`}>
-                <PrintButton title='Instutitions Report'>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="min-w-[200px] text-xs">Name</TableHead>
-                      <TableHead className="min-w-[150px] text-xs">Domain</TableHead>
-                      <TableHead className="min-w-[150px] text-xs">Category</TableHead>
-                      {/* <TableHead className="min-w-[200px] text-xs">Location</TableHead> */}
-                      {/* <TableHead className="min-w-[150px] text-xs">Legal Rep.</TableHead> */}
-                      <TableHead className="w-[150px] text-xs">Operation</TableHead>
-                    </TableRow>
-                  </TableHeader>  
-                  <TableBody>
-                    {currentPrograms.map((program) => (
-                      <TableRow key={program.id}>
-                        <TableCell className="text-xs font-medium">{program.name}</TableCell>
-                        <TableCell className="text-xs">{program.domain}</TableCell>
-                        <TableCell className="text-xs">{program.category}</TableCell>
-                        {/* <TableCell className="text-xs"> */}
-                          {/* {`${program.location_province}, ${program.location_district}`} */}
-                        {/* </TableCell> */}
-                        {/* <TableCell className="text-xs">{program.legalRepresentativeName}</TableCell> */}
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => handleViewDetails(program)}
-                              className="p-1 rounded-lg hover:bg-gray-100"
-                              title="View Details"
-                            >
-                              <Eye className="h-4 w-4" />
-                            </button>
-                            {permissions.canUpdate && (<button
+                <PrintButton title='Institutions Report'>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="min-w-[200px] text-xs">Name</TableHead>
+                        <TableHead className="min-w-[150px] text-xs">Domain</TableHead>
+                        <TableHead className="min-w-[150px] text-xs">Category</TableHead>
+                        <TableHead className="w-[150px] text-xs">Operation</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {currentPrograms.map((program) => (
+                        <TableRow key={program.id}>
+                          <TableCell className="text-xs font-medium">{program.name}</TableCell>
+                          <TableCell className="text-xs">{program.domain}</TableCell>
+                          <TableCell className="text-xs">{program.category}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleViewDetails(program)}
+                                className="p-1 rounded-lg hover:bg-gray-100"
+                                title="View Details"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </button>
+                              {permissions.canUpdate && (<button
                                 onClick={() => handleEditInstitution(program)}
                                 className="p-1 rounded-lg hover:bg-gray-100"
                                 title="Edit"
-                            >
-                              <Pencil className="h-4 w-4"/>
-                            </button>)}
-                            {permissions.canDelete && (<button
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </button>)}
+                              {permissions.canDelete && (<button
                                 onClick={() => handleDeleteInstitution(program)}
                                 className="p-1 rounded-lg hover:bg-red-50 text-red-600"
                                 title="Delete"
-                            >
-                              <Trash2 className="h-4 w-4"/>
-                            </button>)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>)}
 
-                            <button
+                              <button
                                 onClick={() => handleViewStudents(program)}
                                 className="p-1 rounded-lg hover:bg-gray-100"
                                 title="View Students"
-                            >
-                              <Users className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                              >
+                                <Users className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </PrintButton>
               </div>
             </div>
@@ -447,13 +438,12 @@ const [studentFormData, setStudentFormData] = useState({
               {/* Search and Entries Section */}
               <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
                 {permissions.canCreate && (<Button
-                    onClick={handleAddStudent}
-                    className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+                  onClick={handleAddStudent}
+                  className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
                 >
                   <Plus className="h-4 w-4" />
                   Add Student
                 </Button>)}
-
 
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
@@ -486,75 +476,56 @@ const [studentFormData, setStudentFormData] = useState({
               {/* Students Table */}
               <div className={`rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow'}`}>
                 <PrintButton title='Students Report'>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="min-w-[150px] text-xs">First Name</TableHead>
-                      <TableHead className="min-w-[150px] text-xs">Last Name</TableHead>
-                      <TableHead className="min-w-[80px] text-xs">Gender</TableHead>
-                      {/* <TableHead className="min-w-[120px] text-xs">Date of Birth</TableHead> */}
-                      {/* <TableHead className="min-w-[150px] text-xs">Place of Birth</TableHead> */}
-                      {/* <TableHead className="min-w-[150px] text-xs">Place of Residence</TableHead> */}
-                      {/* <TableHead className="min-w-[150px] text-xs">ID/Passport No</TableHead> */}
-                      {/* <TableHead className="min-w-[100px] text-xs">Nationality</TableHead>
-                      <TableHead className="min-w-[150px] text-xs">Other Nationality</TableHead>
-                      <TableHead className="min-w-[200px] text-xs">Parents/Guardian Names</TableHead>
-                      <TableHead className="min-w-[200px] text-xs">School/Academy/Center</TableHead>
-                      <TableHead className="min-w-[150px] text-xs">Type of Institution</TableHead> */}
-                      <TableHead className="min-w-[80px] text-xs">Class</TableHead>
-                      <TableHead className="min-w-[100px] text-xs">Game Type</TableHead>
-                      <TableHead className="min-w-[150px] text-xs">Contact</TableHead>
-                      <TableHead className="w-[150px] text-xs">Operation</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {currentStudents.map((student) => (
-                      <TableRow key={student.id}>
-                        <TableCell className="text-xs font-medium">{student.firstName}</TableCell>
-                        <TableCell className="text-xs">{student.lastName}</TableCell>
-                        <TableCell className="text-xs">{student.gender}</TableCell>
-                        {/* <TableCell className="text-xs">{student.dateOfBirth}</TableCell> */}
-                        {/* <TableCell className="text-xs">{student.placeOfBirth}</TableCell> */}
-                        {/* <TableCell className="text-xs">{student.placeOfResidence}</TableCell> */}
-                        {/* <TableCell className="text-xs">{student.idPassportNo}</TableCell> */}
-                        {/* <TableCell className="text-xs">{student.nationality}</TableCell>
-                        <TableCell className="text-xs">{student.otherNationality}</TableCell>
-                        <TableCell className="text-xs">{student.namesOfParentsGuardian}</TableCell>
-                        <TableCell className="text-xs">{student.nameOfSchoolAcademyTrainingCenter}</TableCell>
-                        <TableCell className="text-xs">{student.typeOfSchoolAcademyTrainingCenter}</TableCell> */}
-                        <TableCell className="text-xs">{student.class}</TableCell>
-                        <TableCell className="text-xs">{student.typeOfGame}</TableCell>
-                        <TableCell className="text-xs">{student.contact}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => handleViewStudentDetails(student)}
-                              className="p-1 rounded-lg hover:bg-gray-100"
-                              title="View Details"
-                            >
-                              <Eye className="h-4 w-4" />
-                            </button>
-                            {permissions.canUpdate && (<button
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="min-w-[150px] text-xs">First Name</TableHead>
+                        <TableHead className="min-w-[150px] text-xs">Last Name</TableHead>
+                        <TableHead className="min-w-[80px] text-xs">Gender</TableHead>
+                        <TableHead className="min-w-[80px] text-xs">Class</TableHead>
+                        <TableHead className="min-w-[100px] text-xs">Game Type</TableHead>
+                        <TableHead className="min-w-[150px] text-xs">Contact</TableHead>
+                        <TableHead className="w-[150px] text-xs">Operation</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {currentStudents.map((student) => (
+                        <TableRow key={student.id}>
+                          <TableCell className="text-xs font-medium">{student.firstName}</TableCell>
+                          <TableCell className="text-xs">{student.lastName}</TableCell>
+                          <TableCell className="text-xs">{student.gender}</TableCell>
+                          <TableCell className="text-xs">{student.class}</TableCell>
+                          <TableCell className="text-xs">{student.typeOfGame}</TableCell>
+                          <TableCell className="text-xs">{student.contact}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleViewStudentDetails(student)}
+                                className="p-1 rounded-lg hover:bg-gray-100"
+                                title="View Details"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </button>
+                              {permissions.canUpdate && (<button
                                 onClick={() => handleEditStudent(student)}
                                 className="p-1 rounded-lg hover:bg-gray-100"
                                 title="Edit"
-                            >
-                              <Pencil className="h-4 w-4"/>
-                            </button>)}
-                            {permissions.canDelete && (<button
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </button>)}
+                              {permissions.canDelete && (<button
                                 onClick={() => handleDeleteStudent(student)}
                                 className="p-1 rounded-lg hover:bg-red-50 text-red-600"
                                 title="Delete"
-                            >
-                              <Trash2 className="h-4 w-4"/>
-                            </button>)}
-
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>)}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </PrintButton>
               </div>
             </div>
@@ -580,11 +551,11 @@ const [studentFormData, setStudentFormData] = useState({
   const handleNIDLookup = async (id, type) => {
     setIsLoadingNIDA(true);
     setIdError('');
-    
+
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
+
       // Mock response
       const mockData = {
         firstName: 'John',
@@ -600,7 +571,7 @@ const [studentFormData, setStudentFormData] = useState({
           village: 'Nyagatovu'
         }
       };
-      
+
       setNidaData(mockData);
     } catch (error) {
       setIdError('Failed to verify ID. Please try again.');
@@ -643,7 +614,6 @@ const [studentFormData, setStudentFormData] = useState({
         <h1 className={`text-2xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
           Isonga Programs
         </h1>
-
       </div>
 
       {/* Navigation Tabs */}
@@ -653,8 +623,8 @@ const [studentFormData, setStudentFormData] = useState({
             <button
               key={tab}
               className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                activeTab === tab 
-                  ? 'bg-blue-600 text-white shadow-sm' 
+                activeTab === tab
+                  ? 'bg-blue-600 text-white shadow-sm'
                   : isDarkMode
                     ? 'text-gray-300 hover:bg-gray-800'
                     : 'text-gray-500 hover:bg-gray-100'
@@ -677,7 +647,6 @@ const [studentFormData, setStudentFormData] = useState({
         isOpen={showInstitutionModal}
         onClose={() => setShowInstitutionModal(false)}
         title={selectedInstitution ? "Edit Institution" : "Add Institution"}
-        // style={{ maxWidth: '1000px', width: '200%', margin: '0 auto' }}
       >
         <InstitutionForm
           institution={selectedInstitution}
@@ -733,238 +702,219 @@ const [studentFormData, setStudentFormData] = useState({
         onClose={() => setShowStudentModal(false)}
         title={selectedStudent ? "Edit Student" : "Add Student"}
       >
-       <form onSubmit={handleSubmitStudentForm} className="max-h-[70vh] overflow-y-auto pr-4 space-y-6">
-  <div className="grid grid-cols-1 gap-4"> {/* Change grid-cols-2 to grid-cols-1 */}
-    <div>
-      <label className="block text-sm font-medium mb-1">First Name</label>
-      <input
-        type="text"
-        name="firstName"
-        value={studentFormData.firstName}
-        onChange={handleFormChange}
-        className="w-full border rounded-lg px-3 py-2"
-        required
-      />
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">Last Name</label>
-      <input
-        type="text"
-        name="lastName"
-        value={studentFormData.lastName}
-        onChange={handleFormChange}
-        className="w-full border rounded-lg px-3 py-2"
-        required
-      />
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">Gender</label>
-      <select
-        name="gender"
-        value={studentFormData.gender}
-        onChange={handleFormChange}
-        className="w-full border rounded-lg px-3 py-2"
-        required
-      >
-        <option value="">Select Gender</option>
-        <option value="MALE">Male</option>
-        <option value="FEMALE">Female</option>
-      </select>
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">Date of Birth</label>
-      <input
-        type="date"
-        name="dateOfBirth"
-        value={studentFormData.dateOfBirth}
-        onChange={handleFormChange}
-        className="w-full border rounded-lg px-3 py-2"
-        required
-      />
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">Place of Birth</label>
-      <input
-        type="text"
-        name="placeOfBirth"
-        value={studentFormData.placeOfBirth}
-        onChange={handleFormChange}
-        className="w-full border rounded-lg px-3 py-2"
-        required
-      />
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">Place of Residence</label>
-      <input
-        type="text"
-        name="placeOfResidence"
-        value={studentFormData.placeOfResidence}
-        onChange={handleFormChange}
-        className="w-full border rounded-lg px-3 py-2"
-        required
-      />
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">ID/Passport No</label>
-      <input
-        type="text"
-        name="idPassportNo"
-        value={studentFormData.idPassportNo}
-        onChange={handleFormChange}
-        className="w-full border rounded-lg px-3 py-2"
-        required
-      />
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">Nationality</label>
-      <select
-        name="nationality"
-        value={studentFormData.nationality}
-        onChange={handleFormChange}
-        className="w-full border rounded-lg px-3 py-2"
-        required
-      >
-        <option value="">Select Nationality</option>
-        {countries.map((country) => (
-          <option key={country} value={country}>{country}</option>
-        ))}
-      </select>
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">Other Nationality</label>
-      <select
-        name="otherNationality"
-        value={studentFormData.otherNationality}
-        onChange={handleFormChange}
-        className="w-full border rounded-lg px-3 py-2"
-      >
-        <option value="">Select Other Nationality (Optional)</option>
-        {countries.map((country) => (
-          <option key={country} value={country}>{country}</option>
-        ))}
-      </select>
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">Parents/Guardian Names</label>
-      <input
-        type="text"
-        name="namesOfParentsGuardian"
-        value={studentFormData.namesOfParentsGuardian}
-        onChange={handleFormChange}
-        className="w-full border rounded-lg px-3 py-2"
-        required
-      />
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">School/Academy/Center</label>
-      <select
-        name="nameOfSchoolAcademyTrainingCenter"
-        value={studentFormData.nameOfSchoolAcademyTrainingCenter}
-        onChange={handleFormChange}
-        className="w-full border rounded-lg px-3 py-2"
-        required
-      >
-        <option value="">Select Institution</option>
-        {programs.map((institution) => (
-          <option key={institution.id} value={institution.name}>
-            {institution.name}
-          </option>
-        ))}
-      </select>
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">Type of Institution</label>
-      <select
-        name="typeOfSchoolAcademyTrainingCenter"
-        value={studentFormData.typeOfSchoolAcademyTrainingCenter}
-        onChange={handleFormChange}
-        className="w-full border rounded-lg px-3 py-2"
-        required
-      >
-        <option value="">Select Institution Type</option>
-        {institutionTypes.map((type) => (
-          <option key={type} value={type}>{type}</option>
-        ))}
-      </select>
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">Class</label>
-      <select
-        name="class"
-        value={studentFormData.class}
-        onChange={handleFormChange}
-        className="w-full border rounded-lg px-3 py-2"
-        required
-      >
-        <option value="">Select Class</option>
-        {classOptions.map((classOption) => (
-          <option key={classOption} value={classOption}>{classOption}</option>
-        ))}
-      </select>
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">Game Type</label>
-      <select
-        name="typeOfGame"
-        value={studentFormData.typeOfGame}
-        onChange={handleFormChange}
-        className="w-full border rounded-lg px-3 py-2"
-        required
-      >
-        <option value="">Select Game Type</option>
-        {gameTypes.map((game) => (
-          <option key={game} value={game}>{game}</option>
-        ))}
-      </select>
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">Contact</label>
-      <input
-        type="text"
-        name="contact"
-        value={studentFormData.contact}
-        onChange={handleFormChange}
-        className="w-full border rounded-lg px-3 py-2"
-        required
-      />
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">Institution</label>
-      <select
-        name="institutionId"
-        value={studentFormData.institutionId}
-        onChange={handleFormChange}
-        className="w-full border rounded-lg px-3 py-2"
-        required
-      >
-        <option value="">Select Institution</option>
-        {programs.map((institution) => (
-          <option key={institution.id} value={institution.id}>
-            {institution.name}
-          </option>
-        ))}
-      </select>
-    </div>
-  </div>
+        <form onSubmit={handleSubmitStudentForm} className="max-h-[70vh] overflow-y-auto pr-4 space-y-6">
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">First Name</label>
+              <input
+                type="text"
+                name="firstName"
+                value={studentFormData.firstName}
+                onChange={handleFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Last Name</label>
+              <input
+                type="text"
+                name="lastName"
+                value={studentFormData.lastName}
+                onChange={handleFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Gender</label>
+              <select
+                name="gender"
+                value={studentFormData.gender}
+                onChange={handleFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+              >
+                <option value="MALE">Male</option>
+                <option value="FEMALE">Female</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Date of Birth</label>
+              <input
+                type="date"
+                name="dateOfBirth"
+                value={studentFormData.dateOfBirth}
+                onChange={handleFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Place of Birth</label>
+              <input
+                type="text"
+                name="placeOfBirth"
+                value={studentFormData.placeOfBirth}
+                onChange={handleFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Place of Residence</label>
+              <input
+                type="text"
+                name="placeOfResidence"
+                value={studentFormData.placeOfResidence}
+                onChange={handleFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">ID/Passport No</label>
+              <input
+                type="text"
+                name="idPassportNo"
+                value={studentFormData.idPassportNo}
+                onChange={handleFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Nationality</label>
+              <select
+                name="nationality"
+                value={studentFormData.nationality}
+                onChange={handleFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+              >
+                <option value="">Select Nationality</option>
+                {countries.map((country) => (
+                  <option key={country} value={country}>{country}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Other Nationality</label>
+              <select
+                name="otherNationality"
+                value={studentFormData.otherNationality}
+                onChange={handleFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+              >
+                <option value="">Select Other Nationality (Optional)</option>
+                {countries.map((country) => (
+                  <option key={country} value={country}>{country}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Parents/Guardian Names</label>
+              <input
+                type="text"
+                name="namesOfParentsGuardian"
+                value={studentFormData.namesOfParentsGuardian}
+                onChange={handleFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Type of Institution</label>
+              <select
+                name="typeOfSchoolAcademyTrainingCenter"
+                value={studentFormData.typeOfSchoolAcademyTrainingCenter}
+                onChange={handleFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+              >
+                <option value="">Select Institution Type</option>
+                {institutionTypes.map((type) => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Class</label>
+              <select
+                name="class"
+                value={studentFormData.class}
+                onChange={handleFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+              >
+                <option value="">Select Class</option>
+                {classOptions.map((classOption) => (
+                  <option key={classOption} value={classOption}>{classOption}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Game Type</label>
+              <select
+                name="typeOfGame"
+                value={studentFormData.typeOfGame}
+                onChange={handleFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+              >
+                <option value="">Select Game Type</option>
+                {gameTypes.map((game) => (
+                  <option key={game} value={game}>{game}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Contact</label>
+              <input
+                type="text"
+                name="contact"
+                value={studentFormData.contact}
+                onChange={handleFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Institution</label>
+              <select
+                name="institutionId"
+                value={studentFormData.institutionId}
+                onChange={handleFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+              >
+                <option value="">Select Institution</option>
+                {programs.map((institution) => (
+                  <option key={institution.id} value={institution.id}>
+                    {institution.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
 
-  <div className="flex justify-end gap-3 pt-4 border-t">
-    <Button
-      type="button"
-      variant="outline"
-      onClick={() => setShowStudentModal(false)}
-    >
-      Cancel
-    </Button>
-    <Button
-      type="submit"
-      className="bg-blue-600 hover:bg-blue-700 text-white"
-      disabled={isSubmitting}
-    >
-      {selectedStudent ? 'Save Changes' : 'Add Student'}
-    </Button>
-  </div>
-</form>
-
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowStudentModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+              disabled={isSubmitting}
+            >
+              {selectedStudent ? 'Save Changes' : 'Add Student'}
+            </Button>
+          </div>
+        </form>
       </Modal>
 
       {/* Delete Student Confirmation Dialog */}
@@ -1014,9 +964,9 @@ const [studentFormData, setStudentFormData] = useState({
             <DialogTitle className="text-xl font-bold flex items-center justify-between">
               {selectedStudent ? 'Student Details' : 'Institution Details'}
               <div className="flex items-center gap-4">
-                <Button 
-                  onClick={() => window.print()} 
-                  variant="outline" 
+                <Button
+                  onClick={() => window.print()}
+                  variant="outline"
                   className="flex items-center gap-2"
                 >
                   <Printer className="h-4 w-4" />
@@ -1025,15 +975,15 @@ const [studentFormData, setStudentFormData] = useState({
               </div>
             </DialogTitle>
           </DialogHeader>
-          
+
           {selectedStudent ? (
             <div className="space-y-6 py-4">
               {/* Photo Section */}
               <div className="flex justify-center">
                 {selectedStudent.photo_passport ? (
-                  <img 
-                    src={selectedStudent.photo_passport} 
-                    alt="Student" 
+                  <img
+                    src={selectedStudent.photo_passport}
+                    alt="Student"
                     className="w-32 h-32 rounded-full object-cover border-2 border-gray-200"
                   />
                 ) : (
@@ -1042,6 +992,7 @@ const [studentFormData, setStudentFormData] = useState({
                   </div>
                 )}
               </div>
+
 
               {/* Personal Information Section */}
               <div>

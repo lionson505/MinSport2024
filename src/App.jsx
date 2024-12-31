@@ -204,6 +204,14 @@ function App() {
                           <ProtectedRoute moduleId={MODULE_IDS.APPOINTMENTS}>
                             <Appointments />
                           </ProtectedRoute>
+                        } /> <Route path="/appointments-ministers" element={
+                          <ProtectedRoute moduleId={MODULE_IDS.APPOINTMENTS}>
+                            <Appointments />
+                          </ProtectedRoute>
+                        } /> <Route path="/appointments-ps" element={
+                          <ProtectedRoute moduleId={MODULE_IDS.APPOINTMENTS}>
+                            <Appointments />
+                          </ProtectedRoute>
                         } />
                         <Route path="/employee" element={
                           <ProtectedRoute moduleId={MODULE_IDS.EMPLOYEE}>
