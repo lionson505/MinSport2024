@@ -88,13 +88,13 @@ const Sidebar = () => {
       title: "Appointments-Ps",
       path: "/appointments-ps",
       icon: CircleUser,
-      moduleId: MODULE_IDS.APPOINTMENTS
+      moduleId: MODULE_IDS.APPOINTMENT_MINISTER
     },
     {
       title: "Appointments-Ministers",
       path: "/appointments-ministers",
       icon: CircleUser,
-      moduleId: MODULE_IDS.APPOINTMENTS
+      moduleId: MODULE_IDS.APPOINTMEN_PS
     },
     {
       title: "Employee",

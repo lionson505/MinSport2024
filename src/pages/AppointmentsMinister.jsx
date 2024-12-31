@@ -1,9 +1,10 @@
+'use client'
 
 import React, { useEffect, useState, Fragment } from "react";
 import axiosInstance from "../utils/axiosInstance";
 import { Dialog, Transition } from "@headlessui/react";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
 import { Search, Calendar, Eye, Trash2, Check, X } from 'lucide-react';
 import AddAppointmentForm from "../components/forms/AddAppointmentForm";
 import PrintButton from "../components/reusable/Print";
@@ -54,7 +55,7 @@ function MinisterAppointments() {
         request_date: '',
         request_time: ''
     });
-    const logPermission = usePermissionLogger('appointments')
+    const logPermission = usePermissionLogger('appointment_minister')
     const [permissions, setPermissions] = useState({
         canCreate: false,
         canRead: false,
@@ -66,7 +67,7 @@ function MinisterAppointments() {
         setIsLoading(true);
         try {
             const response = await axiosInstance.get("/appointments", {
-                params: { page: currentPage, person_to_meet: "minister" },
+                params: { page: currentPage },
             });
             setAppointments(response.data);
         } catch (error) {
@@ -225,9 +226,10 @@ function MinisterAppointments() {
     const filteredAppointments = appointments.filter(appointment => {
         const searchLower = searchTerm.toLowerCase();
         return (
-            appointment.names.toLowerCase().includes(searchLower) ||
-            appointment.purpose.toLowerCase().includes(searchLower) ||
-            appointment.institution.toLowerCase().includes(searchLower)
+            appointment.person_to_meet.toLowerCase() === "minister" &&
+            (appointment.names.toLowerCase().includes(searchLower) ||
+                appointment.purpose.toLowerCase().includes(searchLower) ||
+                appointment.institution.toLowerCase().includes(searchLower))
         );
     });
 
@@ -249,7 +251,7 @@ function MinisterAppointments() {
                     />
                     <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 </div>
-                <Button onClick={() => setAddModalOpen(true)}>Add Appointment</Button>
+                {permissions.canCreate && <Button onClick={() => setAddModalOpen(true)}>Add Appointment</Button>}
             </div>
 
             <div className="bg-white rounded-lg shadow">
@@ -309,30 +311,38 @@ function MinisterAppointments() {
                                     <button onClick={() => handleView(appointment)}>
                                         <Eye className="h-4 w-4" />
                                     </button>
-                                    <button onClick={() => {
-                                        setSelectedAppointment(appointment);
-                                        setIsApproveModalOpen(true);
-                                    }}>
-                                        <Check className="h-4 w-4 text-green-600" />
-                                    </button>
-                                    <button onClick={() => {
-                                        setSelectedAppointment(appointment);
-                                        setIsRejectModalOpen(true);
-                                    }}>
-                                        <X className="h-4 w-4 text-red-600" />
-                                    </button>
-                                    <button
-                                        className="text-yellow-600 text-sm hover:underline"
-                                        onClick={() => handleReschedule(appointment)}
-                                    >
-                                        <Calendar className="h-4 w-4 mr-1" />
-                                    </button>
-                                    <button
-                                        className="text-red-600 text-sm hover:underline"
-                                        onClick={() => handleDelete(appointment)}
-                                    >
-                                        <Trash2 className="h-4 w-4 mr-1" />
-                                    </button>
+                                    {permissions.canUpdate && (
+                                        <>
+                                            <button onClick={() => {
+                                                setSelectedAppointment(appointment);
+                                                setIsApproveModalOpen(true);
+                                            }}>
+                                                <Check className="h-4 w-4 text-green-600" />
+                                            </button>
+                                            <button onClick={() => {
+                                                setSelectedAppointment(appointment);
+                                                setIsRejectModalOpen(true);
+                                            }}>
+                                                <X className="h-4 w-4 text-red-600" />
+                                            </button>
+                                        </>
+                                    )}
+                                    {permissions.canUpdate && (
+                                        <button
+                                            className="text-yellow-600 text-sm hover:underline"
+                                            onClick={() => handleReschedule(appointment)}
+                                        >
+                                            <Calendar className="h-4 w-4 mr-1" />
+                                        </button>
+                                    )}
+                                    {permissions.canDelete && (
+                                        <button
+                                            className="text-red-600 text-sm hover:underline"
+                                            onClick={() => handleDelete(appointment)}
+                                        >
+                                            <Trash2 className="h-4 w-4 mr-1" />
+                                        </button>
+                                    )}
                                 </td>
                             </tr>
                         ))}

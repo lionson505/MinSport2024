@@ -182,6 +182,11 @@ function App() {
                             <Academies />
                           </ProtectedRoute>
                         } />
+                        <Route path="/appointments-ministers" element={
+                          <ProtectedRoute moduleId={MODULE_IDS.APPOINTMENT_MINISTER}>
+                            <MinisterAppointments />
+                          </ProtectedRoute>
+                        } />
                         <Route path="/infrastructure" element={
                           <ProtectedRoute moduleId={MODULE_IDS.INFRASTRUCTURE}>
                             <Infrastructure />
@@ -202,16 +207,16 @@ function App() {
                             <Contracts />
                           </ProtectedRoute>
                         } />
-                        {/*<Route path="/appointments" element={*/}
-                        {/*  <ProtectedRoute moduleId={MODULE_IDS.APPOINTMENTS}>*/}
-                        {/*    <Appointments />*/}
-                        {/*  </ProtectedRoute>*/}
-                        } /> <Route path="/appointments-ministers" element={
-                          <ProtectedRoute moduleId={MODULE_IDS.APPOINTMENTS_MINISTER}>
-                            <MinisterAppointments />
-                          </ProtectedRoute>
-                        } /> <Route path="/appointments-ps" element={
-                          <ProtectedRoute moduleId={MODULE_IDS.APPOINTMENTS_PS}>
+
+                        <Route path="/appointments" element={
+                          <ProtectedRoute moduleId={MODULE_IDS.APPOINTMENTS}>
+                           <Appointments />
+                         </ProtectedRoute>
+                        } />
+
+
+                        <Route path="/appointments-ps" element={
+                          <ProtectedRoute moduleId={MODULE_IDS.APPOINTMEN_PS}>
                             <PSAppointments/>
                           </ProtectedRoute>
                         } />

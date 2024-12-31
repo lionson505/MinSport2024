@@ -54,7 +54,7 @@ function PSAppointments() {
         request_date: '',
         request_time: ''
     });
-    const logPermission = usePermissionLogger('appointments')
+    const logPermission = usePermissionLogger('appointmen_ps')
     const [permissions, setPermissions] = useState({
         canCreate: false,
         canRead: false,
@@ -66,7 +66,7 @@ function PSAppointments() {
         setIsLoading(true);
         try {
             const response = await axiosInstance.get("/appointments", {
-                params: { page: currentPage, person_to_meet: "ps" },
+                params: { page: currentPage },
             });
             setAppointments(response.data);
         } catch (error) {
@@ -225,9 +225,10 @@ function PSAppointments() {
     const filteredAppointments = appointments.filter(appointment => {
         const searchLower = searchTerm.toLowerCase();
         return (
-            appointment.names.toLowerCase().includes(searchLower) ||
-            appointment.purpose.toLowerCase().includes(searchLower) ||
-            appointment.institution.toLowerCase().includes(searchLower)
+            appointment.person_to_meet.toLowerCase() === "ps" &&
+            (appointment.names.toLowerCase().includes(searchLower) ||
+                appointment.purpose.toLowerCase().includes(searchLower) ||
+                appointment.institution.toLowerCase().includes(searchLower))
         );
     });
 
@@ -249,7 +250,7 @@ function PSAppointments() {
                     />
                     <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 </div>
-                <Button onClick={() => setAddModalOpen(true)}>Add Appointment</Button>
+                {permissions.canCreate && <Button onClick={() => setAddModalOpen(true)}>Add Appointment</Button>}
             </div>
 
             <div className="bg-white rounded-lg shadow">
@@ -309,30 +310,38 @@ function PSAppointments() {
                                     <button onClick={() => handleView(appointment)}>
                                         <Eye className="h-4 w-4" />
                                     </button>
-                                    <button onClick={() => {
-                                        setSelectedAppointment(appointment);
-                                        setIsApproveModalOpen(true);
-                                    }}>
-                                        <Check className="h-4 w-4 text-green-600" />
-                                    </button>
-                                    <button onClick={() => {
-                                        setSelectedAppointment(appointment);
-                                        setIsRejectModalOpen(true);
-                                    }}>
-                                        <X className="h-4 w-4 text-red-600" />
-                                    </button>
-                                    <button
-                                        className="text-yellow-600 text-sm hover:underline"
-                                        onClick={() => handleReschedule(appointment)}
-                                    >
-                                        <Calendar className="h-4 w-4 mr-1" />
-                                    </button>
-                                    <button
-                                        className="text-red-600 text-sm hover:underline"
-                                        onClick={() => handleDelete(appointment)}
-                                    >
-                                        <Trash2 className="h-4 w-4 mr-1" />
-                                    </button>
+                                    {permissions.canUpdate && (
+                                        <>
+                                            <button onClick={() => {
+                                                setSelectedAppointment(appointment);
+                                                setIsApproveModalOpen(true);
+                                            }}>
+                                                <Check className="h-4 w-4 text-green-600" />
+                                            </button>
+                                            <button onClick={() => {
+                                                setSelectedAppointment(appointment);
+                                                setIsRejectModalOpen(true);
+                                            }}>
+                                                <X className="h-4 w-4 text-red-600" />
+                                            </button>
+                                        </>
+                                    )}
+                                    {permissions.canUpdate && (
+                                        <button
+                                            className="text-yellow-600 text-sm hover:underline"
+                                            onClick={() => handleReschedule(appointment)}
+                                        >
+                                            <Calendar className="h-4 w-4 mr-1" />
+                                        </button>
+                                    )}
+                                    {permissions.canDelete && (
+                                        <button
+                                            className="text-red-600 text-sm hover:underline"
+                                            onClick={() => handleDelete(appointment)}
+                                        >
+                                            <Trash2 className="h-4 w-4 mr-1" />
+                                        </button>
+                                    )}
                                 </td>
                             </tr>
                         ))}
