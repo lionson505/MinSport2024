@@ -18,6 +18,7 @@ import axiosInstance from '../../utils/axiosInstance';
 import { Dialog, Transition } from '@headlessui/react';
 import EditEventModal from '../../components/tourism/EditEventModal'; // Import the EditEventModal component
 import PrintButton from '../reusable/Print';
+import { usePermissionLogger } from '../../utils/permissionLogger.js';
 
 const TourismEventsList = () => {
   const [events, setEvents] = useState([]);
@@ -36,12 +37,23 @@ const TourismEventsList = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false); // State for edit modal
   const [selectedEvent, setSelectedEvent] = useState(null);
   const itemsPerPage = 10;
+  const logPermissions = usePermissionLogger('sports_tourism')
+  const [permissions, setPermissions] = useState({
+    canCreate: false,
+    canRead: false,
+    canUpdate: false,
+    canDelete: false
+  })
 
   const statuses = ['Upcoming', 'Ongoing', 'Completed', 'Cancelled'];
 
   useEffect(() => {
     const fetchEvents = async () => {
+      const currentPermissions = logPermissions();
+      setPermissions(currentPermissions);
+      console.log("perms:", permissions)
       try {
+
         const response = await axiosInstance.get('/sports-tourism-events');
         setEvents(response.data || []);
       } catch (error) {
@@ -211,29 +223,34 @@ const TourismEventsList = () => {
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      title="Edit"
-                      onClick={() => {
-                        setSelectedEvent(event);
-                        setIsEditModalOpen(true);
-                      }}
+                    {permissions.canUpdate && (<Button
+                        size="sm"
+                        variant="ghost"
+                        title="Edit"
+                        onClick={() => {
+                          setSelectedEvent(event);
+                          setIsEditModalOpen(true);
+                        }}
                     >
                       <Pencil className="h-4 w-4 text-black" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="text-red-600"
-                      title="Delete"
-                      onClick={() => {
-                        setSelectedEvent(event);
-                        setIsDeleteModalOpen(true);
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    </Button>)}
+                    {
+                      permissions.canDelete && (
+                            <Button
+                                size="sm"
+                                variant="ghost"
+                                className="text-red-600"
+                                title="Delete"
+                                onClick={() => {
+                                  setSelectedEvent(event);
+                                  setIsDeleteModalOpen(true);
+                                }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                        )
+                    }
+
                     <Button
                       size="sm"
                       variant="ghost"

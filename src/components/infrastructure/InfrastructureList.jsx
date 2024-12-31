@@ -33,6 +33,7 @@ const InfrastructureList = () => {
     province: '',
     district: ''
   });
+
   const logPermissions = usePermissionLogger('infrastructure')
   const [permissions, setPermissions] = useState({
     canCreate: false,
@@ -100,6 +101,7 @@ const InfrastructureList = () => {
     try {
       const response = await axiosInstance.get('/infrastructures');
       setInfrastructures(response.data);
+
       // toast.success('Infrastructure list loaded', {
         // description: `Successfully loaded ${response.data.length} infrastructures`
       // }
@@ -571,7 +573,8 @@ const InfrastructureList = () => {
                     <Button size="sm" variant="ghost" title="View Details" onClick={() => openViewModal(infra)}>
                       <Eye className="h-4 w-4" />
                     </Button>
-                    {permissions.canUpdate && (<Button size="sm" variant="ghost" title="Edit" onClick={() => openEditModal(infra)}>
+                    {permissions.canUpdate &&
+                        (<Button size="sm" variant="ghost" title="Edit" onClick={() => openEditModal(infra)}>
                       <Pencil className="h-4 w-4" />
                     </Button>)}
                     {permissions.canDelete && (

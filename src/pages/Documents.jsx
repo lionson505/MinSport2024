@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { AlertCircle } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import PrintButton from '../components/reusable/Print';
+import { usePermissionLogger } from '../utils/permissionLogger.js';
 
 function Documents() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -26,8 +27,18 @@ function Documents() {
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [updateStatusModalOpen, setUpdateStatusModalOpen] = useState(false);
   const [documentToUpdate, setDocumentToUpdate] = useState(null);
+  const logPermissions = usePermissionLogger('documents')
+  const [permissions, setPermissions] = useState({
+    canCreate: false,
+    canRead: false,
+    canUpdate: false,
+    canDelete: false
+  })
 
   useEffect(() => {
+    const currentPermissions = logPermissions();
+    setPermissions(currentPermissions);
+    console.log("perms:", permissions)
     const fetchDocuments = async () => {
       try {
         const response = await axiosInstance.get('/documents');
@@ -150,13 +161,16 @@ function Documents() {
           />
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
         </div>
-        <Button
-          onClick={() => setIsAddModalOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Document
-        </Button>
+        {permissions.canCreate && (
+            <Button
+                onClick={() => setIsAddModalOpen(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Document
+            </Button>
+        )}
+
       </div>
 
       <div className="bg-white rounded-lg shadow overflow-x-auto">
@@ -191,18 +205,26 @@ function Documents() {
                     <Button size="sm" variant="ghost" onClick={() => handleViewDocument(doc)}>
                       <Eye className="h-4 w-4" />
                     </Button>
-                    <Button size="sm" variant="ghost" onClick={() => handleDownload(doc)}>
-                      <Download className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={() => handleEditDocument(doc)}>
-                      <Edit className="h-4 w-4 text-blue-600" />
-                    </Button>
+                    {/*<Button size="sm" variant="ghost" onClick={() => handleDownload(doc)}>*/}
+                    {/*  <Download className="h-4 w-4" />*/}
+                    {/*</Button>*/}
+                    {permissions.canUpdate && (
+                        <Button size="sm" variant="ghost" onClick={() => handleEditDocument(doc)}>
+                          <Edit className="h-4 w-4 text-blue-600" />
+                        </Button>
+                    )}
+
                     <Button size="sm" variant="ghost" onClick={() => handleUpdateStatus(doc)}>
                       <RefreshCw className="h-4 w-4 text-blue-600" />
                     </Button>
-                    <Button size="sm" variant="ghost" onClick={() => handleDelete(doc)}>
-                      <Trash className="h-4 w-4 text-red-600" />
-                    </Button>
+                    {
+                      permissions.canDelete && (
+                            <Button size="sm" variant="ghost" onClick={() => handleDelete(doc)}>
+                              <Trash className="h-4 w-4 text-red-600" />
+                            </Button>
+                        )
+                    }
+
                   </div>
                 </td>
               </tr>

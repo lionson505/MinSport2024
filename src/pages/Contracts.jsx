@@ -9,6 +9,7 @@ import axiosInstance from '../utils/axiosInstance';
 import AddContractModal from '../components/AddContractModal';
 import EditContractModal from '../components/EditContractModal';
 import PrintButton from "../components/reusable/Print";
+import {usePermissionLogger} from "../utils/permissionLogger.js";
 
 function Contracts() {
   const [contracts, setContracts] = useState([]);
@@ -21,9 +22,17 @@ function Contracts() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedContract, setSelectedContract] = useState(null);
-
+  const logPermissions = usePermissionLogger('contracts')
+  const [permissions, setPermissions] = useState({
+    canCreate: false,
+    canRead: false,
+    canUpdate: false,
+    canDelete: false
+  })
   // Fetch contracts from API
   useEffect(() => {
+    const currentPermissions = logPermissions();
+    setPermissions(currentPermissions);
     const fetchContracts = async () => {
       try {
         const response = await axiosInstance.get('/contracts');
@@ -229,15 +238,20 @@ function Contracts() {
   // Update the actions renderer to display icons horizontally
   const renderActions = (contract) => (
     <div className="flex items-center space-x-1">
+
       <Button size="icon" variant="ghost" onClick={() => handleView(contract)}>
         <Eye className="h-4 w-4" />
       </Button>
-      <Button size="icon" variant="ghost" onClick={() => handleEdit(contract)}>
-        <Pencil className="h-4 w-4" />
-      </Button>
-      <Button size="icon" variant="ghost" onClick={() => handleDelete(contract)}>
+      {permissions.canUpdate && (
+          <Button size="icon" variant="ghost" onClick={() => handleEdit(contract)}>
+            <Pencil className="h-4 w-4" />
+          </Button>
+      )}
+
+      {permissions.canDelete && (<Button size="icon" variant="ghost" onClick={() => handleDelete(contract)}>
         <Trash2 className="h-4 w-4 text-red-500" />
-      </Button>
+      </Button>)}
+
       <Button
         size="icon"
         variant="ghost"
@@ -262,13 +276,17 @@ function Contracts() {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-64"
           />
-          <Button
-            onClick={() => setIsAddModalOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Contract
-          </Button>
+          {permissions.canCreate && (
+              <Button
+                  onClick={() => setIsAddModalOpen(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Contract
+              </Button>
+
+          )}
+
         </div>
 
         {/* Contracts Table */}

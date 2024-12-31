@@ -9,16 +9,27 @@ import AddEventModal from '../components/tourism/AddEventModal';
 import { useDarkMode } from '../contexts/DarkModeContext';
 import CategoryManagementModal from '../components/tourism/CategoryManagementModal';
 import axiosInstance from '../utils/axiosInstance';
+import { usePermissionLogger } from '../utils/permissionLogger.js';
 
 const SportsTourism = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [activeTab, setActiveTab] = useState('list');
   const { isDarkMode } = useDarkMode();
+  const logPermissions = usePermissionLogger('sports_tourism')
+  const [permissions, setPermissions] = useState({
+    canCreate: false,
+    canRead: false,
+    canUpdate: false,
+    canDelete: false
+  })
   const [events, setEvents] = useState([]);
-  console.log('eventsss:', events)
+  console.log('events:', events)
 
   useEffect(() => {
+    const currentPermissions = logPermissions();
+    setPermissions(currentPermissions);
+    console.log("perms:", permissions)
     // Fetch events data using axiosInstance
     const fetchEvents = async () => {
       try {
@@ -44,19 +55,20 @@ const SportsTourism = () => {
           </p>
         </div>
         <div className="flex gap-3">
-          <Button
-            variant="outline"
-            onClick={() => setShowCategoryModal(true)}
+          {permissions.canUpdate && (<Button
+              variant="outline"
+              onClick={() => setShowCategoryModal(true)}
           >
             Manage Categories
-          </Button>
-          <Button
-            onClick={() => setShowAddModal(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+          </Button>)}
+          {permissions.canCreate && (<Button
+              onClick={() => setShowAddModal(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             <Plus className="h-5 w-5 mr-2" />
             Add Event
-          </Button>
+          </Button>)}
+
         </div>
       </div>
 
