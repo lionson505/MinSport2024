@@ -76,10 +76,13 @@ function PSAppointments() {
             setIsLoading(false);
         }
     };
+    const fetchPermissions = async ()=> {
+        const currentPermissions =await logPermission();
+        await setPermissions(currentPermissions);
+    }
 
     useEffect(() => {
-        const permissions = logPermission()
-        setPermissions(permissions)
+        fetchPermissions();
         fetchAppointments();
     }, [currentPage]);
 

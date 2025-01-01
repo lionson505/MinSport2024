@@ -40,9 +40,12 @@ function SportsForAll() {
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [sportToView, setSportToView] = useState(null);
 
+  const fetchPermissions = async ()=> {
+    const currentPermissions =await logPermissions();
+    await setPermissions(currentPermissions);
+  }
   useEffect(() => {
-    const permissionss = logPermissions()
-    setPermissions(permissionss);
+    fetchPermissions();
     const fetchSportsData = async () => {
       try {
         setLoading(true);

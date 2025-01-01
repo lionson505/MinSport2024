@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 import axiosInstance from '../../utils/axiosInstance';
 import { Button } from '../../components/ui/Button';
 import { Eye, EyeOff } from 'lucide-react';
+import {secureStorage} from "../../utils/crypto.js";
 
 
 // Debug logging helper
@@ -14,9 +15,10 @@ const debugLog = (label, data) => {
 };
 
 // Simplified storage helper
-const storeValue = (key, value) => {
+const storeValue =async (key, value) => {
   try {
-    localStorage.setItem(key, typeof value === 'object' ? JSON.stringify(value) : value);
+
+    await  secureStorage.setItem(key, typeof value === 'object' ? JSON.stringify(value) : value);
     debugLog(`Stored ${key}`, value);
   } catch (error) {
     console.error(`Error storing ${key}:`, error);
@@ -36,9 +38,10 @@ const fetchPermissions = async (groupId) => {
   }
 };
 
-const getStoredPermissions = () => {
+const getStoredPermissions = async () => {
   try {
-    const perms = localStorage.getItem('permissions');
+    // const perms = localStorage.getItem('permissions');
+    await secureStorage.getItem('permissions')
     const parsedPerms = perms ? JSON.parse(perms) : [];
     debugLog('Retrieved stored permissions', parsedPerms);
     return parsedPerms;
@@ -166,12 +169,13 @@ export default function Login() {
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    const userId = localStorage.getItem('tempUserId');
+
+    const userId =  await secureStorage.getItem('tempUserId');
     debugLog('OTP verification attempt', { userId, otp });
 
     try {
       const response = await axiosInstance.post('/auth/verify-otp', {
-        userId: userId,
+        userId: String(userId),
         otp: otp
       });
       debugLog('OTP Verification API Response', response.data);
@@ -181,7 +185,7 @@ export default function Login() {
         localStorage.removeItem('tempUserId');
 
         // Store user session data directly
-        await storeValue('token', response.data.token);
+        localStorage.setItem('token', response.data.token);
         await storeValue('user', response.data.user);
         await storeValue('userRole', response.data.user.userGroup.name);
         await storeValue('userId', response.data.user.id);

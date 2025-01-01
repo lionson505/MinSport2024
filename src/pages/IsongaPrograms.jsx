@@ -103,8 +103,8 @@ const IsongaPrograms = () => {
           axiosInstance.get('/students'),
           // axiosInstance.get('/schools') // Assuming there's an endpoint for schools
         ]);
-        const currentPermissions = logPermissions();
-        setPermissions(currentPermissions);
+        const currentPermissions = await logPermissions();
+        await setPermissions(currentPermissions);
         console.log("perms:", permissions);
         setPrograms(programsResponse?.data || []);
         setFilteredPrograms(programsResponse?.data || []);

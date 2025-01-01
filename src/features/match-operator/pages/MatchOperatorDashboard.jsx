@@ -37,10 +37,13 @@ export function MatchOperatorDashboard() {
     checkMatchAvailability
   } = useMatchOperator();
 
+  const fetchPermissions = async ()=> {
+    const currentPermissions =await permissionsLog();
+    await setPermissions(currentPermissions);
+  }
 
   useEffect(() => {
-    const permissions = permissionsLog()
-    setPermissions(permissions)
+    fetchPermissions();
   }, []);
   const handleMatchClick = async (match) => {
     try {

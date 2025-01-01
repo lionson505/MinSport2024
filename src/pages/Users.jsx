@@ -80,9 +80,13 @@ function Users() {
     }
   };
 
+  const fetchPermissions = async ()=> {
+    const currentPermissions =await logPermissions();
+    await setPermissions(currentPermissions);
+  }
+
   useEffect(() => {
-    const currentPermissions = logPermissions();
-    setPermissions(currentPermissions);
+    fetchPermissions();
     fetchData();
   }, []);
 

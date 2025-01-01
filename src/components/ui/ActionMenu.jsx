@@ -12,6 +12,13 @@ const ActionMenu = ({ onEdit, onDelete, onDownload }) => {
         canUpdate: false,
         canDelete: false
     });
+    const fetchAndSetPermissions = async (moduleName)=> {
+        const perms = await usePermissionLogger(moduleName)
+        const currentPermissions = await perms()
+        await setPermissions(currentPermissions)
+
+    };
+
 
     const getCurrentLocation = () => {
         const fullUrl = window.location.href;
@@ -21,24 +28,22 @@ const ActionMenu = ({ onEdit, onDelete, onDownload }) => {
         console.log("Current Location:", lastSegment);
     };
 
+
     useEffect(() => {
         getCurrentLocation();
     }, []);
 
     useEffect(() => {
         if (currentLocation === "trainings") {
-            const logPermissions = usePermissionLogger("trainings");
-            const currentPermissions = logPermissions();
-            setPermissions(currentPermissions);
+            fetchAndSetPermissions("trainings");
         } else if (currentLocation === "federations") {
-            const logPermissions = usePermissionLogger("federations");
-            const currentPermissions = logPermissions();
-            setPermissions(currentPermissions);
+            // const logPermissions = usePermissionLogger("federations");
+            // const currentPermissions = logPermissions();
+            // setPermissions(currentPermissions);
+            fetchAndSetPermissions("federations");
         }
         else if (currentLocation === "partners") {
-        const logPermissions = usePermissionLogger("federations");
-        const currentPermissions = logPermissions();
-        setPermissions(currentPermissions);
+            fetchAndSetPermissions("partner");
     }
 
     }, [currentLocation]);

@@ -89,10 +89,15 @@ const InfrastructureList = () => {
     'Southern': ['Huye', 'Gisagara', 'Nyanza', 'Nyaruguru', 'Muhanga', 'Ruhango', 'Kamonyi']
   };
 
-  useEffect(() => {
-    const currentPermissions = logPermissions();
-    setPermissions(currentPermissions);
+  const fetchPermissions = async ()=>{
+    const currentPermissions =await logPermissions();
+    await setPermissions(currentPermissions);
     console.log("perms:", permissions)
+  }
+
+  useEffect(() => {
+
+      fetchPermissions();
     fetchInfrastructures();
     fetchCategories();
   }, []);

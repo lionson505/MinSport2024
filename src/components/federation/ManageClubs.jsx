@@ -59,10 +59,14 @@ const ManageClubs = ({ onAdd, onEdit, onDelete, federations, isLoading, actionIc
     }
   };
 
+
+  const fetchPermissions = async ()=> {
+    const currentPermissions =await logPermissions();
+    await setPermissions(currentPermissions);
+  }
+
   useEffect(() => {
-    const currentPermissions = logPermissions();
-    setPermissions(currentPermissions);
-    console.log("perms:", permissions)
+    fetchPermissions()
     fetchClubsAndFederations();
   }, []);
 

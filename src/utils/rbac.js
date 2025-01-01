@@ -1,3 +1,4 @@
+import {secureStorage} from "./crypto.js";
 
 export const MODULES = {
     DASHBOARD: 'dashboard',
@@ -31,9 +32,10 @@ export const fetchPermissions = async (groupId) => {
     }
 };
 
-export const getStoredPermissions = () => {
+export const getStoredPermissions = async () => {
     try {
-        const perms = localStorage.getItem('permissions');
+        // const perms = localStorage.getItem('permissions');
+        const perms =  await secureStorage.getItem('permissions')
         return perms ? JSON.parse(perms) : [];
     } catch (error) {
         console.error('Error getting stored permissions:', error);
@@ -41,9 +43,10 @@ export const getStoredPermissions = () => {
     }
 };
 
-export const storePermissions = (permissions) => {
+export const storePermissions = async (permissions) => {
     try {
-        localStorage.setItem('permissions', JSON.stringify(permissions));
+        await secureStorage.setItem('permissions', JSON.stringify(permissions));
+        // localStorage.setItem('permissions', JSON.stringify(permissions));
     } catch (error) {
         console.error('Error storing permissions:', error);
     }

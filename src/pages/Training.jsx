@@ -68,15 +68,16 @@ const Training = () => {
 
     fetchData();
   }, []);
-
+  const fetchPermissions = async ()=> {
+    const currentPermissions =await logPermissions();
+    await setPermissions(currentPermissions);
+  }
   // Filter trainings based on search query
   useEffect(() => {
     const filtered = trainings.filter((training) =>
       training.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
-    const currentPermissions = logPermissions();
-    setPermissions(currentPermissions);
-    console.log("perms:", permissions);
+    fetchPermissions()
     setFilteredTrainings(filtered);
     setCurrentPage(1);
   }, [searchQuery, trainings]);

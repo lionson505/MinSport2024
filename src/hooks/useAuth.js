@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import axios from 'axios';
+import {secureStorage} from "../utils/crypto.js";
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://mis.minisports.gov.rw/api';
 
@@ -55,7 +56,7 @@ export function useAuth() {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
       // Fetch user data using the stored user ID
-      const storedUser = JSON.parse(localStorage.getItem('user'));
+      const storedUser = await secureStorage.getItem('user');
       if (storedUser && storedUser.id) {
         const response = await axios.get(`${API_URL}/users/${storedUser.id}`);
         setUser(response.data);
@@ -76,6 +77,8 @@ export function useAuth() {
   const logout = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.clear();
+    secureStorage.clear();
     delete axios.defaults.headers.common['Authorization'];
     setUser(null);
   }, []);
@@ -86,7 +89,7 @@ export function useAuth() {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          const storedUser = JSON.parse(localStorage.getItem('user'));
+          const storedUser = await secureStorage.getItem('user');
 
           if (storedUser && storedUser.id) {
             setUser(storedUser); // Use the user data from localStorage
@@ -96,7 +99,7 @@ export function useAuth() {
             await fetchUser();
           }
         } catch (error) {
-          console.error('Error initializing user:', error);
+          console.error('Error initializing user:', error.data);
         }
       }
     };

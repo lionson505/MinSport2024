@@ -71,9 +71,14 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
     fetchMatchData();
   }, [match.id]);
   */
+  const fetchPermissions = async ()=> {
+    const currentPermissions =await permissionLogger();
+    await setPermissions(currentPermissions);
+  }
+
+
   useEffect(() => {
-    const currentPermissions = permissionLogger()
-    setPermissions(currentPermissions);
+    fetchPermissions();
   }, []);
 
 
@@ -210,50 +215,52 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
 
   const renderMatchControls = () => (
     <div className="bg-white p-4 rounded-lg border mb-4">
-      <div className="flex items-center justify-between">
-        <div className="space-x-2">
-          <Button
-            size="sm"
-            variant={matchData.status === 'FIRST_HALF' ? 'default' : 'outline'}
-            onClick={() => handlePeriodChange('FIRST_HALF')}
-          >
-            1st Half
-          </Button>
-          <Button
-            size="sm"
-            variant={matchData.status === 'HALF_TIME' ? 'default' : 'outline'}
-            onClick={() => handlePeriodChange('HALF_TIME')}
-          >
-            Half Time
-          </Button>
-          <Button
-            size="sm"
-            variant={matchData.status === 'SECOND_HALF' ? 'default' : 'outline'}
-            onClick={() => handlePeriodChange('SECOND_HALF')}
-          >
-            2nd Half
-          </Button>
-          <Button
-            size="sm"
-            variant={matchData.status === 'FULL_TIME' ? 'default' : 'outline'}
-            onClick={() => handlePeriodChange('FULL_TIME')}
-          >
-            Full Time
-          </Button>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Added Time:</span>
-          <Input
-            type="number"
-            min="0"
-            max="15"
-            value={matchData.addedTime}
-            onChange={(e) => handleAddedTime(parseInt(e.target.value, 10))}
-            className="w-16"
-          />
-          <span className="text-sm">min</span>
-        </div>
-      </div>
+      {permissions.canUpdate && (
+          <div className="flex items-center justify-between">
+            <div className="space-x-2">
+              <Button
+                  size="sm"
+                  variant={matchData.status === 'FIRST_HALF' ? 'default' : 'outline'}
+                  onClick={() => handlePeriodChange('FIRST_HALF')}
+              >
+                1st Half
+              </Button>
+              <Button
+                  size="sm"
+                  variant={matchData.status === 'HALF_TIME' ? 'default' : 'outline'}
+                  onClick={() => handlePeriodChange('HALF_TIME')}
+              >
+                Half Time
+              </Button>
+              <Button
+                  size="sm"
+                  variant={matchData.status === 'SECOND_HALF' ? 'default' : 'outline'}
+                  onClick={() => handlePeriodChange('SECOND_HALF')}
+              >
+                2nd Half
+              </Button>
+              <Button
+                  size="sm"
+                  variant={matchData.status === 'FULL_TIME' ? 'default' : 'outline'}
+                  onClick={() => handlePeriodChange('FULL_TIME')}
+              >
+                Full Time
+              </Button>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">Added Time:</span>
+              <Input
+                  type="number"
+                  min="0"
+                  max="15"
+                  value={matchData.addedTime}
+                  onChange={(e) => handleAddedTime(parseInt(e.target.value, 10))}
+                  className="w-16"
+              />
+              <span className="text-sm">min</span>
+            </div>
+          </div>
+      )}
     </div>
   );
   // console.log('home score : ', updatedMatch[0])
@@ -265,15 +272,15 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
           <h3 className="font-medium mb-2">{match.homeTeam || 'Home Team'}</h3>
           <div className="text-5xl font-bold mb-2">{updatedMatch[0].homeScore || 0}</div>
           <div className="flex justify-center gap-2">
-            {permissions.canUpdate && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => addEvent('GOAL', 'A', matchData.teamAScore, match.id)}
-            >
-              ⚽ Goal
-            </Button>
-                )}
+            {/*{permissions.canUpdate && (*/}
+            {/*<Button*/}
+            {/*  size="sm"*/}
+            {/*  variant="outline"*/}
+            {/*  onClick={() => addEvent('GOAL', 'A', matchData.teamAScore, match.id)}*/}
+            {/*>*/}
+            {/*  ⚽ Goal*/}
+            {/*</Button>*/}
+                {/*)}*/}
           </div>
         </div>
 
@@ -302,16 +309,16 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
           <h3 className="font-medium mb-2">{match.awayTeam || 'Away Team'}</h3>
           <div className="text-5xl font-bold mb-2">{updatedMatch[0].awayScore || 0}</div>
           <div className="flex justify-center gap-2">
-            {permissions.canUpdate && (
+            {/*{permissions.canUpdate && (*/}
 
-                <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => addEvent('GOAL', 'B', matchData.teamBScore, match.id)}
-                >
-                  ⚽ Goal
-                </Button>
-            )}
+            {/*    <Button*/}
+            {/*        size="sm"*/}
+            {/*        variant="outline"*/}
+            {/*        onClick={() => addEvent('GOAL', 'B', matchData.teamBScore, match.id)}*/}
+            {/*    >*/}
+            {/*      ⚽ Goal*/}
+            {/*    </Button>*/}
+            {/*)}*/}
           </div>
         </div>
       </div>
@@ -319,86 +326,96 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
   );
 
   const renderControls = () => (
+
     <div className="grid grid-cols-2 gap-6 mb-6">
+
       <div className="space-y-4">
-        <h3 className="font-medium">{match.homeTeam || 'Home Team'} Controls</h3>
-        <div className="grid grid-cols-2 gap-2">
-          <Button
-            onClick={() => handleEventWithPlayer('GOAL', 'A', matchData.teamAScore, match.id)}
-            className="w-full col-span-2"
-          >
-            ⚽ Goal
-          </Button>
-          {permissions.canUpdate && (<Button
-              variant="destructive"
-              onClick={() => handleEventWithPlayer('YELLOW_CARD', 'A')}
-          >
-            🟨 Yellow Card
-          </Button>)}
+        {permissions.canUpdate  && (
+            <>
+              <h3 className="font-medium">{match.homeTeam || 'Home Team'} Controls</h3>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                    onClick={() => handleEventWithPlayer('GOAL', 'A', matchData.teamAScore, match.id)}
+                    className="w-full col-span-2"
+                >
+                  ⚽ Goal
+                </Button>
 
-          {permissions.canUpdate && (
-              <Button
-                  variant="destructive"
-                  onClick={() => handleEventWithPlayer('RED_CARD', 'A')}
-              >
-                🟥 Red Card
-              </Button>
-          )}
+                {permissions.canUpdate && (<Button
+                    variant="destructive"
+                    onClick={() => handleEventWithPlayer('YELLOW_CARD', 'A')}
+                >
+                  🟨 Yellow Card
+                </Button>)}
 
-        </div>
+                {permissions.canUpdate && (
+                    <Button
+                        variant="destructive"
+                        onClick={() => handleEventWithPlayer('RED_CARD', 'A')}
+                    >
+                      🟥 Red Card
+                    </Button>
+                )}
+
+              </div>
+            </>
+        )}
+
       </div>
 
       <div className="space-y-4">
-        <h3 className="font-medium">{match.awayTeam || 'Away Team'} Controls</h3>
-        <div className="grid grid-cols-2 gap-2">
-          <Button
-            onClick={() => handleEventWithPlayer('GOAL', 'B')}
-            className="w-full col-span-2"
-          >
-            ⚽ Goal
-          </Button>
-          {permissions.canUpdate && (<Button
-              variant="destructive"
-              onClick={() => handleEventWithPlayer('YELLOW_CARD', 'B')}
-          >
-            🟨 Yellow Card
-          </Button>)}
+        {permissions.canUpdate && (<> <h3 className="font-medium">{match.awayTeam || 'Away Team'} Controls</h3>
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+                onClick={() => handleEventWithPlayer('GOAL', 'B')}
+                className="w-full col-span-2"
+            >
+              ⚽ Goal
+            </Button>
+            {permissions.canUpdate && (<Button
+                variant="destructive"
+                onClick={() => handleEventWithPlayer('YELLOW_CARD', 'B')}
+            >
+              🟨 Yellow Card
+            </Button>)}
 
-          {permissions.canUpdate && (
-              <Button
-                  variant="destructive"
-                  onClick={() => handleEventWithPlayer('RED_CARD', 'B')}
-              >
-                🟥 Red Card
-              </Button>
-          )}
-        </div>
+            {permissions.canUpdate && (
+                <Button
+                    variant="destructive"
+                    onClick={() => handleEventWithPlayer('RED_CARD', 'B')}
+                >
+                  🟥 Red Card
+                </Button>
+            )}
+          </div>
+        </>)}
+
       </div>
     </div>
   );
 
   const renderEvents = () => (
-    <div className="bg-white rounded-lg border">
-      <div className="p-4 border-b flex justify-between items-center">
-        <h3 className="font-medium">Match Events</h3>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => setShowPlayerStats(true)}
-        >
-          <Users className="w-4 h-4 mr-2" />
-          Player Stats
-        </Button>
-      </div>
-      <div className="p-4">
-        {matchData.events.length === 0 ? (
-          <div className="text-center text-gray-500 py-4">
-            No events recorded yet
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {matchData.events.map((event, index) => (
-              <div key={index} className="flex items-center justify-between py-2 border-b last:border-0">
+      <div className="bg-white rounded-lg border">
+        <div className="p-4 border-b flex justify-between items-center">
+          <h3 className="font-medium">Match Events</h3>
+          <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowPlayerStats(true)}
+          >
+            <Users className="w-4 h-4 mr-2"/>
+            Player Stats
+          </Button>
+        </div>
+        <div className="p-4">
+          {matchData.events.length === 0 ? (
+              <div className="text-center text-gray-500 py-4">
+                No events recorded yet
+              </div>
+          ) : (
+              <div className="space-y-2">
+                {matchData.events.map((event, index) => (
+                    <div key={index} className="flex items-center justify-between py-2 border-b last:border-0">
                 <div className="flex items-center gap-2">
                   {event.type === 'GOAL' && '⚽'}
                   {event.type === 'YELLOW_CARD' && '🟨'}

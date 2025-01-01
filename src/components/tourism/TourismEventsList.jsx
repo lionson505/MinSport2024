@@ -49,8 +49,8 @@ const TourismEventsList = () => {
 
   useEffect(() => {
     const fetchEvents = async () => {
-      const currentPermissions = logPermissions();
-      setPermissions(currentPermissions);
+      const currentPermissions =await logPermissions();
+      await setPermissions(currentPermissions);
       console.log("perms:", permissions)
       try {
 

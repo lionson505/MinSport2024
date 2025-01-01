@@ -55,10 +55,14 @@ const SportsProfessionals = () => {
   const [viewingDiscipline, setViewingDiscipline] = useState(null);
   const [viewingFunction, setViewingFunction] = useState(null);
 
+
+  const fetchPermissions = async ()=> {
+    const currentPermissions =await logPermissions();
+    await setPermissions(currentPermissions);
+  }
+
   useEffect(() => {
-    const currentPermissions = logPermissions();
-    setPermissions(currentPermissions);
-    console.log("perms:", permissions);
+    fetchPermissions();
     const fetchDisciplines = async () => {
       try {
 
