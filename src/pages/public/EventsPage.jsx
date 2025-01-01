@@ -13,6 +13,7 @@ import { format } from 'date-fns';
 import { Loader2, MapPin, Calendar, Clock, Trophy, ClipboardList, Radio } from 'lucide-react';
 import PublicLayout from '../../components/layouts/PublicLayout';
 import useFetchSportEvents from '../../utils/fetchSportEvents';
+import axiosInstance from '../../utils/axiosInstance';
 
 function EventsPage() {
   // const [events, setEvents] = useState([]);
@@ -64,7 +65,19 @@ function EventsPage() {
 
   console.log('here is event : ',  events.id)
 
-  const renderEventCard = (event) => (
+  // const renderEventCard = (event) => (
+    
+    const renderEventCard = (event) => {
+      const dateOnly = event.startDate
+        ? new Date(event.startDate).toISOString().split('T')[0]
+        : 'N/A';
+    
+      const timeOnly = event.startDate
+        ? new Date(event.startDate).toISOString().split('T')[1].split('.')[0]
+        : 'N/A';
+        console.log('event banner :', event.banner);
+      return (
+
     <div
       key={event.id}
       className="relative group cursor-pointer"
@@ -72,7 +85,11 @@ function EventsPage() {
      >
       <div className="relative overflow-hidden rounded-lg">
         <img
-          src={event.image}
+          // For a single event
+          src={`${import.meta.env.VITE_API_URL || 'https://mis.minisports.gov.rw/api'}${event.banner}`}
+
+          // // For selectedEvent in modal
+          // src={`${import.meta.env.VITE_API_URL || 'https://mis.minisports.gov.rw/api'}${selectedEvent.banner}`}
           alt={event.title}
           className="w-full aspect-[3/4] object-cover transition-transform duration-300 group-hover:scale-110"
         />
@@ -92,7 +109,7 @@ function EventsPage() {
             <circle cx="12" cy="12" r="10" />
             <path d="M12 6v6l4 2" />
           </svg>
-          {event.time}
+          {timeOnly}
         </div>
 
         {/* Text content */}
@@ -104,6 +121,7 @@ function EventsPage() {
       </div>
     </div>
   );
+};
 
   const renderEventDetails = () => {
     if (!selectedEvent) return null;
