@@ -25,7 +25,7 @@ export function useAuth() {
       localStorage.setItem('token', token);
 
       // Store user data in localStorage
-      localStorage.setItem('user', JSON.stringify(userData));
+      await secureStorage.setItem('user', JSON.stringify(userData));
 
       // Attach token to Axios default headers
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -58,8 +58,9 @@ export function useAuth() {
       // Fetch user data using the stored user ID
       const storedUser = await secureStorage.getItem('user');
       if (storedUser && storedUser.id) {
-        const response = await axios.get(`${API_URL}/users/${storedUser.id}`);
-        setUser(response.data);
+        // const response = await axiosAsync.get();
+        const response = await axiosInstance.get(`/users/${storedUser.id}`)
+        await setUser(response.data);
 
         return response.data;
       } else {
@@ -92,12 +93,13 @@ export function useAuth() {
           const storedUser = await secureStorage.getItem('user');
 
           if (storedUser && storedUser.id) {
-            setUser(storedUser); // Use the user data from localStorage
-            await fetchUser();
-          } else {
-            // If user data is not in localStorage, try fetching it
+            await setUser(storedUser); // Use the user data from localStorage
             await fetchUser();
           }
+          // else {
+          //   // If user data is not in localStorage, try fetching it
+          //   await fetchUser();
+          // }
         } catch (error) {
           console.error('Error initializing user:', error.data);
         }

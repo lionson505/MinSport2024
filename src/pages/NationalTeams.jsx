@@ -543,18 +543,7 @@ function NationalTeams() {
               </div>
             </div>
 
-            {permissions.canCreate && (
-                <div className="bg-red-500  ">THIS SAYS I HAVE CREATE PERMISSIONS</div>
-            )}
-            {permissions.canDelete && (
-                <div className="bg-amber-300  ">THIS SAYS I HAVE CREATE PERMISSIONS</div>
-            )}
-            {permissions.canRead && (
-                <div className="bg-black text-white  ">THIS SAYS I HAVE CREATE PERMISSIONS</div>
-            )}
-            {permissions.canUpdate && (
-                <div className="bg-green-800  ">THIS SAYS I HAVE CREATE PERMISSIONS</div>
-            )}
+
             <div className="bg-white rounded-lg shadow overflow-x-auto">
               <PrintButton title='TEAM MANAGEMENT REPORT'>
                 <table className="w-full">
