@@ -49,8 +49,8 @@ const TourismEventsList = () => {
 
   useEffect(() => {
     const fetchEvents = async () => {
-      const currentPermissions = logPermissions();
-      setPermissions(currentPermissions);
+      const currentPermissions =await logPermissions();
+      await setPermissions(currentPermissions);
       console.log("perms:", permissions)
       try {
 
@@ -303,7 +303,7 @@ const TourismEventsList = () => {
                 {/* Banner Section */}
                 {selectedEvent?.banner ? (
                   <div className="mb-4">
-                    {console.log('Banner full path:', `${axiosInstance.defaults.baseURL}/uploads/banners/${selectedEvent.banner}`)}
+                    {console.log('Banner full path:', `${axiosInstance.defaults.baseURL}/uploads/banners/${selectedEvent[7]?.banner}`)}
                     <img 
                       src={`${axiosInstance.defaults.baseURL}/${selectedEvent.banner}`} 
                       alt="Event Banner" 

@@ -49,11 +49,12 @@ function Academies() {
 
   const totalPages = Math.ceil(academies.length / entriesPerPage);
   const studentTotalPages = Math.ceil(students.length / entriesPerPage);
-
+  const fetchPermissions = async ()=> {
+    const currentPermissions =await logPermissions();
+    await setPermissions(currentPermissions);
+  }
   useEffect(() => {
-    const currentPermissions = logPermissions();
-    setPermissions(currentPermissions);
-    console.log("perms:", permissions)
+    fetchPermissions();
     fetchAcademies();
     fetchStudents();
   }, []);

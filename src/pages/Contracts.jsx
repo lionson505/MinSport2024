@@ -29,10 +29,13 @@ function Contracts() {
     canUpdate: false,
     canDelete: false
   })
+  const fetchPermissions = async ()=> {
+    const currentPermissions =await logPermissions();
+    await setPermissions(currentPermissions);
+  }
   // Fetch contracts from API
   useEffect(() => {
-    const currentPermissions = logPermissions();
-    setPermissions(currentPermissions);
+    fetchPermissions();
     const fetchContracts = async () => {
       try {
         const response = await axiosInstance.get('/contracts');

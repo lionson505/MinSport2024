@@ -37,10 +37,13 @@ export function MatchOperatorDashboard() {
     checkMatchAvailability
   } = useMatchOperator();
 
+  const fetchPermissions = async ()=> {
+    const currentPermissions =await permissionsLog();
+    await setPermissions(currentPermissions);
+  }
 
   useEffect(() => {
-    const permissions = permissionsLog()
-    setPermissions(permissions)
+    fetchPermissions();
   }, []);
   const handleMatchClick = async (match) => {
     try {
@@ -176,7 +179,7 @@ export function MatchOperatorDashboard() {
                     key={currentMatch.id}
                     className="bg-white p-4 rounded-lg shadow cursor-pointer hover:shadow-md transition-shadow"
                     onClick={() => handleMatchClick(currentMatch)}
-                  >
+                   >
                     <div className="flex justify-between items-center mb-4">
                       <div>
                         <span className="text-sm font-medium text-gray-500">

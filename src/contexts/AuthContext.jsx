@@ -196,6 +196,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../utils/axiosInstance';
+import {secureStorage} from "../utils/crypto.js";
 
 const AuthContext = createContext();
 
@@ -206,7 +207,7 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUser = async () => {
     try {
-      const storedUser =  localStorage.getItem('user');
+      const storedUser = await secureStorage.getItem('user');
       if (storedUser) {
         const parsedUser = await JSON.parse(storedUser);
         await setUser(parsedUser);
@@ -223,7 +224,8 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await axiosInstance.get(`/permissions/groups/${groupId}`);
       const permissions = response.data;
-      localStorage.setItem('permissions', JSON.stringify(permissions));
+      // localStorage.setItem('permissions', JSON.stringify(permissions));
+      await secureStorage.setItem('permissions', JSON.stringify(permissions));
       console.log('Permissions set in localStorage:', permissions);
     } catch (error) {
       console.error('Failed to fetch permissions:', error);
@@ -231,7 +233,12 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (userData) => {
-    localStorage.setItem('user', JSON.stringify(userData));
+    // localStorage.setItem('user', JSON.stringify(userData));
+    await secureStorage.setItem('user', JSON.stringify(userData));
+    // localStorage.setItem('token', userData.token);
+    // await secureStorage.setItem('token', userData.token);
+    setUser(userData);
+    await fetchPermissions(userData.userGroup.id);
     localStorage.setItem('token', userData.token);
     setUser(userData);
     await fetchPermissions(userData.userGroup.id);
@@ -241,15 +248,20 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     localStorage.removeItem('permissions');
+    secureStorage.clear()
+    localStorage.clear()
     setUser(null);
     navigate('/login');
+
   };
 
-  const checkPermission = (moduleId, action) => {
-    if (user?.userGroup.name === 'admin') return true;
+  const checkPermission = async (moduleId, action) => {
+    // if (user?.userGroup.name === 'admin') return true;
 
-    const permissions = JSON.parse(localStorage.getItem('permissions') || '[]');
-    const modulePermission = permissions.find((p) => p.moduleId === moduleId);
+    // const permissions = JSON.parse(localStorage.getItem('permissions') || '[]');
+    const permissions = await JSON.parse(secureStorage.getItem('permissions') || '[]');
+
+    const modulePermission = await permissions.find((p) => p.moduleId === moduleId);
 
     if (!modulePermission) return false;
 

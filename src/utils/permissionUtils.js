@@ -1,3 +1,144 @@
+import { MODULE_IDS } from '../constants/modules';
+import { secureStorage } from './crypto';
+
+export const usePermissions = () => {
+    const getPermissions = async () => {
+        try {
+            let permissions = [];
+            const encryptedPerms = await secureStorage.getItem('permissions');
+
+            if (encryptedPerms) {
+                if (Array.isArray(encryptedPerms)) {
+                    permissions = encryptedPerms;
+                } else if (typeof encryptedPerms === 'string') {
+                    try {
+                        const parsedPerms = JSON.parse(encryptedPerms);
+                        if (Array.isArray(parsedPerms)) {
+                            permissions = parsedPerms;
+                        } else {
+                            console.error('Parsed permissions are not an array:', parsedPerms);
+                        }
+                    } catch (error) {
+                        console.error('Error parsing encrypted permissions:', error);
+                    }
+                } else {
+                    console.error('Encrypted permissions are not an array or string:', encryptedPerms);
+                }
+            } else {
+                const rawPerms = localStorage.getItem('permissions');
+                if (rawPerms) {
+                    try {
+                        const parsedPerms = JSON.parse(rawPerms);
+                        if (Array.isArray(parsedPerms)) {
+                            permissions = parsedPerms;
+                        } else {
+                            console.error('Parsed permissions from localStorage are not an array:', parsedPerms);
+                        }
+                    } catch (error) {
+                        console.error('Error parsing permissions from localStorage:', error);
+                    }
+                }
+            }
+
+            return permissions;
+        } catch (error) {
+            console.error('Error retrieving permissions:', error);
+            return [];
+        }
+    };
+
+    const checkPermission = async (moduleId, action) => {
+        try {
+            const permissions = await getPermissions();
+
+            if (!Array.isArray(permissions)) {
+                console.error('Permissions is not an array:', permissions);
+                return false;
+            }
+
+            const numericModuleId = typeof moduleId === 'string' ?
+                MODULE_IDS[moduleId.toUpperCase()] : moduleId;
+
+            const modulePermission = permissions.find(p => p && p.moduleId === numericModuleId);
+
+            if (!modulePermission) {
+                console.log(`No permissions found for module ID ${numericModuleId}`);
+                return false;
+            }
+
+            switch (action) {
+                case 'read': return Boolean(modulePermission.canRead);
+                case 'create': return Boolean(modulePermission.canCreate);
+                case 'update': return Boolean(modulePermission.canUpdate);
+                case 'delete': return Boolean(modulePermission.canDelete);
+                default:
+                    console.error(`Invalid action: ${action}`);
+                    return false;
+            }
+        } catch (error) {
+            console.error('Permission check error:', error);
+            return false;
+        }
+    };
+
+    const hasModuleAccess = async (moduleId) => {
+        return await checkPermission(moduleId, 'read');
+    };
+
+    return { checkPermission, hasModuleAccess };
+};
+
+export const hasPermissionSync = (moduleId, action) => {
+    try {
+        const rawPerms = localStorage.getItem('permissions');
+        if (!rawPerms) {
+            console.log('No permissions found in localStorage');
+            return false;
+        }
+
+        let permissions;
+        try {
+            permissions = JSON.parse(rawPerms);
+        } catch (error) {
+            console.error('Error parsing permissions from localStorage:', error);
+            return false;
+        }
+
+        if (!Array.isArray(permissions)) {
+            console.error('Permissions is not an array:', permissions);
+            return false;
+        }
+
+        const numericModuleId = typeof moduleId === 'string' ?
+            MODULE_IDS[moduleId.toUpperCase()] : moduleId;
+
+        const modulePermission = permissions.find(p => p && p.moduleId === numericModuleId);
+        if (!modulePermission) {
+            console.log(`No permissions found for module ID ${numericModuleId}`);
+            return false;
+        }
+
+        switch (action) {
+            case 'read': return Boolean(modulePermission.canRead);
+            case 'create': return Boolean(modulePermission.canCreate);
+            case 'update': return Boolean(modulePermission.canUpdate);
+            case 'delete': return Boolean(modulePermission.canDelete);
+            default:
+                console.error(`Invalid action: ${action}`);
+                return false;
+        }
+    } catch (error) {
+        console.error('Permission check error:', error);
+        return false;
+    }
+};
+
+
+
+
+
+
+
 // // import { useAuth } from '../contexts/AuthContext';
 // //
 // // export const usePermissions = () => {
@@ -185,75 +326,194 @@ import { useAuth } from '../contexts/AuthContext';
 //     }
 // };
 //
-import { MODULE_IDS } from '../constants/modules';
+// import { MODULE_IDS } from '../constants/modules';
+// import {secureStorage} from "./crypto.js";
+//
+// export const usePermissions = () => {
+//     const checkPermission = async (moduleId, action) => {
+//         try {
+//              // const permissions = JSON.parse(localStorage.getItem('permissions') || '[]');
+//             const permissions = await  JSON.parse(secureStorage.getItem('permissions') || '[]');
+//
+//             console.log('Checking permissions for module:', moduleId, 'action:', action);
+//             console.log('Available permissions:', permissions);
+//
+//             // Convert string moduleId to number if necessary
+//             const numericModuleId = typeof moduleId === 'string' ? MODULE_IDS[moduleId.toUpperCase()] : moduleId;
+//
+//             const modulePermission = permissions.find(p => p.moduleId === numericModuleId);
+//             console.log('Found module permission:', modulePermission);
+//
+//             if (!modulePermission) {
+//                 console.log('No permission found for module:', moduleId);
+//                 return false;
+//             }
+//
+//             switch (action) {
+//                 case 'read':
+//                     return modulePermission.canRead;
+//                 case 'create':
+//                     return modulePermission.canCreate;
+//                 case 'update':
+//                     return modulePermission.canUpdate;
+//                 case 'delete':
+//                     return modulePermission.canDelete;
+//                 default:
+//                     return false;
+//             }
+//         } catch (error) {
+//             console.error('Error checking permissions:', error);
+//             return false;
+//         }
+//     };
+//
+//     const hasModuleAccess = (moduleId) => {
+//         console.log('Checking module access for:', moduleId);
+//         return checkPermission(moduleId, 'read');
+//     };
+//
+//     return { checkPermission, hasModuleAccess };
+// };
+//
+// export const hasPermission = (moduleId, action) => {
+//     const { checkPermission } = usePermissions();
+//     return checkPermission(moduleId, action);
+// };
+// permissionUtils.js
+// import { MODULE_IDS } from '../constants/modules';
+// import { secureStorage } from './cyrpto';
 
-export const usePermissions = () => {
-    const checkPermission = (moduleId, action) => {
-        try {
-            // const permissions = JSON.parse(localStorage.getItem('permissions') || '[]');
-            const permissions =
-                [{"id":2,"groupId":1,"moduleId":5,"canRead":true,"canCreate":true,"canUpdate":true,"canDelete":true,"createdAt":"2024-12-27T15:40:15.002Z","updatedAt":"2024-12-27T15:40:15.002Z","module":{"id":5,"name":"dashboard","createdAt":"2024-12-24T23:02:33.318Z","updatedAt":"2024-12-24T23:02:33.318Z"}},
-                    {"id":3,"groupId":1,"moduleId":2,"canRead":true,"canCreate":true,"canUpdate":true,"canDelete":true,"createdAt":"2024-12-27T15:40:15.002Z","updatedAt":"2024-12-27T15:40:15.002Z","module":{"id":2,"name":"national_teams","createdAt":"2024-12-24T23:02:33.318Z","updatedAt":"2024-12-24T23:02:33.318Z"}},
-                    {"id":4,"groupId":1,"moduleId":3,"canRead":true,"canCreate":true,"canUpdate":true,"canDelete":true,"createdAt":"2024-12-27T15:40:15.002Z","updatedAt":"2024-12-27T15:40:15.002Z","module":{"id":3,"name":"federations","createdAt":"2024-12-24T23:02:33.318Z","updatedAt":"2024-12-24T23:02:33.318Z"}},
-                    {"id":5,"groupId":1,"moduleId":4,"canRead":true,"canCreate":true,"canUpdate":true,"canDelete":true,"createdAt":"2024-12-27T15:40:15.002Z","updatedAt":"2024-12-27T15:40:15.002Z","module":{"id":4,"name":"sports_professionals","createdAt":"2024-12-24T23:02:33.318Z","updatedAt":"2024-12-24T23:02:33.318Z"}},
-                    {"id":6,"groupId":1,"moduleId":6,"canRead":true,"canCreate":true,"canUpdate":true,"canDelete":true,"createdAt":"2024-12-27T15:40:15.002Z","updatedAt":"2024-12-27T15:40:15.002Z","module":{"id":6,"name":"trainings","createdAt":"2024-12-24T23:02:33.318Z","updatedAt":"2024-12-24T23:02:33.318Z"}},
-                    {"id":7,"groupId":1,"moduleId":7,"canRead":true,"canCreate":true,"canUpdate":true,"canDelete":true,"createdAt":"2024-12-27T15:40:15.002Z","updatedAt":"2024-12-27T15:40:15.002Z","module":{"id":7,"name":"isonga_programs","createdAt":"2024-12-24T23:02:33.318Z","updatedAt":"2024-12-24T23:02:33.318Z"}},
-                    {"id":8,"groupId":1,"moduleId":8,"canRead":true,"canCreate":true,"canUpdate":true,"canDelete":true,"createdAt":"2024-12-27T15:40:15.002Z","updatedAt":"2024-12-27T15:40:15.002Z","module":{"id":8,"name":"academies","createdAt":"2024-12-24T23:02:33.318Z","updatedAt":"2024-12-24T23:02:33.318Z"}},
-                    {"id":9,"groupId":1,"moduleId":9,"canRead":true,"canCreate":true,"canUpdate":true,"canDelete":true,"createdAt":"2024-12-27T15:40:15.002Z","updatedAt":"2024-12-27T15:40:15.002Z","module":{"id":9,"name":"infrastructure","createdAt":"2024-12-24T23:02:33.318Z","updatedAt":"2024-12-24T23:02:33.318Z"}},
-                    {"id":10,"groupId":1,"moduleId":10,"canRead":true,"canCreate":true,"canUpdate":true,"canDelete":true,"createdAt":"2024-12-27T15:40:15.002Z","updatedAt":"2024-12-27T15:40:15.002Z","module":{"id":10,"name":"sports_tourism","createdAt":"2024-12-24T23:02:33.318Z","updatedAt":"2024-12-24T23:02:33.318Z"}},
-                    {"id":11,"groupId":1,"moduleId":11,"canRead":true,"canCreate":true,"canUpdate":true,"canDelete":true,"createdAt":"2024-12-27T15:40:15.002Z","updatedAt":"2024-12-27T15:40:15.002Z","module":{"id":11,"name":"documents","createdAt":"2024-12-24T23:02:33.318Z","updatedAt":"2024-12-24T23:02:33.318Z"}},
-                    {"id":12,"groupId":1,"moduleId":12,"canRead":true,"canCreate":true,"canUpdate":true,"canDelete":true,"createdAt":"2024-12-27T15:40:15.002Z","updatedAt":"2024-12-27T15:40:15.002Z","module":{"id":12,"name":"contracts","createdAt":"2024-12-24T23:02:33.318Z","updatedAt":"2024-12-24T23:02:33.318Z"}},
-                    {"id":13,"groupId":1,"moduleId":13,"canRead":true,"canCreate":true,"canUpdate":true,"canDelete":true,"createdAt":"2024-12-27T15:40:15.002Z","updatedAt":"2024-12-27T15:40:15.002Z","module":{"id":13,"name":"appointments","createdAt":"2024-12-24T23:02:33.318Z","updatedAt":"2024-12-24T23:02:33.318Z"}},
-                    {"id":14,"groupId":1,"moduleId":14,"canRead":true,"canCreate":true,"canUpdate":true,"canDelete":true,"createdAt":"2024-12-27T15:40:15.002Z","updatedAt":"2024-12-27T15:40:15.002Z","module":{"id":14,"name":"employee","createdAt":"2024-12-24T23:02:33.318Z","updatedAt":"2024-12-24T23:02:33.318Z"}},
-                    {"id":15,"groupId":1,"moduleId":15,"canRead":true,"canCreate":true,"canUpdate":true,"canDelete":true,"createdAt":"2024-12-27T15:40:15.002Z","updatedAt":"2024-12-27T15:40:15.002Z","module":{"id":15,"name":"users","createdAt":"2024-12-24T23:02:33.318Z","updatedAt":"2024-12-24T23:02:33.318Z"}},
-                    {"id":16,"groupId":1,"moduleId":16,"canRead":true,"canCreate":true,"canUpdate":true,"canDelete":true,"createdAt":"2024-12-27T15:40:15.002Z","updatedAt":"2024-12-27T15:40:15.002Z","module":{"id":16,"name":"partners","createdAt":"2024-12-24T23:02:33.318Z","updatedAt":"2024-12-24T23:02:33.318Z"}},
-                    {"id":17,"groupId":1,"moduleId":17,"canRead":true,"canCreate":true,"canUpdate":true,"canDelete":true,"createdAt":"2024-12-27T15:40:15.002Z","updatedAt":"2024-12-27T15:40:15.002Z","module":{"id":17,"name":"reports","createdAt":"2024-12-24T23:02:33.318Z","updatedAt":"2024-12-24T23:02:33.318Z"}},
-                    {"id":18,"groupId":1,"moduleId":18,"canRead":true,"canCreate":true,"canUpdate":true,"canDelete":true,"createdAt":"2024-12-27T15:40:15.002Z","updatedAt":"2024-12-27T15:40:15.002Z","module":{"id":18,"name":"sports_for_all","createdAt":"2024-12-24T23:02:33.318Z","updatedAt":"2024-12-24T23:02:33.318Z"}},
-                    {"id":19,"groupId":1,"moduleId":19,"canRead":true,"canCreate":true,"canUpdate":true,"canDelete":true,"createdAt":"2024-12-27T15:40:15.002Z","updatedAt":"2024-12-27T15:40:15.002Z","module":{"id":19,"name":"player_transfer_report","createdAt":"2024-12-24T23:02:33.318Z","updatedAt":"2024-12-24T23:02:33.318Z"}},
-                    {"id":20,"groupId":1,"moduleId":20,"canRead":true,"canCreate":true,"canUpdate":true,"canDelete":true,"createdAt":"2024-12-27T15:40:15.002Z","updatedAt":"2024-12-27T15:40:15.002Z","module":{"id":20,"name":"match_operator","createdAt":"2024-12-24T23:02:33.318Z","updatedAt":"2024-12-24T23:02:33.318Z"}}
-                ]
+// export const usePermissions = () => {
+    // const checkPermission = async (moduleId, action) => {
+    //     try {
+    //         let permissions = [];
+    //         const encryptedPerms = await secureStorage.getItem('permissions');
+    //
+    //         if (encryptedPerms && Array.isArray(encryptedPerms)) {
+    //             permissions = encryptedPerms;
+    //         } else {
+    //             const rawPerms = localStorage.getItem('permissions');
+    //             if (rawPerms) {
+    //                 try {
+    //                     permissions = JSON.parse(rawPerms);
+    //                 } catch {
+    //                     permissions = [];
+    //                 }
+    //             }
+    //         }
+    //
+    //         if (!Array.isArray(permissions)) {
+    //             permissions = [];
+    //         }
+    //
+    //         const numericModuleId = typeof moduleId === 'string' ?
+    //             MODULE_IDS[moduleId.toUpperCase()] : moduleId;
+    //
+    //         const modulePermission = permissions.find(p => p && p.moduleId === numericModuleId);
+    //
+    //         if (!modulePermission) {
+    //             return false;
+    //         }
+    //
+    //         switch (action) {
+    //             case 'read': return Boolean(modulePermission.canRead);
+    //             case 'create': return Boolean(modulePermission.canCreate);
+    //             case 'update': return Boolean(modulePermission.canUpdate);
+    //             case 'delete': return Boolean(modulePermission.canDelete);
+    //             default: return false;
+    //         }
+    //     } catch (error) {
+    //         console.error('Permission check error:', error);
+    //         return false;
+    //     }
+    // };
 
-            console.log('Checking permissions for module:', moduleId, 'action:', action);
-            console.log('Available permissions:', permissions);
-
-            // Convert string moduleId to number if necessary
-            const numericModuleId = typeof moduleId === 'string' ? MODULE_IDS[moduleId.toUpperCase()] : moduleId;
-
-            const modulePermission = permissions.find(p => p.moduleId === numericModuleId);
-            console.log('Found module permission:', modulePermission);
-
-            if (!modulePermission) {
-                console.log('No permission found for module:', moduleId);
-                return false;
-            }
-
-            switch (action) {
-                case 'read':
-                    return modulePermission.canRead;
-                case 'create':
-                    return modulePermission.canCreate;
-                case 'update':
-                    return modulePermission.canUpdate;
-                case 'delete':
-                    return modulePermission.canDelete;
-                default:
-                    return false;
-            }
-        } catch (error) {
-            console.error('Error checking permissions:', error);
-            return false;
-        }
-    };
-
-    const hasModuleAccess = (moduleId) => {
-        console.log('Checking module access for:', moduleId);
-        return checkPermission(moduleId, 'read');
-    };
-
-    return { checkPermission, hasModuleAccess };
-};
-
-export const hasPermission = (moduleId, action) => {
-    const { checkPermission } = usePermissions();
-    return checkPermission(moduleId, action);
-};
+//     const checkPermission = async (moduleId, action) => {
+//         try {
+//             let permissions = [];
+//             const encryptedPerms = await secureStorage.getItem('permissions');
+//
+//             if (encryptedPerms && Array.isArray(encryptedPerms)) {
+//                 permissions = encryptedPerms;
+//             } else {
+//                 const rawPerms = localStorage.getItem('permissions');
+//                 if (rawPerms) {
+//                     try {
+//                         permissions = JSON.parse(rawPerms);
+//                     } catch (error) {
+//                         console.error('Error parsing permissions:', error);
+//                         return false;
+//                     }
+//                 }
+//             }
+//
+//             if (!Array.isArray(permissions)) {
+//                 console.error('Permissions is not an array');
+//                 return false;
+//             }
+//
+//             const numericModuleId = typeof moduleId === 'string' ?
+//                 MODULE_IDS[moduleId.toUpperCase()] : moduleId;
+//
+//             const modulePermission = permissions.find(p => p && p.moduleId === numericModuleId);
+//
+//             if (!modulePermission) {
+//                 console.log(`No permissions found for module ID ${numericModuleId}`);
+//                 return false;
+//             }
+//
+//             switch (action) {
+//                 case 'read': return Boolean(modulePermission.canRead);
+//                 case 'create': return Boolean(modulePermission.canCreate);
+//                 case 'update': return Boolean(modulePermission.canUpdate);
+//                 case 'delete': return Boolean(modulePermission.canDelete);
+//                 default:
+//                     console.error(`Invalid action: ${action}`);
+//                     return false;
+//             }
+//         } catch (error) {
+//             console.error('Permission check error:', error);
+//             return false;
+//         }
+//     };
+//
+//     const hasModuleAccess = async (moduleId) => {
+//         return await checkPermission(moduleId, 'read');
+//     };
+//
+//     return { checkPermission, hasModuleAccess };
+// };
+//
+// export const hasPermissionSync = (moduleId, action) => {
+//     try {
+//         const rawPerms = localStorage.getItem('permissions');
+//         if (!rawPerms) return false;
+//
+//         let permissions;
+//         try {
+//             permissions = JSON.parse(rawPerms);
+//         } catch {
+//             return false;
+//         }
+//
+//         if (!Array.isArray(permissions)) {
+//             return false;
+//         }
+//
+//         const numericModuleId = typeof moduleId === 'string' ?
+//             MODULE_IDS[moduleId.toUpperCase()] : moduleId;
+//
+//         const modulePermission = permissions.find(p => p && p.moduleId === numericModuleId);
+//         if (!modulePermission) return false;
+//
+//         switch (action) {
+//             case 'read': return Boolean(modulePermission.canRead);
+//             case 'create': return Boolean(modulePermission.canCreate);
+//             case 'update': return Boolean(modulePermission.canUpdate);
+//             case 'delete': return Boolean(modulePermission.canDelete);
+//             default: return false;
+//         }
+//     } catch {
+//         return false;
+//     }
+// };

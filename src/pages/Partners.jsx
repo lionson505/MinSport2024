@@ -34,7 +34,7 @@ const Partners = () => {
   const [filters, setFilters] = useState({ discipline: '', status: '' });
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const permissionsLog = usePermissionLogger("partners")
+  const permissionsLog = usePermissionLogger("partner")
   const [permissions, setPermissions] = useState({
     canCreate: false,
     canView: false,

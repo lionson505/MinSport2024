@@ -138,7 +138,7 @@ const ProtectedRoute =  ({ children, moduleId }) => {
 
 
   if (!user) {
-    const user = localStorage.getItem('user')
+    const user =  secureStorage.getItem('user')
     if(user === null || user === undefined ){
       console.log('No user found, redirecting to login');
       return <Navigate to="/login" state={{ from: location }} replace />;
@@ -158,3 +158,32 @@ const ProtectedRoute =  ({ children, moduleId }) => {
 };
 
 export default ProtectedRoute;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

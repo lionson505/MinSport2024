@@ -31,10 +31,9 @@ const Infrastructure = () => {
   useEffect(() => {
     const fetchData = async () => {
       await fetchCategories();
-
       await fetchInfrastructure();
-      const currentPermissions = logPermissions();
-      setPermissions(currentPermissions);
+      const currentPermissions = await logPermissions();
+      await  setPermissions(currentPermissions);
       console.log("perms:", permissions)
     };
     

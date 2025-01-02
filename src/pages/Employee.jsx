@@ -34,9 +34,12 @@ function Employee() {
     canUpdate: false,
     canDelete: false
   })
+  const fetchPermissions = async ()=> {
+    const currentPermissions =await logPermissions();
+    await setPermissions(currentPermissions);
+  }
   useEffect(() => {
-    const currentPermissions = logPermissions();
-    setPermissions(currentPermissions);
+    fetchPermissions();
     const fetchEmployeesData = async () => {
       try {
         setLoading(true);

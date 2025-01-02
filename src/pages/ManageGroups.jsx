@@ -40,9 +40,14 @@ function ManageGroups() {
     canDelete: false
   })
 
+  const fetchPermissions = async ()=> {
+    const currentPermissions =await logPermissions();
+    await setPermissions(currentPermissions);
+  }
+
   const fetchGroups = async () => {
-    const permissionsCurrent = logPermissions()
-    setPermissions(permissionsCurrent)
+    const permissionsCurrent = await logPermissions()
+    await setPermissions(permissionsCurrent)
     try {
       setLoading(true);
       setError(null);

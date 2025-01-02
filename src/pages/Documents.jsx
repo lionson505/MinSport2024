@@ -35,9 +35,12 @@ function Documents() {
     canDelete: false
   })
 
+  const fetchPermissions = async ()=> {
+    const currentPermissions =await logPermissions();
+    await setPermissions(currentPermissions);
+  }
   useEffect(() => {
-    const currentPermissions = logPermissions();
-    setPermissions(currentPermissions);
+    fetchPermissions();
     console.log("perms:", permissions)
     const fetchDocuments = async () => {
       try {

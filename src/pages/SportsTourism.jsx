@@ -25,11 +25,12 @@ const SportsTourism = () => {
   })
   const [events, setEvents] = useState([]);
   console.log('events:', events)
-
+  const fetchPermissions = async ()=> {
+    const currentPermissions =await logPermissions();
+    await setPermissions(currentPermissions);
+  }
   useEffect(() => {
-    const currentPermissions = logPermissions();
-    setPermissions(currentPermissions);
-    console.log("perms:", permissions)
+    fetchPermissions();
     // Fetch events data using axiosInstance
     const fetchEvents = async () => {
       try {

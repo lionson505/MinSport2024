@@ -266,8 +266,8 @@ const Federations = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const currentPermissions = logPermissions();
-        setPermissions(currentPermissions);
+         const currentPermissions =await logPermissions();
+         await setPermissions(currentPermissions);
         console.log("perms:", permissions)
         setIsLoading(true);
         const filters = {
@@ -739,6 +739,9 @@ const Federations = () => {
             <div className="overflow-x-auto">
               <PrintButton>
               <Table>
+             {/*   <TableHeader>
+                  This is the table
+                </TableHeader>*/}
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-[30px] text-xs">
