@@ -321,7 +321,7 @@ const Federations = () => {
   const handleAddFederation = async (federationData) => {
     try {
       setIsSubmitting(true);
-      const newFederation = await federationApi.createFederation(federationData);
+      // const newFederation = await federationApi.createFederation(federationData);
       setFederations((prev) => [...prev, newFederation]);
       setFilteredFederations((prev) => [...prev, newFederation]);
       setIsAddFederationModalOpen(false);
@@ -750,9 +750,9 @@ const Federations = () => {
                       />
                     </TableHead>
                     <TableHead className="min-w-[180px] text-xs">Name</TableHead>
+                    <TableHead className="min-w-[180px] text-xs">Logo</TableHead>
                     <TableHead className="w-[80px] text-xs">Acronym</TableHead>
                     <TableHead className="w-[100px] text-xs">Year Founded</TableHead>
-                    <TableHead className="min-w-[180px] text-xs">Legal Representative</TableHead>
                     <TableHead className="min-w-[120px] text-xs">Address</TableHead>
                     <TableHead className="w-[80px] text-xs operation">Operation</TableHead>
                   </TableRow>
@@ -775,9 +775,13 @@ const Federations = () => {
                       />
                     </TableCell>
                     <TableCell className="text-xs font-medium">{federation.name}</TableCell>
+                      <TableCell>
+                        <img src={`${axiosInstance.defaults.baseURL}${federation.logo}`} alt="federation Logo" className="w-12 h-12 object-cover rounded-full" />
+                        {/* {console.log(`Logo Path: ${axiosInstance.defaults.baseURL}${federation.logo}`)} Log the logo path */}
+  
+                      </TableCell>
                     <TableCell className="text-xs">{federation.acronym}</TableCell>
                     <TableCell className="text-xs">{federation.yearFounded}</TableCell>
-                    <TableCell className="text-xs">{federation.legalRepresentativeName}</TableCell>
                     <TableCell className="text-xs">{federation.address}</TableCell>
                     <TableCell className="operation">
                       <div className="flex items-center gap-0.5">

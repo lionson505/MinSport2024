@@ -16,14 +16,18 @@ const EditUserModal = ({ isOpen, onClose, onEdit, userData }) => {
     phoneNumber: '',
     gender: '',
     reasonForRegistration: '',
-    groupId: '',
+    userGroupId: '',
     active: false,
     emailVerified: false,
+    federationId: ''
   });
 
   const [groupOptions, setGroupOptions] = useState([]);
+  const [federationOptions, setFederationOptions] = useState([]);
   const [loadingGroups, setLoadingGroups] = useState(false);
+  const [loadingFederations, setLoadingFederations] = useState(false);
   const [errorGroups, setErrorGroups] = useState(null);
+  const [errorFederations, setErrorFederations] = useState(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -35,11 +39,31 @@ const EditUserModal = ({ isOpen, onClose, onEdit, userData }) => {
         phoneNumber: userData?.phoneNumber || '',
         gender: userData?.gender || '',
         reasonForRegistration: userData?.reasonForRegistration || '',
-        groupId: userData?.userGroupId || '',
+        userGroupId: userData?.userGroupId || '',
         active: userData?.active || false,
         emailVerified: userData?.emailVerified || false,
+        federationId: userData?.federationId || ''
       });
 
+      // Fetch federations first
+      setFederationOptions([]);
+      setLoadingFederations(true);
+      setErrorFederations(null);
+
+      axiosInstance.get('/federations')
+        .then((response) => {
+          setFederationOptions(response.data);
+        })
+        .catch((error) => {
+          const errorMessage = error.response?.data?.message || 'Failed to load federations';
+          setErrorFederations(errorMessage);
+          toast.error(errorMessage);
+        })
+        .finally(() => {
+          setLoadingFederations(false);
+        });
+
+      // Then fetch groups
       setGroupOptions([]);
       setLoadingGroups(true);
       setErrorGroups(null);
@@ -73,7 +97,6 @@ const EditUserModal = ({ isOpen, onClose, onEdit, userData }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     setLoading(true);
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -83,15 +106,19 @@ const EditUserModal = ({ isOpen, onClose, onEdit, userData }) => {
       return;
     }
 
-    if (!formData.groupId) {
+    if (!formData.userGroupId) {
       toast.error('Please select a group');
       setLoading(false);
       return;
     }
 
-    try {
-      console.log('Submitting data:', formData);
+    if (!formData.federationId) {
+      toast.error('Please select a federation');
+      setLoading(false);
+      return;
+    }
 
+    try {
       const response = await axiosInstance.put(`/users/${userData.id}`, {
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -99,14 +126,12 @@ const EditUserModal = ({ isOpen, onClose, onEdit, userData }) => {
         phoneNumber: formData.phoneNumber,
         gender: formData.gender,
         reasonForRegistration: formData.reasonForRegistration,
-        userGroupId: formData.groupId,
+        userGroupId: parseInt(formData.userGroupId),
         active: Boolean(formData.active),
         emailVerified: Boolean(formData.emailVerified),
-      }, {
-        headers: { 'Content-Type': 'application/json' },
+        federationId: parseInt(formData.federationId)
       });
 
-      console.log('User updated successfully:', response.data);
       onEdit(response.data);
       toast.success('User updated successfully');
       onClose();
@@ -127,9 +152,10 @@ const EditUserModal = ({ isOpen, onClose, onEdit, userData }) => {
       phoneNumber: '',
       gender: '',
       reasonForRegistration: '',
-      groupId: '',
+      userGroupId: '',
       active: false,
       emailVerified: false,
+      federationId: ''
     });
   }, [onClose]);
 
@@ -147,9 +173,10 @@ const EditUserModal = ({ isOpen, onClose, onEdit, userData }) => {
                 </button>
               </div>
 
-              {errorGroups && (
+              {(errorGroups || errorFederations) && (
                 <div className="text-red-500 text-sm mb-4">
-                  {errorGroups}
+                  {errorGroups && <div>{errorGroups}</div>}
+                  {errorFederations && <div>{errorFederations}</div>}
                 </div>
               )}
 
@@ -166,6 +193,7 @@ const EditUserModal = ({ isOpen, onClose, onEdit, userData }) => {
                     placeholder="Enter first name"
                   />
                 </div>
+
                 <div>
                   <label className="block mb-1 text-sm font-medium">Last Name</label>
                   <Input
@@ -178,6 +206,7 @@ const EditUserModal = ({ isOpen, onClose, onEdit, userData }) => {
                     placeholder="Enter last name"
                   />
                 </div>
+
                 <div>
                   <label className="block mb-1 text-sm font-medium">Email</label>
                   <Input
@@ -190,6 +219,7 @@ const EditUserModal = ({ isOpen, onClose, onEdit, userData }) => {
                     placeholder="Enter email address"
                   />
                 </div>
+
                 <div>
                   <label className="block mb-1 text-sm font-medium">Phone Number</label>
                   <Input
@@ -201,6 +231,7 @@ const EditUserModal = ({ isOpen, onClose, onEdit, userData }) => {
                     placeholder="Enter phone number"
                   />
                 </div>
+
                 <div>
                   <label className="block mb-1 text-sm font-medium">Gender</label>
                   <select
@@ -212,10 +243,11 @@ const EditUserModal = ({ isOpen, onClose, onEdit, userData }) => {
                   >
                     <option value="">Select gender</option>
                     {['Male', 'Female', 'Other'].map((option) => (
-                      <option key={option} value={option.toLowerCase()}>{option}</option>
+                      <option key={option} value={option}>{option}</option>
                     ))}
                   </select>
                 </div>
+
                 <div>
                   <label className="block mb-1 text-sm font-medium">Reason for Registration</label>
                   <Input
@@ -227,14 +259,15 @@ const EditUserModal = ({ isOpen, onClose, onEdit, userData }) => {
                     placeholder="Enter reason for registration"
                   />
                 </div>
+
                 <div>
                   <label className="block mb-1 text-sm font-medium">Group</label>
                   {loadingGroups ? (
                     <div className="text-sm text-gray-500">Loading groups...</div>
                   ) : (
                     <select
-                      name="groupId"
-                      value={formData.groupId}
+                      name="userGroupId"
+                      value={formData.userGroupId}
                       onChange={handleChange}
                       required
                       className="w-full rounded-md border p-2"
@@ -243,6 +276,28 @@ const EditUserModal = ({ isOpen, onClose, onEdit, userData }) => {
                       {groupOptions.map((group) => (
                         <option key={group.id} value={group.id}>
                           {group.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block mb-1 text-sm font-medium">Federation</label>
+                  {loadingFederations ? (
+                    <div className="text-sm text-gray-500">Loading federations...</div>
+                  ) : (
+                    <select
+                      name="federationId"
+                      value={formData.federationId}
+                      onChange={handleChange}
+                      required
+                      className="w-full rounded-md border p-2"
+                    >
+                      <option value="">Select federation</option>
+                      {federationOptions.map((federation) => (
+                        <option key={federation.id} value={federation.id}>
+                          {federation.name}
                         </option>
                       ))}
                     </select>

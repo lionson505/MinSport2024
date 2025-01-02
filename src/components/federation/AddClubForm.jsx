@@ -7,7 +7,7 @@ const AddClubForm = ({ isOpen, onClose }) => {
   const [name, setName] = useState('');
   const [federationId, setFederationId] = useState(0);
   const [yearFounded, setYearFounded] = useState(0);
-  const [logo, setLogo] = useState('');
+  const [logo, setLogo] = useState(null);  // Store file object here
   const [address, setAddress] = useState('');
   const [division, setDivision] = useState('');
   const [legalRepresentativeName, setLegalRepresentativeName] = useState('');
@@ -39,23 +39,22 @@ const AddClubForm = ({ isOpen, onClose }) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const formData = {
-      logo: logo,
-      federationId: federationId,
-      name: name,
-      yearFounded: yearFounded,
-      address: address,
-      division: division,
-      legalRepresentativeName: legalRepresentativeName,
-      legalRepresentativeGender: legalRepresentativeGender,
-      legalRepresentativeEmail: legalRepresentativeEmail,
-      legalRepresentativePhone: legalRepresentativePhone,
-    };
+    const formData = new FormData();  // Use FormData to send data as multipart
+    formData.append('logo', logo);  // Append the file
+    formData.append('federationId', federationId);
+    formData.append('name', name);
+    formData.append('yearFounded', yearFounded);
+    formData.append('address', address);
+    formData.append('division', division);
+    formData.append('legalRepresentativeName', legalRepresentativeName);
+    formData.append('legalRepresentativeGender', legalRepresentativeGender);
+    formData.append('legalRepresentativeEmail', legalRepresentativeEmail);
+    formData.append('legalRepresentativePhone', legalRepresentativePhone);
 
     try {
       await axiosInstance.post('/clubs', formData, {
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'multipart/form-data',  // Ensure correct content type
         },
       });
 
@@ -72,7 +71,7 @@ const AddClubForm = ({ isOpen, onClose }) => {
   const handleLogoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setLogo(file.name); // This maintains the same logic of storing just the filename
+      setLogo(file);  // Store the file object instead of just the filename
     }
   };
 
@@ -83,7 +82,7 @@ const AddClubForm = ({ isOpen, onClose }) => {
       <div className="bg-white p-6 rounded-lg shadow-md max-w-4xl w-full overflow-y-auto" style={{ maxHeight: '90vh' }}>
         <h2 className="text-xl font-semibold mb-4">Add New Club</h2>
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4" >
           {/* Club Information Section */}
           <div className="col-span-2">
             <h3 className="text-lg font-medium mb-3">Club Information</h3>
@@ -154,7 +153,7 @@ const AddClubForm = ({ isOpen, onClose }) => {
                   className="w-full p-2 border rounded"
                   accept="image/*"
                 />
-                {logo && <p className="mt-1 text-sm text-gray-500">Selected file: {logo}</p>}
+                {logo && <p className="mt-1 text-sm text-gray-500">Selected file: {logo.name}</p>}
               </div>
 
               {/* Address */}
