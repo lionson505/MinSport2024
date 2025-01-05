@@ -3,7 +3,7 @@ import React, { useEffect, useState, Fragment } from "react";
 import axiosInstance from "../utils/axiosInstance";
 import { Dialog, Transition } from "@headlessui/react";
 import { Button } from "../components/ui/Button";
-import { Input } from "../components/ui/Input";
+import { Input } from "../components/ui/input";
 import { Search, Calendar, Eye, Trash2, Check, X } from 'lucide-react';
 import AddAppointmentForm from "../components/forms/AddAppointmentForm";
 import PrintButton from "../components/reusable/Print";
@@ -76,8 +76,8 @@ function PSAppointments() {
             setIsLoading(false);
         }
     };
-    const fetchPermissions = async ()=> {
-        const currentPermissions =await logPermission();
+    const fetchPermissions = async () => {
+        const currentPermissions = await logPermission();
         await setPermissions(currentPermissions);
     }
 
@@ -260,94 +260,94 @@ function PSAppointments() {
                 <PrintButton title="PS APPOINTMENTS REPORT">
                     <table className="w-full">
                         <thead className="bg-gray-50">
-                        <tr>
-                            <th className="w-10 px-3 py-2">
-                                <input
-                                    type="checkbox"
-                                    className="rounded border-gray-300"
-                                    checked={selectedRows.length === filteredAppointments.length}
-                                    onChange={(e) => {
-                                        setSelectedRows(e.target.checked ? filteredAppointments.map(a => a.id) : []);
-                                    }}
-                                />
-                            </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">TIME</th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">NAMES</th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Gender</th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Cellphone</th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Purpose</th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Institution</th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Function</th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Status</th>
-                            <th className="w-24 px-3 py-2 text-left text-xs font-medium operation text-gray-500">Actions</th>
-                        </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200">
-                        {filteredAppointments.map((appointment) => (
-                            <tr key={appointment.id} className="hover:bg-gray-50">
-                                <td className="px-3 py-2">
+                            <tr>
+                                <th className="w-10 px-3 py-2">
                                     <input
                                         type="checkbox"
                                         className="rounded border-gray-300"
-                                        checked={selectedRows.includes(appointment.id)}
+                                        checked={selectedRows.length === filteredAppointments.length}
                                         onChange={(e) => {
-                                            setSelectedRows(prev =>
-                                                e.target.checked
-                                                    ? [...prev, appointment.id]
-                                                    : prev.filter(id => id !== appointment.id)
-                                            );
+                                            setSelectedRows(e.target.checked ? filteredAppointments.map(a => a.id) : []);
                                         }}
                                     />
-                                </td>
-                                <td className="px-3 py-2 text-sm whitespace-nowrap">
-                                    {new Date(appointment.request_time).toLocaleTimeString()}
-                                </td>
-                                <td className="px-3 py-2 text-sm">{appointment.names}</td>
-                                <td className="px-3 py-2 text-sm">{appointment.gender}</td>
-                                <td className="px-3 py-2 text-sm">{appointment.cellphone}</td>
-                                <td className="px-3 py-2 text-sm">{appointment.purpose}</td>
-                                <td className="px-3 py-2 text-sm">{appointment.institution}</td>
-                                <td className="px-3 py-2 text-sm">{appointment.function}</td>
-                                <td className="px-3 py-2 text-sm">{renderStatusBadge(appointment.status)}</td>
-                                <td className="px-3 py-2 flex space-x-2 operation" >
-                                    <button onClick={() => handleView(appointment)}>
-                                        <Eye className="h-4 w-4" />
-                                    </button>
-                                    {permissions.canUpdate && (
-                                        <>
-                                            <button onClick={() => {
-                                                setSelectedAppointment(appointment);
-                                                setIsApproveModalOpen(true);
-                                            }}>
-                                                <Check className="h-4 w-4 text-green-600" />
-                                            </button>
-                                            <button onClick={() => {
-                                                setSelectedAppointment(appointment);
-                                                setIsRejectModalOpen(true);
-                                            }}>
-                                                <X className="h-4 w-4 text-red-600" />
-                                            </button>
-                                        </>
-                                    )}
-                                    {permissions.canUpdate && (
-                                        <button
-                                            className="text-yellow-600 text-sm hover:underline"
-                                            onClick={() => handleReschedule(appointment)}
-                                        >
-                                            <Calendar className="h-4 w-4 mr-1" />
-                                        </button>
-                                    )}
-                                    {permissions.canDelete && (
-                                        <button
-                                            className="text-red-600 text-sm hover:underline"
-                                            onClick={() => handleDelete(appointment)}
-                                        >
-                                            <Trash2 className="h-4 w-4 mr-1" />
-                                        </button>
-                                    )}
-                                </td>
+                                </th>
+                                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">TIME</th>
+                                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">NAMES</th>
+                                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Gender</th>
+                                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Cellphone</th>
+                                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Purpose</th>
+                                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Institution</th>
+                                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Function</th>
+                                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Status</th>
+                                <th className="w-24 px-3 py-2 text-left text-xs font-medium operation text-gray-500">Actions</th>
                             </tr>
-                        ))}
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                            {filteredAppointments.map((appointment) => (
+                                <tr key={appointment.id} className="hover:bg-gray-50">
+                                    <td className="px-3 py-2">
+                                        <input
+                                            type="checkbox"
+                                            className="rounded border-gray-300"
+                                            checked={selectedRows.includes(appointment.id)}
+                                            onChange={(e) => {
+                                                setSelectedRows(prev =>
+                                                    e.target.checked
+                                                        ? [...prev, appointment.id]
+                                                        : prev.filter(id => id !== appointment.id)
+                                                );
+                                            }}
+                                        />
+                                    </td>
+                                    <td className="px-3 py-2 text-sm whitespace-nowrap">
+                                        {new Date(appointment.request_time).toLocaleTimeString()}
+                                    </td>
+                                    <td className="px-3 py-2 text-sm">{appointment.names}</td>
+                                    <td className="px-3 py-2 text-sm">{appointment.gender}</td>
+                                    <td className="px-3 py-2 text-sm">{appointment.cellphone}</td>
+                                    <td className="px-3 py-2 text-sm">{appointment.purpose}</td>
+                                    <td className="px-3 py-2 text-sm">{appointment.institution}</td>
+                                    <td className="px-3 py-2 text-sm">{appointment.function}</td>
+                                    <td className="px-3 py-2 text-sm">{renderStatusBadge(appointment.status)}</td>
+                                    <td className="px-3 py-2 flex space-x-2 operation" >
+                                        <button onClick={() => handleView(appointment)}>
+                                            <Eye className="h-4 w-4" />
+                                        </button>
+                                        {permissions.canUpdate && (
+                                            <>
+                                                <button onClick={() => {
+                                                    setSelectedAppointment(appointment);
+                                                    setIsApproveModalOpen(true);
+                                                }}>
+                                                    <Check className="h-4 w-4 text-green-600" />
+                                                </button>
+                                                <button onClick={() => {
+                                                    setSelectedAppointment(appointment);
+                                                    setIsRejectModalOpen(true);
+                                                }}>
+                                                    <X className="h-4 w-4 text-red-600" />
+                                                </button>
+                                            </>
+                                        )}
+                                        {permissions.canUpdate && (
+                                            <button
+                                                className="text-yellow-600 text-sm hover:underline"
+                                                onClick={() => handleReschedule(appointment)}
+                                            >
+                                                <Calendar className="h-4 w-4 mr-1" />
+                                            </button>
+                                        )}
+                                        {permissions.canDelete && (
+                                            <button
+                                                className="text-red-600 text-sm hover:underline"
+                                                onClick={() => handleDelete(appointment)}
+                                            >
+                                                <Trash2 className="h-4 w-4 mr-1" />
+                                            </button>
+                                        )}
+                                    </td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
                 </PrintButton>
