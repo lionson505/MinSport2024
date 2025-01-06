@@ -56,9 +56,8 @@ const ManageClubs = ({ onAdd, onEdit, onDelete, federations, isLoading, actionIc
   }
 
   useEffect(() => {
-    const currentPermissions = logPermissions();
-    setPermissions(currentPermissions); // Update permissions
-    fetchPermissions()
+ 
+    fetchPermissions();
     fetchClubsAndFederations();
   }, [logPermissions]); // Only rerun when permissions are updated
 
