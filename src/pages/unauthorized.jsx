@@ -1,6 +1,15 @@
 import React from "react";
 
+
+
+
 const NoPageFound = () => {
+
+  const isVerified = localStorage.getItem('verified');
+
+  if(isVerified){
+    return <Navigate to="/pending-activation" />;
+  }
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
       <div className="bg-white shadow-md rounded-lg p-8 max-w-md w-full text-center">

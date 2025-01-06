@@ -141,13 +141,23 @@ const Sidebar = () => {
   ];
 
   // Filter links based on permissions
-  const authorizedLinks = sidebarLinks.filter(link => {
-    const hasAccess = hasModuleAccess(link.moduleId);
-    console.log(`Module ${link.title} (${link.moduleId}) access:`, hasAccess);
-    return hasAccess;
-  });
+  useEffect(() => {
+    const checkPermissions = async () => {
+        const authorizedLinksArray = [];
+        
+        for (const link of sidebarLinks) {
+            const hasAccess = await hasModuleAccess(link.moduleId);
+            if (hasAccess) {
+                authorizedLinksArray.push(link);
+            }
+        }
+        
+        setAuthorizedLinks(authorizedLinksArray);
+    };
 
-  console.log('Authorized links:', authorizedLinks);
+    checkPermissions();
+}, []);
+
 
   return (
       <aside
@@ -173,25 +183,25 @@ const Sidebar = () => {
 
           <div className="flex-1 overflow-y-auto">
             <nav className="px-3 py-4 space-y-1">
-              {authorizedLinks.map((item) => {
-                const isActive = location.pathname === item.path;
-                return (
-                    <NavLink
-                        key={item.title}
-                        to={item.path}
-                        className={`flex items-center space-x-3 px-4 py-2.5 rounded-lg transition-colors ${
-                            isActive
-                                ? "bg-blue-600 text-white"
-                                : isDarkMode
-                                    ? "text-gray-300 hover:bg-gray-800"
-                                    : "text-gray-600 hover:bg-gray-100"
-                        }`}
-                    >
-                      <item.icon className="h-5 w-5" />
-                      <span className="text-sm">{item.title}</span>
-                    </NavLink>
-                );
-              })}
+            {authorizedLinks.map((item) => {
+                        const isActive = location.pathname === item.path;
+                        return (
+                            <NavLink
+                                key={item.title}
+                                to={item.path}
+                                className={`flex items-center space-x-3 px-4 py-2.5 rounded-lg transition-colors ${
+                                    isActive
+                                        ? "bg-blue-600 text-white"
+                                        : isDarkMode
+                                            ? "text-gray-300 hover:bg-gray-800"
+                                            : "text-gray-600 hover:bg-gray-100"
+                                }`}
+                            >
+                                <item.icon className="h-5 w-5" />
+                                <span className="text-sm">{item.title}</span>
+                            </NavLink>
+                        );
+                    })}
             </nav>
           </div>
 
