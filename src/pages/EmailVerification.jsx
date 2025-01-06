@@ -1,36 +1,44 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-
 import axiosInstance from '../utils/axiosInstance';
 
 const EmailVerification = () => {
-  const { token } = useParams(); // Extract the token from the URL
+  const { token } = useParams();
   const [message, setMessage] = useState('');
-  const [status, setStatus] = useState('loading'); // 'loading', 'success', 'error'
+  const [status, setStatus] = useState('loading');
   const navigate = useNavigate();
-  
-
+    
   useEffect(() => {
     const verifyEmail = async () => {
-        try {
-          const response = await axiosInstance.get(`/auth/verify-email/${token}`);
-          console.log("Token being sent:", token);
-          if (response.status === 200) {
-            await setMessage("Email Verified successfuly"); // Corrected to response.data
-            await localStorage.setItem('verified', true);
-            await setStatus('success');
-            await setTimeout(() => navigate('/login'), 3000); // Redirect to login in 3 seconds
-          } else {
-            setMessage('Invalid or expired verification token.');
-            setStatus('error');
-          }
-        } catch (error) {
-          console.error("Verification error:", error.response?.data || error.message); // Log detailed error
-          setMessage('An error occurred during verification.');
+      try {
+        // Make sure token exists
+        if (!token) {
+          setMessage('Verification token is missing.');
           setStatus('error');
+          return;
         }
-      };
 
+        const response = await axiosInstance.get(`/auth/verify-email/${token}`);
+        
+        // Check for successful verification (status 200)
+        if (response.status === 200) {
+          setMessage('Email verified successfully');
+          localStorage.setItem('verified', 'true');
+          setStatus('success');
+          // Use a normal timeout instead of async/await
+          setTimeout(() => navigate('/login'), 3000);
+        }
+      } catch (error) {
+        // Handle specific error cases
+        if (error.response?.status === 400) {
+          setMessage(error.response.data.error || 'Invalid or expired verification token');
+        } else {
+          setMessage('An error occurred during verification. Please try again.');
+        }
+        setStatus('error');
+        console.error('Verification error:', error.response?.data || error.message);
+      }
+    };
 
     verifyEmail();
   }, [token, navigate]);
