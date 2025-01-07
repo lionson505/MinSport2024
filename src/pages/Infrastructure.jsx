@@ -34,7 +34,6 @@ const Infrastructure = () => {
       await fetchInfrastructure();
       const currentPermissions = await logPermissions();
       await  setPermissions(currentPermissions);
-      console.log("perms:", permissions)
     };
     
     fetchData();

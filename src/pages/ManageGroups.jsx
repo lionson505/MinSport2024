@@ -161,6 +161,7 @@ function ManageGroups() {
       
       setIsEditModalOpen(false);
       toast.success('Group updated successfully');
+    window.location.reload();
     } catch (err) {
       toast.error('Failed to update group');
       console.error('Error updating group:', err);
@@ -235,6 +236,7 @@ function ManageGroups() {
 
       if (response.status === 200 || response.status === 201) {
         toast.success('Permissions updated successfully');
+      window.location.reload();
         setIsManageModulesPermissionsModalOpen(false);
       } else {
         toast.error('Failed to update permissions');

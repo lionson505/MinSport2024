@@ -74,6 +74,7 @@ function EditGroupModal({ isOpen, onClose, onEdit, groupData }) {
 
     onEdit(updatedGroup);
     toast.success('Group updated successfully');
+    
     onClose();
   };
 

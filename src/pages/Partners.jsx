@@ -42,9 +42,13 @@ const Partners = () => {
     canDelete: false
   })
 
+  const fetchAndSetPermissions =async () => {
+    const permissionsCurrent = await permissionsLog();
+    await setPermissions(permissionsCurrent);
+  }
+
   useEffect(() => {
-    const permissionsCurrent = permissionsLog()
-    setPermissions(permissionsCurrent)
+    fetchAndSetPermissions();
     const fetchData = async () => {
       setIsLoading(true);
       try {

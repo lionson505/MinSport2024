@@ -136,8 +136,7 @@ function NationalTeams() {
             })
         );
         const currentPermissions = await logPermissions();
-        await setPermissions(currentPermissions);
-        console.log("perms:", permissions);
+        setPermissions(currentPermissions);
         setTeams(teamResponse.data);
         setPlayers(enrichedPlayers);
         setClubs(clubResponse.data);

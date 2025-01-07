@@ -133,12 +133,6 @@ export const hasPermissionSync = (moduleId, action) => {
     }
 };
 
-
-
-
-
-
-
 // // import { useAuth } from '../contexts/AuthContext';
 // //
 // // export const usePermissions = () => {
@@ -251,7 +245,7 @@ export const hasPermissionSync = (moduleId, action) => {
 //     }
 // };
 //
-import { useAuth } from '../contexts/AuthContext';
+// import { useAuth } from '../contexts/AuthContext';
 
 // export const usePermissions = () => {
 //     const checkPermission = (moduleId, action) => {

@@ -20,12 +20,7 @@ function LandingPageMatch() {
     const [searchTerm, setSearchTerm] = useState('');
     const { matches = [], liveMatchError } = useFetchLiveMatches([]);
 
-    if(liveMatchError) {
-        return <div>Error in fetching Matches</div>;
-    }
-    if(!matches.length) {
-        return <div>No match have fetched1</div>;
-    }
+   
 
     // Filter matches based on the active tab
     const filteredMatches = matches.filter(match => {

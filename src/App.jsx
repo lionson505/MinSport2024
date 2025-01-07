@@ -138,6 +138,7 @@ function App() {
                       <Route path="/events" element={<EventsPage />} />
                       <Route path="/federation" element={<LandingPageFederation />} />
                       <Route path="/match" element={<LandingPageMatch />} />
+                      <Route path="/matchs" element={<MatchOperatorDashboard />} />
                       <Route path="/map" element={<MyMap/>} />
                       <Route path="/pending-activation" element={<PendingActivation />} />
                       <Route path="/notAuthorized" element={<NoPageFound/>} />
@@ -251,7 +252,7 @@ function App() {
                           </ProtectedRoute>
                         } />
                         <Route path="/player-transfer-report" element={
-                          <ProtectedRoute moduleId={MODULE_IDS.PLAYER_TRANSFER_REPORT}>
+                          <ProtectedRoute moduleId={MODULE_IDS.Transfers}>
                             <PlayerTransferReport />
                           </ProtectedRoute>
                         } />

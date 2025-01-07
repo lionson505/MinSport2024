@@ -14,6 +14,7 @@ function AddGroupModal({ isOpen, onClose, onAdd }) {
   const [isDefault, setIsDefault] = useState(false);
   const [permissions, setPermissions] = useState([]);
   const [modules, setModules] = useState([]);
+  const [isLoading, setIsLoading] = useState(false); // New state for loading
 
   useEffect(() => {
     const fetchModules = async () => {
@@ -48,19 +49,21 @@ function AddGroupModal({ isOpen, onClose, onAdd }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     if (!groupName.trim()) {
       toast.error('Please enter a group name');
       return;
     }
-  
+
     const newGroup = {
       name: groupName,
       description: groupDescription,
       isDefault: isDefault,
       permissions: permissions
     };
-  
+
+    setIsLoading(true); // Set loading to true when submission starts
+
     try {
       const response = await axiosInstance.post('/groups', newGroup);
       onAdd(response.data);
@@ -73,9 +76,11 @@ function AddGroupModal({ isOpen, onClose, onAdd }) {
     } catch (error) {
       toast.error('Failed to add group');
       console.error(error);
+    } finally {
+      setIsLoading(false); // Set loading to false when submission ends
     }
   };
-  
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
@@ -193,8 +198,9 @@ function AddGroupModal({ isOpen, onClose, onAdd }) {
                     <Button
                       type="submit"
                       className="bg-blue-600 hover:bg-blue-700 text-white"
+                      disabled={isLoading} // Disable button when loading
                     >
-                      Add Group
+                      {isLoading ? 'Adding...' : 'Add Group'} {/* Show loading text */}
                     </Button>
                   </div>
                 </form>

@@ -121,7 +121,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../utils/permissionUtils';
 import { MODULE_IDS } from '../constants/modules';
-
+import {secureStorage} from '../utils/crypto';
 const ProtectedRoute =  ({ children, moduleId }) => {
 
   const { user } =  useAuth();
