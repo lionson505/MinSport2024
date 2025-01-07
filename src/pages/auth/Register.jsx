@@ -37,6 +37,7 @@ export default function Register() {
     setIsLoading(true);
     try {
       const response = await axiosInstance.post('/auth/register', formData);
+      console.log(response);
       toast.success('Registration successful! Please check your email for verification.');
       navigate('/login');
     } catch (error) {
@@ -256,7 +257,8 @@ export default function Register() {
                   placeholder="Please explain why you want to register..."
                 />
               </div>
-              <div>
+
+              <div className='hidden'>
                 <label htmlFor="federationId" className="block text-sm font-medium text-gray-700 mb-1">
                   Federation ID
                 </label>

@@ -28,6 +28,7 @@ import Academies from './pages/Academies';
 import { Toaster } from 'react-hot-toast';
 import Settings from './pages/Settings';
 import Reports from './pages/Reports';
+import EmailVerification from './pages/EmailVerification';
 import Infrastructure from './pages/Infrastructure';
 import { InfrastructureProvider } from './contexts/InfrastructureContext';
 import SportsTourism from './pages/SportsTourism';
@@ -142,6 +143,7 @@ function App() {
                       <Route path="/map" element={<MyMap/>} />
                       <Route path="/pending-activation" element={<PendingActivation />} />
                       <Route path="/notAuthorized" element={<NoPageFound/>} />
+                      <Route path="/verify-email/:token" element={<EmailVerification />} />
 
                       {/* Protected Routes */}
                       <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>

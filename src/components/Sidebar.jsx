@@ -33,7 +33,7 @@ const Sidebar = () => {
     { title: "Reports", path: "/reports", icon: BarChart3, moduleId: MODULE_IDS.REPORTS },
     { title: "Sports for all", path: "/sports-for-all", icon: Trophy, moduleId: MODULE_IDS.SPORTS_FOR_ALL },
     { title: "Transfers", path: "/transfers", icon: UserPlus, moduleId: MODULE_IDS.TRANSFERS },
-    { title: "Match", path: "/matchs", icon: Timer, moduleId: MODULE_IDS.MATCH }
+    { title: "Match", path: "/match", icon: Timer, moduleId: MODULE_IDS.MATCH }
   ];
 
   useEffect(() => {

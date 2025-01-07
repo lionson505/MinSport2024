@@ -1,8 +1,11 @@
 import axios from 'axios';
-import {secureStorage} from "./crypto.js";
 
 const axiosInstance = axios.create({
+<<<<<<< HEAD
   baseURL:  import.meta.env.VITE_API_URL,
+=======
+      baseURL: import.meta.env.VITE_API_URL,
+>>>>>>> d16b69089c79e358ea3a905f1a8ad386fe32a09a
   headers: {
     'Content-Type': 'application/json',
   } 

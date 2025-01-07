@@ -45,3 +45,30 @@
 //     MATCH_OPERATOR: 20,
 // };
 
+<<<<<<< HEAD
+=======
+export const MODULE_IDS = {
+    Dashboard: 1,  // Matches the moduleId from your permissions
+    NationalTeams: 2,
+    Federations: 3,
+    SportsProfessionals: 4,
+    Trainings: 5,
+    IsongaPrograms: 6,
+    Academies: 7,
+    Infrastructure: 8,
+    Sports tourism: 9,
+    Documents: 10,
+    Contracts: 11,
+    Appointments: 12,
+    Appointments-Ps: 13,
+    Appointments-Ministers: 14,
+    Employee: 15,
+    Users: 16,
+    Partners: 17,
+    Reports: 18,
+    Sportsforall: 19,
+    Transfers: 20,
+    Match: 21,
+};
+
+>>>>>>> d16b69089c79e358ea3a905f1a8ad386fe32a09a
