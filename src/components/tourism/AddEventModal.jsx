@@ -100,7 +100,7 @@ const AddEventModal = ({ isOpen, onClose }) => {
       if (formData.video) {
         formDataToSend.append('video', formData.video);
       }
-
+console.log(formData)
       const response = await axiosInstance.post('/sports-tourism-events', formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data',
