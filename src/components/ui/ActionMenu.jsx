@@ -15,7 +15,7 @@ const ActionMenu = ({ onEdit, onDelete, onDownload }) => {
     const fetchAndSetPermissions = async (moduleName)=> {
         const perms = await usePermissionLogger(moduleName)
         const currentPermissions = await perms()
-        await setPermissions(currentPermissions)
+        return currentpermissions;
 
     };
 
@@ -36,6 +36,8 @@ const ActionMenu = ({ onEdit, onDelete, onDownload }) => {
     useEffect(() => {
         if (currentLocation === "trainings") {
             fetchAndSetPermissions("trainings");
+            
+
         } else if (currentLocation === "federations") {
             // const logPermissions = usePermissionLogger("federations");
             // const currentPermissions = logPermissions();

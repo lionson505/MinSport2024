@@ -14,7 +14,7 @@ import {usePermissionLogger} from "../utils/permissionLogger.js";
 
 const SportsProfessionals = () => {
 
-  const logPermissions = usePermissionLogger('sports_professionals')
+  const logPermissions = usePermissionLogger('SPORTS_PROFESSIONALS')
 
   const[permissions, setPermissions] = useState({
     canCreate: false,

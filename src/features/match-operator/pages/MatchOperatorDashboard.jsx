@@ -23,7 +23,7 @@ export function MatchOperatorDashboard() {
   const { matches = [], liveMatchError } = useFetchLiveMatches();
   const { nationalTeam = [], nationalTeamError } = useFetchNationalTeam([])
   const { players = [], playerError } = useFetchPlayers([])
-  const permissionsLog = usePermissionLogger('match_operator')
+  const permissionsLog = usePermissionLogger('match')
   const [permissions,setPermissions] = useState({
     canCreate: false,
     canRead: false,

@@ -60,7 +60,7 @@ const ForgotPassword = () => {
             </form>
 
             {message && (
-                <div className="mt-4 text-center text-sm text-gray-600">
+                <div className="mt-4 text-center font-bold text-l text-gray-600">
                   {message}
                 </div>
             )}

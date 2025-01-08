@@ -105,7 +105,6 @@ const IsongaPrograms = () => {
         ]);
         const currentPermissions = await logPermissions();
         await setPermissions(currentPermissions);
-        console.log("perms:", permissions);
         setPrograms(programsResponse?.data || []);
         setFilteredPrograms(programsResponse?.data || []);
 

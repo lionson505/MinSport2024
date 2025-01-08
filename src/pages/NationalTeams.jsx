@@ -57,7 +57,7 @@ function NationalTeams() {
   const [selectedGames, setSelectedGames] = useState([]);
   const [playerStaffList, setPlayerStaffList] = useState([]);
   const [selectedPlayerStaff, setSelectedPlayerStaff] = useState('');
-  const logPermissions = usePermissionLogger('national_teams')
+  const logPermissions = usePermissionLogger('NATIONAL_TEAMS')
 
   const[permissions, setPermissions] = useState({
     canCreate: false,
@@ -906,6 +906,7 @@ function NationalTeams() {
   return (
       <ErrorBoundary>
         <div className="p-6">
+          {permissions.canCreate && (
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-semibold">Manage National Team</h1>
             <button
@@ -916,7 +917,8 @@ function NationalTeams() {
               <span>Add National Team</span>
             </button>
           </div>
-
+          )
+          }
           <div className="mb-6">
             <nav className="flex space-x-4">
               {tabs.map((tab) => (
