@@ -236,7 +236,7 @@ function LandingPageMatch() {
                                 <div className="flex items-center justify-center col-span-full min-h-[400px]">
                                 <Fallback
                                     className="w-full h-full flex items-center justify-center bg-gray-50 rounded-lg shadow-md"
-                                    message="No Past Games Available"
+                                    message="No Games Available"
                                     onRetry={() => console.log("Retry clicked!")}
                                 />
                             </div>
@@ -325,7 +325,7 @@ function LandingPageMatch() {
                             <div className="flex items-center justify-center col-span-full min-h-[400px]">
                             <Fallback
                                 className="w-full h-full flex items-center justify-center bg-gray-50 rounded-lg shadow-md"
-                                message="No Past Games Available"
+                                message="No Live Games Available"
                                 onRetry={() => console.log("Retry clicked!")}
                             />
                         </div>
@@ -407,7 +407,7 @@ function LandingPageMatch() {
                             <div className="flex items-center justify-center col-span-full min-h-[400px]">
                                 <Fallback
                                     className="w-full h-full flex items-center justify-center bg-gray-50 rounded-lg shadow-md"
-                                    message="No Past Games Available"
+                                    message="No Upcoming Games Available"
                                     onRetry={() => console.log("Retry clicked!")}
                                 />
                             </div>

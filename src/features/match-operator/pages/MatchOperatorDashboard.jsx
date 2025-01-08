@@ -10,7 +10,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../../components/ui
 import axiosInstance from '../../../utils/axiosInstance';
 import useFetchLiveMatches from '../../../utils/fetchLiveMatches';
 import { useFetchNationalTeam, useFetchPlayers } from '../../../utils/fetchMatchAndPlayers';
-import {usePermissionLogger} from "../../../utils/permissionLogger.js";
+import { usePermissionLogger } from "../../../utils/permissionLogger.js";
+import Fallback from '../../../pages/public/fallback.jsx';
 
 export function MatchOperatorDashboard() {
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -24,7 +25,7 @@ export function MatchOperatorDashboard() {
   const { nationalTeam = [], nationalTeamError } = useFetchNationalTeam([])
   const { players = [], playerError } = useFetchPlayers([])
   const permissionsLog = usePermissionLogger('match')
-  const [permissions,setPermissions] = useState({
+  const [permissions, setPermissions] = useState({
     canCreate: false,
     canRead: false,
     canUpdate: false,
@@ -37,8 +38,8 @@ export function MatchOperatorDashboard() {
     checkMatchAvailability
   } = useMatchOperator();
 
-  const fetchPermissions = async ()=> {
-    const currentPermissions =await permissionsLog();
+  const fetchPermissions = async () => {
+    const currentPermissions = await permissionsLog();
     await setPermissions(currentPermissions);
   }
 
@@ -85,30 +86,30 @@ export function MatchOperatorDashboard() {
   // live match
 
   if (liveMatchError) {
-    return <div>Error In live match fetching </div>;
+    console.error("Problem in getting matches")
   }
 
   if (!matches.length) {
-    return <div>No matches fetched </div>;
+    console.error("Problem in getting matches")
   }
 
   // national team
 
   if (nationalTeamError) {
-    return <div>Error in fetching natinal teams!</div>;
+    console.error("Problem in getting national teams")
   }
   // console.log('teams : ', nationalTeam)
   if (!nationalTeam.length) {
-    return <div>No National team fetched!</div>;
+    console.error("No Teams Available")
   }
 
   // nation team players 
-  if(playerError) {
-    return <div>Error in fetching player!</div>;
+  if (playerError) {
+    console.error("Problem in getting Players")
   }
-  
-  if(!players.length) {
-    return <div>No fetched Players</div>;
+
+  if (!players.length) {
+    console.error("No Players")
   }
 
   const handleSetupComplete = () => {
@@ -132,6 +133,8 @@ export function MatchOperatorDashboard() {
     if (status === 'all') return matches;
     return matches.filter(match => match.status === status);
   };
+
+  console.log("filterMatches: ", { filterMatches })
 
   return (
     <div className="p-6 space-y-6">
@@ -165,79 +168,93 @@ export function MatchOperatorDashboard() {
         {['all', 'LIVE', 'UPCOMING', 'COMPLETED'].map((status) => (
           <TabsContent key={status} value={status}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filterMatches(status).map((currentMatch) => {
-                const dateOnly = currentMatch.startTime
-                  ? new Date(currentMatch.startTime).toISOString().split('T')[0]
-                  : 'N/A';
+              {filterMatches(status).length === 0 ? (
 
-                const timeOnly = currentMatch.startTime
-                  ? new Date(currentMatch.startTime).toISOString().split('T')[1].split('.')[0]
-                  : 'N/A';
+                <div className="flex items-center justify-center col-span-full min-h-[400px]">
+                  <Fallback
+                    className="w-full h-full flex items-center justify-center bg-gray-50 rounded-lg shadow-md"
+                    message="No Past Games Available"
+                    onRetry={() => console.log("Retry clicked!")}
+                    response={status}
+                  />
+                </div>
+                // <h1>No matches with status: {status}</h1>
+              ) : (
+                filterMatches(status).map((currentMatch) => {
+                  const dateOnly = currentMatch.startTime
+                    ? new Date(currentMatch.startTime).toISOString().split('T')[0]
+                    : 'N/A';
 
-                return (
-                  <div
-                    key={currentMatch.id}
-                    className="bg-white p-4 rounded-lg shadow cursor-pointer hover:shadow-md transition-shadow"
-                    onClick={() => handleMatchClick(currentMatch)}
-                   >
-                    <div className="flex justify-between items-center mb-4">
-                      <div>
-                        <span className="text-sm font-medium text-gray-500">
-                          {currentMatch.competition || 'Unknown Competition'}
+                  const timeOnly = currentMatch.startTime
+                    ? new Date(currentMatch.startTime).toISOString().split('T')[1].split('.')[0]
+                    : 'N/A';
+
+                  return (
+                    <div
+                      key={currentMatch.id}
+                      className="bg-white p-4 rounded-lg shadow cursor-pointer hover:shadow-md transition-shadow"
+                      onClick={() => handleMatchClick(currentMatch)}
+                    >
+                      <div className="flex justify-between items-center mb-4">
+                        <div>
+                          <span className="text-sm font-medium text-gray-500">
+                            {currentMatch.competition || 'Unknown Competition'}
+                          </span>
+                          <div className="text-xs text-gray-400 mt-1">
+                            {currentMatch.gameType || 'Unknown Game Type'}
+                          </div>
+                        </div>
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs ${currentMatch.status === 'LIVE'
+                            ? 'bg-red-100 text-red-600'
+                            : currentMatch.status === 'UPCOMING'
+                              ? 'bg-green-100 text-green-600'
+                              : 'bg-gray-100 text-gray-600'
+                            }`}
+                        >
+                          {currentMatch.status}
                         </span>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <span className="font-medium">
+                              {currentMatch.homeTeam || 'Unknown Home Team'}
+                            </span>
+                          </div>
+                          <span className="text-xl font-bold">
+                            {currentMatch.homeScore || '0'}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <span className="font-medium">
+                              {currentMatch.awayTeam || 'Unknown Away Team'}
+                            </span>
+                          </div>
+                          <span className="text-xl font-bold">
+                            {currentMatch.awayScore || '0'}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 pt-4 border-t">
+                        <div className="flex justify-between items-center text-sm text-gray-500">
+                          <span>{currentMatch.venue || 'Unknown venue'}</span>
+                          <span>{timeOnly}</span>
+                        </div>
                         <div className="text-xs text-gray-400 mt-1">
-                          {currentMatch.gameType || 'Unknown Game Type'}
+                          {dateOnly}
                         </div>
                       </div>
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs ${currentMatch.status === 'LIVE'
-                          ? 'bg-red-100 text-red-600'
-                          : currentMatch.status === 'UPCOMING'
-                            ? 'bg-green-100 text-green-600'
-                            : 'bg-gray-100 text-gray-600'
-                          }`}
-                      >
-                        {currentMatch.status}
-                      </span>
                     </div>
-
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <span className="font-medium">
-                            {currentMatch.homeTeam || 'Unknown Home Team'}
-                          </span>
-                        </div>
-                        <span className="text-xl font-bold">
-                          {currentMatch.homeScore || '0'}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <span className="font-medium">
-                            {currentMatch.awayTeam || 'Unknown Away Team'}
-                          </span>
-                        </div>
-                        <span className="text-xl font-bold">
-                          {currentMatch.awayScore || '0'}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 pt-4 border-t">
-                      <div className="flex justify-between items-center text-sm text-gray-500">
-                        <span>{currentMatch.venue || 'Unknown venue'}</span>
-                        <span>{timeOnly}</span>
-                      </div>
-                      <div className="text-xs text-gray-400 mt-1">
-                        {dateOnly}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
+
           </TabsContent>
         ))}
       </Tabs>

@@ -25,7 +25,7 @@ const Fallback = ({ message, onRetry, response }) => {
             {response ? (
               `${message} ' ${response} '`
             ) : (
-              "Type any word related to match ..."
+              `${message}`
             )}
           </h1>
           <p className="text-gray-500">
