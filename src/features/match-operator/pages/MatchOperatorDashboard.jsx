@@ -77,7 +77,7 @@ export function MatchOperatorDashboard() {
         await initializeMatchSetup(match.id);
         setSelectedMatch(match);
         setSetupMode(true);
-      } else if (match.status === 'LIVE') {
+      } else if (match.status === 'ONGOING') {
         setSelectedMatch(match);
         setSetupMode(false);
       }
