@@ -169,7 +169,7 @@ function LandingPageMatch() {
                     </div>
                 </TabsList>
                 <TabsContent value="all" className={`mt-6 flex justify-center ${activeTab !== 'all' ? 'hidden' : ''}`}>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-5/6 p-6 bg-white rounded-lg shadow-md">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full p-6 bg-white rounded-lg shadow-md">
                         {filteredMatches.length > 0 ? (
                             filteredMatches.map((match) =>
                                 <div
@@ -256,7 +256,7 @@ function LandingPageMatch() {
 
                 {/* Live Events Tab */}
                 <TabsContent value="live" className={`mt-6 flex justify-center ${activeTab !== 'live' ? 'hidden' : ''}`}>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-5/6 p-6 bg-white rounded-lg shadow-md">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full p-6 bg-white rounded-lg shadow-md">
                         {filteredMatches.some(match => match.status === 'LIVE') ? (
                             filteredMatches.map((match) =>
                                 match.status === 'LIVE' ? (
@@ -346,7 +346,7 @@ function LandingPageMatch() {
                 {/* Upcoming Events Tab */}
                 {/* match.status === 'UPCOMING' ? ( */}
                 <TabsContent value="upcoming" className={`mt-6 flex justify-center ${activeTab !== 'upcoming' ? 'hidden' : ''}`}>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-5/6 p-6 bg-white rounded-lg shadow-md">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full p-6 bg-white rounded-lg shadow-md">
                         {filteredMatches.some(match => match.status === 'PAST') ? (
                             filteredMatches.map((match) =>
                                 match.status === 'PAST' ? (
@@ -430,7 +430,7 @@ function LandingPageMatch() {
                     value="past"
                     className={`mt-6 w-full flex justify-center items-center ${activeTab !== 'past' ? 'hidden' : ''}`}
                 >
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-5/6 p-6 bg-white rounded-lg shadow-md">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full p-6 bg-white rounded-lg shadow-md">
                         {filteredMatches.some(match => match.status === 'PAST') ? (
                             filteredMatches.map((match) =>
                                 match.status === 'PAST' ? (
@@ -515,7 +515,7 @@ function LandingPageMatch() {
 
                 {/* search events Tab  */}
                 <TabsContent value="search" className={`mt-6 flex justify-center ${activeTab !== 'search' ? 'hidden' : ''}`}>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-5/6 p-6 bg-white rounded-lg shadow-md">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full p-6 bg-white rounded-lg shadow-md">
                         {searchedMatches.length > 0 ? (
                             searchedMatches.map((searchedMatch) =>
                                 <div
