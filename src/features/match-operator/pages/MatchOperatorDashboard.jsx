@@ -124,7 +124,7 @@ export function MatchOperatorDashboard() {
   }
 
   if (!players.length) {
-    console.error("No Players")
+    // console.error("No Players")
   }
 
   const handleSetupComplete = () => {
@@ -149,7 +149,7 @@ export function MatchOperatorDashboard() {
     return matches.filter(match => match.status === status);
   };
 
-  console.log("filterMatches: ", { filterMatches })
+  // console.log("filterMatches: ", { filterMatches })
 
   return (
     <div className="p-6 space-y-6">
