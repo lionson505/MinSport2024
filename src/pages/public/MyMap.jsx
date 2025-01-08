@@ -1,48 +1,153 @@
-import React, { useState, useCallback } from 'react'
-import GoogleMap from '../../components/reusable/GoogleMap'
-import BookingModal from '../../components/reusable/BookingModal'
-
-const sportsFacilities = [
-  { id: '1', name: 'Amahoro National Stadium', position: { lat: -1.9441, lng: 30.0619 }, type: 'Football' },
-  { id: '2', name: 'Kigali Arena', position: { lat: -1.9530, lng: 30.0645 }, type: 'Basketball' },
-  { id: '3', name: 'Nyamirambo Regional Stadium', position: { lat: -1.9772, lng: 30.0444 }, type: 'Football' },
-  { id: '4', name: 'Kigali Golf Club', position: { lat: -1.9486, lng: 30.1128 }, type: 'field' },
-
-]
+import React, { useState, useCallback, useEffect } from 'react';
+import GoogleMap from '../../components/reusable/GoogleMap';
+import axiosInstance from '../../utils/axiosInstance'; // Import axiosInstance
 
 export default function MyMap() {
-  const apiKey = 'AIzaSyA_Is24-zuhqdSyUYlYqx6JGyTrG1iqaiE'
-  const [selectedFacility, setSelectedFacility] = useState(null)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [filteredFacilities, setFilteredFacilities] = useState(sportsFacilities)
-  const [infrustructure, setInfrustructure] = useState('');
+  const apiKey = 'AIzaSyA_Is24-zuhqdSyUYlYqx6JGyTrG1iqaiE';
+  const [selectedFacility, setSelectedFacility] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredFacilities, setFilteredFacilities] = useState([]);
+  const [infrastructure, setInfrastructure] = useState('');
+  const [infrastructureCategory, setInfrastructureCategory] = useState('');
+  const [infrastructureSubCategory, setInfrastructureSubCategory] = useState('');
+  const [facilities, setFacilities] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [subCategories, setSubCategories] = useState([]);
+
+  useEffect(() => {
+    // Fetch facilities, categories, and subcategories from the API
+    const fetchData = async () => {
+      try {
+        const [facilitiesResponse, categoriesResponse, subCategoriesResponse] = await Promise.all([
+          axiosInstance.get('/infrastructures'),
+          axiosInstance.get('/infrastructure-categories'),
+          axiosInstance.get('/infrastructure-subcategories'),
+        ]);
+
+        const formattedFacilities = facilitiesResponse.data.map((facility) => ({
+          id: facility.id,
+          name: facility.name,
+          position: {
+            lat: facility.latitude,
+            lng: facility.longitude,
+          },
+          infraCategoryId: facility.infraCategoryId,
+          infraSubCategoryId: facility.infraSubCategoryId,
+        }));
+
+        setFacilities(formattedFacilities);
+        setFilteredFacilities(formattedFacilities);
+        setCategories(categoriesResponse.data);
+        setSubCategories(subCategoriesResponse.data);
+
+        console.log('Fetched facilities:', formattedFacilities);
+        console.log('Fetched categories:', categoriesResponse.data);
+        console.log('Fetched subcategories:', subCategoriesResponse.data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleFacilityClick = useCallback((facility) => {
-    setSelectedFacility(facility)
-  }, [])
+    setSelectedFacility(facility);
+    setInfrastructure(facility.name);
+    const category = categories.find((cat) => cat.id === facility.infraCategoryId);
+    const subCategory = subCategories.find((sub) => sub.id === facility.infraSubCategoryId);
+
+    setInfrastructureCategory(category ? category.name : '');
+    setInfrastructureSubCategory(subCategory ? subCategory.name : '');
+  }, [categories, subCategories]);
 
   const handleSearch = useCallback(() => {
-    const filtered = sportsFacilities.filter(facility =>
+    const filtered = facilities.filter(facility =>
       facility.name.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    setFilteredFacilities(filtered)
-  }, [searchQuery])
+    );
+    setFilteredFacilities(filtered);
+  }, [searchQuery, facilities]);
 
   const handleReset = useCallback(() => {
-    setSearchQuery('')
-    setFilteredFacilities(sportsFacilities)
-  }, [])
+    setSearchQuery('');
+    setFilteredFacilities(facilities);
+  }, [facilities]);
 
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [date, setDate] = useState('')
-  const [message, setMessage] = useState('')
+  const handleInfrastructureChange = (value) => {
+    setInfrastructure(value);
+    const selected = facilities.find((facility) => facility.name === value);
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    console.log('Form submitted:', { name, email, date, message, infrustructure })
-    onClose()
-  }
+    if (selected) {
+      const category = categories.find((cat) => cat.id === selected.infraCategoryId);
+      const subCategory = subCategories.find((sub) => sub.id === selected.infraSubCategoryId);
+
+      setInfrastructureCategory(category ? category.name : '');
+      setInfrastructureSubCategory(subCategory ? subCategory.name : '');
+    } else {
+      setInfrastructureCategory('');
+      setInfrastructureSubCategory('');
+    }
+  };
+
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [gender, setGender] = useState('');
+  const [phone, setPhone] = useState('');
+  const [reason, setReason] = useState('');
+  const [bookingDateFrom, setBookingDateFrom] = useState('');
+  const [bookingDateTo, setBookingDateTo] = useState('');
+  const [bookingTimeFrom, setBookingTimeFrom] = useState('');
+  const [bookingTimeTo, setBookingTimeTo] = useState('');
+  const [message, setMessage] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const selectedFacility = facilities.find(facility => facility.name === infrastructure);
+
+    if (!selectedFacility) {
+      alert('Please select a valid infrastructure.');
+      return;
+    }
+
+    const bookingData = {
+      infraCategoryId: selectedFacility.infraCategoryId,
+      infraSubCategoryId: selectedFacility.infraSubCategoryId,
+      infrastructureId: selectedFacility.id,
+      name,
+      gender,
+      email,
+      phone,
+      reason,
+      bookingDateFrom: new Date(`${bookingDateFrom}T00:00:00`).toISOString(),
+      bookingDateTo: new Date(`${bookingDateTo}T00:00:00`).toISOString(),
+      bookingTimeFrom: new Date(`${bookingDateFrom}T${bookingTimeFrom}`).toISOString(),
+      bookingTimeTo: new Date(`${bookingDateTo}T${bookingTimeTo}`).toISOString(),
+      status: 'Pending',
+    };
+
+    console.log('Submitting booking data:', bookingData);
+
+    try {
+      const response = await axiosInstance.post('/booking-requests', bookingData);
+      console.log('Booking request submitted:', response.data);
+      alert('Booking request submitted successfully!');
+      window.location.reload();
+    } catch (error) {
+      console.error('Error submitting booking request:', error);
+      if (error.response) {
+        console.error('Response data:', error.response.data);
+        console.error('Response status:', error.response.status);
+        console.error('Response headers:', error.response.headers);
+        alert(`Failed to submit booking request: ${error.response.data.message || 'Unknown error'}`);
+      } else if (error.request) {
+        console.error('Request data:', error.request);
+        alert('No response received from server.');
+      } else {
+        console.error('Error message:', error.message);
+        alert('Error in setting up the request.');
+      }
+    }
+  };
 
   return (
     <div className="container mx-auto p-4">
@@ -80,7 +185,6 @@ export default function MyMap() {
             onFacilityClick={handleFacilityClick}
           />
 
-
           <div className="mt-6">
             <h2 className="text-xl font-semibold mb-2">Legend</h2>
             <div className="flex flex-wrap gap-4">
@@ -98,14 +202,6 @@ export default function MyMap() {
               </div>
             </div>
           </div>
-
-          {selectedFacility && (
-            <BookingModal
-              isOpen={!!selectedFacility}
-              onClose={() => setSelectedFacility(null)}
-              facilityName={selectedFacility.name}
-            />
-          )}
         </div>
         <div className='flex justify-center w-full md:w-1/2'>
           <div className="bg-white rounded-lg shadow-lg max-w-lg w-full p-6">
@@ -114,22 +210,43 @@ export default function MyMap() {
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                  Select Infrustructure
+                <label htmlFor="infrastructure" className="block text-sm font-medium text-gray-700">
+                  Select Infrastructure
                 </label>
-              <select
-              className="w-full border-[1px] bg-transparent rounded-lg px-3 py-2"
-              value={infrustructure}
-              onChange={(e) => setInfrustructure(e.target.value)}
-              required
-             >
-              <option value="">
-              </option>
-              {sportsFacilities.map((sportsFacility) =>
-                <option key={sportsFacility.id}  value={sportsFacility.name}>{sportsFacility.name}</option>
-              )}
-             </select>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                <select
+                  id="infrastructure"
+                  className="w-full border-[1px] bg-transparent rounded-lg px-3 py-2"
+                  value={infrastructure}
+                  onChange={(e) => handleInfrastructureChange(e.target.value)}
+                  required
+                >
+                  <option value="">
+                  </option>
+                  {facilities.map((facility) =>
+                    <option key={facility.id} value={facility.name}>{facility.name}</option>
+                  )}
+                </select>
+                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mt-4">
+                  Infrastructure Category
+                </label>
+                <input
+                  id="category"
+                  type="text"
+                  value={infrastructureCategory}
+                  readOnly
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 bg-gray-100"
+                />
+                <label htmlFor="subCategory" className="block text-sm font-medium text-gray-700 mt-4">
+                  Infrastructure Sub-Category
+                </label>
+                <input
+                  id="subCategory"
+                  type="text"
+                  value={infrastructureSubCategory}
+                  readOnly
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 bg-gray-100"
+                />
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mt-4">
                   Name
                 </label>
                 <input
@@ -140,6 +257,23 @@ export default function MyMap() {
                   required
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
+              </div>
+              <div>
+                <label htmlFor="gender" className="block text-sm font-medium text-gray-700">
+                  Gender
+                </label>
+                <select
+                  id="gender"
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value)}
+                  required
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
               </div>
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700">
@@ -155,34 +289,87 @@ export default function MyMap() {
                 />
               </div>
               <div>
-                <label htmlFor="date" className="block text-sm font-medium text-gray-700">
-                  Preferred Visit Date
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                  Phone
                 </label>
                 <input
-                  id="date"
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
+                  id="phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                   required
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               <div>
-                <label htmlFor="message" className="block text-sm font-medium text-gray-700">
-                  Message (Optional)
+                <label htmlFor="reason" className="block text-sm font-medium text-gray-700">
+                  Reason
                 </label>
-                <textarea
-                  id="message"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  rows="4"
+                <input
+                  id="reason"
+                  type="text"
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  required
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                ></textarea>
+                />
+              </div>
+              <div>
+                <label htmlFor="bookingDateFrom" className="block text-sm font-medium text-gray-700">
+                  Booking Date From
+                </label>
+                <input
+                  id="bookingDateFrom"
+                  type="date"
+                  value={bookingDateFrom}
+                  onChange={(e) => setBookingDateFrom(e.target.value)}
+                  required
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label htmlFor="bookingDateTo" className="block text-sm font-medium text-gray-700">
+                  Booking Date To
+                </label>
+                <input
+                  id="bookingDateTo"
+                  type="date"
+                  value={bookingDateTo}
+                  onChange={(e) => setBookingDateTo(e.target.value)}
+                  required
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label htmlFor="bookingTimeFrom" className="block text-sm font-medium text-gray-700">
+                  Booking Time From
+                </label>
+                <input
+                  id="bookingTimeFrom"
+                  type="time"
+                  value={bookingTimeFrom}
+                  onChange={(e) => setBookingTimeFrom(e.target.value)}
+                  required
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label htmlFor="bookingTimeTo" className="block text-sm font-medium text-gray-700">
+                  Booking Time To
+                </label>
+                <input
+                  id="bookingTimeTo"
+                  type="time"
+                  value={bookingTimeTo}
+                  onChange={(e) => setBookingTimeTo(e.target.value)}
+                  required
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
               </div>
               <button
                 type="submit"
                 className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-300"
-               >
+              >
                 Submit Request
               </button>
             </form>
@@ -190,5 +377,5 @@ export default function MyMap() {
         </div>
       </section>
     </div>
-  )
+  );
 }
