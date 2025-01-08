@@ -182,17 +182,17 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
         dateOfBirth: formData.dateOfBirth ? new Date(formData.dateOfBirth).toISOString() : null,
         joinDate: formData.joinDate ? new Date(formData.joinDate).toISOString() : null,
       };
-
+  
       // Remove any empty string values
       Object.keys(formattedData).forEach(key => {
         if (formattedData[key] === '') {
           formattedData[key] = null;
         }
       });
-
+  
       console.log('Submitting formatted data:', formattedData);
-
-      if (initialData.id) {
+  
+      if (initialData && initialData.id) {
         // If there's an ID, we assume it's an update
         await axiosInstance.put(`/player-staff/${initialData.id}`, formattedData);
         toast.success('Player/Staff updated successfully');
@@ -203,7 +203,7 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
         toast.success('Player/Staff added successfully');
         window.location.reload();
       }
-
+  
       // Update form data with the submitted data
       setFormData(formattedData);
     } catch (error) {
@@ -212,7 +212,7 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
       toast.error(errorMessage);
     }
   };
-
+  
   return (
     <form onSubmit={handleSubmit} className="space-y-4 max-h-[80vh] overflow-y-auto p-4">
       <div className="grid grid-cols-1 gap-4">
