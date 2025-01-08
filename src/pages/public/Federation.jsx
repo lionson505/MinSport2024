@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { sportsEventService } from '../../services/sportsEventService';
 import {
   Dialog,
@@ -325,11 +325,9 @@ function Federation() {
                     className="aspect-square m-4 border-2 rounded-xl bg-blue-500 flex flex-col items-center justify-between p-4 cursor-pointer hover:opacity-90 transition-all transform hover:scale-105"
                   >
                     {/* Logo */}
-                    <img
-                      src={federationImage || federation.logo}
-                      alt={`${federation.name} logo`}
-                      className="h-16 w-16 mb-4"
-                    />
+                    <img src={`${axiosInstance.defaults.baseURL}${federation.logo}`} alt="federation Logo" className="w-12 h-12 object-cover rounded-full" />
+                    {/* {console.log(`Logo Path: ${axiosInstance.defaults.baseURL}${federation.logo}`)} Log the logo path */}
+
 
                     {/* Federation Name and Acronym */}
                     <div className="text-center">

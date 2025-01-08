@@ -286,12 +286,9 @@ function LandingPage() {
                         <div
                           key={federation.id}
                           className={`aspect-square my-2 rounded-xl w-[175px] lg:w-[265px] xl:w-[230px] 2xl:w-[275px] ${color} flex flex-col items-center justify-center p-4 cursor-pointer hover:opacity-90 transition-all transform hover:scale-105`}
-                        >
-                          <img
-                            src={federationImage || federation.logo}
-                            alt={federation.name}
-                            className="h-16 w-16 mb-4"
-                          />
+                        >                      <img src={`${axiosInstance.defaults.baseURL}${federation.logo}`} alt="federation Logo" className="w-12 h-12 object-cover rounded-full" />
+                          {/* {console.log(`Logo Path: ${axiosInstance.defaults.baseURL}${federation.logo}`)} Log the logo path */}
+
                           <span className="text-white text-center font-medium text-sm">
                             {federation.name}
                           </span>
