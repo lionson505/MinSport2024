@@ -38,7 +38,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
   const { matches = [], liveMatchError } = useFetchLiveMatches()
   const updatedMatch = matches.filter((updatedMatch) => updatedMatch.id === match.id)
 
-  const permissionLogger = usePermissionLogger('match_operator')
+  const permissionLogger = usePermissionLogger('match')
   const [permissions, setPermissions] = useState({
     canCreate: false,
     canRead: false,
@@ -128,8 +128,15 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
         } else if (team === 'B') {
           let anotherGoal = updatedMatch[0].awayScore + 1;
           setMatchData(prev => ({ ...prev, teamBScore: anotherGoal }));
-          updatedMatchData = { awayScore: anotherGoal };
+          updatedMatchData = { awayScore: anotherGoal ,   goals: [
+            {
+              "nationalTeamPlayerStaffId": 1,
+              "minute": 1,
+              "liveMatchId": 3
+            }
+          ], };
         }
+        console.log("updatedMatchData : ",updatedMatchData)
 
         const endpoint = `/live-matches/${matchId}/score`;
         const response = await axiosInstance.patch(endpoint, updatedMatchData);
@@ -159,7 +166,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
       : [];
 
   const confirmEventWithPlayer = (playerId) => {
-    // console.log('ID of the player who scored:', playerId);
+    console.log('ID of the player who scored:', playerId);
 
     if (pendingEvent.team === 'A') {
       const player = teamAPlayers.find(p => p.id === playerId);
@@ -170,7 +177,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
         }
         : null;
 
-      // console.log('Selected player details:', playerDetails);
+      console.log('Selected player details:', playerDetails);
 
       if (playerDetails) {
         addEvent('GOAL', 'A', match.awayScore, match.id);
@@ -184,7 +191,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
         }
         : null;
 
-      // console.log('Selected player details:', playerDetails);
+      console.log('Selected player details:', playerDetails);
 
       if (playerDetails) {
         addEvent('GOAL', 'B', match.awayScore, match.id);
