@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/input';
-import { Search, Plus, Eye, Download, Trash, RefreshCw, Edit } from 'lucide-react';
+import {Search, Plus, Eye, Download, Trash, RefreshCw, Edit, Loader2} from 'lucide-react';
 import toast from 'react-hot-toast';
 import AddDocumentModal from '../components/AddDocumentModal';
 import axiosInstance from '../utils/axiosInstance';
@@ -28,6 +28,7 @@ function Documents() {
   const [updateStatusModalOpen, setUpdateStatusModalOpen] = useState(false);
   const [documentToUpdate, setDocumentToUpdate] = useState(null);
   const logPermissions = usePermissionLogger('documents')
+  const [loading, setLoading] = useState(true);
   const [permissions, setPermissions] = useState({
     canCreate: false,
     canRead: false,
@@ -36,10 +37,13 @@ function Documents() {
   })
 
   const fetchPermissions = async ()=> {
+    await setLoading(true);
     const currentPermissions =await logPermissions();
     await setPermissions(currentPermissions);
+    await setLoading(false);
   }
   useEffect(() => {
+    
     fetchPermissions();
     console.log("perms:", permissions)
     const fetchDocuments = async () => {
@@ -148,6 +152,15 @@ function Documents() {
       toast.error('Failed to update document status');
     }
   };
+
+  if(loading) {
+    return(
+        <div className="flex animate-spin animate justify-center items-center h-screen">
+          <Loader2/>
+        </div>
+    )
+
+  }
 
   return (
     <div className="p-6">

@@ -9,7 +9,7 @@ import {
   TableHead,
   TableCell
 } from '../components/ui/table';
-import { Search, Plus, Pencil, Trash2, AlertCircle, Eye, Users, Printer } from 'lucide-react';
+import {Search, Plus, Pencil, Trash2, AlertCircle, Eye, Users, Printer, Loader2} from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import PageLoading from '../components/ui/PageLoading';
 import Message from '../components/ui/Message';
@@ -93,10 +93,12 @@ const IsongaPrograms = () => {
   const [isLoadingNIDA, setIsLoadingNIDA] = useState(false);
   const [tabs] = useState(['Manage Institution', 'Manage Students', 'Student Transfer']);
   const [selectedProgram, setSelectedProgram] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   // Load initial data
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         const [programsResponse, studentsResponse, schoolsResponse] = await Promise.all([
           axiosInstance.get('/institutions'),
@@ -105,6 +107,7 @@ const IsongaPrograms = () => {
         ]);
         const currentPermissions = await logPermissions();
         await setPermissions(currentPermissions);
+        await setLoading(false);
         setPrograms(programsResponse?.data || []);
         setFilteredPrograms(programsResponse?.data || []);
 
@@ -137,6 +140,15 @@ const IsongaPrograms = () => {
     setSelectedInstitution(institution);
     setShowInstitutionModal(true);
   };
+
+  if(loading) {
+    return(
+        <div className="flex animate-spin animate justify-center items-center h-screen">
+          <Loader2/>
+        </div>
+    )
+
+  }
 
   const handleDeleteInstitution = (institution) => {
     setInstitutionToDelete(institution);

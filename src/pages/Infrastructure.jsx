@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus } from 'lucide-react';
+import {Loader2, Plus} from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import InfrastructureMap from '../components/infrastructure/InfrastructureMap';
 import InfrastructureList from '../components/infrastructure/InfrastructureList';
@@ -17,6 +17,7 @@ const Infrastructure = () => {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [activeTab, setActiveTab] = useState('list');
   const { isDarkMode } = useDarkMode();
+  const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([]);
   const [infrastructure, setInfrastructure] = useState([]);
   const [lastUpdate, setLastUpdate] = useState(Date.now());
@@ -28,16 +29,7 @@ const Infrastructure = () => {
     canDelete: false
   })
 
-  useEffect(() => {
-    const fetchData = async () => {
-      await fetchCategories();
-      await fetchInfrastructure();
-      const currentPermissions = await logPermissions();
-      await  setPermissions(currentPermissions);
-    };
-    
-    fetchData();
-  }, [lastUpdate]);
+
 
   const fetchCategories = async () => {
     try {
@@ -48,6 +40,9 @@ const Infrastructure = () => {
       toast.error('Failed to fetch categories');
     }
   };
+
+
+
 
   const fetchInfrastructure = async () => {
     try {
@@ -70,6 +65,18 @@ const Infrastructure = () => {
       toast.error('Failed to update categories');
     }
   };
+  useEffect(() => {
+    const fetchData = async () => {
+      await setLoading(true);
+      await fetchCategories();
+      await fetchInfrastructure();
+      const currentPermissions = await logPermissions();
+      await  setPermissions(currentPermissions);
+      await setLoading(false);
+    };
+
+    fetchData();
+  }, [lastUpdate]);
 
   const refreshData = async () => {
     try {
@@ -79,6 +86,14 @@ const Infrastructure = () => {
       toast.error('Failed to refresh data');
     }
   };
+  if(loading) {
+    return(
+        <div className="flex animate-spin animate justify-center items-center h-screen">
+          <Loader2/>
+        </div>
+    )
+
+  }
 
   const showAddButton = activeTab === 'list';
 

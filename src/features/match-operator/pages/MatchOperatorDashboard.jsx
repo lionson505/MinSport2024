@@ -4,7 +4,7 @@ import { CreateMatchModal } from '../components/CreateMatchModal';
 import { MatchSetupWizard } from '../components/MatchSetupWizard';
 import { MatchScoreboard } from '../components/MatchScoreboard';
 import { Button } from '../../../components/ui/Button';
-import { Plus, AlertCircle } from 'lucide-react';
+import {Plus, AlertCircle, Loader2} from 'lucide-react';
 import { Alert, AlertDescription } from '../../../components/ui/alert';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../../components/ui/tabs';
 import axiosInstance from '../../../utils/axiosInstance';
@@ -24,6 +24,7 @@ export function MatchOperatorDashboard() {
   const { matches = [], liveMatchError } = useFetchLiveMatches();
   const { nationalTeam = [], nationalTeamError } = useFetchNationalTeam([])
   const { players = [], playerError } = useFetchPlayers([])
+  const [loading, setLoading] = useState(true);
   const permissionsLog = usePermissionLogger('match')
   const [permissions, setPermissions] = useState({
     canCreate: false,
@@ -39,8 +40,10 @@ export function MatchOperatorDashboard() {
   } = useMatchOperator();
 
   const fetchPermissions = async () => {
+    await setLoading(true);
     const currentPermissions = await permissionsLog();
     await setPermissions(currentPermissions);
+    await setLoading(false);
   }
 
   useEffect(() => {
@@ -84,11 +87,22 @@ export function MatchOperatorDashboard() {
     }
   };
 
-  // live match
+
+  if(loading) {
+    return(
+        <div className="flex animate-spin animate justify-center items-center h-screen">
+          <Loader2/>
+        </div>
+    )
+
+  }
+
+
 
   if (liveMatchError) {
     console.error("Problem in getting matches")
   }
+
 
   if (!matches.length) {
     console.error("Problem in getting matches")

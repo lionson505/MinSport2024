@@ -18,6 +18,8 @@ import {
   Eye,
   Edit,
   Trash2,
+    Loader,
+    Loader2,
   History,
   AlertCircle,
   ArrowRight,
@@ -230,6 +232,7 @@ const Federations = () => {
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [refreshPlayerStaffData, setRefreshPlayerStaffData] = useState(0);
   const [showPlayerDetailsModal, setShowPlayerDetailsModal] = useState(false);
+  const [loading, setLoading] = useState(false);
   const logPermissions = usePermissionLogger('federations')
 
   const[permissions, setPermissions] = useState({
@@ -266,10 +269,12 @@ const Federations = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
          const currentPermissions =await logPermissions();
          await setPermissions(currentPermissions);
         console.log("perms:", permissions)
-        setIsLoading(true);
+        setLoading(false);
+
         const filters = {
           page: currentPage,
           limit: itemsPerPage,
@@ -692,6 +697,13 @@ const Federations = () => {
       setIsSubmitting(false);
     }
   };
+
+  if(loading){
+    return <div className="flex animate-spin animate justify-center items-center h-screen">
+      <Loader2 />
+
+    </div>;
+  }
 
   const renderContent = () => {
     if (activeTab === 'Manage Federations and associations') {

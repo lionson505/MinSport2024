@@ -7,7 +7,7 @@ import {
   TableHead,
   TableCell
 } from '../components/ui/table';
-import { Search, Plus, Edit, Eye } from 'lucide-react';
+import { Search, Plus, Edit, Eye , Loader , Loader2 } from 'lucide-react';
 import Modal from '../components/ui/Modal';
 import AddTrainingForm from '../components/forms/AddTrainingForm';
 import ActionMenu from '../components/ui/ActionMenu';
@@ -48,7 +48,7 @@ const Training = () => {
   const [trainingToView, setTrainingToView] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [participantsToView, setParticipantsToView] = useState(null); // New state for participant details
-
+  const [loading, setLoading] = useState(false);
   // Fetch training data from API
   useEffect(() => {
     const fetchData = async () => {
@@ -69,8 +69,10 @@ const Training = () => {
     fetchData();
   }, []);
   const fetchPermissions = async ()=> {
+    setLoading(true);
     const currentPermissions =await logPermissions();
     await setPermissions(currentPermissions);
+    setLoading(false);
   }
   // Filter trainings based on search query
   useEffect(() => {
@@ -82,6 +84,12 @@ const Training = () => {
     setCurrentPage(1);
   }, [searchQuery, trainings]);
 
+  if(loading){
+    return <div className="flex animate-spin animate justify-center items-center h-screen">
+      <Loader2 />
+
+    </div>;
+  }
   // Handle adding or editing training
   const handleAddOrEditTraining = async (data) => {
     setIsSubmitting(true);
@@ -141,12 +149,18 @@ const Training = () => {
   const currentItems = filteredTrainings.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredTrainings.length / itemsPerPage);
 
-  if (isLoading) {
+  if (isLoading ) {
     return <PageLoading />;
   }
 
+
+
+
+
+
+
   return (
-    <div className={`p-6 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
+      <div className={`p-6 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
       {message && (
         <Message
           type={message.type}

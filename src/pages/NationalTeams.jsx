@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import axiosInstance from '../utils/axiosInstance';
-import { Plus, Eye, Pencil, Trash2, X } from 'lucide-react';
+import {Plus, Eye, Pencil, Trash2, X, Loader2} from 'lucide-react';
 import { Dialog, Transition } from '@headlessui/react';
 import { Button } from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
@@ -135,6 +135,7 @@ function NationalTeams() {
               };
             })
         );
+        setLoading(true);
         const currentPermissions = await logPermissions();
         setPermissions(currentPermissions);
         setTeams(teamResponse.data);
@@ -142,6 +143,7 @@ function NationalTeams() {
         setClubs(clubResponse.data);
         setPlayerStaffList(playerStaffResponse.data);
         setFederations(federationResponse.data);
+        setLoading(false)
       } catch (error) {
         toast.error("Failed to load data.");
       } finally {
@@ -200,6 +202,8 @@ function NationalTeams() {
     }
   };
 
+
+
   const confirmDelete = async () => {
     try {
       await axiosInstance.delete(`/national-teams/${selectedTeamData.id}`);
@@ -239,6 +243,14 @@ function NationalTeams() {
       toast.error(error.response?.data?.message || 'Failed to add player');
     }
   };
+  if(loading) {
+    return(
+        <div className="flex animate-spin animate justify-center items-center h-screen">
+          <Loader2/>
+        </div>
+    )
+
+  }
 
   const handlePlayerEditSubmit = async (e) => {
     e.preventDefault();
@@ -271,6 +283,7 @@ function NationalTeams() {
     setSelectedPlayerData(player);
     setShowPlayerViewDialog(true);
   };
+
 
   const handlePlayerEdit = (player) => {
     setSelectedPlayerData(player);
@@ -460,7 +473,13 @@ function NationalTeams() {
 
   const renderContent = () => {
     if (loading) {
-      return <div>Loading...</div>;
+      return (
+          <div className="flex animate-spin animate justify-center items-center h-screen">
+            <Loader2 />
+
+          </div>
+      )
+
     }
 
     if (activeTab === 'Manage National Teams') {

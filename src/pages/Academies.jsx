@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/input';
-import { Search, Plus, Eye, PencilIcon, Trash2, AlertTriangle, X } from 'lucide-react';
+import { Search, Plus, Eye, PencilIcon, Trash2, Loader2 ,AlertTriangle, X } from 'lucide-react';
 import { Dialog, Transition } from '@headlessui/react';
 import toast from 'react-hot-toast';
 import AddAcademyModal from '../components/AddAcademyModal';
@@ -15,6 +15,7 @@ import {usePermissionLogger} from "../utils/permissionLogger.js";
 function Academies() {
   const [activeTab, setActiveTab] = useState('manage');
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(false);
   const [studentSearchTerm, setStudentSearchTerm] = useState('');
   const [entriesPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
@@ -50,8 +51,10 @@ function Academies() {
   const totalPages = Math.ceil(academies.length / entriesPerPage);
   const studentTotalPages = Math.ceil(students.length / entriesPerPage);
   const fetchPermissions = async ()=> {
+    setLoading(true);
     const currentPermissions =await logPermissions();
     await setPermissions(currentPermissions);
+    setLoading(false);
   }
   useEffect(() => {
     fetchPermissions();
@@ -123,6 +126,14 @@ function Academies() {
       toast.error('Failed to delete student');
     }
   };
+
+  if(loading){
+    return <div className="flex animate-spin animate justify-center items-center h-screen">
+      <Loader2 />
+
+    </div>;
+  }
+
 
   const handleEditStudentSubmit = async (updatedData) => {
     try {

@@ -8,7 +8,7 @@ import {
   TableCell,
   TablePagination,
 } from '../components/ui/table';
-import { Plus, Search, Filter } from 'lucide-react';
+import {Plus, Search, Filter, Loader2} from 'lucide-react';
 import Modal from '../components/ui/Modal';
 import ActionMenu from '../components/ui/ActionMenu';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
@@ -34,6 +34,7 @@ const Partners = () => {
   const [filters, setFilters] = useState({ discipline: '', status: '' });
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [loading, setLoading] = useState(false);
   const permissionsLog = usePermissionLogger("partner")
   const [permissions, setPermissions] = useState({
     canCreate: false,
@@ -43,9 +44,12 @@ const Partners = () => {
   })
 
   const fetchAndSetPermissions =async () => {
+   await setLoading(true)
     const permissionsCurrent = await permissionsLog();
     await setPermissions(permissionsCurrent);
+    await  setLoading(false)
   }
+
 
   useEffect(() => {
     fetchAndSetPermissions();
@@ -70,6 +74,13 @@ const Partners = () => {
 
     fetchData();
   }, []);
+
+  if(loading) {
+    return(<div className="flex animate-spin animate justify-center items-center h-screen">
+      <Loader2/>
+    </div>)
+
+  }
 
   const handleDelete = async () => {
     if (!selectedPartner) return;

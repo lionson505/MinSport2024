@@ -18,6 +18,7 @@ function Users() {
   const [userData, setUserData] = useState([]);
   const [groupData, setGroupData] = useState([]);
   const [error, setError] = useState(null);
+  const [loadPermissions, setLoadPermissions] = useState(false);
 
   const [activeTab, setActiveTab] = useState('users'); 
   const [searchName, setSearchName] = useState(''); 
@@ -45,6 +46,8 @@ function Users() {
     const group = groupData.find((group) => group.id === userGroup.id);
     return group ? group.name : 'N/A';
   };
+
+
 
   // Fetch user and group data from API
   const fetchData = async () => {
@@ -81,8 +84,10 @@ function Users() {
   };
 
   const fetchPermissions = async ()=> {
+    await setLoadPermissions(true)
     const currentPermissions =await logPermissions();
     await setPermissions(currentPermissions);
+    await setLoadPermissions(false);
   }
 
   useEffect(() => {
@@ -90,6 +95,12 @@ function Users() {
     fetchData();
   }, []);
 
+  if(loadPermissions){
+    return <div className="flex animate-spin animate justify-center items-center h-screen">
+      <Loader2 />
+
+    </div>;
+  }
   const pendingUsers = userData.filter(user => !user.active);
 
   const filteredUsers = userData.filter((user) => {

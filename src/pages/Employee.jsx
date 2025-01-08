@@ -6,6 +6,7 @@ import { Loader2, Pencil, Download, Trash2, AlertTriangle, Eye, X } from 'lucide
 import AddEmployeeModal from '../components/AddEmployeeModal';
 import EditEmployeeModal from '../components/EditEmployeeModal';
 import toast from 'react-hot-toast';
+
 import { Dialog, Transition } from '@headlessui/react';
 import AddEmployeeVoting from '../components/AddEmployeeVoting';
 import ManageEmployeeVoting from '../components/ManageEmployeeVoting';
@@ -14,7 +15,8 @@ import PrintButton from '../components/reusable/Print';
 import {usePermissionLogger} from "../utils/permissionLogger.js";
 
 function Employee() {
-  const [loading, setLoading] = useState(true);
+  const [loading1, setLoading1] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const { isDarkMode } = useTheme();
@@ -35,17 +37,20 @@ function Employee() {
     canDelete: false
   })
   const fetchPermissions = async ()=> {
+    await setLoading1(true)
     const currentPermissions =await logPermissions();
     await setPermissions(currentPermissions);
+    await setLoading1(false);
   }
   useEffect(() => {
     fetchPermissions();
     const fetchEmployeesData = async () => {
+      await setLoading(true);
       try {
-        setLoading(true);
+
         const employees = await fetchEmployees();
         console.log('Fetched employees:', employees); // Debugging line
-        setEmployeesData(employees);
+        await setEmployeesData(employees);
       } catch (error) {
         toast.error('Failed to load employees');
       } finally {
@@ -85,6 +90,15 @@ function Employee() {
   );
 
   const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+
+  if(loading1) {
+    return(
+        <div className="flex animate-spin animate justify-center items-center h-screen">
+          <Loader2/>
+        </div>
+    )
+
+  }
 
   const handleAddEmployee = async (newEmployee) => {
     try {
@@ -472,14 +486,7 @@ function Employee() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-        <p className="mt-2 text-gray-600">Loading employee data...</p>
-      </div>
-    );
-  }
+
 
   return (
     <div className="p-6">

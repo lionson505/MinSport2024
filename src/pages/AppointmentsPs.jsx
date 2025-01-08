@@ -4,7 +4,7 @@ import axiosInstance from "../utils/axiosInstance";
 import { Dialog, Transition } from "@headlessui/react";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/input";
-import { Search, Calendar, Eye, Trash2, Check, X } from 'lucide-react';
+import {Search, Calendar, Eye, Trash2, Check, X, Loader2} from 'lucide-react';
 import AddAppointmentForm from "../components/forms/AddAppointmentForm";
 import PrintButton from "../components/reusable/Print";
 import { usePermissionLogger } from "../utils/permissionLogger.js";
@@ -27,6 +27,7 @@ function PSAppointments() {
     const [isLoading, setIsLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState("");
+    const [loading, setLoading] = useState(true);
     const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [rescheduleData, setRescheduleData] = useState({
@@ -77,14 +78,26 @@ function PSAppointments() {
         }
     };
     const fetchPermissions = async ()=> {
+        await setLoading(true)
         const currentPermissions =await logPermission();
         await setPermissions(currentPermissions);
+        await setLoading(false)
     }
 
     useEffect(() => {
         fetchPermissions();
         fetchAppointments();
     }, [currentPage]);
+
+
+    if(loading) {
+        return(
+            <div className="flex animate-spin animate justify-center items-center h-screen">
+                <Loader2/>
+            </div>
+        )
+
+    }
 
     const handleReschedule = (appointment) => {
         setSelectedAppointment(appointment);

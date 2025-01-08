@@ -1,7 +1,7 @@
 /* src/pages/SportsTourism.jsx */
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
-import { Plus } from 'lucide-react';
+import {Loader2, Plus} from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import TourismEventsList from '../components/tourism/TourismEventsList';
 import TourismCalendar from '../components/tourism/TourismCalendar';
@@ -16,6 +16,7 @@ const SportsTourism = () => {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [activeTab, setActiveTab] = useState('list');
   const { isDarkMode } = useDarkMode();
+  const [loading, setLoading] = useState(true);
   const logPermissions = usePermissionLogger('sports_tourism')
   const [permissions, setPermissions] = useState({
     canCreate: false,
@@ -28,6 +29,7 @@ const SportsTourism = () => {
   const fetchPermissions = async ()=> {
     const currentPermissions =await logPermissions();
     await setPermissions(currentPermissions);
+    setLoading(false);
   }
   useEffect(() => {
     fetchPermissions();
@@ -43,6 +45,13 @@ const SportsTourism = () => {
 
     fetchEvents();
   }, []);
+
+  if(loading){
+    return <div className="flex animate-spin animate justify-center items-center h-screen">
+      <Loader2 />
+
+    </div>;
+  }
 
   return (
     <div className="p-6">

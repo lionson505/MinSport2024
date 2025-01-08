@@ -5,7 +5,7 @@ import axiosInstance from "../utils/axiosInstance";
 import { Dialog, Transition } from "@headlessui/react";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/input";
-import { Search, Calendar, Eye, Trash2, Check, X } from 'lucide-react';
+import {Search, Calendar, Eye, Trash2, Check, X, Loader2} from 'lucide-react';
 import AddAppointmentForm from "../components/forms/AddAppointmentForm";
 import PrintButton from "../components/reusable/Print";
 import { usePermissionLogger } from "../utils/permissionLogger.js";
@@ -45,6 +45,7 @@ function MinisterAppointments() {
     const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
     const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
     const [comment, setComment] = useState('');
+    const [ loading,setLoading] = useState(true);
     const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
     const [rejectData, setRejectData] = useState({
         request_date: '',
@@ -63,6 +64,8 @@ function MinisterAppointments() {
         canDelete: false
     })
 
+
+
     const fetchAppointments = async () => {
         setIsLoading(true);
         try {
@@ -78,8 +81,10 @@ function MinisterAppointments() {
         }
     };
     const fetchPermissions = async ()=> {
+        await setLoading(true);
         const currentPermissions =await logPermission();
         await setPermissions(currentPermissions);
+        await setLoading(false)
     }
 
     useEffect(() => {
@@ -102,6 +107,18 @@ function MinisterAppointments() {
         setAppointmentDetails(appointment);
         setViewModalOpen(true);
     };
+    
+    
+    if(loading) {
+        return(
+            <div className="flex animate-spin animate justify-center items-center h-screen">
+                <Loader2/>
+            </div>
+        )
+
+    }
+
+
 
     const handleRescheduleSubmit = async () => {
         if (!rescheduleData.request_date || !rescheduleData.request_time || !rescheduleData.reason_for_rescheduling) {
@@ -158,6 +175,7 @@ function MinisterAppointments() {
         }
     };
 
+
     const renderStatusBadge = (status) => {
         const statusClass = {
             granted: "bg-green-100 text-green-800",
@@ -192,6 +210,7 @@ function MinisterAppointments() {
             setToastMessage("Failed to approve appointment.");
         }
     };
+
 
     const handleRejectConfirm = async () => {
         try {
@@ -235,6 +254,14 @@ function MinisterAppointments() {
                 appointment.institution.toLowerCase().includes(searchLower))
         );
     });
+    if(loading) {
+        return(
+            <div className="flex animate-spin animate justify-center items-center h-screen">
+                <Loader2/>
+            </div>
+        )
+
+    }
 
     return (
         <div className="p-4">

@@ -6,7 +6,7 @@ import { Input } from '../components/ui/input';
 import AddMassSportModal from '../components/AddMassSportModal';
 import toast from 'react-hot-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
-import { AlertCircle, Pencil, Download, Trash2, AlertTriangle, Eye, X} from 'lucide-react';
+import {AlertCircle, Pencil, Download, Trash2, AlertTriangle, Eye, X, Loader2} from 'lucide-react';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../components/ui/table';
 import { Search, Plus, Filter } from 'lucide-react';
 import PageLoading from '../components/ui/PageLoading';
@@ -17,7 +17,7 @@ import {usePermissionLogger} from "../utils/permissionLogger.js";
 function SportsForAll() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false); // Delete modal state
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [massSportsData, setMassSportsData] = useState([]);
   const [sportToEdit, setSportToEdit] = useState(null); // For editing
@@ -43,6 +43,7 @@ function SportsForAll() {
   const fetchPermissions = async ()=> {
     const currentPermissions =await logPermissions();
     await setPermissions(currentPermissions);
+    setLoading(false);
   }
   useEffect(() => {
     fetchPermissions();
@@ -108,6 +109,12 @@ function SportsForAll() {
       setLoading(false);
     }
   };
+  if(loading) {
+    return(<div className="flex animate-spin animate justify-center items-center h-screen">
+      <Loader2/>
+    </div>)
+
+  }
 
   const handleViewSport = (sport) => {
     setSportToView(sport);

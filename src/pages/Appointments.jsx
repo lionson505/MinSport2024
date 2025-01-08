@@ -4,7 +4,7 @@ import { Dialog, Transition } from "@headlessui/react";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/input";
 import { Search } from "react-feather";
-import { Calendar, Eye, Trash2, XIcon, Check, X } from 'lucide-react';
+import {Calendar, Eye, Trash2, XIcon, Check, X, Loader2} from 'lucide-react';
 import AddAppointmentForm from "../components/forms/AddAppointmentForm"; // Import the form
 import PrintButton from "../components/reusable/Print";
 
@@ -27,6 +27,7 @@ function Appointments() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("minister");
+  const [loading, setLoading] = useState(true);
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [rescheduleData, setRescheduleData] = useState({
@@ -69,6 +70,14 @@ function Appointments() {
       setIsLoading(false);
     }
   };
+  if(loading) {
+    return(
+        <div className="flex animate-spin animate justify-center items-center h-screen">
+          <Loader2/>
+        </div>
+    )
+
+  }
 
   useEffect(() => {
     fetchAppointments();

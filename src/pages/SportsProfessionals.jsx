@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, AlertCircle, Eye, PencilLine, Search } from 'lucide-react';
+import {Plus, Edit, Trash2, AlertCircle, Eye, PencilLine, Search, Loader2} from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import PageLoading from '../components/ui/PageLoading';
 import Message from '../components/ui/Message';
@@ -22,6 +22,7 @@ const SportsProfessionals = () => {
     canUpdate: false,
     canDelete: false
   })
+  const [loading, setLoading] = useState(true);
   const [professionals, setProfessionals] = useState([]);
   const [disciplines, setDisciplines] = useState([]);
   const [functions, setFunctions] = useState([]);
@@ -57,8 +58,10 @@ const SportsProfessionals = () => {
 
 
   const fetchPermissions = async ()=> {
+    setLoading(true);
     const currentPermissions =await logPermissions();
     await setPermissions(currentPermissions);
+    setLoading(false);
   }
 
   useEffect(() => {
@@ -77,6 +80,7 @@ const SportsProfessionals = () => {
       }
     };
 
+
     const fetchFunctions = async () => {
       try {
         setIsLoading(true);
@@ -89,6 +93,7 @@ const SportsProfessionals = () => {
         toast.error('Error fetching functions');
       }
     };
+
 
     const fetchProfessionals = async () => {
       try {
@@ -107,6 +112,7 @@ const SportsProfessionals = () => {
     fetchFunctions();
     fetchProfessionals();
   }, []);
+
 
   useEffect(() => {
     const filterData = () => {
@@ -137,6 +143,16 @@ const SportsProfessionals = () => {
 
     filterData();
   }, [searchTerm, activeTab, professionals, disciplines, functions]);
+
+
+  if(loading) {
+    return(
+        <div className="flex animate-spin animate justify-center items-center h-screen">
+          <Loader2/>
+        </div>
+    )
+
+  }
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
@@ -188,6 +204,7 @@ const SportsProfessionals = () => {
       toast.error('Error deleting discipline');
     }
   };
+
 
   const handleAddFunction = async () => {
     try {
@@ -300,6 +317,8 @@ const SportsProfessionals = () => {
     }
   };
 
+
+
   const renderDisciplineRow = (discipline) => (
     <TableRow key={discipline.id}>
       <TableCell>{discipline.name}</TableCell>
@@ -381,6 +400,8 @@ const SportsProfessionals = () => {
       </TableCell>
     </TableRow>
   );
+
+
 
   const renderProfessionalRow = (professional) => (
     <TableRow key={professional.id}>
