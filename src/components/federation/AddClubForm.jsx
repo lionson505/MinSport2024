@@ -133,8 +133,8 @@ const AddClubForm = ({ isOpen, onClose }) => {
                   className="w-full p-2 border rounded"
                 >
                   <option value={0}>Select Year</option>
-                  {[...Array(10)].map((_, idx) => {
-                    const optionYear = 2020 + idx;
+                  {[...Array(106)].map((_, idx) => {
+                    const optionYear = 1920 + idx;
                     return (
                       <option key={optionYear} value={optionYear}>
                         {optionYear}

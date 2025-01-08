@@ -15,7 +15,7 @@ const ActionMenu = ({ onEdit, onDelete, onDownload }) => {
     const fetchAndSetPermissions = async (moduleName)=> {
         const perms = await usePermissionLogger(moduleName)
         const currentPermissions = await perms()
-        return currentpermissions;
+        setPermissions(currentPermissions);
 
     };
 
@@ -34,6 +34,7 @@ const ActionMenu = ({ onEdit, onDelete, onDownload }) => {
     }, []);
 
     useEffect(() => {
+        console.log("Current Location:", getCurrentLocation());
         if (currentLocation === "trainings") {
             fetchAndSetPermissions("trainings");
             
@@ -42,13 +43,16 @@ const ActionMenu = ({ onEdit, onDelete, onDownload }) => {
             // const logPermissions = usePermissionLogger("federations");
             // const currentPermissions = logPermissions();
             // setPermissions(currentPermissions);
-            fetchAndSetPermissions("federations");
+            fetchAndSetPermissions("FEDERATIONS");
         }
         else if (currentLocation === "partners") {
             fetchAndSetPermissions("partner");
     }
 
     }, [currentLocation]);
+
+    // const logPermissions = usePermissionLogger('dashboard');
+    console.log(permissions)
 
     return (
         <div className="flex items-center gap-2">
