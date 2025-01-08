@@ -1,6 +1,6 @@
-const Fallback = ({ message, onRetry }) => {
+const Fallback = ({ message, onRetry, response }) => {
     return (
-      <div className="flex w-full border-2 border-red-400 justify-center items-center min-h-[300px] bg-gray-50 rounded-lg shadow-lg p-6">
+      <div className="flex w-full justify-center items-center min-h-[300px]">
         <div className="text-center mx-auto space-y-4">
           {/* Icon */}
           <div className="flex justify-center">
@@ -22,7 +22,11 @@ const Fallback = ({ message, onRetry }) => {
   
           {/* Message */}
           <h1 className="text-2xl font-semibold text-gray-700">
-            {message || "No Data Available"}
+            {response ? (
+              `${message} ' ${response} '`
+            ) : (
+              "Type any word related to match ..."
+            )}
           </h1>
           <p className="text-gray-500">
             It seems there's nothing to display here. Please check back later or try again.

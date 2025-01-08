@@ -14,13 +14,12 @@ function PublicLayout({ children }) {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t">
+      {/* <footer className="bg-white border-t">
         <div className="container mx-auto px-6 py-8">
           <div className="grid grid-cols-4 gap-8">
-            {/* Add footer content */}
-          </div>
-        </div>
-      </footer>
+            {/* Add footer content  </div>  
+            </div>
+      </footer> */}
     </div>
   );
 }
