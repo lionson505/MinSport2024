@@ -270,7 +270,7 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
             {isLoadingID ? 'Verifying...' : `Verify ${idType === 'nid' ? 'National ID' : 'Passport'}`}
           </Button>
         </div>
-        <div>
+        {/* <div>
           <label className="block text-sm font-medium text-gray-700">Passport Picture</label>
           <input
             type="file"
@@ -278,7 +278,7 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
             name="passportPicture"
             className={`${inputClassName} mt-1 block w-full border rounded-md`}
           />
-        </div>
+        </div> */}
         <div>
           <label className="block text-sm font-medium text-gray-700">First Name</label>
           <input
@@ -509,7 +509,7 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
             ))}
           </select>
         </div>
-        <div>
+        {/* <div>
           <label className="block text-sm font-medium text-gray-700">CV/Resume</label>
           <input
             type="file"
@@ -517,7 +517,7 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
             name="cvResume"
             className={`${inputClassName} mt-1 block w-full border rounded-md`}
           />
-        </div>
+        </div> */}
       </div>
       <div className="flex justify-end gap-3">
         <Button variant="outline" onClick={onCancel}>
