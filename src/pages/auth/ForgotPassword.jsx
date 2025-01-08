@@ -5,12 +5,15 @@ import axiosInstance from '../../utils/axiosInstance';
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
+    setLoading(true);
     e.preventDefault();
     try {
       const response = await axiosInstance.post('auth/forgot-password', { email });
       setMessage('A reset link has been sent to your email.');
+      setLoading(false)
     } catch (error) {
       setMessage('Failed to send reset email. Please try again.');
     }
@@ -50,20 +53,21 @@ const ForgotPassword = () => {
                     placeholder="Enter your email"
                 />
               </div>
-
-              <button
+              {message ? (
+                  <div className="mt-4 text-center font-bold text-l text-gray-600">
+                    {message}
+                  </div>
+              ) : <button
                   type="submit"
                   className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                Submit
-              </button>
+                {loading ? 'submitting ' : 'submit'}
+              </button>}
+
+
             </form>
 
-            {message && (
-                <div className="mt-4 text-center font-bold text-l text-gray-600">
-                  {message}
-                </div>
-            )}
+
 
             <div className="mt-6 text-center">
               <div className="text-sm text-gray-500">OR</div>

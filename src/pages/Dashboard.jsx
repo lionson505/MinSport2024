@@ -78,59 +78,45 @@ const Dashboard = () => {
   ];
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+
   useEffect(() => {
     const fetchStats = async () => {
       try {
         setIsLoading(true);
-  
-        const [
-          federations,
-          clubs,
-          students,
-          infrastructures,
-          institutions,
-          documents,
-          appointments,
-          employees,
-          players,
-        ] = await Promise.all([
+        const [federations, clubs, students, documents, appointments, employees, players] = await Promise.all([
           axiosInstance.get('/federations'),
           axiosInstance.get('/clubs'),
           axiosInstance.get('/students'),
-          axiosInstance.get('/infrastructures'),
-          axiosInstance.get('/institutions'),
           axiosInstance.get('/documents'),
           axiosInstance.get('/appointments'),
           axiosInstance.get('/employees'),
-          axiosInstance.get('/player-staff'),
+          axiosInstance.get('/player-staff')
         ]);
-  
+
         const currentPermissions = logPermissions();
         setPermissions(currentPermissions);
-  
+
         const clubData = clubs.data || [];
         const employeeData = Array.isArray(employees.data?.employees) ? employees.data.employees : [];
         const studentData = Array.isArray(students.data?.data) ? students.data.data : [];
         const documentData = Array.isArray(documents.data?.data) ? documents.data.data : [];
-        const infrastructureData = infrastructures.data || [];
-        const institutionData = institutions.data || [];
         const appointmentData = appointments.data || [];
         const playerData = players.data || [];
-  
+
         setStatsData({
           federations: federations.data?.length || 0,
           clubs: clubData.length,
           clubPlayers: clubData.reduce((acc, club) => acc + (club.players ? club.players.length : 0), 0),
           sportTeams: clubData.reduce((acc, club) => acc + (club.teams ? club.teams.length : 0), 0),
           teamPlayers: clubData.reduce(
-            (acc, club) =>
-              acc + (club.teams ? club.teams.reduce((teamAcc, team) => teamAcc + (team.players ? team.players.length : 0), 0) : 0),
-            0
+              (acc, club) =>
+                  acc + (club.teams ? club.teams.reduce((teamAcc, team) => teamAcc + (team.players ? team.players.length : 0), 0) : 0),
+              0
           ),
           officialsAndPlayers: employeeData.filter(emp => emp.role === 'official' || emp.role === 'player').length,
-          isongaProgram: institutionData.length,
+          isongaProgram: 9,
           students: studentData.length,
-          infrastructure: infrastructureData.length,
+          infrastructure: 12,
           documents: documentData.length,
           appointments: appointmentData.length,
           employees: employeeData.length,
@@ -140,19 +126,51 @@ const Dashboard = () => {
           competitionResults: federations.data.map(federation => ({
             name: federation.name,
             events: federation.events?.length || 0,
-            participants: federation.participants?.length || 0,
-          })),
+            participants: federation.participants?.length || 0
+          }))
         });
+
+        setAppointmentRequests(appointmentData);
+
+        const futureAppointments = appointmentData.filter(appointment => new Date(appointment.date) > new Date());
+        setUpcomingAppointments(futureAppointments);
+
+        const sortedAppointments = appointmentData.sort((a, b) => new Date(b.date) - new Date(a.date));
+        setAppointmentRequests(sortedAppointments.slice(0, 3));
+
+        const appointmentRequestForM = appointmentData.filter(appointment =>
+            appointment.person_to_meet === 'MINISTER' || appointment.person_to_meet === 'minister'
+        );
+        const topThreeAppointmentsM = appointmentRequestForM
+            .sort((a, b) => new Date(b.date) - new Date(a.date))
+            .slice(0, 3);
+        setAppointmentRequestsM(topThreeAppointmentsM);
+
+      const appointmentForPS = appointmentData.filter(appointment =>
+      appointment.person_to_meet === 'PS' || appointment.person_to_meet === 'ps')
+
+
+      const topThreePsAppointmentsPS = appointmentForPS
+          .sort((a, b )=> new Date(b.date) - new Date(a.date))
+          .slice(0,2)
+
+        setAppointmentRequestsPS(topThreePsAppointmentsPS)
+
+
+
       } catch (error) {
-        console.error('Error fetching statistics:', error);
+        console.error('Error fetching stats:', error);
       } finally {
         setIsLoading(false);
       }
     };
-  
+
     fetchStats();
   }, []);
-    useEffect(() => {
+  // const { hasModuleAccess } = usePermissions();
+
+
+  useEffect(() => {
     const fetchFederations = async () => {
       try {
         const response = await axiosInstance.get('/federations');
@@ -236,7 +254,7 @@ const Dashboard = () => {
     { moduleId: MODULE_IDS.ISONGA_PROGRAMS ,number: statsData.sportTeams, label: 'Sport Teams', icon: Building2, color: 'bg-orange-100 text-orange-600', path: '/national-teams' },
     { moduleId: MODULE_IDS.FEDERATIONS ,number: statsData.teamPlayers, label: 'Team Players', icon: Flag, color: 'bg-green-100 text-green-600', path: '/national-teams' },
     { moduleId: MODULE_IDS.FEDERATIONS ,number: statsData.officialsAndPlayers, label: 'Officials & Players', icon: Flag, color: 'bg-green-100 text-green-600', path: '/national-teams' },
-    { moduleId: MODULE_IDS.ISONGA_PROGRAMS ,number: statsData.isongaProgram, label: 'Institutions', icon: Award, color: 'bg-red-100 text-red-600', path: '/isonga-programs' },
+    { moduleId: MODULE_IDS.ISONGA_PROGRAMS ,number: statsData.isongaProgram, label: 'Isonga Program', icon: Award, color: 'bg-red-100 text-red-600', path: '/isonga-programs' },
     { moduleId: MODULE_IDS.ACADEMIES ,number: statsData.students, label: 'Students', icon: FileText, color: 'bg-indigo-100 text-indigo-600', path: '/isonga-programs' },
     { moduleId: MODULE_IDS.INFRASTRUCTURE ,number: statsData.infrastructure, label: 'Infrastructure', icon: Building2, color: 'bg-green-100 text-green-600', path: '/infrastructure' },
     { moduleId: MODULE_IDS.DOCUMENTS ,number: statsData.documents, label: 'Documents', icon: FileText, color: 'bg-indigo-100 text-indigo-600', path: '/documents' },

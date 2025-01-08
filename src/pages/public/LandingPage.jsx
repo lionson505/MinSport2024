@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
-import LiveMatches from '../components/LiveMatches';
-import HeaderTwo from '../components/headerTwo';
-import MyMap from './public/MyMap';
+import LiveMatches from '../../components/LiveMatches.jsx';
+import HeaderTwo from '../../components/headerTwo.jsx';
+import MyMap from './MyMap.jsx';
 import { Pagination, Autoplay, A11y } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/navigation';
-import axiosInstance from '../utils/axiosInstance';
+import axiosInstance from '../../utils/axiosInstance.js';
 import 'swiper/css/pagination';
 import 'swiper/css/autoplay';
-import federationImage from '../components/liveMatch/federationImgFallBack.png';
-import eventImage from '../components/liveMatch/eventFallbackImg.jpeg';
+import federationImage from '../../components/liveMatch/federationImgFallBack.png';
+import eventImage from '../../components/liveMatch/eventFallbackImg.jpeg';
+import PublicLayout from '../../components/layouts/PublicLayout.jsx';
 
 function LandingPage() {
   const [federations, setFederations] = useState([]);
@@ -189,9 +190,11 @@ function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50   border-red-400">
+
+      <div className="min-h-screen bg-gray-50   border-red-400">
       {/* Header */}
       <HeaderTwo />
+        <PublicLayout>
 
       <main className="container mx-auto px-6 pt-24 pb-12">
         {/* Live Matches Section */}
@@ -507,8 +510,11 @@ function LandingPage() {
           </div>
 
         </div >
+
       </main >
+        </PublicLayout>
     </div >
+
   );
 }
 

@@ -45,6 +45,7 @@ export function MatchOperatorDashboard() {
 
   useEffect(() => {
     fetchPermissions();
+
   }, []);
   const handleMatchClick = async (match) => {
     try {
@@ -143,7 +144,8 @@ export function MatchOperatorDashboard() {
           <h1 className="text-2xl font-bold">Match Operator Dashboard</h1>
           <p className="text-gray-500 mt-1">Manage live matches and upcoming events</p>
         </div>
-        {permissions.canCreate && (<Button onClick={() => setShowCreateModal(true)}>
+        {permissions.canCreate && (
+            <Button onClick={() => setShowCreateModal(true)}>
           <Plus className="w-4 h-4 mr-2" />
           Create Match
         </Button>)}

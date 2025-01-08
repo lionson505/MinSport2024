@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import axiosInstance from './axiosInstance';
-import {secureStorage} from "./crypto.js";
+import {secureStorage} from './crypto.js';
 
 // Add module constants to match your API
 // export const MODULE_IDS = {
@@ -57,7 +57,7 @@ export const usePermissions = () => {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const userRole = secureStorage.getItem('userRole');
+        const userRole = await secureStorage.getItem('userRole');
         
         // If no role (guest), return empty permissions
         if (!userRole) {

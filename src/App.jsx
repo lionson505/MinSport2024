@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import LandingPage from './pages/LandingPage';
+import LandingPage from './pages/public/LandingPage.jsx';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import ForgotPassword from './pages/auth/ForgotPassword';
@@ -46,6 +46,7 @@ import { MODULE_IDS } from './constants/modules';
 import MinisterAppointments from "./pages/AppointmentsMinister.jsx";
 import PSAppointments from "./pages/AppointmentsPs.jsx";
 import PasswordReset from './pages/auth/ResetPassword.jsx';
+import AppointmentRequest from './pages/public/AppointmentRequest.jsx';
 
 function App() {
   const [accessibleLinks, setAccessibleLinks] = useState(null);
@@ -53,6 +54,8 @@ function App() {
   const userRole = localStorage.getItem('userRole');
   const isActivated = localStorage.getItem('isActivated') === 'true';
   const token = localStorage.getItem('token');
+  console.log(MODULE_IDS)
+  console.log(MODULE_IDS.DASHBOARD)
 
   useEffect(() => {
     const fetchAccessibleLinks = async () => {
@@ -106,6 +109,7 @@ function App() {
     '/match',
     '/map',
     '/reset-password',
+    '/appointmentrequest'
 
   ];
 
@@ -140,14 +144,14 @@ function App() {
                       <Route path="/events" element={<EventsPage />} />
                       <Route path="/federation" element={<LandingPageFederation />} />
                       <Route path="/match" element={<LandingPageMatch />} />
-                      <Route path="/matchs" element={<MatchOperatorDashboard />} />
                       <Route path="/map" element={<MyMap/>} />
+                      <Route path="/appointmentrequest" element={<AppointmentRequest/>} />
                       <Route path="/pending-activation" element={<PendingActivation />} />
                       <Route path="/notAuthorized" element={<NoPageFound/>} />
                       <Route path="/reset-password" element={<PasswordReset/>} />
 
                       {/* Protected Routes */}
-                      <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+                      <Route element={<DashboardLayout />}>
                         <Route
                             path="/dashboard"
                             element={

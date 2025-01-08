@@ -10,6 +10,7 @@ import rayonLogo from '../../components/liveMatch/rayonLogo.jpg';
 import MatchModal from '../../components/matchDetailsModal';
 import useFetchLiveMatches from '../../utils/fetchLiveMatches';
 import Fallback from './fallback';
+import PublicLayout from '../../components/layouts/PublicLayout.jsx';
 
 function LandingPageMatch() {
     const [imageIndex, setImageIndex] = useState(0);
@@ -111,6 +112,7 @@ function LandingPageMatch() {
     return (
         <>
             <HeaderTwo />
+            <PublicLayout>
             <div
                 className="px-24"
                 style={{
@@ -605,6 +607,7 @@ function LandingPageMatch() {
                     </div>
                 </TabsContent>
             </Tabs>
+            </PublicLayout>
         </>
     );
 }

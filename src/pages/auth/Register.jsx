@@ -256,7 +256,7 @@ export default function Register() {
                   placeholder="Please explain why you want to register..."
                 />
               </div>
-              <div>
+              <div className="hidden">
                 <label htmlFor="federationId" className="block text-sm font-medium text-gray-700 mb-1">
                   Federation ID
                 </label>

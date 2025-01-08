@@ -38,7 +38,7 @@ const HeaderTwo = () => {
                       to={item.path}
                       key={item.name}
                       className={`px-6 py-2.5 rounded-lg text-base ${isActiveTab
-                        ? 'bg-blue-600 text-white'
+                        ? 'bg-blue-300 text-white'
                         : 'text-gray-600 hover:bg-gray-100'
                         }`}
                       onClick={() => {

@@ -116,48 +116,68 @@
 // };
 //
 // export default ProtectedRoute;
-import React from 'react';
+
+
+
+
+import React, { useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../utils/permissionUtils';
-import { MODULE_IDS } from '../constants/modules';
-import {secureStorage} from '../utils/crypto';
-const ProtectedRoute =  ({ children, moduleId }) => {
+import { secureStorage } from '../utils/crypto';
 
-  const { user } =  useAuth();
-  const location =  useLocation();
-  const { hasModuleAccess } =  usePermissions();
+const ProtectedRoute = ({ children, moduleId }) => {
+  const { user } = useAuth();
+  const location = useLocation();
+  const { hasModuleAccess } = usePermissions();
 
-  console.log('ProtectedRoute - Checking access for module:', moduleId);
-  console.log('Current user:', user);
+  const [loading, setLoading] = useState(true);
+  const [hasAccess, setHasAccess] = useState(false);
 
-  //fallback for getting user
+  // Synchronous handler for access control
+  const checkAccess = async () => {
+    try {
+      const storedUser = user || (await secureStorage.getItem('user'));
+      if (!storedUser) {
+        setLoading(false);
+        return <Navigate to="/login" state={{ from: location }} replace />;
+      }
 
+      // If no moduleId is provided, allow access
+      if (!moduleId) {
+        setHasAccess(true);
+        setLoading(false);
+        return children;
+      }
 
-
-
-
-  if (!user) {
-    const user =  secureStorage.getItem('user')
-    if(user === null || user === undefined ){
-      console.log('No user found, redirecting to login');
-      return <Navigate to="/login" state={{ from: location }} replace />;
+      // Check module access permissions
+      const access = await hasModuleAccess(moduleId);
+      setHasAccess(access);
+    } catch (error) {
+      console.error('Error checking access:', error);
+      setHasAccess(false);
+    } finally {
+      setLoading(false);
     }
+  };
 
+  // Trigger access check immediately (inline async function)
+  if (loading) {
+    checkAccess(); // Avoid `useEffect` by invoking directly.
+    return <div>Loading...</div>;
   }
 
-  const numericModuleId = MODULE_IDS[moduleId] || moduleId;
-
-  if (numericModuleId && !hasModuleAccess(numericModuleId)) {
-    console.log('User does not have permission for module:', moduleId);
+  // Redirect if no access
+  if (!hasAccess) {
     return <Navigate to="/notAuthorized" replace />;
   }
 
-  console.log('Access granted for module:', moduleId);
+  // Render children on successful access
   return children;
 };
 
 export default ProtectedRoute;
+
 
 
 
