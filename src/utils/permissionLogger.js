@@ -5,9 +5,9 @@ export const usePermissionLogger = (moduleName) => {
     const { checkPermission } = usePermissions();
 
     const logPermissions = async () => {
-        const moduleId = MODULE_IDS[moduleName.toUpperCase()];
+        const moduleId = await MODULE_IDS[moduleName.toUpperCase()];
         if (!moduleId) {
-            console.error(`No module ID found for ${moduleName}`);
+            await console.error(`No module ID found for ${moduleName}`);
             return null;
         }
 

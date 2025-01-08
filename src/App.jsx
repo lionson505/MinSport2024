@@ -45,6 +45,7 @@ import PendingActivation from './pages/PendingActivation';
 import { MODULE_IDS } from './constants/modules';
 import MinisterAppointments from "./pages/AppointmentsMinister.jsx";
 import PSAppointments from "./pages/AppointmentsPs.jsx";
+import PasswordReset from './pages/auth/ResetPassword.jsx';
 
 function App() {
   const [accessibleLinks, setAccessibleLinks] = useState(null);
@@ -103,7 +104,8 @@ function App() {
     '/events',
     '/federation',
     '/match',
-    '/map'
+    '/map',
+    '/reset-password',
 
   ];
 
@@ -142,6 +144,7 @@ function App() {
                       <Route path="/map" element={<MyMap/>} />
                       <Route path="/pending-activation" element={<PendingActivation />} />
                       <Route path="/notAuthorized" element={<NoPageFound/>} />
+                      <Route path="/reset-password" element={<PasswordReset/>} />
 
                       {/* Protected Routes */}
                       <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
@@ -246,6 +249,11 @@ function App() {
                             <SportsForAll />
                           </ProtectedRoute>
                         } />
+                        <Route path="/match-operator" element={
+                          <ProtectedRoute moduleId={MODULE_IDS.MATCH_OPERATOR}>
+                            <MatchOperatorDashboard />
+                          </ProtectedRoute>
+                        } />
                         <Route path="/settings" element={
                           <ProtectedRoute moduleId={MODULE_IDS.SETTINGS}>
                             <Settings />
@@ -256,11 +264,7 @@ function App() {
                             <PlayerTransferReport />
                           </ProtectedRoute>
                         } />
-                        <Route path="/match-operator" element={
-                          <ProtectedRoute moduleId={MODULE_IDS.MATCH_OPERATOR}>
-                            <MatchOperatorDashboard />
-                          </ProtectedRoute>
-                        } />
+
                         <Route path="/match-operator/teams" element={
                           <ProtectedRoute moduleId={MODULE_IDS.MATCH_OPERATOR_TEAMS}>
                             <TeamManagement />

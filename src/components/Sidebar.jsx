@@ -32,8 +32,8 @@ const Sidebar = () => {
     { title: "Partners", path: "/partners", icon: Users, moduleId: MODULE_IDS.PARTNER },
     { title: "Reports", path: "/reports", icon: BarChart3, moduleId: MODULE_IDS.REPORTS },
     { title: "Sports for all", path: "/sports-for-all", icon: Trophy, moduleId: MODULE_IDS.SPORTS_FOR_ALL },
-    { title: "Transfers", path: "/transfers", icon: UserPlus, moduleId: MODULE_IDS.TRANSFERS },
-    { title: "Match", path: "/matchs", icon: Timer, moduleId: MODULE_IDS.MATCH }
+    { title: "Transfers", path: "/player-transfer-report", icon: UserPlus, moduleId: MODULE_IDS.TRANSFERS },
+    { title: "Match", path: "/match-operator", icon: Timer, moduleId: MODULE_IDS.MATCH }
   ];
 
   useEffect(() => {

@@ -11,6 +11,7 @@ import { Button } from '../ui/Button';
 import { Plus, Users, Eye, Pen, Trash2 } from 'lucide-react';
 import PrintButton from '../reusable/Print';
 import { usePermissionLogger } from "../../utils/permissionLogger.js";
+import axiosInstance from '../../lib/axios.js';
 
 const ManageClubs = ({ onAdd, onEdit, onDelete, federations, isLoading, actionIcons }) => {
   const { isDarkMode } = useDarkMode();
@@ -42,7 +43,7 @@ const ManageClubs = ({ onAdd, onEdit, onDelete, federations, isLoading, actionIc
 
   const fetchClubsAndFederations = async () => {
     try {
-      const [clubsResponse, federationsResponse] = await Promise.all([axios.get('/clubs'), axios.get('/federations')]);
+      const [clubsResponse, federationsResponse] = await Promise.all([axiosInstance.get('/clubs'), axiosInstance.get('/federations')]);
       setClubs(clubsResponse.data);
     } catch (err) {
       setError('Failed to load data');
@@ -56,11 +57,11 @@ const ManageClubs = ({ onAdd, onEdit, onDelete, federations, isLoading, actionIc
   }
 
   useEffect(() => {
-    const currentPermissions = logPermissions();
-    setPermissions(currentPermissions); // Update permissions
     fetchPermissions()
+    console.log(permissions)// Update permissions
+
     fetchClubsAndFederations();
-  }, [logPermissions]); // Only rerun when permissions are updated
+  }, []); // Only rerun when permissions are updated
 
   const filteredClubs = clubs.filter((club) => {
     const matchesSearchTerm = club.name.toLowerCase().includes(searchTerm.toLowerCase());

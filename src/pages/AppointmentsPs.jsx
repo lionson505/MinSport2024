@@ -3,7 +3,7 @@ import React, { useEffect, useState, Fragment } from "react";
 import axiosInstance from "../utils/axiosInstance";
 import { Dialog, Transition } from "@headlessui/react";
 import { Button } from "../components/ui/Button";
-import { Input } from "../components/ui/Input";
+import { Input } from "../components/ui/input";
 import { Search, Calendar, Eye, Trash2, Check, X } from 'lucide-react';
 import AddAppointmentForm from "../components/forms/AddAppointmentForm";
 import PrintButton from "../components/reusable/Print";
