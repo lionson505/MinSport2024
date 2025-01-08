@@ -63,7 +63,7 @@ const MatchModal: React.FC<MatchModalProps> = ({ selectedMatch, onClose }) => {
     // home team Players
     const nationalTeamAPlayersId = nationalTeam.filter((nationalTeam) => nationalTeam.teamName === selectedMatch.homeTeam);
     const nationalTeamAPlayers = players.filter((player) => player.team.id === nationalTeamAPlayersId[0].id);
-    console.log('nationalTeamAPlayers : ', nationalTeamAPlayers);
+    console.log('nationalTeam A PlayersId : ', nationalTeamAPlayersId);
     const positions = nationalTeamAPlayers.map((player) => player.playerStaff.positionInClub);
     // console.log('positions : ', positions);
 
