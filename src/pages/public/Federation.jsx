@@ -304,18 +304,6 @@ function Federation() {
               Explore all the sports federations in Rwanda, including FERWAFA,
               FERWABA, and many more. Stay updated on events, news, and achievements.
             </p>
-            <button
-              className='hover:bg-[#ffffff83] bg-[#ffffff3b]'
-              style={{
-                padding: "20px 40px",
-                fontSize: "1rem",
-                color: "#fff",
-                border: "none",
-                cursor: "pointer",
-              }}
-            >
-              Read More
-            </button>
           </div>
           <div className="hidden sm:flex justify-end w-1/6 w-60 h-60">
             <img src={logo} alt="rwandanLogo" className="w-full h-full" />

@@ -9,7 +9,7 @@ import aprLogo from '../../components/liveMatch/aprLogo.jpeg';
 import rayonLogo from '../../components/liveMatch/rayonLogo.jpg';
 import MatchModal from '../../components/matchDetailsModal';
 import useFetchLiveMatches from '../../utils/fetchLiveMatches';
-
+import Fallback from './fallback';
 
 function LandingPageMatch() {
     const [imageIndex, setImageIndex] = useState(0);
@@ -20,7 +20,7 @@ function LandingPageMatch() {
     const [searchTerm, setSearchTerm] = useState('');
     const { matches = [], liveMatchError } = useFetchLiveMatches([]);
 
-   
+
 
     // Filter matches based on the active tab
     const filteredMatches = matches.filter(match => {
@@ -243,11 +243,11 @@ function LandingPageMatch() {
                     </div>
                     <div>
                         {selectedMatch && (
-                            <MatchModal 
+                            <MatchModal
                                 selectedMatch={selectedMatch}
                                 onClose={() => setSelectedMatch(null)}
                             />
-                            )}
+                        )}
                     </div>
                 </TabsContent>
 
@@ -325,12 +325,12 @@ function LandingPageMatch() {
                         )}
                     </div>
                     <div>
-                    {selectedMatch && (
-                            <MatchModal 
+                        {selectedMatch && (
+                            <MatchModal
                                 selectedMatch={selectedMatch}
                                 onClose={() => setSelectedMatch(null)}
                             />
-                            )}
+                        )}
                     </div>
                 </TabsContent>
 
@@ -405,17 +405,20 @@ function LandingPageMatch() {
                     </div>
                     <div>
                         {selectedMatch && (
-                            <MatchModal 
+                            <MatchModal
                                 selectedMatch={selectedMatch}
                                 onClose={() => setSelectedMatch(null)}
                             />
-                            )}
+                        )}
                     </div>
                 </TabsContent>
 
                 {/* Past Events Tab */}
-                <TabsContent value="past" className={`mt-6 flex justify-center ${activeTab !== 'past' ? 'hidden' : ''}`}>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 ">
+                <TabsContent
+                    value="past"
+                    className={`mt-6 w-full flex justify-center items-center ${activeTab !== 'past' ? 'hidden' : ''}`}
+                >
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-6xl p-6 bg-white rounded-lg shadow-md border border-gray-200">
                         {filteredMatches.some(match => match.status === 'PAST') ? (
                             filteredMatches.map((match) =>
                                 match.status === 'PAST' ? (
@@ -476,22 +479,22 @@ function LandingPageMatch() {
                                 ) : null
                             )
                         ) : (
-                            <div className="flex w-full justify-center">
-                                <div className="text-center mx-auto">
-                                    <h1 className="text-2xl font-semibold text-gray-800">
-                                        No Past Games Available
-                                    </h1>
-                                </div>
+                            <div className='border-2 border-green-400 max-w-full'>
+                                <Fallback
+                                    // className="border-2 border-red-400"
+                                    message="No Past Games Available"
+                                    onRetry={() => console.log("Retry clicked!")}
+                                />
                             </div>
                         )}
                     </div>
                     <div>
-                    {selectedMatch && (
-                            <MatchModal 
+                        {selectedMatch && (
+                            <MatchModal
                                 selectedMatch={selectedMatch}
                                 onClose={() => setSelectedMatch(null)}
                             />
-                            )}
+                        )}
                     </div>
                 </TabsContent>
 
@@ -574,12 +577,12 @@ function LandingPageMatch() {
                         )}
                     </div>
                     <div>
-                    {selectedMatch && (
-                            <MatchModal 
+                        {selectedMatch && (
+                            <MatchModal
                                 selectedMatch={selectedMatch}
                                 onClose={() => setSelectedMatch(null)}
                             />
-                            )}
+                        )}
                     </div>
                 </TabsContent>
             </Tabs>
