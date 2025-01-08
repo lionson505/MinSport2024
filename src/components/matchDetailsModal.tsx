@@ -56,6 +56,7 @@ const MatchModal: React.FC<MatchModalProps> = ({ selectedMatch, onClose }) => {
     const { players = [], playersError } = useFetchPlayers([]);
     const { nationalTeam = [], nationalTeamError } = useFetchNationalTeam([]);
     const [teamAPlayers, setTeamAPlayers] = useState()
+    console.log("team A Players : ", teamAPlayers)
     const [teamBPlayers, setTeamBPlayers] = useState()
     const [homeTeamLineUp = [], setHomeTeamLineUp] = useState([]);
     const [awayTeamLineUp = [], setAwayTeamLineUp] = useState([]);
@@ -63,7 +64,7 @@ const MatchModal: React.FC<MatchModalProps> = ({ selectedMatch, onClose }) => {
     // home team Players
     const nationalTeamAPlayersId = nationalTeam.filter((nationalTeam) => nationalTeam.teamName === selectedMatch.homeTeam);
     const nationalTeamAPlayers = players.filter((player) => player.team.id === nationalTeamAPlayersId[0].id);
-    console.log('nationalTeam A PlayersId : ', nationalTeamAPlayersId);
+    // console.log('nationalTeamAPlayersId[0].id : ', nationalTeamAPlayers);
     const positions = nationalTeamAPlayers.map((player) => player.playerStaff.positionInClub);
     // console.log('positions : ', positions);
 
@@ -310,41 +311,62 @@ const MatchModal: React.FC<MatchModalProps> = ({ selectedMatch, onClose }) => {
                                     {selectedMatch.homeTeam} Line-up
                                 </h3>
                                 <div className="space-y-2">
-
-                                    {/* {homeTeamLineUp.defender ? } */}
-                                    {homeTeamLineUp?.defender ? (
-                                        homeTeamLineUp.defender.map((player) => (
-                                            <div
-                                                key={player.id}
-                                                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                                            >
-                                                <div>
-                                                    <span className="italic">{player.playerStaff.positionInClub}</span>
-                                                </div>
-
-                                                <div className="flex items-center w-2/3 justify-start gap-3">
-                                                    <div>
-                                                        <span className="font-medium">
-                                                            {player.playerStaff.lastName} {player.playerStaff.firstName}
-                                                        </span>
-                                                    </div>
-                                                    <div>
-                                                        <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
-                                                            {player.playerStaff.id || 'player number'}
-                                                        </span>
-                                                    </div>
-                                                </div>
+                                    {/* {(homeTeamLineUp.goalkeeper).map((player) => (
+                                        <div
+                                            key={player.id}
+                                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                                        >
+                                            {player.playerStaff.lastName} {player.playerStaff.firstName}
+                                            <div className="flex items-center gap-3">
+                                                <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
+                                                    {player.playerStaff.id || 'player names'}
+                                                </span>
+                                                <span className="font-medium">{player.name}</span>
                                             </div>
-                                        ))
-                                    ) : (
-                                        <div className="p-3 bg-gray-50 rounded-lg text-center">
-                                            No defenders available.
+                                            <span className="text-sm text-gray-600">{player.position}</span>
                                         </div>
-                                    )}
+                                    ))} */}
 
 
-                                    {/* 
-                                     {(homeTeamLineUp.midfielder).map((player) => (
+                                    <div
+                                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                                    >
+                                        <span className='italic'>{homeTeamLineUp.goalkeeper[0]?.playerStaff.positionInClub}</span>
+                                        <div className="flex items-center gap-3">
+                                            <span className="font-medium">{homeTeamLineUp.goalkeeper[0]?.playerStaff.lastName} {homeTeamLineUp.goalkeeper[0]?.playerStaff.firstName}</span>
+                                            <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
+                                                {homeTeamLineUp.goalkeeper[0]?.playerStaff.id || 'player number'}
+                                            </span>
+                                        </div>
+                                        {/* <span className="text-sm text-gray-600">{player.position}</span> */}
+                                    </div>
+
+                                    {(homeTeamLineUp.defender).map((player) => (
+                                        <div
+                                            key={player.id}
+                                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                                        >
+                                            <div>
+                                                <span className='italic'>{player.playerStaff.positionInClub}</span>
+                                            </div>
+
+                                            <div className="flex items-center w-2/3 justify-start gap-3">
+
+
+                                                <div>
+                                                    <span className="font-medium">{player.playerStaff.lastName} {player.playerStaff.firstName}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
+                                                        {player.playerStaff.id || 'player number'}
+                                                    </span>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    ))}
+
+                                    {(homeTeamLineUp.midfielder).map((player) => (
                                         <div
                                             key={player.id}
                                             className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
@@ -392,21 +414,63 @@ const MatchModal: React.FC<MatchModalProps> = ({ selectedMatch, onClose }) => {
 
                                             </div>
                                         </div>
-                                    ))} */}
+                                    ))}
 
                                 </div>
-
                             </div>
 
                             <div className="space-y-4">
-
                                 <h3 className="font-semibold text-lg border-b pb-2">
                                     {selectedMatch.awayTeam} Line-up
                                 </h3>
-
+                                {/* <div className="space-y-2">
+                                        {(awayTeamLineUp.goalkeeper).map((player) => (
+                                                <div
+                                                    key={player.id}
+                                                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="w-6 h-6 bg-[#004d14] text-white rounded-full flex items-center justify-center text-sm">
+                                                            {player.playerStaff.id}
+                                                        </span>
+                                                        <span className="font-medium">{player.playerStaff.lastName} {player.playerStaff.firstName}</span>
+                                                    </div>
+                                                    <span className="text-sm text-gray-600">{player.playerStaff.positionInClub}</span>
+                                                </div>
+                                            ))}
+                                    </div> */}
                                 <div className="space-y-2">
+                                    {/* {(homeTeamLineUp.goalkeeper).map((player) => (
+                                        <div
+                                            key={player.id}
+                                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                                        >
+                                            {player.playerStaff.lastName} {player.playerStaff.firstName}
+                                            <div className="flex items-center gap-3">
+                                                <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
+                                                    {player.playerStaff.id || 'player names'}
+                                                </span>
+                                                <span className="font-medium">{player.name}</span>
+                                            </div>
+                                            <span className="text-sm text-gray-600">{player.position}</span>
+                                        </div>
+                                    ))} */}
 
-                                    {/*  {(awayTeamLineUp.defender).map((player) => (
+
+                                    <div
+                                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                                    >
+                                        <span className='italic'>{awayTeamLineUp.goalkeeper[0]?.playerStaff.positionInClub || 'GoolKeeper'}</span>
+                                        <div className="flex items-center gap-3">
+                                            <span className="font-medium">{awayTeamLineUp.goalkeeper[0]?.playerStaff.lastName || 'Player'} {awayTeamLineUp.goalkeeper[0]?.playerStaff.firstName || 'Names'}</span>
+                                            <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
+                                                {awayTeamLineUp.goalkeeper[0]?.playerStaff.id || '1'}
+                                            </span>
+                                        </div>
+                                        {/* <span className="text-sm text-gray-600">{player.position}</span> */}
+                                    </div>
+
+                                    {(awayTeamLineUp.defender).map((player) => (
                                         <div
                                             key={player.id}
                                             className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
@@ -479,10 +543,9 @@ const MatchModal: React.FC<MatchModalProps> = ({ selectedMatch, onClose }) => {
 
                                             </div>
                                         </div>
-                                    ))} */}
+                                    ))}
 
                                 </div>
-
                             </div>
 
                         </div>
