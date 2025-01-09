@@ -156,8 +156,8 @@ export function MatchOperatorDashboard() {
 
 
   useEffect(() => {
-    console.log('Current matches:', matches);
-    console.log('Match minutes:', matchMinutes);
+    // console.log('Current matches:', matches);
+    // console.log('Match minutes:', matchMinutes);
   }, [matches, matchMinutes]);
 
 
@@ -233,10 +233,10 @@ export function MatchOperatorDashboard() {
   };
 
 
-  console.log(matchMinutes)
+  // console.log(matchMinutes)
   // console.log("filterMatches: ", { filterMatches })
 
-  console.log(matches)
+  // console.log(matches)
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">

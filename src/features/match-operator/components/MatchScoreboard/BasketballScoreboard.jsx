@@ -84,6 +84,18 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
     }
   };
 
+  const saveLineup = async (lineUp, matchId) => {
+      console.log("Lineup structiure:", lineUp);
+
+    // try {
+    //   const response = await axiosInstance.patch(`/live-matches/${matchId}/event`, lineUp);
+    //   console.log("Lineup saved successfully:", response.data);
+    // } catch (error) {
+    //   console.error("Error saving lineup:", error);
+    // }
+  };
+  
+
   // const LineupModal = ({ isOpen, onClose, players }) => {
   //   const [fieldStatus, setFieldStatus] = useState(
   //     players.reduce((acc, player) => ({ ...acc, [player.id]: false }), {})
@@ -118,38 +130,35 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
     setFieldStatus((prev) => ({ ...prev, [player.id]: isChecked }));
   
     // Update the selectedPlayers array based on whether the player is checked or unchecked
-    setSelectedPlayers((prev) => {
-      if (isChecked) {
-        const updated = [...prev, player];
-        console.log("Selected Players:", updated); // Log updated players
-        return updated;
-      } else {
-        const updated = prev.filter((p) => p.id !== player.id);
-        console.log("Selected Players:", updated); // Log updated players
-        return updated;
-      }
-    });
-  };
+    setSelectedPlayers(() => {
+    if (isChecked) {
+      const updated = [player]; // Replace the array with only the current player
+      console.log("Selected Players:", updated);
+      saveLineup(updated); 
+      return updated;
+    } else {
+      console.log("Selected Players: []"); // Log empty array when unchecked
+      return []; // Return an empty array if unchecked
+    }
+  });
+};
 
-  const useLineUp = () => {
-    setLineUpModalOpen((prev) => !prev);
-  };
+const useLineUp = () => {
+  setLineUpModalOpen((prev) => !prev); // Toggle the modal open/close state
+};
 
-  useEffect(() => {
-    setSelectedPlayers((prev) => {
-      if (isChecked) {
-        // Add player to the selected list
-        const updated = [...prev, player];
-        console.log("Selected Players:", updated);
-        return updated;
-      } else {
-        // Remove player from the selected list
-        const updated = prev.filter((p) => p.id !== player.id);
-        console.log("Selected Players:", updated);
-        return updated;
-      }
-    });
-  }, [isChecked])
+useEffect(() => {
+  setSelectedPlayers(() => {
+    if (isChecked) {
+      const updated = [player]; // Only include the clicked player
+      console.log("Selected Players (Effect):", updated);
+      return updated;
+    } else {
+      console.log("Selected Players (Effect): []"); // Log empty array when unchecked
+      return [];
+    }
+  });
+}, [isChecked]);
 
   // Team B players
   const awayTeamName = match.awayTeam;
