@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { useMatchOperator } from '../../../contexts/MatchOperatorContext';
-import { CreateMatchModal } from '../components/CreateMatchModal';
-import { MatchSetupWizard } from '../components/MatchSetupWizard';
-import { MatchScoreboard } from '../components/MatchScoreboard';
-import { Button } from '../../../components/ui/Button';
-import {Plus, AlertCircle, Loader2} from 'lucide-react';
-import { Alert, AlertDescription } from '../../../components/ui/alert';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../../components/ui/tabs';
-import axiosInstance from '../../../utils/axiosInstance';
+import React, {useEffect, useState} from 'react';
+import {useMatchOperator} from '../../../contexts/MatchOperatorContext';
+import {CreateMatchModal} from '../components/CreateMatchModal';
+import {MatchSetupWizard} from '../components/MatchSetupWizard';
+import {MatchScoreboard} from '../components/MatchScoreboard';
+import {Button} from '../../../components/ui/Button';
+import {AlertCircle, Loader2, Plus} from 'lucide-react';
+import {Alert, AlertDescription} from '../../../components/ui/alert';
+import {Tabs, TabsContent, TabsList, TabsTrigger} from '../../../components/ui/tabs';
 import useFetchLiveMatches from '../../../utils/fetchLiveMatches';
-import { useFetchNationalTeam, useFetchPlayers } from '../../../utils/fetchMatchAndPlayers';
-import { usePermissionLogger } from "../../../utils/permissionLogger.js";
+import {useFetchNationalTeam, useFetchPlayers} from '../../../utils/fetchMatchAndPlayers';
+import {usePermissionLogger} from '../../../utils/permissionLogger.js';
 import Fallback from '../../../pages/public/fallback.jsx';
 
 export function MatchOperatorDashboard() {
+  const [matchMinutes, setMatchMinutes] = useState({});
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState();
   const [setupMode, setSetupMode] = useState(false);
@@ -24,6 +24,7 @@ export function MatchOperatorDashboard() {
   const { matches = [], liveMatchError } = useFetchLiveMatches();
   const { nationalTeam = [], nationalTeamError } = useFetchNationalTeam([])
   const { players = [], playerError } = useFetchPlayers([])
+  const [extra, setExtra] = useState(null);
   const [loading, setLoading] = useState(true);
   const permissionsLog = usePermissionLogger('match')
   const [permissions, setPermissions] = useState({
@@ -50,6 +51,44 @@ export function MatchOperatorDashboard() {
     fetchPermissions();
 
   }, []);
+
+  // Add this new function to calculate match minutes
+  const calculateMatchMinute = (startTime) => {
+    if (!startTime) return '0';
+
+    const start = new Date(startTime);
+    const now = new Date();
+
+    // Check if the date is valid
+    if (isNaN(start.getTime())) {
+      console.error('Invalid start time:', startTime);
+      return '0';
+    }
+
+
+
+    const diffInMinutes = Math.floor((now - start) / (1000 * 60));
+
+    return Math.max(0, diffInMinutes).toString();
+  };
+
+
+
+
+  const renderMatchTime = (matchId) => {
+    const minutes = matchMinutes[matchId];
+    if (!minutes) return '0 min';
+
+    const numericMinutes = Number(minutes);
+    if (numericMinutes <= 90) {
+      return `${numericMinutes} min`;
+    } else {
+      const extraTime = numericMinutes - 90;
+      return `90+${extraTime} min`;
+    }
+  };
+
+
   const handleMatchClick = async (match) => {
     try {
       setError(null);
@@ -88,6 +127,40 @@ export function MatchOperatorDashboard() {
   };
 
 
+  useEffect(() => {
+    // Initialize minutes for all ongoing matches
+    const initializeMinutes = () => {
+      if (!Array.isArray(matches)) return;
+
+      const newMinutes = {};
+      matches.forEach(match => {
+        if (match.status === 'ONGOING') {
+          newMinutes[match.id] = calculateMatchMinute(match.startTime);
+        }
+      });
+      setMatchMinutes(newMinutes);
+    };
+
+
+
+    // Initial setup
+    initializeMinutes();
+
+    // Update every minute
+    const timer = setInterval(() => {
+      initializeMinutes();
+    }, 60000); // Update every minute
+
+    return () => clearInterval(timer);
+  }, [matches]);
+
+
+  useEffect(() => {
+    console.log('Current matches:', matches);
+    console.log('Match minutes:', matchMinutes);
+  }, [matches, matchMinutes]);
+
+
   if(loading) {
     return(
         <div className="flex animate-spin animate justify-center items-center h-screen">
@@ -96,6 +169,13 @@ export function MatchOperatorDashboard() {
     )
 
   }
+
+  const getExtra = (id) => {
+    const matchMin = matchMinutes[id];
+    return Number(matchMin) - 90;
+  };
+
+
 
 
 
@@ -110,9 +190,12 @@ export function MatchOperatorDashboard() {
 
   // national team
 
+
   if (nationalTeamError) {
     console.error("Problem in getting national teams")
   }
+
+
   // console.log('teams : ', nationalTeam)
   if (!nationalTeam.length) {
     console.error("No Teams Available")
@@ -124,7 +207,7 @@ export function MatchOperatorDashboard() {
   }
 
   if (!players.length) {
-    // console.error("No Players")
+    console.error("No Players")
   }
 
   const handleSetupComplete = () => {
@@ -149,8 +232,11 @@ export function MatchOperatorDashboard() {
     return matches.filter(match => match.status === status);
   };
 
+
+  console.log(matchMinutes)
   // console.log("filterMatches: ", { filterMatches })
 
+  console.log(matches)
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -220,16 +306,30 @@ export function MatchOperatorDashboard() {
                             {currentMatch.gameType || 'Unknown Game Type'}
                           </div>
                         </div>
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs ${currentMatch.status === 'LIVE'
-                            ? 'bg-red-100 text-red-600'
-                            : currentMatch.status === 'UPCOMING'
-                              ? 'bg-green-100 text-green-600'
-                              : 'bg-gray-100 text-gray-600'
-                            }`}
-                        >
-                          {currentMatch.status}
-                        </span>
+
+                        <div className="flex justify-between items-center mb-4">
+
+                          <div className="flex flex-col items-end gap-1">
+                            <div className="flex flex-col items-end">
+      <span
+          className={`px-3 py-1 rounded-full text-xs font-medium ${
+              currentMatch.status === 'ONGOING'
+                  ? 'bg-red-100 text-red-600'
+                  : currentMatch.status === 'UPCOMING'
+                      ? 'bg-green-100 text-green-600'
+                      : 'bg-gray-100 text-gray-600'
+          }`}
+      >
+        {currentMatch.status}
+      </span>
+                              {currentMatch.status === 'ONGOING' && (
+                                  <span className="text-xs font-medium text-red-600 mt-1">
+          {(matchMinutes[currentMatch.id] > 90) ? `90 + ${getExtra(currentMatch.id)}  `: `${matchMinutes[currentMatch.id]} '`}min
+        </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
                       </div>
 
                       <div className="space-y-4">

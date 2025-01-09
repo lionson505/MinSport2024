@@ -20,6 +20,7 @@ function LandingPageMatch() {
     const [searchQuery, setSearchQuery] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const { matches = [], liveMatchError } = useFetchLiveMatches([]);
+    const [matchMinutes, setMatchMinutes] = useState({});
 
 
 
@@ -45,6 +46,58 @@ function LandingPageMatch() {
 
 
 
+    const calculateMatchMinute = (startTime) => {
+        if (!startTime) return '0';
+
+        const start = new Date(startTime);
+        const now = new Date();
+
+        // Check if the date is valid
+        if (isNaN(start.getTime())) {
+            console.error('Invalid start time:', startTime);
+            return '0';
+        }
+
+
+
+        const diffInMinutes = Math.floor((now - start) / (1000 * 60));
+
+        return Math.max(0, diffInMinutes).toString();
+    };
+
+    const renderMatchTime = (matchId) => {
+        const minutes = matchMinutes[matchId];
+        if (!minutes) return '0 min';
+
+        const numericMinutes = Number(minutes);
+        if (numericMinutes <= 90) {
+            return `${numericMinutes} min`;
+        } else {
+            const extraTime = numericMinutes - 90;
+            return `90 + ${extraTime} min`;
+        }
+    };
+
+    useEffect(() => {
+        const initializeMinutes = () => {
+            if (!Array.isArray(matches)) return;
+            const newMinutes = {};
+            matches.forEach(match => {
+                if (match.status === 'LIVE') { // or 'ONGOING' depending on your API
+                    newMinutes[match.id] = calculateMatchMinute(match.startTime);
+                }
+            });
+            setMatchMinutes(newMinutes);
+        };
+
+        initializeMinutes();
+        const timer = setInterval(initializeMinutes, 60000);
+        return () => clearInterval(timer);
+    }, [matches]);
+
+
+
+
     const image = matchesBackground;
 
     //setting modal
@@ -65,48 +118,12 @@ function LandingPageMatch() {
     const tabs = ['Info', 'Summary', 'Line-Up'];
 
 
-    const dummyData = {
-        homeTeam: "Manchester United",
-        awayTeam: "Liverpool",
-        competition: "Premier League",
-        homeScore: 2,
-        awayScore: 1,
-        status: "In Progress",
-        matchDate: "2024-06-15T18:00:00.000Z",
-        startTime: "2024-06-15T18:00:00.000Z",
-        venue: "Old Trafford",
-    };
 
-    const dummyLineUp = {
-        homeTeam: "Manchester United",
-        awayTeam: "Liverpool",
-        homePlayers: [
-            { number: 1, name: "David de Gea", position: "Goalkeeper" },
-            { number: 2, name: "Aaron Wan-Bissaka", position: "Defender" },
-            { number: 5, name: "Harry Maguire", position: "Defender" },
-            { number: 6, name: "Lisandro Martínez", position: "Defender" },
-            { number: 23, name: "Luke Shaw", position: "Defender" },
-            { number: 18, name: "Casemiro", position: "Midfielder" },
-            { number: 14, name: "Christian Eriksen", position: "Midfielder" },
-            { number: 8, name: "Bruno Fernandes", position: "Midfielder" },
-            { number: 10, name: "Marcus Rashford", position: "Forward" },
-            { number: 7, name: "Jadon Sancho", position: "Forward" },
-            { number: 9, name: "Anthony Martial", position: "Forward" },
-        ],
-        awayPlayers: [
-            { number: 1, name: "Alisson Becker", position: "Goalkeeper" },
-            { number: 66, name: "Trent Alexander-Arnold", position: "Defender" },
-            { number: 4, name: "Virgil van Dijk", position: "Defender" },
-            { number: 5, name: "Ibrahima Konaté", position: "Defender" },
-            { number: 26, name: "Andrew Robertson", position: "Defender" },
-            { number: 3, name: "Fabinho", position: "Midfielder" },
-            { number: 6, name: "Thiago Alcântara", position: "Midfielder" },
-            { number: 14, name: "Jordan Henderson", position: "Midfielder" },
-            { number: 11, name: "Mohamed Salah", position: "Forward" },
-            { number: 9, name: "Darwin Núñez", position: "Forward" },
-            { number: 23, name: "Luis Díaz", position: "Forward" },
-        ],
-    };
+
+
+
+
+
 
 
     return (
@@ -228,7 +245,7 @@ function LandingPageMatch() {
                                     {/* Match Info */}
                                     <div className="mt-4 text-sm text-gray-500">
                                         <div className="text-center font-medium text-red-500">
-                                            {match.time || '82`'}
+                                            {renderMatchTime(match.id)}
                                         </div>
                                         <div className="text-center mt-1">{match.venue}</div>
                                     </div>
@@ -316,7 +333,7 @@ function LandingPageMatch() {
                                         {/* Match Info */}
                                         <div className="mt-4 text-sm text-gray-500">
                                             <div className="text-center font-medium text-red-500">
-                                                {match.time || '82`'}
+                                                {renderMatchTime(match.id)}
                                             </div>
                                             <div className="text-center mt-1">{match.venue}</div>
                                         </div>
@@ -574,7 +591,7 @@ function LandingPageMatch() {
                                     {/* Match Info */}
                                     <div className="mt-4 text-sm text-gray-500">
                                         <div className="text-center font-medium text-red-500">
-                                            {searchedMatch.time || '82`'}
+                                            {renderMatchTime(searchedMatch.start_date)}
                                         </div>
                                         <div className="text-center mt-1">{searchedMatch.venue}</div>
                                     </div>

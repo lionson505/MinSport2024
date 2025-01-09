@@ -12,6 +12,7 @@ const LiveMatches = () => {
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [activeTab, setActiveTab] = useState("Summary");
   const { matches = [], liveMatchError } = useFetchLiveMatches()
+  const [matchMinutes, setMatchMinutes] = useState({})
 
   const dummyData = {
     homeTeam: "Manchester United",
@@ -92,6 +93,55 @@ const LiveMatches = () => {
     setSelectedMatch(null); // Close the modal
   };
 
+
+  const calculateMatchMinute = (startTime) => {
+    if (!startTime) return '0';
+
+    const start = new Date(startTime);
+    const now = new Date();
+
+    // Check if the date is valid
+    if (isNaN(start.getTime())) {
+      console.error('Invalid start time:', startTime);
+      return '0';
+    }
+
+
+
+    const diffInMinutes = Math.floor((now - start) / (1000 * 60));
+
+    return Math.max(0, diffInMinutes).toString();
+  };
+
+  const renderMatchTime = (matchId) => {
+    const minutes = matchMinutes[matchId];
+    if (!minutes) return '0 min';
+
+    const numericMinutes = Number(minutes);
+    if (numericMinutes <= 90) {
+      return `${numericMinutes} min`;
+    } else {
+      const extraTime = numericMinutes - 90;
+      return `90 + ${extraTime} min`;
+    }
+  };
+
+  useEffect(() => {
+    const initializeMinutes = () => {
+      if (!Array.isArray(matches)) return;
+      const newMinutes = {};
+      matches.forEach(match => {
+        if (match.status === 'LIVE') { // or 'ONGOING' depending on your API
+          newMinutes[match.id] = calculateMatchMinute(match.startTime);
+        }
+      });
+      setMatchMinutes(newMinutes);
+    };
+
+    initializeMinutes();
+    const timer = setInterval(initializeMinutes, 60000);
+    return () => clearInterval(timer);
+  }, [matches]);
   const tabs = ['Info', 'Summary', 'Line-Up'];
 
   return (
@@ -174,7 +224,7 @@ const LiveMatches = () => {
             {/* Match Info */}
             <div className="mt-4 text-sm text-gray-500">
               <div className="text-center font-medium text-red-500">
-                {match.time || '82`'}
+                {renderMatchTime(match.id)}
               </div>
               <div className="text-center mt-1">{match.venue}</div>
             </div>
