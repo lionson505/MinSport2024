@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 import { useFetchNationalTeam, useFetchPlayers } from './../../../../utils/fetchMatchAndPlayers';
 
 export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPlayers = [], onUpdate }) {
+  // console.log("match id : ", match.id)
   const [matchData, setMatchData] = useState({
     status: 'NOT_STARTED',
     currentQuarter: 1,
@@ -24,6 +25,16 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
     },
     events: []
   });
+  
+    const [lineUp, setLineUp] = useState({
+      eventType: '',
+      eventData:{
+        nationalTeamPlayerStaffId: '',
+        position: '',
+        minute: 9
+      }
+    });
+    console.log("line up : ", lineUp)
 
   const [showPlayerStats, setShowPlayerStats] = useState(false);
   const [pendingEvent, setPendingEvent] = useState(null);
@@ -40,6 +51,17 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
   // console.log(" checked : ", isChecked)
 
 
+  
+  const saveLiveUp = async () => {
+    try {
+      const response = await axiosInstance.post(`/live-matches/${match.id}/event`, lineUp)
+      console.log("event logged successfully")
+    }
+    catch(error) {
+      console.error("error in saving line up")
+    }
+  }
+  saveLiveUp();
 
   const addPoints = (team, points) => {
     setMatchData(prev => ({
@@ -123,8 +145,13 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
   const homeTeamLineUp = players.filter(player => player.teamId === homeTeamId[0]?.id);
   // console.log("homeTeamLineUp:", homeTeamLineUp);
 
-  //     useEffect(() => {
-  // }, [isChecked])
+
+  // Team B players
+  const awayTeamName = match.awayTeam;
+  const awayTeamId = nationalTeam.filter(nationalTeamName => nationalTeamName.teamName === awayTeamName)
+  // console.log("homeTeamId : ", homeTeamId)
+  const awayTeamLineUp = players.filter(player => player.teamId === awayTeamId[0]?.id);
+
   const toggleFieldStatus = (player, isChecked) => {
     // Update fieldStatus state for the player
     setFieldStatus((prev) => ({ ...prev, [player.id]: isChecked }));
@@ -134,6 +161,15 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
     if (isChecked) {
       const updated = [player]; // Replace the array with only the current player
       console.log("Selected Players:", updated);
+      setLineUp({
+        eventType: 'lineup',
+        eventData:{
+          nationalTeamPlayerStaffId: updated[0].playerStaff.id || '',
+          position: updated[0].playerStaff.positionInClub || '',
+          minute: 8
+        }
+      })
+
       saveLineup(updated); 
       return updated;
     } else {
@@ -160,27 +196,7 @@ useEffect(() => {
   });
 }, [isChecked]);
 
-  // Team B players
-  const awayTeamName = match.awayTeam;
-  const awayTeamId = nationalTeam.filter(nationalTeamName => nationalTeamName.teamName === awayTeamName)
-  // console.log("homeTeamId : ", homeTeamId)
-  const awayTeamLineUp = players.filter(player => player.teamId === awayTeamId[0]?.id);
-  // console.log("awayTeamLineUp:", awayTeamLineUp);
-
-  // const [fieldStatus, setFieldStatus] = useState(
-  //   players.reduce((acc, player) => ({ ...acc, [player.id]: false }), {})
-  // );
-
-  // const toggleFieldStatus = (id) => {
-  //   setFieldStatus((prev) => ({ ...prev, [id]: !prev[id] }));
-  // };
-
-  // const useLineUp = (team) => {
-  //   console.log(`Team ${team} lineup clicked`);
-  //   setLineUpModalOpen((prev) => !prev);
-  // };
-
-  // end with line up logics
+  
 
 
 
@@ -476,6 +492,59 @@ useEffect(() => {
             Line Up
           </Button>
         </div>
+          {lineUpModalOpen ? (
+            <div className="mt-6 bg-white shadow-lg rounded-lg p-6">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                {match.awayTeam} Lineup
+              </h2>
+              <div className="space-y-4">
+                {awayTeamLineUp.map((player) => (
+                  <div
+                    key={player.id}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="flex flex-col">
+                      <span className="font-medium text-gray-800">
+                        {player.playerStaff.lastName} {player.playerStaff.firstName}
+                      </span>
+                      <span className="text-sm text-gray-600 italic">
+                        {player.playerStaff.positionInClub}
+                      </span>
+                    </div>
+                    <label
+                      className="flex items-center space-x-2 cursor-pointer"
+                      title={
+                        fieldStatus[player.id]
+                          ? "Player is on the field"
+                          : "Player is off the field"
+                      }
+                    >
+                      <input
+                        type="checkbox"
+                        className="form-checkbox h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        checked={fieldStatus[player.id] || false} // Use checked here
+                        onChange={(e) => toggleFieldStatus(player, e.target.checked)} // Pass correct `isChecked` state
+                      />
+                      <span
+                        className={`text-sm ${fieldStatus[player.id]
+                          ? "text-green-600 font-semibold"
+                          : "text-red-600"
+                          }`}
+                      >
+                        {fieldStatus[player.id] ? "On Field" : "Off Field"}
+                      </span>
+                    </label>
+                  </div>
+                ))}
+              </div>
+              <button
+                className="mt-6 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 active:scale-95 transition-transform"
+                onClick={() => setLineUpModalOpen(false)}
+              >
+                Close Lineup
+              </button>
+            </div>
+          ) : null}
       </div>
     </div>
   );

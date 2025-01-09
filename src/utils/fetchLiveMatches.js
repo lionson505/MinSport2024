@@ -3,6 +3,7 @@ import axiosInstance from "./axiosInstance";
 
 const useFetchLiveMatches = () => {
     const [matches, setMatches] = useState([]);  // Initialize with an empty array
+    // console.log("matches : ", matches)
     const [liveMatchError, setError] = useState(null);  // Initialize with null
 
     useEffect(() => {
