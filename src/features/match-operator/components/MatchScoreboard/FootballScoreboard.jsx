@@ -15,7 +15,9 @@ import {
 import { Input } from '../../../../components/ui/input';
 import useFetchLiveMatches from '../../../../utils/fetchLiveMatches';
 import toast from 'react-hot-toast';
-import {usePermissionLogger} from "../../../../utils/permissionLogger.js";
+import { usePermissionLogger } from "../../../../utils/permissionLogger.js";
+import { useFetchNationalTeam, useFetchPlayers } from './../../../../utils/fetchMatchAndPlayers';
+
 
 export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlayers = [], onUpdate }) {
   const calculateMatchMinute = (startTime) => {
@@ -48,10 +50,23 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
   const [timerRunning, setTimerRunning] = useState(false);
   const [intervalId, setIntervalId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const { nationalTeam, setNationalTeams } = useFetchNationalTeam();
   const { matches = [], liveMatchError } = useFetchLiveMatches()
-  const updatedMatch = matches.filter((updatedMatch) => updatedMatch.id === match.id)
+  const updatedMatch = matches.filter((updatedMatch) => updatedMatch.id === match.id) 
+  const { players, playersError } = useFetchPlayers();
   const [currentMinute, setCurrentMinute] = useState(calculateMatchMinute(match.startTime));
-
+  const [fieldStatus, setFieldStatus] = useState({});
+  const [selectedPlayers, setSelectedPlayers] = useState([]);
+  const [lineUpModalOpen, setLineUpModalOpen] = useState();
+  const [lineUp, setLineUp] = useState({
+        eventType: '',
+        eventData:{
+          nationalTeamPlayerStaffId: '',
+          position: '',
+          minute: 9
+        }
+      });
+  
 
   const permissionLogger = usePermissionLogger('match')
   const [permissions, setPermissions] = useState({
@@ -61,8 +76,8 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
     canDelete: false
   })
 
-  const fetchPermissions = async ()=> {
-    const currentPermissions =await permissionLogger();
+  const fetchPermissions = async () => {
+    const currentPermissions = await permissionLogger();
     await setPermissions(currentPermissions);
   }
 
@@ -72,15 +87,61 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
   }, []);
 
 
+
+
+
+
+
+
+  // Team A players
+  const homeTeamName = match.homeTeam;
+  const homeTeamId = nationalTeam.filter(nationalTeamName => nationalTeamName.teamName === homeTeamName)
+  // console.log("homeTeamId : ", homeTeamId)
+  const homeTeamLineUp = players.filter(player => player.teamId === homeTeamId[0]?.id);
+  // console.log("homeTeamLineUp:", homeTeamLineUp);
+
+
+  // Team B players
+  const awayTeamName = match.awayTeam;
+  const awayTeamId = nationalTeam.filter(nationalTeamName => nationalTeamName.teamName === awayTeamName)
+  // console.log("homeTeamId : ", homeTeamId)
+  const awayTeamLineUp = players.filter(player => player.teamId === awayTeamId[0]?.id);
+
+  const toggleFieldStatus = (player, isChecked) => {
+    // Update fieldStatus state for the player
+    setFieldStatus((prev) => ({ ...prev, [player.id]: isChecked }));
   
+    // Update the selectedPlayers array based on whether the player is checked or unchecked
+    setSelectedPlayers(() => {
+    if (isChecked) {
+      const updated = [player]; // Replace the array with only the current player
+      console.log("Selected Players:", updated);
+      setLineUp({
+        eventType: 'lineup',
+        eventData:{
+          nationalTeamPlayerStaffId: updated[0].playerStaff.id || '',
+          position: updated[0].playerStaff.positionInClub || '',
+          minute: 8
+        }
+      })
+
+      saveLineup(updated); 
+      return updated;
+    } else {
+      console.log("Selected Players: []"); // Log empty array when unchecked
+      return []; // Return an empty array if unchecked
+    }
+  });
+};
+
+const useLineUp = () => {
+  setLineUpModalOpen((prev) => !prev); // Toggle the modal open/close state
+};
 
 
-
-
-
-
-
-
+const saveLineup = async (lineUp, matchId) => {
+  console.log("Lineup structiure:", lineUp);
+};
 
 
   const renderMatchTime = (matchId) => {
@@ -111,15 +172,17 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
         } else if (team === 'B') {
           let anotherGoal = updatedMatch[0].awayScore + 1;
           setMatchData(prev => ({ ...prev, teamBScore: anotherGoal }));
-          updatedMatchData = { awayScore: anotherGoal ,   goals: [
-            {
-              "nationalTeamPlayerStaffId": 1,
-              "minute": 1,
-              "liveMatchId": 3
-            }
-          ], };
+          updatedMatchData = {
+            awayScore: anotherGoal, goals: [
+              {
+                "nationalTeamPlayerStaffId": 1,
+                "minute": 1,
+                "liveMatchId": 3
+              }
+            ],
+          };
         }
-        console.log("updatedMatchData : ",updatedMatchData)
+        console.log("updatedMatchData : ", updatedMatchData)
 
         const endpoint = `/live-matches/${matchId}/score`;
         const response = await axiosInstance.patch(endpoint, updatedMatchData);
@@ -223,50 +286,50 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
   const renderMatchControls = () => (
     <div className="bg-white p-4 rounded-lg border mb-4">
       {permissions.canUpdate && (
-          <div className="flex items-center justify-between">
-            <div className="space-x-2">
-              <Button
-                  size="sm"
-                  variant={matchData.status === 'FIRST_HALF' ? 'default' : 'outline'}
-                  onClick={() => handlePeriodChange('FIRST_HALF')}
-              >
-                1st Half
-              </Button>
-              <Button
-                  size="sm"
-                  variant={matchData.status === 'HALF_TIME' ? 'default' : 'outline'}
-                  onClick={() => handlePeriodChange('HALF_TIME')}
-              >
-                Half Time
-              </Button>
-              <Button
-                  size="sm"
-                  variant={matchData.status === 'SECOND_HALF' ? 'default' : 'outline'}
-                  onClick={() => handlePeriodChange('SECOND_HALF')}
-              >
-                2nd Half
-              </Button>
-              <Button
-                  size="sm"
-                  variant={matchData.status === 'FULL_TIME' ? 'default' : 'outline'}
-                  onClick={() => handlePeriodChange('FULL_TIME')}
-              >
-                Full Time
-              </Button>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">Added Time:</span>
-              <Input
-                  type="number"
-                  min="0"
-                  max="15"
-                  value={matchData.addedTime}
-                  onChange={(e) => handleAddedTime(parseInt(e.target.value, 10))}
-                  className="w-16"
-              />
-              <span className="text-sm">min</span>
-            </div>
+        <div className="flex items-center justify-between">
+          <div className="space-x-2">
+            <Button
+              size="sm"
+              variant={matchData.status === 'FIRST_HALF' ? 'default' : 'outline'}
+              onClick={() => handlePeriodChange('FIRST_HALF')}
+            >
+              1st Half
+            </Button>
+            <Button
+              size="sm"
+              variant={matchData.status === 'HALF_TIME' ? 'default' : 'outline'}
+              onClick={() => handlePeriodChange('HALF_TIME')}
+            >
+              Half Time
+            </Button>
+            <Button
+              size="sm"
+              variant={matchData.status === 'SECOND_HALF' ? 'default' : 'outline'}
+              onClick={() => handlePeriodChange('SECOND_HALF')}
+            >
+              2nd Half
+            </Button>
+            <Button
+              size="sm"
+              variant={matchData.status === 'FULL_TIME' ? 'default' : 'outline'}
+              onClick={() => handlePeriodChange('FULL_TIME')}
+            >
+              Full Time
+            </Button>
           </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">Added Time:</span>
+            <Input
+              type="number"
+              min="0"
+              max="15"
+              value={matchData.addedTime}
+              onChange={(e) => handleAddedTime(parseInt(e.target.value, 10))}
+              className="w-16"
+            />
+            <span className="text-sm">min</span>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -287,24 +350,24 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
             {/*>*/}
             {/*  ⚽ Goal*/}
             {/*</Button>*/}
-                {/*)}*/}
+            {/*)}*/}
           </div>
         </div>
 
         <div className="text-center">
           <div className="text-5xl font-bold mb-2">{parseInt(currentMinute) > 90
-              ? `90+${parseInt(currentMinute) - 90}'`
-              : `${currentMinute}'`
+            ? `90+${parseInt(currentMinute) - 90}'`
+            : `${currentMinute}'`
           }</div>
           <div className="flex justify-center gap-2">
             {permissions.canUpdate && (
 
-                <Button
-                    size="sm"
-                    variant={timerRunning ? 'default' : 'outline'}
-                >
-                  {(currentMinute < 0 ) ? `Start Match` : (currentMinute === '45') ? `Half Time` : (currentMinute >= '90') ? 'End Match' : 'End Match' }
-                </Button>
+              <Button
+                size="sm"
+                variant={timerRunning ? 'default' : 'outline'}
+              >
+                {(currentMinute < 0) ? `Start Match` : (currentMinute === '45') ? `Half Time` : (currentMinute >= '90') ? 'End Match' : 'End Match'}
+              </Button>
 
             )}
 
@@ -339,35 +402,100 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
     <div className="grid grid-cols-2 gap-6 mb-6">
 
       <div className="space-y-4">
-        {permissions.canUpdate  && (
-            <>
-              <h3 className="font-medium">{match.homeTeam || 'Home Team'} Controls</h3>
-              <div className="grid grid-cols-2 gap-2">
+        {permissions.canUpdate && (
+          <>
+            <h3 className="font-medium">{match.homeTeam || 'Home Team'} Controls</h3>
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                onClick={() => handleEventWithPlayer('GOAL', 'A', matchData.teamAScore, match.id)}
+                className="w-full col-span-2"
+              >
+                ⚽ Goal
+              </Button>
+
+              {permissions.canUpdate && (<Button
+                variant="destructive"
+                onClick={() => handleEventWithPlayer('YELLOW_CARD', 'A')}
+              >
+                🟨 Yellow Card
+              </Button>)}
+
+              {permissions.canUpdate && (
                 <Button
-                    onClick={() => handleEventWithPlayer('GOAL', 'A', matchData.teamAScore, match.id)}
-                    className="w-full col-span-2"
+                  variant="destructive"
+                  onClick={() => handleEventWithPlayer('RED_CARD', 'A')}
                 >
-                  ⚽ Goal
+                  🟥 Red Card
                 </Button>
+              )}
 
-                {permissions.canUpdate && (<Button
-                    variant="destructive"
-                    onClick={() => handleEventWithPlayer('YELLOW_CARD', 'A')}
-                >
-                  🟨 Yellow Card
-                </Button>)}
-
-                {permissions.canUpdate && (
-                    <Button
-                        variant="destructive"
-                        onClick={() => handleEventWithPlayer('RED_CARD', 'A')}
+              <Button
+                variant="outline"
+                onClick={() => useLineUp('B')}
+              >
+                Line Up
+              </Button>
+              <button
+                className="mt-6 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 active:scale-95 transition-transform"
+                onClick={() => setLineUpModalOpen(false)}
+              >
+                Close Lineup
+              </button>
+            </div>
+            {lineUpModalOpen ? (
+              <div className="mt-6 bg-white shadow-lg rounded-lg p-6">
+                <h2 className="text-xl font-bold text-gray-800 mb-4">
+                  {match.awayTeam} Lineup
+                </h2>
+                <div className="space-y-4">
+                  {awayTeamLineUp.map((player) => (
+                    <div
+                      key={player.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                     >
-                      🟥 Red Card
-                    </Button>
-                )}
-
+                      <div className="flex flex-col">
+                        <span className="font-medium text-gray-800">
+                          {player.playerStaff.lastName} {player.playerStaff.firstName}
+                        </span>
+                        <span className="text-sm text-gray-600 italic">
+                          {player.playerStaff.positionInClub}
+                        </span>
+                      </div>
+                      <label
+                        className="flex items-center space-x-2 cursor-pointer"
+                        title={
+                          fieldStatus[player.id]
+                            ? "Player is on the field"
+                            : "Player is off the field"
+                        }
+                      >
+                        <input
+                          type="checkbox"
+                          className="form-checkbox h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                          checked={fieldStatus[player.id] || false} // Use checked here
+                          onChange={(e) => toggleFieldStatus(player, e.target.checked)} // Pass correct `isChecked` state
+                        />
+                        <span
+                          className={`text-sm ${fieldStatus[player.id]
+                            ? "text-green-600 font-semibold"
+                            : "text-red-600"
+                            }`}
+                        >
+                          {fieldStatus[player.id] ? "On Field" : "Off Field"}
+                        </span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  className="mt-6 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 active:scale-95 transition-transform"
+                  onClick={() => setLineUpModalOpen(false)}
+                >
+                  Close Lineup
+                </button>
               </div>
-            </>
+            ) : null}
+          </>
         )}
 
       </div>
@@ -376,55 +504,110 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
         {permissions.canUpdate && (<> <h3 className="font-medium">{match.awayTeam || 'Away Team'} Controls</h3>
           <div className="grid grid-cols-2 gap-2">
             <Button
-                onClick={() => handleEventWithPlayer('GOAL', 'B')}
-                className="w-full col-span-2"
+              onClick={() => handleEventWithPlayer('GOAL', 'B')}
+              className="w-full col-span-2"
             >
               ⚽ Goal
             </Button>
             {permissions.canUpdate && (<Button
-                variant="destructive"
-                onClick={() => handleEventWithPlayer('YELLOW_CARD', 'B')}
+              variant="destructive"
+              onClick={() => handleEventWithPlayer('YELLOW_CARD', 'B')}
             >
               🟨 Yellow Card
             </Button>)}
 
             {permissions.canUpdate && (
-                <Button
-                    variant="destructive"
-                    onClick={() => handleEventWithPlayer('RED_CARD', 'B')}
-                >
-                  🟥 Red Card
-                </Button>
+              <Button
+                variant="destructive"
+                onClick={() => handleEventWithPlayer('RED_CARD', 'B')}
+              >
+                🟥 Red Card
+              </Button>
             )}
           </div>
         </>)}
-
+        <Button variant="outline" onClick={() => useLineUp("A")}>
+          Line Up
+        </Button>
+        {lineUpModalOpen ? (
+          <div className="mt-6 bg-white shadow-lg rounded-lg p-6">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">
+              {match.homeTeam} Lineup
+            </h2>
+            <div className="space-y-4">
+              {homeTeamLineUp.map((player) => (
+                <div
+                  key={player.id}
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <div className="flex flex-col">
+                    <span className="font-medium text-gray-800">
+                      {player.playerStaff.lastName} {player.playerStaff.firstName}
+                    </span>
+                    <span className="text-sm text-gray-600 italic">
+                      {player.playerStaff.positionInClub}
+                    </span>
+                  </div>
+                  <label
+                    className="flex items-center space-x-2 cursor-pointer"
+                    title={
+                      fieldStatus[player.id]
+                        ? "Player is on the field"
+                        : "Player is off the field"
+                    }
+                  >
+                    <input
+                      type="checkbox"
+                      className="form-checkbox h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      checked={fieldStatus[player.id] || false} // Use checked here
+                      onChange={(e) => toggleFieldStatus(player, e.target.checked)} // Pass correct `isChecked` state
+                    />
+                    <span
+                      className={`text-sm ${fieldStatus[player.id]
+                        ? "text-green-600 font-semibold"
+                        : "text-red-600"
+                        }`}
+                    >
+                      {fieldStatus[player.id] ? "On Field" : "Off Field"}
+                    </span>
+                  </label>
+                </div>
+              ))}
+            </div>
+            <button
+              className="mt-6 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 active:scale-95 transition-transform"
+              onClick={() => setLineUpModalOpen(false)}
+            >
+              Close Lineup
+            </button>
+          </div>
+        ) : null}
       </div>
     </div>
   );
 
   const renderEvents = () => (
-      <div className="bg-white rounded-lg border">
-        <div className="p-4 border-b flex justify-between items-center">
-          <h3 className="font-medium">Match Events</h3>
-          <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setShowPlayerStats(true)}
-          >
-            <Users className="w-4 h-4 mr-2"/>
-            Player Stats
-          </Button>
-        </div>
-        <div className="p-4">
-          {matchData.events.length === 0 ? (
-              <div className="text-center text-gray-500 py-4">
-                No events recorded yet
-              </div>
-          ) : (
-              <div className="space-y-2">
-                {matchData.events.map((event, index) => (
-                    <div key={index} className="flex items-center justify-between py-2 border-b last:border-0">
+    <div className="bg-white rounded-lg border">
+      <div className="p-4 border-b flex justify-between items-center">
+        <h3 className="font-medium">Match Events</h3>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setShowPlayerStats(true)}
+        >
+          <Users className="w-4 h-4 mr-2" />
+          Player Stats
+        </Button>
+      </div>
+      <div className="p-4">
+        {matchData.events.length === 0 ? (
+          <div className="text-center text-gray-500 py-4">
+            No events recorded yet
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {matchData.events.map((event, index) => (
+              <div key={index} className="flex items-center justify-between py-2 border-b last:border-0">
                 <div className="flex items-center gap-2">
                   {event.type === 'GOAL' && '⚽'}
                   {event.type === 'YELLOW_CARD' && '🟨'}

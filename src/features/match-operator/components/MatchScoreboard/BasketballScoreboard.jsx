@@ -108,6 +108,7 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
 
   const saveLineup = async (lineUp, matchId) => {
       console.log("Lineup structiure:", lineUp);
+  };
 
     // try {
     //   const response = await axiosInstance.patch(`/live-matches/${matchId}/event`, lineUp);
@@ -115,7 +116,6 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
     // } catch (error) {
     //   console.error("Error saving lineup:", error);
     // }
-  };
   
 
   // const LineupModal = ({ isOpen, onClose, players }) => {
