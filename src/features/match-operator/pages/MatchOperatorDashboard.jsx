@@ -54,16 +54,16 @@ export function MatchOperatorDashboard() {
 
   // Add this new function to calculate match minutes
   const calculateMatchMinute = (startTime) => {
-    if (!startTime) return '0';
+
 
     const start = new Date(startTime);
     const now = new Date();
 
     // Check if the date is valid
-    if (isNaN(start.getTime())) {
-      console.error('Invalid start time:', startTime);
-      return '0';
-    }
+    // if (isNaN(start.getTime())) {
+    //   console.error('Invalid start time:', startTime);
+    //   return '0';
+    // }
 
 
 
@@ -128,28 +128,24 @@ export function MatchOperatorDashboard() {
 
 
   useEffect(() => {
-    // Initialize minutes for all ongoing matches
     const initializeMinutes = () => {
       if (!Array.isArray(matches)) return;
 
       const newMinutes = {};
       matches.forEach(match => {
-        if (match.status === 'ONGOING') {
+        // Check for matches with ONGOING status and valid startTime
+        if (match.status === 'ONGOING' && match.startTime) {
           newMinutes[match.id] = calculateMatchMinute(match.startTime);
         }
       });
       setMatchMinutes(newMinutes);
     };
 
-
-
     // Initial setup
     initializeMinutes();
 
     // Update every minute
-    const timer = setInterval(() => {
-      initializeMinutes();
-    }, 60000); // Update every minute
+    const timer = setInterval(initializeMinutes, 60000);
 
     return () => clearInterval(timer);
   }, [matches]);

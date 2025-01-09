@@ -95,16 +95,16 @@ const LiveMatches = () => {
 
 
   const calculateMatchMinute = (startTime) => {
-    if (!startTime) return '0';
+
 
     const start = new Date(startTime);
     const now = new Date();
 
     // Check if the date is valid
-    if (isNaN(start.getTime())) {
-      console.error('Invalid start time:', startTime);
-      return '0';
-    }
+    // if (isNaN(start.getTime())) {
+    //   console.error('Invalid start time:', startTime);
+    //   return '0';
+    // }
 
 
 
@@ -112,6 +112,46 @@ const LiveMatches = () => {
 
     return Math.max(0, diffInMinutes).toString();
   };
+
+  // useEffect(() => {
+  //   const initializeMinutes = () => {
+  //     if (!Array.isArray(matches)) return;
+  //     const newMinutes = {};
+  //     matches.forEach(match => {
+  //       if (match.status === 'LIVE') { // or 'ONGOING' depending on your API
+  //         newMinutes[match.id] = calculateMatchMinute(match.startTime);
+  //       }
+  //     });
+  //     setMatchMinutes(newMinutes);
+  //   };
+  //
+  //   initializeMinutes();
+  //   const timer = setInterval(initializeMinutes, 60000);
+  //   return () => clearInterval(timer);
+  // }, [matches]);
+
+  useEffect(() => {
+    const initializeMinutes = () => {
+      if (!Array.isArray(matches)) return;
+
+      const newMinutes = {};
+      matches.forEach(match => {
+        // Check for matches with ONGOING status and valid startTime
+        if (match.status === 'ONGOING' && match.startTime) {
+          newMinutes[match.id] = calculateMatchMinute(match.startTime);
+        }
+      });
+      setMatchMinutes(newMinutes);
+    };
+
+    // Initial setup
+    initializeMinutes();
+
+    // Update every minute
+    const timer = setInterval(initializeMinutes, 60000);
+
+    return () => clearInterval(timer);
+  }, [matches]);
 
   const renderMatchTime = (matchId) => {
     const minutes = matchMinutes[matchId];
@@ -122,26 +162,9 @@ const LiveMatches = () => {
       return `${numericMinutes} min`;
     } else {
       const extraTime = numericMinutes - 90;
-      return `90 + ${extraTime} min`;
+      return `90+${extraTime} min`;
     }
   };
-
-  useEffect(() => {
-    const initializeMinutes = () => {
-      if (!Array.isArray(matches)) return;
-      const newMinutes = {};
-      matches.forEach(match => {
-        if (match.status === 'LIVE') { // or 'ONGOING' depending on your API
-          newMinutes[match.id] = calculateMatchMinute(match.startTime);
-        }
-      });
-      setMatchMinutes(newMinutes);
-    };
-
-    initializeMinutes();
-    const timer = setInterval(initializeMinutes, 60000);
-    return () => clearInterval(timer);
-  }, [matches]);
   const tabs = ['Info', 'Summary', 'Line-Up'];
 
   return (

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import HeaderTwo from '../../components/headerTwo';
 import { sportsEventService } from '../../services/sportsEventService';
 import {
@@ -259,6 +259,25 @@ function EventsPage() {
                   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
                   Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
                 </p>
+
+                {/* Video Section */}
+                {selectedEvent?.video ? (
+                    <div className="mt-4">
+                      <p><strong>Event Video:</strong></p>
+                      {console.log('Video full path:', `${axiosInstance.defaults.baseURL}/uploads/video/${selectedEvent.video}`)}
+                      <video
+                          src={`${axiosInstance.defaults.baseURL}/${selectedEvent.video}`}
+                          controls
+                          className="mt-2 w-full rounded-lg"
+                      >
+                        Your browser does not support the video tag.
+                      </video>
+                    </div>
+                ) : (
+                    <div className="mt-4 p-4 bg-gray-100 rounded-lg text-gray-500 text-center">
+                      No event video available
+                    </div>
+                )}
               </div>
             </div>
           </div>

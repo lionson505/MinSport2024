@@ -89,6 +89,12 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
             await axiosInstance.patch(`/live-matches/${match.id}/status`, {
                 status: 'ONGOING'
             });
+
+            const startTimeIOso = new Date(Date.now()).toISOString();
+
+            await axiosInstance.put(`/live-matches/${match.id}`, {
+                startTime: startTimeIOso
+            })
             setTimerRunning(true);
             setMatchData(prev => ({ ...prev, status: 'FIRST_HALF' }));
             toast.success('Match started successfully');
