@@ -112,11 +112,11 @@ export function MatchOperatorDashboard() {
       const filteredBPlayers = players.filter(player => player.team?.id === awayTeamPlayersId);
       setNationalTeamBPlayers(filteredBPlayers);
 
-      if (match.status === 'UPCOMING') {
+      if (match.status === 'COMPLETED') {
         await initializeMatchSetup(match.id);
         setSelectedMatch(match);
         setSetupMode(true);
-      } else if (match.status === 'ONGOING') {
+      } else if (match.status === 'ONGOING' || match.status === 'UPCOMING' || match.status === 'HALFTIME' ) {
         setSelectedMatch(match);
         setSetupMode(false);
       }
