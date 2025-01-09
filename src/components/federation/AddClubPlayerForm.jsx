@@ -317,15 +317,30 @@ const AddClubPlayerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) =>
 
         <div>
           <label htmlFor="position" className={labelClasses}>Position in Club</label>
-          <input
-            type="text"
-            id="position"
-            name="position"
-            value={formData.position}
+          <select
+            name="playerPosition"
+            value={formData.playerPosition}
             onChange={handleChange}
-            className={inputClasses}
-            required
-          />
+            className={`${inputClassName} mt-1 block w-full border rounded-md`}
+          >
+            <option value="">Select Player Position</option>
+            {/* Football Positions */}
+            <optgroup label="Football Positions">
+              <option value="Goalkeeper">Goalkeeper</option>
+              <option value="Defender">Defender</option>
+              <option value="Midfielder">Midfielder</option>
+              <option value="Forward">Forward</option>
+            </optgroup>
+
+            {/* Basketball Positions */}
+            <optgroup label="Basketball Positions">
+              <option value="Point Guard">Point Guard</option>
+              <option value="Shooting Guard">Shooting Guard</option>
+              <option value="Small Forward">Small Forward</option>
+              <option value="Power Forward">Power Forward</option>
+              <option value="Center">Center</option>
+            </optgroup>
+          </select>
         </div>
       </div>
 

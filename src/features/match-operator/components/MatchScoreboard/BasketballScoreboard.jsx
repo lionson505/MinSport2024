@@ -8,6 +8,7 @@ import { ScoreInput } from '../../../../components/scoreboards/ScoreInput';
 import axiosInstance from '../../../../utils/axiosInstance';
 import useFetchLiveMatches from '../../../../utils/fetchLiveMatches';
 import toast from 'react-hot-toast';
+import { useFetchNationalTeam, useFetchPlayers } from './../../../../utils/fetchMatchAndPlayers';
 
 export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPlayers = [], onUpdate }) {
   const [matchData, setMatchData] = useState({
@@ -28,6 +29,16 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
   const [pendingEvent, setPendingEvent] = useState(null);
   const [showPlayerSelect, setShowPlayerSelect] = useState(false);
   const { matches, liveMatchError } = useFetchLiveMatches()
+  const { players, playersError } = useFetchPlayers();
+  const { nationalTeam, setNationalTeams } = useFetchNationalTeam();
+  // console.log("nationalTeam : ", nationalTeam)
+  const [lineUpModalOpen, setLineUpModalOpen] = useState();
+  const [selectedPlayers, setSelectedPlayers] = useState([]);
+  // const [selectedPlayers, setSelectedPlayers] = useState([]);
+  const [fieldStatus, setFieldStatus] = useState({});
+  const [isChecked, setIsChecked] = useState();
+  // console.log(" checked : ", isChecked)
+
 
 
   const addPoints = (team, points) => {
@@ -73,6 +84,94 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
     }
   };
 
+  // const LineupModal = ({ isOpen, onClose, players }) => {
+  //   const [fieldStatus, setFieldStatus] = useState(
+  //     players.reduce((acc, player) => ({ ...acc, [player.id]: false }), {})
+  //   );
+
+  //   const toggleFieldStatus = (id) => {
+  //     setFieldStatus((prev) => ({ ...prev, [id]: !prev[id] }));
+  //   };
+
+  //   if (!isOpen) return null;
+
+
+  // const players = [
+  //   { id: 1, name: "John Doe", position: "Defender" },
+  //   { id: 2, name: "Jane Smith", position: "Midfielder" },
+  //   { id: 3, name: "Mike Johnson", position: "Striker" },
+  //   { id: 4, name: "Emily Davis", position: "Goalkeeper" },
+  // ];
+
+
+  // Team A players
+  const homeTeamName = match.homeTeam;
+  const homeTeamId = nationalTeam.filter(nationalTeamName => nationalTeamName.teamName === homeTeamName)
+  // console.log("homeTeamId : ", homeTeamId)
+  const homeTeamLineUp = players.filter(player => player.teamId === homeTeamId[0]?.id);
+  // console.log("homeTeamLineUp:", homeTeamLineUp);
+
+  //     useEffect(() => {
+  // }, [isChecked])
+  const toggleFieldStatus = (player, isChecked) => {
+    // Update fieldStatus state for the player
+    setFieldStatus((prev) => ({ ...prev, [player.id]: isChecked }));
+  
+    // Update the selectedPlayers array based on whether the player is checked or unchecked
+    setSelectedPlayers((prev) => {
+      if (isChecked) {
+        const updated = [...prev, player];
+        console.log("Selected Players:", updated); // Log updated players
+        return updated;
+      } else {
+        const updated = prev.filter((p) => p.id !== player.id);
+        console.log("Selected Players:", updated); // Log updated players
+        return updated;
+      }
+    });
+  };
+
+  const useLineUp = () => {
+    setLineUpModalOpen((prev) => !prev);
+  };
+
+  useEffect(() => {
+    setSelectedPlayers((prev) => {
+      if (isChecked) {
+        // Add player to the selected list
+        const updated = [...prev, player];
+        console.log("Selected Players:", updated);
+        return updated;
+      } else {
+        // Remove player from the selected list
+        const updated = prev.filter((p) => p.id !== player.id);
+        console.log("Selected Players:", updated);
+        return updated;
+      }
+    });
+  }, [isChecked])
+
+  // Team B players
+  const awayTeamName = match.awayTeam;
+  const awayTeamId = nationalTeam.filter(nationalTeamName => nationalTeamName.teamName === awayTeamName)
+  // console.log("homeTeamId : ", homeTeamId)
+  const awayTeamLineUp = players.filter(player => player.teamId === awayTeamId[0]?.id);
+  // console.log("awayTeamLineUp:", awayTeamLineUp);
+
+  // const [fieldStatus, setFieldStatus] = useState(
+  //   players.reduce((acc, player) => ({ ...acc, [player.id]: false }), {})
+  // );
+
+  // const toggleFieldStatus = (id) => {
+  //   setFieldStatus((prev) => ({ ...prev, [id]: !prev[id] }));
+  // };
+
+  // const useLineUp = (team) => {
+  //   console.log(`Team ${team} lineup clicked`);
+  //   setLineUpModalOpen((prev) => !prev);
+  // };
+
+  // end with line up logics
 
 
 
@@ -157,7 +256,7 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
 
   const handleEventWithPlayer = async (type, team, points = 1, player) => {
 
-   
+
 
     try {
       // // console.log('Event Details:', { player, type, team, points });
@@ -168,7 +267,7 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
         setShowPlayerSelect(true);
         console.error('Player not found or invalid player name.');
         return;
-      } 
+      }
 
       // Update scores based on the event
       const updatedScores = {
@@ -185,17 +284,18 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
       await axiosInstance.patch(`/live-matches/${match.id}/score`, updatedScores);
       // // console.log('Match score updated successfully.');
       console.log('points', points)
-     if(points === 1 ) {
-      toast.success('Point added successfully!', {
-        description: `Score added successfully`
-      });
-     } else {
-      toast.success('Points added successfully!', {
-        description: `Score added successfully`
-      });
-     }
-    } catch (error) {if(!points === 1 ) 
-      console.error('Failed to update match score:', error);
+      if (points === 1) {
+        toast.success('Point added successfully!', {
+          description: `Score added successfully`
+        });
+      } else {
+        toast.success('Points added successfully!', {
+          description: `Score added successfully`
+        });
+      }
+    } catch (error) {
+      if (!points === 1)
+        console.error('Failed to update match score:', error);
     }
   };
 
@@ -280,6 +380,64 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
           >
             Timeout
           </Button>
+          <Button variant="outline" onClick={() => useLineUp("A")}>
+            Line Up
+          </Button>
+        </div>
+        <div>
+          {lineUpModalOpen ? (
+            <div className="mt-6 bg-white shadow-lg rounded-lg p-6">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                {match.homeTeam} Lineup
+              </h2>
+              <div className="space-y-4">
+                {homeTeamLineUp.map((player) => (
+                  <div
+                    key={player.id}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="flex flex-col">
+                      <span className="font-medium text-gray-800">
+                        {player.playerStaff.lastName} {player.playerStaff.firstName}
+                      </span>
+                      <span className="text-sm text-gray-600 italic">
+                        {player.playerStaff.positionInClub}
+                      </span>
+                    </div>
+                    <label
+                      className="flex items-center space-x-2 cursor-pointer"
+                      title={
+                        fieldStatus[player.id]
+                          ? "Player is on the field"
+                          : "Player is off the field"
+                      }
+                    >
+                      <input
+                        type="checkbox"
+                        className="form-checkbox h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        checked={fieldStatus[player.id] || false} // Use checked here
+                        onChange={(e) => toggleFieldStatus(player, e.target.checked)} // Pass correct `isChecked` state
+                      />
+                      <span
+                        className={`text-sm ${fieldStatus[player.id]
+                          ? "text-green-600 font-semibold"
+                          : "text-red-600"
+                          }`}
+                      >
+                        {fieldStatus[player.id] ? "On Field" : "Off Field"}
+                      </span>
+                    </label>
+                  </div>
+                ))}
+              </div>
+              <button
+                className="mt-6 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 active:scale-95 transition-transform"
+                onClick={() => setLineUpModalOpen(false)}
+              >
+                Close Lineup
+              </button>
+            </div>
+          ) : null}
         </div>
       </div>
 
@@ -301,6 +459,12 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
             onClick={() => useTimeout('B')}
           >
             Timeout
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => useLineUp('B')}
+          >
+            Line Up
           </Button>
         </div>
       </div>

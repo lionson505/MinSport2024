@@ -182,16 +182,16 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
         dateOfBirth: formData.dateOfBirth ? new Date(formData.dateOfBirth).toISOString() : null,
         joinDate: formData.joinDate ? new Date(formData.joinDate).toISOString() : null,
       };
-  
+
       // Remove any empty string values
       Object.keys(formattedData).forEach(key => {
         if (formattedData[key] === '') {
           formattedData[key] = null;
         }
       });
-  
+
       console.log('Submitting formatted data:', formattedData);
-  
+
       if (initialData && initialData.id) {
         // If there's an ID, we assume it's an update
         await axiosInstance.put(`/player-staff/${initialData.id}`, formattedData);
@@ -203,7 +203,7 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
         toast.success('Player/Staff added successfully');
         window.location.reload();
       }
-  
+
       // Update form data with the submitted data
       setFormData(formattedData);
     } catch (error) {
@@ -212,7 +212,7 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
       toast.error(errorMessage);
     }
   };
-  
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4 max-h-[80vh] overflow-y-auto p-4">
       <div className="grid grid-cols-1 gap-4">
@@ -401,13 +401,31 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Position in Club</label>
-          <input
-            type="text"
-            name="positionInClub"
-            value={formData.positionInClub}
+          <select
+            name="playerPosition"
+            value={formData.playerPosition}
             onChange={handleChange}
             className={`${inputClassName} mt-1 block w-full border rounded-md`}
-          />
+          >
+            <option value="">Select Player Position</option>
+            {/* Football Positions */}
+            <optgroup label="Football Positions">
+              <option value="Goalkeeper">Goalkeeper</option>
+              <option value="Defender">Defender</option>
+              <option value="Midfielder">Midfielder</option>
+              <option value="Forward">Forward</option>
+            </optgroup>
+
+            {/* Basketball Positions */}
+            <optgroup label="Basketball Positions">
+              <option value="Point Guard">Point Guard</option>
+              <option value="Shooting Guard">Shooting Guard</option>
+              <option value="Small Forward">Small Forward</option>
+              <option value="Power Forward">Power Forward</option>
+              <option value="Center">Center</option>
+            </optgroup>
+          </select>
+
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Federation</label>
