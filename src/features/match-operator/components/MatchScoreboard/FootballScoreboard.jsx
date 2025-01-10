@@ -282,7 +282,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
                             size="sm"
                             variant={matchData.status === 'FULL_TIME' ? 'default' : 'outline'}
                             onClick={handleEndMatch}
-                            disabled={!timerRunning || parseInt(currentMinute) <= 90}
+                            disabled={timerRunning || parseInt(currentMinute) <= 90}
                         >
                             End Match
                         </Button>
@@ -415,10 +415,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
             <div className="bg-white rounded-lg border">
                 <div className="p-4 border-b flex justify-between items-center">
                     <h3 className="font-medium">Match Events</h3>
-                    <Button size="sm" variant="outline" onClick={() => setShowPlayerStats(true)}>
-                        <Users className="w-4 h-4 mr-2" />
-                        Player Stats
-                    </Button>
+
                 </div>
                 <div className="p-4 grid grid-cols-2 gap-4">
                     <div>
