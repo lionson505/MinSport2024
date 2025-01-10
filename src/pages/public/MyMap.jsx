@@ -153,7 +153,7 @@ export default function MyMap() {
     <div className="container mx-auto p-4">
       <h1 className="lg:text-3xl md:text-2xl text-lg font-bold mb-6 text-center">Sports Facilities in Rwanda</h1>
 
-      <section className="flex flex-col md:flex-row md:w-full gap-2">
+      <section className="flex flex-col   gap-2">
         <div className='md:w-5/6 w-full'>
           <div className="mb-4 flex gap-2">
             <input
@@ -203,8 +203,8 @@ export default function MyMap() {
             </div>
           </div>
         </div>
-        <div className='flex justify-center w-full md:w-1/2'>
-          <div className="bg-white rounded-lg shadow-lg max-w-lg w-full p-6">
+        <div className='flex justify-center w-full '>
+          <div className="bg-white rounded-lg shadow-lg w-full p-6">
             <div className="flex justify-between items-center my-6">
               <h2 className="text-2xl font-bold">Book Visit </h2>
             </div>
