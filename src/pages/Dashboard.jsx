@@ -17,18 +17,15 @@ import { useDarkMode } from '../contexts/DarkModeContext';
 import { usePermissionLogger } from "../utils/permissionLogger.js";
 import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import ChartDownloadWrapper from '../components/reusable/chartDownloader';
-import {usePermissions }  from "../utils/permissions.js";
+import {checkPermission, usePermissions} from '../utils/permissions.js';
 import {MODULE_IDS} from "../constants/modules.js";
 
 
 const Dashboard = () => {
 
-  const { hasModuleAccess } = usePermissions();
 
-  const checkIfHeCanRead = async(name)=> {
-    const canAccess = await hasModuleAccess(name)
-    return Boolean(canAccess)
-  }
+
+
 
 
 
@@ -67,6 +64,8 @@ const Dashboard = () => {
   });
   const [appointmentRequestsM, setAppointmentRequestsM] = useState([]);
   const [AppointmentRequestsPS, setAppointmentRequestsPS] = useState([])
+
+
 
 
   const colors = [
@@ -167,7 +166,7 @@ const Dashboard = () => {
 
     fetchStats();
   }, []);
-  // const { hasModuleAccess } = usePermissions();
+
 
 
   useEffect(() => {
@@ -271,7 +270,7 @@ const Dashboard = () => {
         <div className="space-y-3">
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
             {statsRow1.map((stat, index) => (
-                checkIfHeCanRead(stat.moduleId) && (
+
                     <div
                         key={index}
                         className="bg-white hover:bg-gray-50 rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md"
@@ -283,12 +282,12 @@ const Dashboard = () => {
                       <h3 className="text-lg font-semibold">{stat.number}</h3>
                       <p className="text-xs">{stat.label}</p>
                     </div>
-                )
+
             ))}
           </div>
         </div>
 
-        {checkIfHeCanRead(MODULE_IDS.APPOINTMENTS) && (
+
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white p-6 rounded-lg shadow-sm">
             <div className="flex justify-between items-center">
@@ -313,7 +312,7 @@ const Dashboard = () => {
                 </ul>
             )}
           </div>
-          {checkIfHeCanRead(MODULE_IDS.APPOINTMENTS) && (
+
           <div className="bg-white p-6 rounded-lg shadow-sm">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold">Appointment Requests</h3>
@@ -336,12 +335,12 @@ const Dashboard = () => {
                 </ul>
             )}
             </div>
-          )}
+
         </div>
-        )}
+
         {}
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {checkIfHeCanRead(MODULE_IDS.APPOINTMEN_PS) && (
+
           <div className="bg-white p-6 rounded-lg shadow-sm">
 
             <div className="flex justify-between items-center">
@@ -365,10 +364,10 @@ const Dashboard = () => {
                 </ul>
             )}
           </div>
-          )}
 
 
-          {checkIfHeCanRead(MODULE_IDS.APPOINTMENT_MINISTER) && (
+
+
               <div className="bg-white p-6 rounded-lg shadow-sm">
                 <div className="flex justify-between items-center">
                   <h3 className="text-lg font-semibold">Appointment Requests Minister</h3>
@@ -392,7 +391,7 @@ const Dashboard = () => {
                     </ul>
                 )}
               </div>
-          )}
+
 
         </div>
 

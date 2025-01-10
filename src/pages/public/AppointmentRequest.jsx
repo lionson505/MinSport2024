@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { redirect, useLocation, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../lib/axios.js';
 
+
 const Toast = ({ message, onClose, isError }) => {
     useEffect(() => {
         const timer = setTimeout(onClose, 3000);
@@ -24,7 +25,7 @@ const AppointmentRequest = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        person_to_meet: '',
+        person_to_meet: 'MINISTER',
         names: '',
         gender: '',
         email: '',
@@ -32,8 +33,12 @@ const AppointmentRequest = () => {
         purpose: '',
         request_date: '',
         request_time: '',
+        institution: '',
+        function: '.',
         other_people_to_attend: '',
+        other_ministry_staff: '.',
     });
+
 
     const [loading, setLoading] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
@@ -54,8 +59,19 @@ const AppointmentRequest = () => {
         setLoading(true);
         setIsError(false);
 
+
+
         try {
-            const response = await axios.post('/appointments', formData);
+            const combinedData = {
+                ...formData,
+                request_date: `${formData.request_date}T${formData.request_time}`,
+                request_time: `${formData.request_date}T${formData.request_time}`
+            };
+
+            console.log("data being sent" ,combinedData)
+
+            const response = await axiosInstance.post('/appointments', combinedData);
+            setToastMessage(response.data.message)
             setToastMessage('Your appointment request has been successfully submitted. You will receive a confirmation email shortly.');
         } catch (err) {
             console.error('Error:', err);
