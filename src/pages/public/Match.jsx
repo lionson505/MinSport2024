@@ -22,18 +22,14 @@ function LandingPageMatch() {
     const { matches = [], liveMatchError } = useFetchLiveMatches([]);
     const [matchMinutes, setMatchMinutes] = useState({});
 
-
-
-    // Filter matches based on the active tab
     const filteredMatches = matches.filter(match => {
         if (activeTab === 'all') return true;
         if (activeTab === 'live') return match.status === 'LIVE';
-        if (activeTab === 'upcoming') return match.status === 'UPCOMING'; // Matches yet to happen
-        if (activeTab === 'past') return match.status === 'In Progress'; // Matches that have already happened
+        if (activeTab === 'upcoming') return match.status === 'UPCOMING';
+        if (activeTab === 'past') return match.status === 'In Progress';
         return false;
     });
 
-    //Filter matches based on search inputs
     const searchedMatches = matches.filter(searchedMatch => {
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
         return (
@@ -44,37 +40,32 @@ function LandingPageMatch() {
         );
     });
 
-
-
     const calculateMatchMinute = (startTime) => {
         if (!startTime) return '0';
 
         const start = new Date(startTime);
         const now = new Date();
 
-        // Check if the date is valid
         if (isNaN(start.getTime())) {
             console.error('Invalid start time:', startTime);
             return '0';
         }
 
-
-
         const diffInMinutes = Math.floor((now - start) / (1000 * 60));
-
         return Math.max(0, diffInMinutes).toString();
     };
 
-    const renderMatchTime = (matchId) => {
-        const minutes = matchMinutes[matchId];
-        if (!minutes) return '0 min';
+    const formatMatchTime = (matchId) => {
+        if (!matchMinutes[matchId]) return '0\'';
 
-        const numericMinutes = Number(minutes);
-        if (numericMinutes <= 90) {
-            return `${numericMinutes} min`;
+        const minutes = parseInt(matchMinutes[matchId], 10);
+        if (isNaN(minutes)) return '0\'';
+
+        if (minutes <= 90) {
+            return `${minutes}\'`;
         } else {
-            const extraTime = numericMinutes - 90;
-            return `90 + ${extraTime} min`;
+            const extraTime = minutes - 90;
+            return `90+${extraTime}\'`;
         }
     };
 
@@ -83,7 +74,7 @@ function LandingPageMatch() {
             if (!Array.isArray(matches)) return;
             const newMinutes = {};
             matches.forEach(match => {
-                if (match.status === 'LIVE') { // or 'ONGOING' depending on your API
+                if (match.status === 'LIVE' || match.status === 'ONGOING') {
                     newMinutes[match.id] = calculateMatchMinute(match.startTime);
                 }
             });
@@ -95,207 +86,95 @@ function LandingPageMatch() {
         return () => clearInterval(timer);
     }, [matches]);
 
-
-
-
     const image = matchesBackground;
 
-    //setting modal
     const handleMatchClick = (match) => {
-        setSelectedMatch(match); // Set the clicked match data
+        setSelectedMatch(match);
     };
 
-    //setting modal on searched
     const handlesearchedMatchClick = (searchedMatch) => {
-        setSelectedsearchedMatch(searchedMatch); // Set the clicked match data
+        setSelectedsearchedMatch(searchedMatch);
     };
 
     const handleCloseModal = () => {
-        setSelectedMatch(null); // Close the modal
+        setSelectedMatch(null);
         setSelectedsearchedMatch(null);
     };
-
-    const tabs = ['Info', 'Summary', 'Line-Up'];
-
-
-
-
-
-
-
-
-
 
     return (
         <>
             <HeaderTwo />
             <PublicLayout>
-            <div
-                className="px-24"
-                style={{
-                    backgroundImage: `url(${image})`, // Ensure the correct path to federation.png
-                    backgroundSize: "100% 100%",
-                    backgroundRepeat: "no-repeat",
-                    backgroundPosition: "center",
-                    height: "50vh",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "white",
-                    position: "relative",
-                    marginBottom: "2rem"
-                }}
-             >
-                {/* Content Section */}
-                <div className="flex w-full mt-24 space-x-10" style={{ maxWidth: "100%", textAlign: "center", zIndex: 1 }}>
-                    <div className=' w-4/5 text-start'>
-                        <h1 style={{ fontSize: "3rem", fontWeight: "bold" }}>
-                            ALL MATCHES
-                        </h1>
+                <div
+                    className="px-24"
+                    style={{
+                        backgroundImage: `url(${image})`,
+                        backgroundSize: "100% 100%",
+                        backgroundRepeat: "no-repeat",
+                        backgroundPosition: "center",
+                        height: "50vh",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "white",
+                        position: "relative",
+                        marginBottom: "2rem"
+                    }}
+                >
+                    <div className="flex w-full mt-24 space-x-10" style={{ maxWidth: "100%", textAlign: "center", zIndex: 1 }}>
+                        <div className='w-4/5 text-start'>
+                            <h1 style={{ fontSize: "3rem", fontWeight: "bold" }}>ALL MATCHES</h1>
+                        </div>
                     </div>
-
                 </div>
-            </div>
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
-                {/* Tabs List with Search */}
-                <TabsList className="bg-white p-2 sm:p-4  shadow-sm flex flex-wrap items-center gap-2 
-                     sm:flex-col md:flex-row lg:gap-6">
-                    <div className=''>
-                        <TabsTrigger value="all" onClick={() => setActiveTab('all')}>
-                            All Matches
-                        </TabsTrigger>
-                        <TabsTrigger value="live" onClick={() => setActiveTab('live')}>
-                            Live
-                        </TabsTrigger>
-                        <TabsTrigger value="upcoming" onClick={() => setActiveTab('upcoming')}>
-                            Upcoming
-                        </TabsTrigger>
-                        <TabsTrigger value="past" onClick={() => setActiveTab('past')}>
-                            Past
-                        </TabsTrigger>
-                    </div>
-                    <div className=''>
-                        {/* <SearchModal /> */}
-                        <input onClick={() => setActiveTab('search')}
-                            type="text"
-                            placeholder="Search Matches..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                    </div>
-                </TabsList>
-                <TabsContent value="all" className={`mt-6 flex justify-center ${activeTab !== 'all' ? 'hidden' : ''}`}>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full p-6 bg-white rounded-lg shadow-md">
-                        {filteredMatches.length > 0 ? (
-                            filteredMatches.map((match) =>
-                                <div
-                                    key={match.id}
-                                    className="flex-shrink-0 w-[280px] p-4 rounded-lg bg-white shadow-sm cursor-pointer m-8"
-                                    onClick={() => handleMatchClick(match)}
-                                >
-                                    {/* Match Header */}
-                                    <div className="flex justify-between items-center mb-4">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
+                    <TabsList className="bg-white p-2 sm:p-4 shadow-sm flex flex-wrap items-center gap-2 sm:flex-col md:flex-row lg:gap-6">
+                        <div className=''>
+                            <TabsTrigger value="all" onClick={() => setActiveTab('all')}>
+                                All Matches
+                            </TabsTrigger>
+                            <TabsTrigger value="live" onClick={() => setActiveTab('live')}>
+                                Live
+                            </TabsTrigger>
+                            <TabsTrigger value="upcoming" onClick={() => setActiveTab('upcoming')}>
+                                Upcoming
+                            </TabsTrigger>
+                            <TabsTrigger value="past" onClick={() => setActiveTab('past')}>
+                                Past
+                            </TabsTrigger>
+                        </div>
+                        <div className=''>
+                            <input onClick={() => setActiveTab('search')}
+                                   type="text"
+                                   placeholder="Search Matches..."
+                                   value={searchTerm}
+                                   onChange={(e) => setSearchTerm(e.target.value)}
+                                   className="p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+                    </TabsList>
+
+                    {/* All Matches Tab */}
+                    <TabsContent value="all" className={`mt-6 flex justify-center ${activeTab !== 'all' ? 'hidden' : ''}`}>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full p-6 bg-white rounded-lg shadow-md">
+                            {filteredMatches.length > 0 ? (
+                                filteredMatches.map((match) => (
+                                    <div
+                                        key={match.id}
+                                        className="flex-shrink-0 w-[280px] p-4 rounded-lg bg-white shadow-sm cursor-pointer m-8"
+                                        onClick={() => handleMatchClick(match)}
+                                    >
+                                        <div className="flex justify-between items-center mb-4">
                                         <span className="text-sm font-medium text-gray-900">
                                             {match.competition}
                                         </span>
-                                        <span className="flex items-center">
+                                            <span className="flex items-center">
                                             <span className="h-2 w-2 bg-red-500 rounded-full animate-pulse mr-2"></span>
                                             <span className="text-sm text-red-500">{match.status}</span>
                                         </span>
-                                    </div>
-
-                                    {/* Teams */}
-                                    <div className="space-y-4">
-                                        {/* Home Team */}
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-3">
-                                                <img
-                                                    src={match.homeTeam.logo || aprLogo}
-                                                    alt={match.homeTeam || 'Unknown team name'}
-                                                    className="h-8 w-8 object-contain"
-                                                />
-                                                <span className="font-medium text-gray-900">
-                                                    {match.homeTeam}
-                                                </span>
-                                            </div>
-                                            <span className="text-lg font-bold text-gray-900">
-                                                {match.homeScore || '0'}
-                                            </span>
                                         </div>
 
-                                        {/* Away Team */}
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-3">
-                                                <img
-                                                    src={match.awayTeamLogo || rayonLogo}
-                                                    alt={match.awayTeam}
-                                                    className="h-8 w-8 object-contain"
-                                                />
-                                                <span className="font-medium text-gray-900">
-                                                    {match.awayTeam}
-                                                </span>
-                                            </div>
-                                            <span className="text-lg font-bold text-gray-900">
-                                                {match.awayScore || '0'}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    {/* Match Info */}
-                                    <div className="mt-4 text-sm text-gray-500">
-                                        <div className="text-center font-medium text-red-500">
-                                            {renderMatchTime(match.id)}
-                                        </div>
-                                        <div className="text-center mt-1">{match.venue}</div>
-                                    </div>
-                                </div>
-                            )) : (
-
-                                <div className="flex items-center justify-center col-span-full min-h-[400px]">
-                                <Fallback
-                                    className="w-full h-full flex items-center justify-center bg-gray-50 rounded-lg shadow-md"
-                                    message="No Games Available"
-                                    onRetry={() => console.log("Retry clicked!")}
-                                />
-                            </div>
-                        )}
-                    </div>
-                    <div>
-                        {selectedMatch && (
-                            <MatchModal
-                                selectedMatch={selectedMatch}
-                                onClose={() => setSelectedMatch(null)}
-                            />
-                        )}
-                    </div>
-                </TabsContent>
-
-                {/* Live Events Tab */}
-                <TabsContent value="live" className={`mt-6 flex justify-center ${activeTab !== 'live' ? 'hidden' : ''}`}>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full p-6 bg-white rounded-lg shadow-md">
-                        {filteredMatches.some(match => match.status === 'LIVE') ? (
-                            filteredMatches.map((match) =>
-                                match.status === 'LIVE' ? (
-                                    <div
-                                        key={match.id}
-                                        className="flex-shrink-0 w-[280px] p-4 rounded-lg border border-gray-200 bg-white shadow-sm cursor-pointer m-8"
-                                        onClick={() => handleMatchClick(match)}
-                                    >
-                                        {/* Match Header */}
-                                        <div className="flex justify-between items-center mb-4">
-                                            <span className="text-sm font-medium text-gray-900">
-                                                {match.competition}
-                                            </span>
-                                            <span className="flex items-center">
-                                                <span className="h-2 w-2 bg-red-500 rounded-full animate-pulse mr-2"></span>
-                                                <span className="text-sm text-red-500">{match.status}</span>
-                                            </span>
-                                        </div>
-
-                                        {/* Teams */}
                                         <div className="space-y-4">
-                                            {/* Home Team */}
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-3">
                                                     <img
@@ -304,15 +183,14 @@ function LandingPageMatch() {
                                                         className="h-8 w-8 object-contain"
                                                     />
                                                     <span className="font-medium text-gray-900">
-                                                        {match.homeTeam}
-                                                    </span>
+                                                    {match.homeTeam}
+                                                </span>
                                                 </div>
                                                 <span className="text-lg font-bold text-gray-900">
-                                                    {match.homeScore || '0'}
-                                                </span>
+                                                {match.homeScore || '0'}
+                                            </span>
                                             </div>
 
-                                            {/* Away Team */}
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-3">
                                                     <img
@@ -321,44 +199,123 @@ function LandingPageMatch() {
                                                         className="h-8 w-8 object-contain"
                                                     />
                                                     <span className="font-medium text-gray-900">
-                                                        {match.awayTeam}
-                                                    </span>
+                                                    {match.awayTeam}
+                                                </span>
                                                 </div>
                                                 <span className="text-lg font-bold text-gray-900">
-                                                    {match.awayScore || '0'}
-                                                </span>
+                                                {match.awayScore || '0'}
+                                            </span>
                                             </div>
                                         </div>
 
-                                        {/* Match Info */}
                                         <div className="mt-4 text-sm text-gray-500">
                                             <div className="text-center font-medium text-red-500">
-                                                {renderMatchTime(match.id)}
+                                                {formatMatchTime(match.id)}
                                             </div>
                                             <div className="text-center mt-1">{match.venue}</div>
                                         </div>
                                     </div>
-                                ) : null
-                            )
-                        ) : (
-                            <div className="flex items-center justify-center col-span-full min-h-[400px]">
-                            <Fallback
-                                className="w-full h-full flex items-center justify-center bg-gray-50 rounded-lg shadow-md"
-                                message="No Live Games Available"
-                                onRetry={() => console.log("Retry clicked!")}
-                            />
+                                ))
+                            ) : (
+                                <div className="flex items-center justify-center col-span-full min-h-[400px]">
+                                    <Fallback
+                                        className="w-full h-full flex items-center justify-center bg-gray-50 rounded-lg shadow-md"
+                                        message="No Games Available"
+                                        onRetry={() => console.log("Retry clicked!")}
+                                    />
+                                </div>
+                            )}
                         </div>
-                        )}
-                    </div>
-                    <div>
                         {selectedMatch && (
                             <MatchModal
                                 selectedMatch={selectedMatch}
                                 onClose={() => setSelectedMatch(null)}
                             />
                         )}
-                    </div>
-                </TabsContent>
+                    </TabsContent>
+
+                    {/* Live Events Tab */}
+                    <TabsContent value="live" className={`mt-6 flex justify-center ${activeTab !== 'live' ? 'hidden' : ''}`}>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full p-6 bg-white rounded-lg shadow-md">
+                            {filteredMatches.some(match => match.status === 'LIVE') ? (
+                                filteredMatches.map((match) =>
+                                    match.status === 'LIVE' ? (
+                                        <div
+                                            key={match.id}
+                                            className="flex-shrink-0 w-[280px] p-4 rounded-lg border border-gray-200 bg-white shadow-sm cursor-pointer m-8"
+                                            onClick={() => handleMatchClick(match)}
+                                        >
+                                            {/* Match content - same structure as all matches */}
+                                            <div className="flex justify-between items-center mb-4">
+                                            <span className="text-sm font-medium text-gray-900">
+                                                {match.competition}
+                                            </span>
+                                                <span className="flex items-center">
+                                                <span className="h-2 w-2 bg-red-500 rounded-full animate-pulse mr-2"></span>
+                                                <span className="text-sm text-red-500">{match.status}</span>
+                                            </span>
+                                            </div>
+
+                                            <div className="space-y-4">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <img
+                                                            src={match.homeTeam.logo || aprLogo}
+                                                            alt={match.homeTeam || 'Unknown team name'}
+                                                            className="h-8 w-8 object-contain"
+                                                        />
+                                                        <span className="font-medium text-gray-900">
+                                                        {match.homeTeam}
+                                                    </span>
+                                                    </div>
+                                                    <span className="text-lg font-bold text-gray-900">
+                                                    {match.homeScore || '0'}
+                                                </span>
+                                                </div>
+
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <img
+                                                            src={match.awayTeamLogo || rayonLogo}
+                                                            alt={match.awayTeam}
+                                                            className="h-8 w-8 object-contain"
+                                                        />
+                                                        <span className="font-medium text-gray-900">
+                                                        {match.awayTeam}
+                                                    </span>
+                                                    </div>
+                                                    <span className="text-lg font-bold text-gray-900">
+                                                    {match.awayScore || '0'}
+                                                </span>
+                                                </div>
+                                            </div>
+
+                                            <div className="mt-4 text-sm text-gray-500">
+                                                <div className="text-center font-medium text-red-500">
+                                                    {formatMatchTime(match.id)}
+                                                </div>
+                                                <div className="text-center mt-1">{match.venue}</div>
+                                            </div>
+                                        </div>
+                                    ) : null
+                                )
+                            ) : (
+                                <div className="flex items-center justify-center col-span-full min-h-[400px]">
+                                    <Fallback
+                                        className="w-full h-full flex items-center justify-center bg-gray-50 rounded-lg shadow-md"
+                                        message="No Live Games Available"
+                                        onRetry={() => console.log("Retry clicked!")}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                        {selectedMatch && (
+                            <MatchModal
+                                selectedMatch={selectedMatch}
+                                onClose={() => setSelectedMatch(null)}
+                            />
+                        )}
+                    </TabsContent>
 
                 {/* Upcoming Events Tab */}
                 {/* match.status === 'UPCOMING' ? ( */}
@@ -591,7 +548,7 @@ function LandingPageMatch() {
                                     {/* Match Info */}
                                     <div className="mt-4 text-sm text-gray-500">
                                         <div className="text-center font-medium text-red-500">
-                                            {renderMatchTime(searchedMatch.start_date)}
+                                            {formatMatchTime(searchedMatch.id)}
                                         </div>
                                         <div className="text-center mt-1">{searchedMatch.venue}</div>
                                     </div>

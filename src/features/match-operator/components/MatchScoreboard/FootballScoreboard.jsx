@@ -84,36 +84,35 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
         setMatchData(prev => ({ ...prev, events: combinedEvents }));
     }, [match]);
 
+
     const handleStartMatch = async () => {
         try {
             await axiosInstance.patch(`/live-matches/${match.id}/status`, {
                 status: 'ONGOING'
             });
 
-            const startTimeIOso = new Date(Date.now()).toISOString();
-
+            const startTimeISO = new Date().toISOString();
             await axiosInstance.put(`/live-matches/${match.id}`, {
-                startTime: startTimeIOso
-            })
-            setTimerRunning(true);
+                startTime: startTimeISO
+            });
+
+            const newIntervalId = setInterval(() => {
+                setMatchTimer(prev => ({
+                    ...prev,
+                    currentMinute: prev.currentMinute + 1
+                }));
+            }, 60000);
+
+            setMatchTimer(prev => ({
+                ...prev,
+                isRunning: true,
+                intervalId: newIntervalId
+            }));
+
             setMatchData(prev => ({ ...prev, status: 'FIRST_HALF' }));
             toast.success('Match started successfully');
         } catch (error) {
             toast.error('Failed to start match');
-            console.error(error);
-        }
-    };
-
-    const handleEndMatch = async () => {
-        try {
-            await axiosInstance.patch(`/live-matches/${match.id}/status`, {
-                status: 'ENDED'
-            });
-            setTimerRunning(false);
-            setMatchData(prev => ({ ...prev, status: 'FULL_TIME' }));
-            toast.success('Match ended successfully');
-        } catch (error) {
-            toast.error('Failed to end match');
             console.error(error);
         }
     };
@@ -123,7 +122,17 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
             await axiosInstance.patch(`/live-matches/${match.id}/status`, {
                 status: 'HALFTIME'
             });
-            setTimerRunning(false);
+
+            if (matchTimer.intervalId) {
+                clearInterval(matchTimer.intervalId);
+            }
+
+            setMatchTimer(prev => ({
+                ...prev,
+                isRunning: false,
+                intervalId: null
+            }));
+
             setMatchData(prev => ({ ...prev, status: 'HALF_TIME' }));
             toast.success('Half time started');
         } catch (error) {
@@ -137,8 +146,21 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
             await axiosInstance.patch(`/live-matches/${match.id}/status`, {
                 status: 'HTL'
             });
-            setTimerRunning(true);
-            setCurrentMinute('45');
+
+            const newIntervalId = setInterval(() => {
+                setMatchTimer(prev => ({
+                    ...prev,
+                    currentMinute: prev.currentMinute + 1
+                }));
+            }, 60000);
+
+            setMatchTimer(prev => ({
+                ...prev,
+                isRunning: true,
+                intervalId: newIntervalId,
+                currentMinute: 45
+            }));
+
             setMatchData(prev => ({ ...prev, status: 'SECOND_HALF' }));
             toast.success('Second half started');
         } catch (error) {
@@ -147,6 +169,29 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
         }
     };
 
+    const handleEndMatch = async () => {
+        try {
+            await axiosInstance.patch(`/live-matches/${match.id}/status`, {
+                status: 'ENDED'
+            });
+
+            if (matchTimer.intervalId) {
+                clearInterval(matchTimer.intervalId);
+            }
+
+            setMatchTimer(prev => ({
+                ...prev,
+                isRunning: false,
+                intervalId: null
+            }));
+
+            setMatchData(prev => ({ ...prev, status: 'FULL_TIME' }));
+            toast.success('Match ended successfully');
+        } catch (error) {
+            toast.error('Failed to end match');
+            console.error(error);
+        }
+    };
 
 
     const addEvent = async (type, team, player) => {
@@ -415,10 +460,10 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
             <div className="bg-white rounded-lg border">
                 <div className="p-4 border-b flex justify-between items-center">
                     <h3 className="font-medium">Match Events</h3>
-                    <Button size="sm" variant="outline" onClick={() => setShowPlayerStats(true)}>
-                        <Users className="w-4 h-4 mr-2" />
-                        Player Stats
-                    </Button>
+                    {/*<Button size="sm" variant="outline" onClick={() => setShowPlayerStats(true)}>*/}
+                    {/*    <Users className="w-4 h-4 mr-2" />*/}
+                    {/*    Player Stats*/}
+                    {/*</Button>*/}
                 </div>
                 <div className="p-4 grid grid-cols-2 gap-4">
                     <div>

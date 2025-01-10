@@ -165,15 +165,14 @@ const ProtectedRoute = ({ children, moduleId }) => {
   // Trigger access check immediately (inline async function)
   if (loading) {
     checkAccess(); // Avoid `useEffect` by invoking directly.
-    return<div className="animate">
+    return <div className="flex animate-spin animate justify-center items-center h-screen">
       <Loader2/>
-
     </div>;
   }
 
   // Redirect if no access
   if (!hasAccess) {
-    if(!loading) {
+    if (!loading) {
       return <Navigate to="/notAuthorized" replace/>;
     }
   }
