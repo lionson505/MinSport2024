@@ -469,8 +469,10 @@ function LandingPage() {
                                 className="relative group cursor-pointer"
                             >
                               <div className="relative overflow-hidden rounded-lg md:w-[210px] lg:w-[225px] xl:w-[230px] 2xl:w-[205px]">
+                               
+                              {console.log(event.banner)}
                                 <img
-                                    src={eventImage || event.image}
+                                    src={`${axiosInstance.defaults.baseURL}${event.banner}`} 
                                     alt={event.name}
                                     className="w-full aspect-[3/4] object-contain transition-transform duration-300 group-hover:scale-110"
                                 />

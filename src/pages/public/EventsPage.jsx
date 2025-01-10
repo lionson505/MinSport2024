@@ -86,7 +86,8 @@ function EventsPage() {
       <div className="relative overflow-hidden rounded-lg">
         <img
           // For a single event
-          src={`${import.meta.env.VITE_API_URL || 'https://mis.minisports.gov.rw/api'}${event.banner}`}
+          src={`${axiosInstance.defaults.baseURL}${event.banner}`}
+          
 
           // // For selectedEvent in modal
           // src={`${import.meta.env.VITE_API_URL || 'https://mis.minisports.gov.rw/api'}${selectedEvent.banner}`}
@@ -131,7 +132,8 @@ function EventsPage() {
         <DialogHeader className="px-6 py-4 border-b">
           <div className="flex items-center justify-between">
             <div>
-              <DialogTitle className="text-2xl font-bold mb-1">{selectedEvent.title}</DialogTitle>
+              <h1></h1>
+              <DialogTitle className="text-2xl font-bold mb-1">{selectedEvent.name}</DialogTitle>
               <DialogDescription className="text-gray-500">
                 {selectedEvent.category}
               </DialogDescription>
@@ -149,7 +151,7 @@ function EventsPage() {
           <div className="p-6">
             <div className="relative h-[400px] rounded-lg overflow-hidden mb-8">
               <img
-                src={selectedEvent.image}
+          src={`${axiosInstance.defaults.baseURL}${selectedEvent.banner}`}
                 alt={selectedEvent.title}
                 className="w-full h-full object-cover"
               />

@@ -50,8 +50,11 @@ const MatchModal: React.FC<MatchModalProps> = ({ selectedMatch, onClose }) => {
     const tabs = [
         { id: "Summary", icon: ListVideo, label: "Match Summary" },
         { id: "Info", icon: Info, label: "Match Info" },
-        { id: "Line-up", icon: User2, label: "Line-up" }
     ];
+    // Conditionally add the "Line-up" tab if the game type is football
+    if (selectedMatch.gameType === 'Footballl') {
+        tabs.push({ id: "Line-up", icon: User2, label: "Line-up" });
+    }
 
     const { players = [], playersError } = useFetchPlayers([]);
     const { nationalTeam = [], nationalTeamError } = useFetchNationalTeam([]);

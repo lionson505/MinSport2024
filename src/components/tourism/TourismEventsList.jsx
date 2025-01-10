@@ -303,11 +303,11 @@ const TourismEventsList = () => {
                 {/* Banner Section */}
                 {selectedEvent?.banner ? (
                   <div className="mb-4">
-                    {console.log('Banner full path:', `${axiosInstance.defaults.baseURL}/uploads/banners/${selectedEvent[7]?.banner}`)}
+                    {console.log('Banner full path:', `${axiosInstance.defaults.baseURL}${selectedEvent.banner}`)}
                     <img 
                       src={`${axiosInstance.defaults.baseURL}/${selectedEvent.banner}`} 
-                      alt="Event Banner" 
-                      className="w-full h-48 object-cover rounded-lg" 
+                      controls 
+                      className="mt-2 w-full rounded-lg"
                     />
                   </div>
                 ) : (
