@@ -17,15 +17,18 @@ import { useDarkMode } from '../contexts/DarkModeContext';
 import { usePermissionLogger } from "../utils/permissionLogger.js";
 import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import ChartDownloadWrapper from '../components/reusable/chartDownloader';
-import {checkPermission, usePermissions} from '../utils/permissions.js';
+import {usePermissions }  from "../utils/permissions.js";
 import {MODULE_IDS} from "../constants/modules.js";
 
 
 const Dashboard = () => {
 
+  const { hasModuleAccess } = usePermissions();
 
-
-
+  const checkIfHeCanRead = async(name)=> {
+    const canAccess = await hasModuleAccess(name)
+    return Boolean(canAccess)
+  }
 
 
 
@@ -64,8 +67,6 @@ const Dashboard = () => {
   });
   const [appointmentRequestsM, setAppointmentRequestsM] = useState([]);
   const [AppointmentRequestsPS, setAppointmentRequestsPS] = useState([])
-
-
 
 
   const colors = [
@@ -145,13 +146,13 @@ const Dashboard = () => {
             .slice(0, 3);
         setAppointmentRequestsM(topThreeAppointmentsM);
 
-      const appointmentForPS = appointmentData.filter(appointment =>
-      appointment.person_to_meet === 'PS' || appointment.person_to_meet === 'ps')
+        const appointmentForPS = appointmentData.filter(appointment =>
+            appointment.person_to_meet === 'PS' || appointment.person_to_meet === 'ps')
 
 
-      const topThreePsAppointmentsPS = appointmentForPS
-          .sort((a, b )=> new Date(b.date) - new Date(a.date))
-          .slice(0,2)
+        const topThreePsAppointmentsPS = appointmentForPS
+            .sort((a, b )=> new Date(b.date) - new Date(a.date))
+            .slice(0,2)
 
         setAppointmentRequestsPS(topThreePsAppointmentsPS)
 
@@ -166,7 +167,7 @@ const Dashboard = () => {
 
     fetchStats();
   }, []);
-
+  // const { hasModuleAccess } = usePermissions();
 
 
   useEffect(() => {
@@ -270,7 +271,7 @@ const Dashboard = () => {
         <div className="space-y-3">
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
             {statsRow1.map((stat, index) => (
-
+                checkIfHeCanRead(stat.moduleId) && (
                     <div
                         key={index}
                         className="bg-white hover:bg-gray-50 rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md"
@@ -282,92 +283,92 @@ const Dashboard = () => {
                       <h3 className="text-lg font-semibold">{stat.number}</h3>
                       <p className="text-xs">{stat.label}</p>
                     </div>
-
+                )
             ))}
           </div>
         </div>
 
-
-        <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">Upcoming Appointments</h3>
-              <Button size="sm" variant="secondary" onClick={() => navigate('/appointments')}>View All</Button>
+        {checkIfHeCanRead(MODULE_IDS.APPOINTMENTS) && (
+            <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-white p-6 rounded-lg shadow-sm">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold">Upcoming Appointments</h3>
+                  <Button size="sm" variant="secondary" onClick={() => navigate('/appointments')}>View All</Button>
+                </div>
+                {upcomingAppointments.length === 0 ? (
+                    <p className="text-gray-500">No upcoming Events.</p>
+                ) : (
+                    <ul>
+                      {upcomingAppointments.map((appointment, index) => (
+                          <li key={index} className="flex justify-between items-center py-2">
+                            <div>
+                              <strong>{appointment.title}</strong>
+                              <p className="text-sm text-gray-500">{new Date(appointment.request_date).toLocaleDateString()}</p>
+                              <br/>
+                              <p className="text-sm text-gray-500">{appointment.names}</p><br/>
+                            </div>
+                            <span className="text-sm text-gray-600">{renderAppointmentStatus(appointment.status)}</span>
+                          </li>
+                      ))}
+                    </ul>
+                )}
+              </div>
+              {checkIfHeCanRead(MODULE_IDS.APPOINTMENTS) && (
+                  <div className="bg-white p-6 rounded-lg shadow-sm">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-semibold">Appointment Requests</h3>
+                      <Button size="sm" variant="secondary" onClick={() => navigate('/appointments')}>View All</Button>
+                    </div>
+                    {appointmentRequests.length === 0 ? (
+                        <p className="text-gray-500">No new appointment requests.</p>
+                    ) : (
+                        <ul>
+                          {appointmentRequests.map((appointment, index) => (
+                              <li key={index} className="flex justify-between items-center py-2">
+                                <div>
+                                  <strong>{appointment.title}</strong>
+                                  <p className="text-sm text-gray-500">{new Date(appointment.request_date).toLocaleDateString()}</p>
+                                  <p className="text-sm text-gray-500 font-bold ">{appointment.names}</p>
+                                </div>
+                                <span className="text-sm text-gray-600">{renderAppointmentStatus(appointment.status)}</span>
+                              </li>
+                          ))}
+                        </ul>
+                    )}
+                  </div>
+              )}
             </div>
-            {upcomingAppointments.length === 0 ? (
-                <p className="text-gray-500">No upcoming Events.</p>
-            ) : (
-                <ul>
-                  {upcomingAppointments.map((appointment, index) => (
-                      <li key={index} className="flex justify-between items-center py-2">
-                        <div>
-                          <strong>{appointment.title}</strong>
-                          <p className="text-sm text-gray-500">{new Date(appointment.request_date).toLocaleDateString()}</p>
-                          <br/>
-                          <p className="text-sm text-gray-500">{appointment.names}</p><br/>
-                        </div>
-                        <span className="text-sm text-gray-600">{renderAppointmentStatus(appointment.status)}</span>
-                      </li>
-                  ))}
-                </ul>
-            )}
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">Appointment Requests</h3>
-              <Button size="sm" variant="secondary" onClick={() => navigate('/appointments')}>View All</Button>
-            </div>
-            {appointmentRequests.length === 0 ? (
-                <p className="text-gray-500">No new appointment requests.</p>
-            ) : (
-                <ul>
-                  {appointmentRequests.map((appointment, index) => (
-                      <li key={index} className="flex justify-between items-center py-2">
-                        <div>
-                          <strong>{appointment.title}</strong>
-                          <p className="text-sm text-gray-500">{new Date(appointment.request_date).toLocaleDateString()}</p>
-                          <p className="text-sm text-gray-500 font-bold ">{appointment.names}</p>
-                        </div>
-                        <span className="text-sm text-gray-600">{renderAppointmentStatus(appointment.status)}</span>
-                      </li>
-                  ))}
-                </ul>
-            )}
-            </div>
-
-        </div>
-
+        )}
         {}
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {checkIfHeCanRead(MODULE_IDS.APPOINTMEN_PS) && (
+              <div className="bg-white p-6 rounded-lg shadow-sm">
 
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">Appointment Requests PS</h3>
-              <Button size="sm" variant="secondary" onClick={() => navigate('/appointments-ps')}>View All</Button>
-            </div>
-            {AppointmentRequestsPS.length === 0 ? (
-                <p className="text-gray-500">No new  appointment  requests. For PS</p>
-            ) : (
-                <ul>
-                  {AppointmentRequestsPS.map((appointment, index) => (
-                      <li key={index} className="flex justify-between items-center py-2">
-                        <div>
-                          <strong>{appointment.title}</strong>
-                          <p className="text-sm text-gray-500">{new Date(appointment.request_date).toLocaleDateString()}</p>
-                          <p className="text-sm text-gray-500 font-bold ">{appointment.names}</p>
-                        </div>
-                        <span className="text-sm text-gray-600">{renderAppointmentStatus(appointment.status)}</span>
-                      </li>
-                  ))}
-                </ul>
-            )}
-          </div>
-
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold">Appointment Requests PS</h3>
+                  <Button size="sm" variant="secondary" onClick={() => navigate('/appointments-ps')}>View All</Button>
+                </div>
+                {AppointmentRequestsPS.length === 0 ? (
+                    <p className="text-gray-500">No new  appointment  requests. For PS</p>
+                ) : (
+                    <ul>
+                      {AppointmentRequestsPS.map((appointment, index) => (
+                          <li key={index} className="flex justify-between items-center py-2">
+                            <div>
+                              <strong>{appointment.title}</strong>
+                              <p className="text-sm text-gray-500">{new Date(appointment.request_date).toLocaleDateString()}</p>
+                              <p className="text-sm text-gray-500 font-bold ">{appointment.names}</p>
+                            </div>
+                            <span className="text-sm text-gray-600">{renderAppointmentStatus(appointment.status)}</span>
+                          </li>
+                      ))}
+                    </ul>
+                )}
+              </div>
+          )}
 
 
-
+          {checkIfHeCanRead(MODULE_IDS.APPOINTMENT_MINISTER) && (
               <div className="bg-white p-6 rounded-lg shadow-sm">
                 <div className="flex justify-between items-center">
                   <h3 className="text-lg font-semibold">Appointment Requests Minister</h3>
@@ -391,7 +392,7 @@ const Dashboard = () => {
                     </ul>
                 )}
               </div>
-
+          )}
 
         </div>
 
@@ -423,60 +424,60 @@ const Dashboard = () => {
           <div className="bg-white p-4 rounded-lg shadow">
             <h3 className="text-lg font-semibold mb-4">Gender Distribution</h3>
             <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                      data={statsData.genderDistribution}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({name, percentage}) => `${name} (${percentage}%)`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                  >
-                    {statsData.genderDistribution.map((entry, index) => (
-                        <Cell
-                            key={`cell-${index}`}
-                            fill={entry.name === 'MALE' ? '#0088FE' :
-                                entry.name === 'FEMALE' ? '#FF8042' :
-                                    '#CCCCCC'}
-                        />
-                    ))}
-                  </Pie>
-                  <Tooltip/>
-                  <Legend/>
-                </PieChart>
-              </ResponsiveContainer>
+              <PieChart>
+                <Pie
+                    data={statsData.genderDistribution}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({name, percentage}) => `${name} (${percentage}%)`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                >
+                  {statsData.genderDistribution.map((entry, index) => (
+                      <Cell
+                          key={`cell-${index}`}
+                          fill={entry.name === 'MALE' ? '#0088FE' :
+                              entry.name === 'FEMALE' ? '#FF8042' :
+                                  '#CCCCCC'}
+                      />
+                  ))}
+                </Pie>
+                <Tooltip/>
+                <Legend/>
+              </PieChart>
+            </ResponsiveContainer>
           </div>
 
           <div className="bg-white p-4 rounded-lg shadow">
             <h3 className="text-lg font-semibold mb-4">Club Performance</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={statsData.clubPerformance}>
-                  <CartesianGrid strokeDasharray="3 3"/>
-                  <XAxis dataKey="name"/>
-                  <YAxis/>
-                  <Tooltip/>
-                  <Legend/>
-                  <Bar dataKey="players" fill="#8884d8"/>
-                  <Bar dataKey="staff" fill="#82ca9d"/>
-                </BarChart>
-              </ResponsiveContainer>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={statsData.clubPerformance}>
+                <CartesianGrid strokeDasharray="3 3"/>
+                <XAxis dataKey="name"/>
+                <YAxis/>
+                <Tooltip/>
+                <Legend/>
+                <Bar dataKey="players" fill="#8884d8"/>
+                <Bar dataKey="staff" fill="#82ca9d"/>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
 
           <div className="bg-white p-4 rounded-lg shadow">
             <h3 className="text-lg font-semibold mb-4">Federation Activity</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={statsData.competitionResults}>
-                  <CartesianGrid strokeDasharray="3 3"/>
-                  <XAxis dataKey="name" angle={-45} textAnchor="end" height={60}/>
-                  <YAxis/>
-                  <Tooltip/>
-                  <Legend/>
-                  <Bar dataKey="events" fill="#8884d8" name="Events"/>
-                  <Bar dataKey="participants" fill="#82ca9d" name="Participants"/>
-                </BarChart>
-              </ResponsiveContainer>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={statsData.competitionResults}>
+                <CartesianGrid strokeDasharray="3 3"/>
+                <XAxis dataKey="name" angle={-45} textAnchor="end" height={60}/>
+                <YAxis/>
+                <Tooltip/>
+                <Legend/>
+                <Bar dataKey="events" fill="#8884d8" name="Events"/>
+                <Bar dataKey="participants" fill="#82ca9d" name="Participants"/>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
