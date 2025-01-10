@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import axiosInstance from '../utils/axiosInstance';
-import {Plus, Eye, Pencil, Trash2, X, Loader2} from 'lucide-react';
+import { Plus, Eye, Pencil, Trash2, X, Loader2 } from 'lucide-react';
 import { Dialog, Transition } from '@headlessui/react';
 import { Button } from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
@@ -52,7 +52,7 @@ function NationalTeams() {
 
   const [selectedTeamForPlayer, setSelectedTeamForPlayer] = useState('');
   const [selectedClub, setSelectedClub] = useState('');
-  const [selectedFederation, setSelectedFederation] = useState(''); // New state for selected federation
+  const [selectedFederation, setSelectedFederation] = useState('');
   const [availableGames, setAvailableGames] = useState([]);
   const [selectedGames, setSelectedGames] = useState([]);
   const [playerStaffList, setPlayerStaffList] = useState([]);
@@ -159,13 +159,15 @@ function NationalTeams() {
 
   // Handle federation change
   const handleFederationChange = (e) => {
-    const federationId = e.target.value;
+    const federationId = parseInt(e.target.value);
     setSelectedFederation(federationId);
 
     // Filter teams, clubs, and players based on the selected federation
-    const filteredTeams = teams.filter(team => team.federationId === parseInt(federationId));
-    const filteredClubs = clubs.filter(club => club.federationId === parseInt(federationId));
-    const filteredPlayerStaff = players.filter(player => filteredClubs.some(club => club.id === player.clubId));
+    const filteredTeams = teams.filter(team => team.federationId === federationId);
+    const filteredClubs = clubs.filter(club => club.federationId === federationId);
+    
+    // Filter player staff based on the selected federation
+    const filteredPlayerStaff = playerStaffList.filter(player => player.federationId === federationId);
 
     setFilteredTeams(filteredTeams);
     setFilteredClubs(filteredClubs);
@@ -220,8 +222,6 @@ function NationalTeams() {
     }
   };
 
-
-
   const confirmDelete = async () => {
     try {
       await axiosInstance.delete(`/national-teams/${selectedTeamData.id}`);
@@ -261,13 +261,13 @@ function NationalTeams() {
       toast.error(error.response?.data?.message || 'Failed to add player');
     }
   };
-  if(loading) {
-    return(
-        <div className="flex animate-spin animate justify-center items-center h-screen">
-          <Loader2/>
-        </div>
-    )
 
+  if (loading) {
+    return (
+      <div className="flex animate-spin animate justify-center items-center h-screen">
+        <Loader2 />
+      </div>
+    );
   }
 
   const handlePlayerEditSubmit = async (e) => {
@@ -301,7 +301,6 @@ function NationalTeams() {
     setSelectedPlayerData(player);
     setShowPlayerViewDialog(true);
   };
-
 
   const handlePlayerEdit = (player) => {
     setSelectedPlayerData(player);
@@ -493,12 +492,10 @@ function NationalTeams() {
   const renderContent = () => {
     if (loading) {
       return (
-          <div className="flex animate-spin animate justify-center items-center h-screen">
-            <Loader2 />
-
-          </div>
-      )
-
+        <div className="flex animate-spin animate justify-center items-center h-screen">
+          <Loader2 />
+        </div>
+      );
     }
 
     if (activeTab === 'Manage National Teams') {
