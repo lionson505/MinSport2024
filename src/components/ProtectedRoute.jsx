@@ -125,6 +125,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../utils/permissionUtils';
 import { secureStorage } from '../utils/crypto';
+import {Loader2} from 'lucide-react';
 
 const ProtectedRoute = ({ children, moduleId }) => {
   const { user } = useAuth();
@@ -164,12 +165,17 @@ const ProtectedRoute = ({ children, moduleId }) => {
   // Trigger access check immediately (inline async function)
   if (loading) {
     checkAccess(); // Avoid `useEffect` by invoking directly.
-    return <div>Loading...</div>;
+    return<div className="animate">
+      <Loader2/>
+
+    </div>;
   }
 
   // Redirect if no access
   if (!hasAccess) {
-    return <Navigate to="/notAuthorized" replace />;
+    if(!loading) {
+      return <Navigate to="/notAuthorized" replace/>;
+    }
   }
 
   // Render children on successful access
