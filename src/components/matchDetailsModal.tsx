@@ -363,8 +363,33 @@ const MatchModal: React.FC<MatchModalProps> = ({ selectedMatch, onClose }) => {
                                         </div>
                                     ) : null}
 
-                                    {Array.isArray(homeTeamLineUp?.defender) || Array.isArray(homeTeamLineUp?.pointGuard) || Array.isArray(homeTeamLineUp?.OutsideHitters)
-                                        ? (homeTeamLineUp.defender || homeTeamLineUp.pointGuard || homeTeamLineUp.OutsideHitters).map((player) => (
+                                    {Array.isArray(homeTeamLineUp?.pointGuard) && homeTeamLineUp.pointGuard.length > 0 ? (
+                                        <div
+                                            key={homeTeamLineUp.pointGuard[0].id}
+                                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                                        >
+                                            <div>
+                                                <span className="italic">{homeTeamLineUp.pointGuard[0].playerStaff.positionInClub}</span>
+                                            </div>
+
+                                            <div className="flex items-center w-2/3 justify-start gap-3">
+                                                <div>
+                                                    <span className="font-medium">
+                                                        {homeTeamLineUp.pointGuard[0].playerStaff.lastName}{' '}
+                                                        {homeTeamLineUp.pointGuard[0].playerStaff.firstName}
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
+                                                        {homeTeamLineUp.pointGuard[0].playerStaff.id || 'player number'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        // Fallback to display other players if no Point Guard exists
+                                        (Array.isArray(homeTeamLineUp?.defender) || Array.isArray(homeTeamLineUp?.OutsideHitters)) &&
+                                        (homeTeamLineUp.defender || homeTeamLineUp.OutsideHitters).map((player) => (
                                             <div
                                                 key={player.id}
                                                 className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
@@ -375,7 +400,9 @@ const MatchModal: React.FC<MatchModalProps> = ({ selectedMatch, onClose }) => {
 
                                                 <div className="flex items-center w-2/3 justify-start gap-3">
                                                     <div>
-                                                        <span className="font-medium">{player.playerStaff.lastName} {player.playerStaff.firstName}</span>
+                                                        <span className="font-medium">
+                                                            {player.playerStaff.lastName} {player.playerStaff.firstName}
+                                                        </span>
                                                     </div>
                                                     <div>
                                                         <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
@@ -385,63 +412,109 @@ const MatchModal: React.FC<MatchModalProps> = ({ selectedMatch, onClose }) => {
                                                 </div>
                                             </div>
                                         ))
+                                    )}
+
+
+
+                                    {Array.isArray(homeTeamLineUp?.Midfielder) ||
+                                        Array.isArray(homeTeamLineUp?.shootingGuard) ||
+                                        Array.isArray(homeTeamLineUp?.Libero) ? (
+                                        <>
+                                            {/* Check and render the first player in shootingGuard if it exists */}
+                                            {Array.isArray(homeTeamLineUp.shootingGuard) &&
+                                                homeTeamLineUp.shootingGuard.length > 0 && (
+                                                    <div
+                                                        key={homeTeamLineUp.shootingGuard[0].id}
+                                                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                                                    >
+                                                        <div>
+                                                            <span className="italic">
+                                                                {homeTeamLineUp.shootingGuard[0].playerStaff.positionInClub}
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="flex items-center w-2/3 justify-start gap-3">
+                                                            <div>
+                                                                <span className="font-medium">
+                                                                    {homeTeamLineUp.shootingGuard[0].playerStaff.lastName}{' '}
+                                                                    {homeTeamLineUp.shootingGuard[0].playerStaff.firstName}
+                                                                </span>
+                                                            </div>
+                                                            <div>
+                                                                <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
+                                                                    {homeTeamLineUp.shootingGuard[0].playerStaff.id || 'player number'}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                            {/* Check and render the first player in Libero if it exists */}
+                                            {Array.isArray(homeTeamLineUp.Libero) &&
+                                                homeTeamLineUp.Libero.length > 0 && (
+                                                    <div
+                                                        key={homeTeamLineUp.Libero[0].id}
+                                                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                                                    >
+                                                        <div>
+                                                            <span className="italic">
+                                                                {homeTeamLineUp.Libero[0].playerStaff.positionInClub}
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="flex items-center w-2/3 justify-start gap-3">
+                                                            <div>
+                                                                <span className="font-medium">
+                                                                    {homeTeamLineUp.Libero[0].playerStaff.lastName}{' '}
+                                                                    {homeTeamLineUp.Libero[0].playerStaff.firstName}
+                                                                </span>
+                                                            </div>
+                                                            <div>
+                                                                <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
+                                                                    {homeTeamLineUp.Libero[0].playerStaff.id || 'player number'}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                        </>
+                                    ) : (
+                                        ''
+                                    )}
+
+
+                                    {Array.isArray(homeTeamLineUp?.Forward) || Array.isArray(homeTeamLineUp?.smallForward) || Array.isArray(homeTeamLineUp?.Setter)
+                                        ? (
+                                            (homeTeamLineUp.Forward || [])
+                                                .concat(
+                                                    homeTeamLineUp?.smallForward?.slice(0, 1) || [],
+                                                    homeTeamLineUp?.Setter?.slice(0, 1) || []
+                                                )
+                                                .map((player) => (
+                                                    <div
+                                                        key={player.id}
+                                                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                                                    >
+                                                        <div>
+                                                            <span className="italic">{player.playerStaff.positionInClub}</span>
+                                                        </div>
+
+                                                        <div className="flex items-center w-2/3 justify-start gap-3">
+                                                            <div>
+                                                                <span className="font-medium">{player.playerStaff.lastName} {player.playerStaff.firstName}</span>
+                                                            </div>
+                                                            <div>
+                                                                <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
+                                                                    {player.playerStaff.id || 'player number'}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                        )
                                         : ("")
                                     }
 
-
-                                    {Array.isArray(homeTeamLineUp?.Midfielder) || Array.isArray(homeTeamLineUp?.shootingGuard) || Array.isArray(homeTeamLineUp?.Libero)
-                                        ? (homeTeamLineUp.Midfielder || homeTeamLineUp.shootingGuard || homeTeamLineUp.Libero).map((player) => (
-                                            <div
-                                                key={player.id}
-                                                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                                            >
-                                                <div>
-                                                    <span className='italic'>{player.playerStaff.positionInClub}</span>
-                                                </div>
-
-                                                <div className="flex items-center w-2/3 justify-start gap-3">
-
-
-                                                    <div>
-                                                        <span className="font-medium">{player.playerStaff.lastName} {player.playerStaff.firstName}</span>
-                                                    </div>
-                                                    <div>
-                                                        <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
-                                                            {player.playerStaff.id || 'player number'}
-                                                        </span>
-                                                    </div>
-
-                                                </div>
-                                            </div>
-                                        )) : ("")
-                                    }
-
-                                    {Array.isArray(homeTeamLineUp?.Forward) || Array.isArray(homeTeamLineUp?.smallForward) || Array.isArray(homeTeamLineUp?.Setter)
-                                        ? (homeTeamLineUp.Forward || homeTeamLineUp.smallForward || homeTeamLineUp.Setter).map((player) => (
-                                            <div
-                                                key={player.id}
-                                                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                                            >
-                                                <div>
-                                                    <span className='italic'>{player.playerStaff.positionInClub}</span>
-                                                </div>
-
-                                                <div className="flex items-center w-2/3 justify-start gap-3">
-
-
-                                                    <div>
-                                                        <span className="font-medium">{player.playerStaff.lastName} {player.playerStaff.firstName}</span>
-                                                    </div>
-                                                    <div>
-                                                        <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
-                                                            {player.playerStaff.id || 'player number'}
-                                                        </span>
-                                                    </div>
-
-                                                </div>
-                                            </div>
-                                        )) : ("")
-                                    }
 
                                     {Array.isArray(homeTeamLineUp?.powerForward) || Array.isArray(homeTeamLineUp?.OppositeHittersLeft)
                                         ? (homeTeamLineUp.powerForward || homeTeamLineUp.OppositeHittersLeft).map((player) => (
@@ -471,59 +544,83 @@ const MatchModal: React.FC<MatchModalProps> = ({ selectedMatch, onClose }) => {
                                     }
 
 
-                                    {Array.isArray(homeTeamLineUp?.center) || Array.isArray(homeTeamLineUp?.MiddleBlockers)
-                                        ? (homeTeamLineUp.center || homeTeamLineUp.MiddleBlockers).map((player) => (
+                                    {Array.isArray(homeTeamLineUp?.center) && homeTeamLineUp.center.length > 0 && (
+                                        <div className="mb-4 w-full">
                                             <div
-                                                key={player.id}
+                                                key={homeTeamLineUp.center[0].id}
                                                 className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                                             >
                                                 <div>
-                                                    <span className='italic'>{player.playerStaff.positionInClub}</span>
+                                                    <span className="italic">{homeTeamLineUp.center[0].playerStaff.positionInClub}</span>
                                                 </div>
-
                                                 <div className="flex items-center w-2/3 justify-start gap-3">
-
-
                                                     <div>
-                                                        <span className="font-medium">{player.playerStaff.lastName} {player.playerStaff.firstName}</span>
+                                                        <span className="font-medium">
+                                                            {homeTeamLineUp.center[0].playerStaff.lastName} {homeTeamLineUp.center[0].playerStaff.firstName}
+                                                        </span>
                                                     </div>
                                                     <div>
                                                         <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
-                                                            {player.playerStaff.id || 'player number'}
+                                                            {homeTeamLineUp.center[0].playerStaff.id || 'player number'}
                                                         </span>
                                                     </div>
-
                                                 </div>
                                             </div>
-                                        )) : ("")
-                                    }
+                                        </div>
+                                    )}
 
-                                    {Array.isArray(homeTeamLineUp?.OppositeHittersRight)
-                                        ? (homeTeamLineUp.OppositeHittersRight).map((player) => (
+                                    {Array.isArray(homeTeamLineUp?.MiddleBlockers) && homeTeamLineUp.MiddleBlockers.length > 0 && (
+                                        <div className="mb-4 w-full">
                                             <div
-                                                key={player.id}
+                                                key={homeTeamLineUp.MiddleBlockers[0].id}
                                                 className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                                             >
                                                 <div>
-                                                    <span className='italic'>{player.playerStaff.positionInClub}</span>
+                                                    <span className="italic">{homeTeamLineUp.MiddleBlockers[0].playerStaff.positionInClub}</span>
                                                 </div>
-
                                                 <div className="flex items-center w-2/3 justify-start gap-3">
-
-
                                                     <div>
-                                                        <span className="font-medium">{player.playerStaff.lastName} {player.playerStaff.firstName}</span>
+                                                        <span className="font-medium">
+                                                            {homeTeamLineUp.MiddleBlockers[0].playerStaff.lastName} {homeTeamLineUp.MiddleBlockers[0].playerStaff.firstName}
+                                                        </span>
                                                     </div>
                                                     <div>
                                                         <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
-                                                            {player.playerStaff.id || 'player number'}
+                                                            {homeTeamLineUp.MiddleBlockers[0].playerStaff.id || 'player number'}
                                                         </span>
                                                     </div>
-
                                                 </div>
                                             </div>
-                                        )) : ("")
-                                    }
+                                        </div>
+                                    )}
+
+
+                                    {Array.isArray(homeTeamLineUp?.OppositeHittersRight) && homeTeamLineUp.OppositeHittersRight.length > 0 ? (
+                                        <div
+                                            key={homeTeamLineUp.OppositeHittersRight[0].id}
+                                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                                        >
+                                            <div>
+                                                <span className="italic">{homeTeamLineUp.OppositeHittersRight[0].playerStaff.positionInClub}</span>
+                                            </div>
+
+                                            <div className="flex items-center w-2/3 justify-start gap-3">
+                                                <div>
+                                                    <span className="font-medium">
+                                                        {homeTeamLineUp.OppositeHittersRight[0].playerStaff.lastName} {homeTeamLineUp.OppositeHittersRight[0].playerStaff.firstName}
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
+                                                        {homeTeamLineUp.OppositeHittersRight[0].playerStaff.id || "player number"}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        ""
+                                    )}
+
 
                                 </div>
                             </div>
@@ -553,167 +650,263 @@ const MatchModal: React.FC<MatchModalProps> = ({ selectedMatch, onClose }) => {
                                         </div>
                                     ) : null}
 
-                                    {Array.isArray(awayTeamLineUp?.defender) || Array.isArray(awayTeamLineUp?.pointGuard) || Array.isArray(awayTeamLineUp?.OutsideHitters)
-                                        ? (awayTeamLineUp.defender || awayTeamLineUp.pointGuard || awayTeamLineUp.OutsideHitters).map((player) => (
-                                            <div
-                                                key={player.id}
-                                                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                                            >
-                                                <div>
-                                                    <span className="italic">{player.playerStaff.positionInClub}</span>
-                                                </div>
+{Array.isArray(awayTeamLineUp?.pointGuard) && awayTeamLineUp.pointGuard.length > 0 ? (
+    <div
+        key={awayTeamLineUp.pointGuard[0].id}
+        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+    >
+        <div>
+            <span className="italic">{awayTeamLineUp.pointGuard[0].playerStaff.positionInClub}</span>
+        </div>
 
-                                                <div className="flex items-center w-2/3 justify-start gap-3">
-                                                    <div>
-                                                        <span className="font-medium">{player.playerStaff.lastName} {player.playerStaff.firstName}</span>
-                                                    </div>
-                                                    <div>
-                                                        <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
-                                                            {player.playerStaff.id || 'player number'}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))
-                                        : ("")
-                                    }
+        <div className="flex items-center w-2/3 justify-start gap-3">
+            <div>
+                <span className="font-medium">
+                    {awayTeamLineUp.pointGuard[0].playerStaff.lastName}{' '}
+                    {awayTeamLineUp.pointGuard[0].playerStaff.firstName}
+                </span>
+            </div>
+            <div>
+                <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
+                    {awayTeamLineUp.pointGuard[0].playerStaff.id || 'player number'}
+                </span>
+            </div>
+        </div>
+    </div>
+) : (
+    // Fallback to display other players if no Point Guard exists
+    (Array.isArray(awayTeamLineUp?.defender) || Array.isArray(awayTeamLineUp?.OutsideHitters)) &&
+    (awayTeamLineUp.defender || awayTeamLineUp.OutsideHitters).map((player) => (
+        <div
+            key={player.id}
+            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+        >
+            <div>
+                <span className="italic">{player.playerStaff.positionInClub}</span>
+            </div>
 
-
-                                    {Array.isArray(awayTeamLineUp?.Midfielder) || Array.isArray(awayTeamLineUp?.shootingGuard) || Array.isArray(awayTeamLineUp?.Libero)
-                                        ? (awayTeamLineUp.Midfielder || awayTeamLineUp.shootingGuard || awayTeamLineUp.Libero).map((player) => (
-                                            <div
-                                                key={player.id}
-                                                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                                            >
-                                                <div>
-                                                    <span className='italic'>{player.playerStaff.positionInClub}</span>
-                                                </div>
-
-                                                <div className="flex items-center w-2/3 justify-start gap-3">
-
-
-                                                    <div>
-                                                        <span className="font-medium">{player.playerStaff.lastName} {player.playerStaff.firstName}</span>
-                                                    </div>
-                                                    <div>
-                                                        <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
-                                                            {player.playerStaff.id || 'player number'}
-                                                        </span>
-                                                    </div>
-
-                                                </div>
-                                            </div>
-                                        )) : ("")
-                                    }
-
-                                    {Array.isArray(awayTeamLineUp?.Forward) || Array.isArray(awayTeamLineUp?.smallForward) || Array.isArray(awayTeamLineUp?.Setter)
-                                        ? (awayTeamLineUp.Forward || awayTeamLineUp.smallForward || awayTeamLineUp.Setter).map((player) => (
-                                            <div
-                                                key={player.id}
-                                                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                                            >
-                                                <div>
-                                                    <span className='italic'>{player.playerStaff.positionInClub}</span>
-                                                </div>
-
-                                                <div className="flex items-center w-2/3 justify-start gap-3">
+            <div className="flex items-center w-2/3 justify-start gap-3">
+                <div>
+                    <span className="font-medium">
+                        {player.playerStaff.lastName} {player.playerStaff.firstName}
+                    </span>
+                </div>
+                <div>
+                    <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
+                        {player.playerStaff.id || 'player number'}
+                    </span>
+                </div>
+            </div>
+        </div>
+    ))
+)}
 
 
-                                                    <div>
-                                                        <span className="font-medium">{player.playerStaff.lastName} {player.playerStaff.firstName}</span>
-                                                    </div>
-                                                    <div>
-                                                        <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
-                                                            {player.playerStaff.id || 'player number'}
-                                                        </span>
-                                                    </div>
 
-                                                </div>
-                                            </div>
-                                        )) : ("")
-                                    }
+{Array.isArray(awayTeamLineUp?.Midfielder) ||
+    Array.isArray(awayTeamLineUp?.shootingGuard) ||
+    Array.isArray(awayTeamLineUp?.Libero) ? (
+    <>
+        {/* Check and render the first player in shootingGuard if it exists */}
+        {Array.isArray(awayTeamLineUp.shootingGuard) &&
+            awayTeamLineUp.shootingGuard.length > 0 && (
+                <div
+                    key={awayTeamLineUp.shootingGuard[0].id}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                    <div>
+                        <span className="italic">
+                            {awayTeamLineUp.shootingGuard[0].playerStaff.positionInClub}
+                        </span>
+                    </div>
 
-                                    {Array.isArray(awayTeamLineUp?.powerForward) || Array.isArray(awayTeamLineUp?.OppositeHittersLeft)
-                                        ? (awayTeamLineUp.powerForward || awayTeamLineUp.OppositeHittersLeft).map((player) => (
-                                            <div
-                                                key={player.id}
-                                                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                                            >
-                                                <div>
-                                                    <span className='italic'>{player.playerStaff.positionInClub}</span>
-                                                </div>
+                    <div className="flex items-center w-2/3 justify-start gap-3">
+                        <div>
+                            <span className="font-medium">
+                                {awayTeamLineUp.shootingGuard[0].playerStaff.lastName}{' '}
+                                {awayTeamLineUp.shootingGuard[0].playerStaff.firstName}
+                            </span>
+                        </div>
+                        <div>
+                            <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
+                                {awayTeamLineUp.shootingGuard[0].playerStaff.id || 'player number'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            )}
 
-                                                <div className="flex items-center w-2/3 justify-start gap-3">
+        {/* Check and render the first player in Libero if it exists */}
+        {Array.isArray(awayTeamLineUp.Libero) &&
+            awayTeamLineUp.Libero.length > 0 && (
+                <div
+                    key={awayTeamLineUp.Libero[0].id}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                    <div>
+                        <span className="italic">
+                            {awayTeamLineUp.Libero[0].playerStaff.positionInClub}
+                        </span>
+                    </div>
 
-
-                                                    <div>
-                                                        <span className="font-medium">{player.playerStaff.lastName} {player.playerStaff.firstName}</span>
-                                                    </div>
-                                                    <div>
-                                                        <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
-                                                            {player.playerStaff.id || 'player number'}
-                                                        </span>
-                                                    </div>
-
-                                                </div>
-                                            </div>
-                                        )) : ("")
-                                    }
-
-
-                                    {Array.isArray(awayTeamLineUp?.center) || Array.isArray(awayTeamLineUp?.MiddleBlockers)
-                                        ? (awayTeamLineUp.center || awayTeamLineUp.MiddleBlockers).map((player) => (
-                                            <div
-                                                key={player.id}
-                                                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                                            >
-                                                <div>
-                                                    <span className='italic'>{player.playerStaff.positionInClub}</span>
-                                                </div>
-
-                                                <div className="flex items-center w-2/3 justify-start gap-3">
-
-
-                                                    <div>
-                                                        <span className="font-medium">{player.playerStaff.lastName} {player.playerStaff.firstName}</span>
-                                                    </div>
-                                                    <div>
-                                                        <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
-                                                            {player.playerStaff.id || 'player number'}
-                                                        </span>
-                                                    </div>
-
-                                                </div>
-                                            </div>
-                                        )) : ("")
-                                    }
-
-                                    {Array.isArray(awayTeamLineUp?.OppositeHittersRight)
-                                        ? (awayTeamLineUp.OppositeHittersRight).map((player) => (
-                                            <div
-                                                key={player.id}
-                                                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                                            >
-                                                <div>
-                                                    <span className='italic'>{player.playerStaff.positionInClub}</span>
-                                                </div>
-
-                                                <div className="flex items-center w-2/3 justify-start gap-3">
+                    <div className="flex items-center w-2/3 justify-start gap-3">
+                        <div>
+                            <span className="font-medium">
+                                {awayTeamLineUp.Libero[0].playerStaff.lastName}{' '}
+                                {awayTeamLineUp.Libero[0].playerStaff.firstName}
+                            </span>
+                        </div>
+                        <div>
+                            <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
+                                {awayTeamLineUp.Libero[0].playerStaff.id || 'player number'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            )}
+    </>
+) : (
+    ''
+)}
 
 
-                                                    <div>
-                                                        <span className="font-medium">{player.playerStaff.lastName} {player.playerStaff.firstName}</span>
-                                                    </div>
-                                                    <div>
-                                                        <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
-                                                            {player.playerStaff.id || 'player number'}
-                                                        </span>
-                                                    </div>
+{Array.isArray(awayTeamLineUp?.Forward) || Array.isArray(awayTeamLineUp?.smallForward) || Array.isArray(awayTeamLineUp?.Setter)
+    ? (
+        (awayTeamLineUp.Forward || [])
+            .concat(
+                awayTeamLineUp?.smallForward?.slice(0, 1) || [],
+                awayTeamLineUp?.Setter?.slice(0, 1) || []
+            )
+            .map((player) => (
+                <div
+                    key={player.id}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                    <div>
+                        <span className="italic">{player.playerStaff.positionInClub}</span>
+                    </div>
 
-                                                </div>
-                                            </div>
-                                        )) : ("")
-                                    }
+                    <div className="flex items-center w-2/3 justify-start gap-3">
+                        <div>
+                            <span className="font-medium">{player.playerStaff.lastName} {player.playerStaff.firstName}</span>
+                        </div>
+                        <div>
+                            <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
+                                {player.playerStaff.id || 'player number'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            ))
+    )
+    : ("")
+}
+
+
+{Array.isArray(awayTeamLineUp?.powerForward) || Array.isArray(awayTeamLineUp?.OppositeHittersLeft)
+    ? (awayTeamLineUp.powerForward || awayTeamLineUp.OppositeHittersLeft).map((player) => (
+        <div
+            key={player.id}
+            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+        >
+            <div>
+                <span className='italic'>{player.playerStaff.positionInClub}</span>
+            </div>
+
+            <div className="flex items-center w-2/3 justify-start gap-3">
+
+
+                <div>
+                    <span className="font-medium">{player.playerStaff.lastName} {player.playerStaff.firstName}</span>
+                </div>
+                <div>
+                    <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
+                        {player.playerStaff.id || 'player number'}
+                    </span>
+                </div>
+
+            </div>
+        </div>
+    )) : ("")
+}
+
+
+{Array.isArray(awayTeamLineUp?.center) && awayTeamLineUp.center.length > 0 && (
+    <div className="mb-4 w-full">
+        <div
+            key={awayTeamLineUp.center[0].id}
+            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+        >
+            <div>
+                <span className="italic">{awayTeamLineUp.center[0].playerStaff.positionInClub}</span>
+            </div>
+            <div className="flex items-center w-2/3 justify-start gap-3">
+                <div>
+                    <span className="font-medium">
+                        {awayTeamLineUp.center[0].playerStaff.lastName} {awayTeamLineUp.center[0].playerStaff.firstName}
+                    </span>
+                </div>
+                <div>
+                    <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
+                        {awayTeamLineUp.center[0].playerStaff.id || 'player number'}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+)}
+
+{Array.isArray(awayTeamLineUp?.MiddleBlockers) && awayTeamLineUp.MiddleBlockers.length > 0 && (
+    <div className="mb-4 w-full">
+        <div
+            key={awayTeamLineUp.MiddleBlockers[0].id}
+            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+        >
+            <div>
+                <span className="italic">{awayTeamLineUp.MiddleBlockers[0].playerStaff.positionInClub}</span>
+            </div>
+            <div className="flex items-center w-2/3 justify-start gap-3">
+                <div>
+                    <span className="font-medium">
+                        {awayTeamLineUp.MiddleBlockers[0].playerStaff.lastName} {awayTeamLineUp.MiddleBlockers[0].playerStaff.firstName}
+                    </span>
+                </div>
+                <div>
+                    <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
+                        {awayTeamLineUp.MiddleBlockers[0].playerStaff.id || 'player number'}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+)}
+
+
+{Array.isArray(awayTeamLineUp?.OppositeHittersRight) && awayTeamLineUp.OppositeHittersRight.length > 0 ? (
+    <div
+        key={awayTeamLineUp.OppositeHittersRight[0].id}
+        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+    >
+        <div>
+            <span className="italic">{awayTeamLineUp.OppositeHittersRight[0].playerStaff.positionInClub}</span>
+        </div>
+
+        <div className="flex items-center w-2/3 justify-start gap-3">
+            <div>
+                <span className="font-medium">
+                    {awayTeamLineUp.OppositeHittersRight[0].playerStaff.lastName} {awayTeamLineUp.OppositeHittersRight[0].playerStaff.firstName}
+                </span>
+            </div>
+            <div>
+                <span className="w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-sm">
+                    {awayTeamLineUp.OppositeHittersRight[0].playerStaff.id || "player number"}
+                </span>
+            </div>
+        </div>
+    </div>
+) : (
+    ""
+)}
 
                                 </div>
                             </div>
