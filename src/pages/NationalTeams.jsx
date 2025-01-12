@@ -236,32 +236,33 @@ function NationalTeams() {
 
   const handleAddPlayerSubmit = async (e) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
-    const federationId = parseInt(formData.get('federationId'));
-
+  
     const playerData = {
-      federationId: federationId,
+      federationId: selectedFederation, // Use the state directly
       teamId: parseInt(selectedTeamForPlayer),
       clubId: parseInt(selectedClub),
       playerStaffId: parseInt(selectedPlayerStaff),
       games: selectedGames,
     };
-
+  
+    console.log('Submitting player data:', playerData); // Log the data being sent
+  
     try {
       const response = await axiosInstance.post('/national-team-player-staff', playerData);
       setPlayers(prev => [...prev, response.data]);
       toast.success('Player added successfully');
       setShowAddPlayerModal(false);
-
+  
       setSelectedTeamForPlayer('');
       setSelectedClub('');
       setAvailableGames([]);
       setRefreshTrigger(prev => prev + 1);
     } catch (error) {
+      console.error('Error adding player:', error.response || error); // Log the error response
       toast.error(error.response?.data?.message || 'Failed to add player');
     }
   };
-
+  
   if (loading) {
     return (
       <div className="flex animate-spin animate justify-center items-center h-screen">
@@ -612,36 +613,7 @@ function NationalTeams() {
                           : 0}
                       </td>
                       <td className="px-4 py-3 operation">
-                        <div className="flex items-center space-x-2 ">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleView(team)}
-                            className="p-1 h-7 w-7"
-                            title="View Team"
-                          >
-                            <Eye className="h-4 w-4 text-blue-600" />
-                          </Button>
-                          {permissions.canUpdate && (<Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleEdit(team)}
-                            className="p-1 h-7 w-7"
-                            title="Edit Team"
-                          >
-                            <Pencil className="h-4 w-4 text-green-600" />
-                          </Button>)}
-                          {permissions.canDelete && (<Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleDelete(team)}
-                            className="p-1 h-7 w-7"
-                            title="Delete Team"
-                          >
-                            <Trash2 className="h-4 w-4 text-red-600" />
-                          </Button>)}
-
-                        </div>
+                        {renderActions(team)}
                       </td>
                     </tr>
                   ))}
@@ -649,6 +621,9 @@ function NationalTeams() {
               </table>
             </PrintButton>
           </div>
+
+          {/* Pagination Controls */}
+          {renderPaginationControls(teamPage, totalTeamPages, setTeamPage)}
         </div>
       );
     } else if (activeTab === 'Manage Players') {
@@ -768,35 +743,32 @@ function NationalTeams() {
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {paginatedPlayers.length > 0 ? (
-                    paginatedPlayers.map((player) => {
-                      console.log('Player data:', player);
-                      return (
-                        <tr key={player.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-3">
-                            {player?.firstName && player?.lastName
-                              ? `${player.firstName} ${player.lastName}`
-                              : player.name || 'N/A'}
-                          </td>
-                          <td className="px-4 py-3">{player.teamName}</td>
-                          <td className="px-4 py-3">
-                            {player.federation?.name || 'N/A'}
-                          </td>
-                          <td className="px-4 py-3">
-                            {typeof player.club === 'object' ? player.club.name : player.club}
-                          </td>
-                          <td className="px-4 py-3">
-                            {Array.isArray(player.games)
-                              ? player.games.map(game =>
-                                typeof game === 'object' ? game.stadium : game
-                              ).join(', ')
-                              : player.games}
-                          </td>
-                          <td className="px-4 py-3 operation">
-                            {renderPlayerActions(player)}
-                          </td>
-                        </tr>
-                      );
-                    })
+                    paginatedPlayers.map((player) => (
+                      <tr key={player.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3">
+                          {player?.firstName && player?.lastName
+                            ? `${player.firstName} ${player.lastName}`
+                            : player.name || 'N/A'}
+                        </td>
+                        <td className="px-4 py-3">{player.teamName}</td>
+                        <td className="px-4 py-3">
+                          {player.federation?.name || 'N/A'}
+                        </td>
+                        <td className="px-4 py-3">
+                          {typeof player.club === 'object' ? player.club.name : player.club}
+                        </td>
+                        <td className="px-4 py-3">
+                          {Array.isArray(player.games)
+                            ? player.games.map(game =>
+                              typeof game === 'object' ? game.stadium : game
+                            ).join(', ')
+                            : player.games}
+                        </td>
+                        <td className="px-4 py-3 operation">
+                          {renderPlayerActions(player)}
+                        </td>
+                      </tr>
+                    ))
                   ) : (
                     <tr>
                       <td colSpan={playerColumns.length} className="px-4 py-3 text-center text-gray-500">
@@ -808,130 +780,9 @@ function NationalTeams() {
               </table>
             </PrintButton>
           </div>
-        </div>
-      );
-    } else if (activeTab === 'Player Appearance') {
-      const filteredPlayers = players.filter(player => {
-        const playerFullName = `${player.firstName} ${player.lastName}`.toLowerCase();
-        return (
-          (playerSearchFilters.name ? playerFullName.includes(playerSearchFilters.name.toLowerCase()) : true) &&
-          (playerSearchFilters.team ? player.teamName?.toLowerCase().includes(playerSearchFilters.team.toLowerCase()) : true) &&
-          (playerSearchFilters.federation ? player.federation?.name?.toLowerCase().includes(playerSearchFilters.federation.toLowerCase()) : true) &&
-          (playerSearchFilters.appearances ? (player.games?.length || 0) >= parseInt(playerSearchFilters.appearances) : true)
-        );
-      });
 
-      return (
-        <div className="transition-all duration-200 ease-in-out">
-          {/* Search Filters */}
-          <div className="bg-white rounded-lg shadow p-6 mb-6">
-            <h2 className="text-lg font-medium mb-4">Search By</h2>
-            <div className="grid grid-cols-4 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Player/Staff Name:</label>
-                <select
-                  value={playerSearchFilters.name}
-                  onChange={(e) => setPlayerSearchFilters(prev => ({
-                    ...prev,
-                    name: e.target.value
-                  }))}
-                  className="w-full border rounded-lg p-2"
-                >
-                  <option value="">Select Player/Staff</option>
-                  {playerStaffList.map(staff => (
-                    <option key={staff.id} value={`${staff.firstName} ${staff.lastName}`}>
-                      {staff.firstName} {staff.lastName}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Team:</label>
-                <select
-                  value={playerSearchFilters.team}
-                  onChange={(e) => setPlayerSearchFilters(prev => ({
-                    ...prev,
-                    team: e.target.value
-                  }))}
-                  className="w-full border rounded-lg p-2"
-                >
-                  <option value="">Select Team</option>
-                  {teams.map(team => (
-                    <option key={team.id} value={team.teamName}>
-                      {team.teamName}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Federation:</label>
-                <select
-                  value={playerSearchFilters.federation}
-                  onChange={(e) => setPlayerSearchFilters(prev => ({
-                    ...prev,
-                    federation: e.target.value
-                  }))}
-                  className="w-full border rounded-lg p-2"
-                >
-                  <option value="">Select Federation</option>
-                  {federations.map(federation => (
-                    <option key={federation.id} value={federation.name}>
-                      {federation.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Appearances:</label>
-                <input
-                  type="number"
-                  value={playerSearchFilters.appearances}
-                  onChange={(e) => setPlayerSearchFilters(prev => ({
-                    ...prev,
-                    appearances: e.target.value
-                  }))}
-                  placeholder="Search by appearances"
-                  min="0"
-                  className="w-full border rounded-lg p-2"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Players & Appearances Table */}
-          <div className="bg-white rounded-lg shadow overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Name of Player / Staff</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Number of Appearances</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {filteredPlayers.length > 0 ? (
-                  filteredPlayers.map((player) => (
-                    <tr key={player.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3">{player.firstName} {player.lastName}</td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-1 rounded-full text-xs ${
-                          player.teamId ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                          }`}>
-                          {teams.filter(team => team.id === player.teamId).length} {teams.filter(team => team.id === player.teamId).length === 1 ? 'Team' : 'Teams'}
-                        </span>
-                      </td>
-
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="2" className="px-4 py-8 text-center text-gray-500">
-                      No players found matching your search criteria
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+          {/* Pagination Controls */}
+          {renderPaginationControls(playerPage, totalPlayerPages, setPlayerPage)}
         </div>
       );
     }
@@ -1131,7 +982,7 @@ function NationalTeams() {
                   Add Player
                 </Button>
               </div>
-            </form>
+              </form>
           </div>
         </Modal>
 
@@ -1389,3 +1240,4 @@ function NationalTeams() {
 }
 
 export default NationalTeams;
+
