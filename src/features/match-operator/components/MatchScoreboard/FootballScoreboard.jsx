@@ -10,7 +10,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "../../../../components/ui/select";
-import { Input } from '../../../../components/ui/Input';
+import { Input } from '../../../../components/ui/input';
 import { Timer, Users, ChevronRight, Play, Pause } from 'lucide-react';
 import axiosInstance from '../../../../utils/axiosInstance';
 import useFetchLiveMatches from '../../../../utils/fetchLiveMatches';
