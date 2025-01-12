@@ -25,8 +25,8 @@ const Fallback = ({ message, onRetry, response }) => {
                 <h1 className="text-2xl font-semibold text-gray-700">
                     {response === "all" ? (
                         <h1 className="text-2xl font-semibold text-gray-700">NO MATCH FOUND!</h1>
-                    ) : response === "LIVE" ? (
-                        <h1 className="text-2xl font-semibold text-gray-700">NO LIVE MATCH FOUND!</h1>
+                    ) : response === "ONGOING" ? (
+                        <h1 className="text-2xl font-semibold text-gray-700">NO ONGOING MATCH FOUND!</h1>
                     ) : response === "UPCOMING" ? (
                         <h1 className="text-2xl font-semibold text-gray-700">NO UPCOMING MATCH FOUND!</h1>
                     ) : response === "COMPLETED" ? (

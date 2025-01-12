@@ -82,7 +82,7 @@ function EventsPage() {
         
         {/* Status badge */}
         <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-medium ${
-          event.status === 'LIVE' ? 'bg-red-500 text-white' :
+          event.status === 'ONGOING' ? 'bg-red-500 text-white' :
           event.status === 'UPCOMING' ? 'bg-green-500 text-white' :
           'bg-gray-500 text-white'
         }`}>

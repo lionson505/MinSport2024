@@ -238,7 +238,7 @@ export function MatchOperatorDashboard() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold">Match Operator Dashboard</h1>
-          <p className="text-gray-500 mt-1">Manage live matches and upcoming events</p>
+          <p className="text-gray-500 mt-1">Manage ONGOING matches and upcoming events</p>
         </div>
         {permissions.canCreate && (
             <Button onClick={() => setShowCreateModal(true)}>
@@ -258,12 +258,13 @@ export function MatchOperatorDashboard() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList>
           <TabsTrigger value="all">All Matches</TabsTrigger>
-          <TabsTrigger value="LIVE">Live</TabsTrigger>
-          <TabsTrigger value="UPCOMING">Upcoming</TabsTrigger>
-          <TabsTrigger value="COMPLETED">Completed</TabsTrigger>
+          <TabsTrigger value="ONGOING">ONGOING</TabsTrigger>
+          <TabsTrigger value="HALFTIME">HALFTIME</TabsTrigger>
+          <TabsTrigger value="NOT_STARTED">Upcoming</TabsTrigger>
+          <TabsTrigger value="ENDED">Completed</TabsTrigger>
         </TabsList>
 
-        {['all', 'LIVE', 'UPCOMING', 'COMPLETED'].map((status) => (
+        {['all', 'ONGOING', 'HALFTIME', 'NOT_STARTED', 'ENDED'].map((status) => (
           <TabsContent key={status} value={status}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filterMatches(status).length === 0 ? (
@@ -271,7 +272,7 @@ export function MatchOperatorDashboard() {
                 <div className="flex items-center justify-center col-span-full min-h-[400px]">
                   <Fallback
                     className="w-full h-full flex items-center justify-center bg-gray-50 rounded-lg shadow-md"
-                    message="No Past Games Available"
+                    message="No Games Available"
                     onRetry={() => console.log("Retry clicked!")}
                     response={status}
                   />

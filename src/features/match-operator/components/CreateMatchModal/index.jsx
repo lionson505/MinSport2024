@@ -150,9 +150,9 @@ export function CreateMatchModal({ open, onClose }) {
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="IN PROGRESS">IN PROGRESS</SelectItem>
-                  <SelectItem value="LIVE">LIVE</SelectItem>
-                  <SelectItem value="UPCOMING">UPCOMING</SelectItem>
+                  {/* <SelectItem value="IN PROGRESS">IN PROGRESS</SelectItem> */}
+                  {/* <SelectItem value="LIVE">LIVE</SelectItem> */}
+                  <SelectItem value="NOT_STARTED">UPCOMING</SelectItem>
                   <SelectItem value="ONGOING">ONGOING</SelectItem>
                 </SelectContent>
               </Select>
