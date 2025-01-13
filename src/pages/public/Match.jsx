@@ -603,7 +603,7 @@ function LandingPageMatch() {
                                         key={searchedMatch.id}
                                         className="flex-shrink-0 w-[280px] p-4 rounded-lg border border-gray-200 bg-white shadow-sm cursor-pointer m-8"
                                         onClick={() => handlesearchedMatchClick(searchedMatch)}
-                                    >
+                                     >
                                         {/* Match Header */}
                                         <div className="flex justify-between items-center mb-4">
                                             <span className="text-sm font-medium text-gray-900">
@@ -693,14 +693,12 @@ function LandingPageMatch() {
                                 </div>
                             )}
                         </div>
-                        <div>
-                            {selectedMatch && (
-                                <MatchModal
-                                    selectedMatch={selectedMatch}
-                                    onClose={() => setSelectedMatch(null)}
-                                />
-                            )}
-                        </div>
+                        {searchedMatch && (
+                            <MatchModal
+                                selectedMatch={searchedMatch}
+                                onClose={() => setSelectedsearchedMatch(null)}
+                            />
+                        )}
                     </TabsContent>
                 </Tabs>
             </PublicLayout>
