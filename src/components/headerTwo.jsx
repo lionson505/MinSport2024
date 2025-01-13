@@ -24,7 +24,7 @@ const HeaderTwo = () => {
   return (
     <div>
       <header className="bg-white shadow fixed top-0 w-full z-50">
-        <div className="container mx-auto px-6">
+        <div className="container mx-auto px-8">
           <div className="flex items-center justify-between h-20">
             <Link to="/home">
               <img src="/logo/logo.svg" alt="MINISPORTS" className="h-12 w-auto" />

@@ -9,7 +9,8 @@ function PublicLayout({ children }) {
           <HeaderTwo/>
 
           {/* Main Content */}
-          <main className="container mx-auto px-6 pt-24 pb-12">
+          <main className="container mx-auto pt-24 pb-12"
+          >
               {children}
           </main>
 

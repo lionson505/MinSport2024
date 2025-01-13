@@ -297,7 +297,19 @@ function Federation() {
         {/* Content Section */}
         <div className="flex" style={{ maxWidth: "100%", textAlign: "center", zIndex: 1 }}>
           <div className='w-full sm:w-4/5  text-start'>
-            <h1 className='!text-4xl' style={{ fontWeight: "bold" }}>
+            <h1
+              className="font-bold"
+              style={{
+                fontSize:
+                  window.innerWidth >= 1280
+                    ? "3rem"
+                    : window.innerWidth >= 1024
+                      ? "2.5rem"
+                      : window.innerWidth >= 768
+                        ? "2rem"
+                        : "1.5rem",
+              }}
+            >
               Welcome to Rwanda Sports Federations
             </h1>
             <p style={{ margin: "10px 0", maxWidth: "700px" }}>

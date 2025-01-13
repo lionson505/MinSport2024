@@ -196,7 +196,7 @@ function LandingPage() {
       <HeaderTwo />
       <PublicLayout>
 
-        <main className="container mx-auto px-6 pt-24 pb-12">
+        <main className="container mx-auto px-6 pt-8 pb-12">
           {/* Live Matches Section */}
           <div className="mb-16">
             <Link
@@ -235,11 +235,11 @@ function LandingPage() {
                       slidesPerView={1}
                       centeredSlides={true} // Center the active slide
                       pagination={{ clickable: true }}
-                      loop={true}
-                      autoplay={{
-                        delay: 1000,
-                        disableOnInteraction: false,
-                      }}
+                      // loop={true}
+                      // autoplay={{
+                      //   delay: 1000,
+                      //   disableOnInteraction: false,
+                      // }}
                       className="pb-10 px-6 py-4 w-full"
                       breakpoints={{
                         360: {
