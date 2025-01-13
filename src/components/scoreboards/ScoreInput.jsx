@@ -32,11 +32,11 @@ export function ScoreInput({
         if (team === 'A') updatedScores.homeScore += step;
         else if (team === 'B') updatedScores.awayScore += step;
 
-        console.log('Updated Scores:', updatedScores);
+        // console.log('Updated Scores:', updatedScores);
 
         // Update the match score via API
         await axiosInstance.patch(`/live-matches/${match.id}/score`, updatedScores);
-        console.log('Match score updated successfully.');
+        // console.log('Match score updated successfully.');
 
         // Call the onChange handler
         onChange(newValue);
@@ -60,11 +60,11 @@ export function ScoreInput({
         if (team === 'A') updatedScores.homeScore -= step;
         else if (team === 'B') updatedScores.awayScore -= step;
 
-        console.log('Updated Scores:', updatedScores);
+        // console.log('Updated Scores:', updatedScores);
 
         // Update the match score via API
         await axiosInstance.patch(`/live-matches/${match.id}/score`, updatedScores);
-        console.log('Match score updated successfully.');
+        // console.log('Match score updated successfully.');
 
         // Call the onChange handler
         onChange(newValue);

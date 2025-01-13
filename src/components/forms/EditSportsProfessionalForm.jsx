@@ -116,7 +116,7 @@ const EditSportsProfessionalForm = ({ onCancel, isSubmitting }) => {
 
     // Make POST request with axiosInstance
     try {
-      console.log(submitData);
+      // console.log(submitData);
       const response = await axios.post('/official-referees', submitData); // Adjust the endpoint as per your API
       if (response.status === 200) {
         toast.success('Professional Edited successfully');

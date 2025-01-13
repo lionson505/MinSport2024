@@ -21,7 +21,7 @@ const ProfileMenu = () => {
           const parsedUser = JSON.parse(storedUser);
           setUserDetails(parsedUser);
         } else {
-          console.log('No user found, redirecting to login');
+          // console.log('No user found, redirecting to login');
           navigate('/login', { state: { from: location }, replace: true });
         }
       } catch (error) {

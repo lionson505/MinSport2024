@@ -96,7 +96,7 @@ const Training = () => {
     try {
       let response;
       if (trainingToEdit) {
-        console.log(data);
+        // console.log(data);
         response = await axiosInstance.put(`/trainings/${trainingToEdit.id}`, data);
         const updatedTrainings = trainings.map((t) =>
           t.id === trainingToEdit.id ? response.data : t

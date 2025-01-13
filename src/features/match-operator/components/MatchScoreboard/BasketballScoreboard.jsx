@@ -11,7 +11,7 @@ import toast from 'react-hot-toast';
 import { useFetchNationalTeam, useFetchPlayers } from './../../../../utils/fetchMatchAndPlayers';
 
 export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPlayers = [], onUpdate }) {
-  // console.log("match id : ", match.id)
+  // // console.log("match id : ", match.id)
   const [matchData, setMatchData] = useState({
     status: 'NOT_STARTED',
     currentQuarter: 1,
@@ -34,7 +34,7 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
         minute: 9
       }
     });
-    console.log("line up : ", lineUp)
+    // console.log("line up : ", lineUp)
 
   const [showPlayerStats, setShowPlayerStats] = useState(false);
   const [pendingEvent, setPendingEvent] = useState(null);
@@ -42,20 +42,20 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
   const { matches, liveMatchError } = useFetchLiveMatches()
   const { players, playersError } = useFetchPlayers();
   const { nationalTeam, setNationalTeams } = useFetchNationalTeam();
-  // console.log("nationalTeam : ", nationalTeam)
+  // // console.log("nationalTeam : ", nationalTeam)
   const [lineUpModalOpen, setLineUpModalOpen] = useState();
   const [selectedPlayers, setSelectedPlayers] = useState([]);
   // const [selectedPlayers, setSelectedPlayers] = useState([]);
   const [fieldStatus, setFieldStatus] = useState({});
   const [isChecked, setIsChecked] = useState();
-  // console.log(" checked : ", isChecked)
+  // // console.log(" checked : ", isChecked)
 
 
   
   const saveLiveUp = async () => {
     try {
       const response = await axiosInstance.post(`/live-matches/${match.id}/event`, lineUp)
-      console.log("event logged successfully")
+      // console.log("event logged successfully")
     }
     catch(error) {
       console.error("error in saving line up")
@@ -107,12 +107,12 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
   };
 
   const saveLineup = async (lineUp, matchId) => {
-      console.log("Lineup structiure:", lineUp);
+      // console.log("Lineup structiure:", lineUp);
   };
 
     // try {
     //   const response = await axiosInstance.patch(`/live-matches/${matchId}/event`, lineUp);
-    //   console.log("Lineup saved successfully:", response.data);
+    //   // console.log("Lineup saved successfully:", response.data);
     // } catch (error) {
     //   console.error("Error saving lineup:", error);
     // }
@@ -141,15 +141,15 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
   // Team A players
   const homeTeamName = match.homeTeam;
   const homeTeamId = nationalTeam.filter(nationalTeamName => nationalTeamName.teamName === homeTeamName)
-  // console.log("homeTeamId : ", homeTeamId)
+  // // console.log("homeTeamId : ", homeTeamId)
   const homeTeamLineUp = players.filter(player => player.teamId === homeTeamId[0]?.id);
-  // console.log("homeTeamLineUp:", homeTeamLineUp);
+  // // console.log("homeTeamLineUp:", homeTeamLineUp);
 
 
   // Team B players
   const awayTeamName = match.awayTeam;
   const awayTeamId = nationalTeam.filter(nationalTeamName => nationalTeamName.teamName === awayTeamName)
-  // console.log("homeTeamId : ", homeTeamId)
+  // // console.log("homeTeamId : ", homeTeamId)
   const awayTeamLineUp = players.filter(player => player.teamId === awayTeamId[0]?.id);
 
   const toggleFieldStatus = (player, isChecked) => {
@@ -160,7 +160,7 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
     setSelectedPlayers(() => {
     if (isChecked) {
       const updated = [player]; // Replace the array with only the current player
-      console.log("Selected Players:", updated);
+      // console.log("Selected Players:", updated);
       setLineUp({
         eventType: 'lineup',
         eventData:{
@@ -173,7 +173,7 @@ export default function BasketballScoreboard({ match, teamAPlayers = [], teamBPl
       saveLineup(updated); 
       return updated;
     } else {
-      console.log("Selected Players: []"); // Log empty array when unchecked
+      // console.log("Selected Players: []"); // Log empty array when unchecked
       return []; // Return an empty array if unchecked
     }
   });
@@ -187,10 +187,10 @@ useEffect(() => {
   setSelectedPlayers(() => {
     if (isChecked) {
       const updated = [player]; // Only include the clicked player
-      console.log("Selected Players (Effect):", updated);
+      // console.log("Selected Players (Effect):", updated);
       return updated;
     } else {
-      console.log("Selected Players (Effect): []"); // Log empty array when unchecked
+      // console.log("Selected Players (Effect): []"); // Log empty array when unchecked
       return [];
     }
   });
@@ -202,7 +202,7 @@ useEffect(() => {
 
 
   const confirmEventWithPlayer = (playerName) => {
-    // console.log('Player Name:', playerName);
+    // // console.log('Player Name:', playerName);
 
 
     if (!playerName) {
@@ -223,7 +223,7 @@ useEffect(() => {
     let matchId = match.id,
       event = `${pendingEvent.points} ${pendingEvent.type}`,
       nationalTeamPlayerStaffId = player;
-    // console.log('handle event with player details : ', { matchId, event, nationalTeamPlayerStaffId })
+    // // console.log('handle event with player details : ', { matchId, event, nationalTeamPlayerStaffId })
     // Update match data based on event type
     setMatchData(prev => {
       const teamScoreKey = `team${pendingEvent.team}Score`;
@@ -277,14 +277,14 @@ useEffect(() => {
   if (!updatedMatch.length > 0) {
     return <div>no match id found</div>;
   }
-  // console.log('updated Match ', updatedMatch[0].homeScore)
+  // // console.log('updated Match ', updatedMatch[0].homeScore)
 
   const handleEventWithPlayer = async (type, team, points = 1, player) => {
 
 
 
     try {
-      // // console.log('Event Details:', { player, type, team, points });
+      // // // console.log('Event Details:', { player, type, team, points });
 
       // Update the pending event
       setPendingEvent({ type, team, points, player });
@@ -307,8 +307,8 @@ useEffect(() => {
 
       // Update the match score via API
       await axiosInstance.patch(`/live-matches/${match.id}/score`, updatedScores);
-      // // console.log('Match score updated successfully.');
-      console.log('points', points)
+      // // // console.log('Match score updated successfully.');
+      // console.log('points', points)
       if (points === 1) {
         toast.success('Point added successfully!', {
           description: `Score added successfully`

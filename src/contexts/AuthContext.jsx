@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }) => {
       const response = await axiosInstance.get(`/permissions/groups/${groupId}`);
       const permissions = response.data;
       await secureStorage.setItem('permissions', JSON.stringify(permissions));
-      console.log('Permissions set in localStorage:', permissions);
+      // console.log('Permissions set in localStorage:', permissions);
     } catch (error) {
       console.error('Failed to fetch permissions:', error);
     }

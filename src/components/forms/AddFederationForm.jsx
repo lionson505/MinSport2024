@@ -74,7 +74,7 @@ const AddFederationForm = ({ onSubmit, onCancel, initialData, isEditing }) => {
       }
   
       // Log the final formatted data for debugging
-      console.log('Data being sent:', formDataToSend);
+      // console.log('Data being sent:', formDataToSend);
   
       // Define the API URL and HTTP method based on editing mode
       const apiUrl = isEditing

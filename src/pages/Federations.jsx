@@ -272,7 +272,7 @@ const Federations = () => {
         setLoading(true);
          const currentPermissions =await logPermissions();
          await setPermissions(currentPermissions);
-        console.log("perms:", permissions)
+        // console.log("perms:", permissions)
         setLoading(false);
 
         const filters = {
@@ -792,7 +792,7 @@ const Federations = () => {
                     <TableCell className="text-xs font-medium">{federation.name}</TableCell>
                       <TableCell>
                         <img src={`${axiosInstance.defaults.baseURL}${federation.logo}`} alt="federation Logo" className="w-12 h-12 object-cover rounded-full" />
-                        {/* {console.log(`Logo Path: ${axiosInstance.defaults.baseURL}${federation.logo}`)} Log the logo path */}
+                        {/* {// console.log(`Logo Path: ${axiosInstance.defaults.baseURL}${federation.logo}`)} Log the logo path */}
   
                       </TableCell>
                     <TableCell className="text-xs">{federation.acronym}</TableCell>
@@ -1111,7 +1111,7 @@ const Federations = () => {
     return (
       <AddFederationForm
         onSubmit={(data) => {
-          console.log('New federation:', data);
+          // console.log('New federation:', data);
           setShowAddModal(false);
           toast.success('Federation added successfully');
         }}
@@ -1194,7 +1194,7 @@ const Federations = () => {
         <div className="overflow-y-auto max-h-[calc(90vh-120px)]">
           <AddClubForm
             onSubmit={(data) => {
-              console.log('New club:', data);
+              // console.log('New club:', data);
               setIsAddClubModalOpen(false);
               toast.success('Club added successfully');
             }}
@@ -1310,7 +1310,7 @@ const Federations = () => {
       <TransferHistoryModal
         isOpen={showTransferHistoryModal}
         onClose={() => {
-          console.log('Closing modal');
+          // console.log('Closing modal');
           setShowTransferHistoryModal(false);
           setSelectedPlayer(null);
         }}

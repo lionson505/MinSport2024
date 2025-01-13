@@ -31,7 +31,7 @@ export function CreateMatchModal({ open, onClose }) {
   const { createMatch } = useMatchOperator();
   const [loading, setLoading] = useState(false);
   const [nationalTeams, setNationalTeams] = useState([])
-  console.log("here is national teams : ", nationalTeams)
+  // console.log("here is national teams : ", nationalTeams)
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -71,11 +71,11 @@ export function CreateMatchModal({ open, onClose }) {
     try {
       // POST request to your backend API
       // const response = await axiosInstance.post('/live-matches') // Replace with your actual endpoint
-      // await console.log('data', transformedData);
-      await console.log('data', transformedData);
+      // await // console.log('data', transformedData);
+      await // console.log('data', transformedData);
       const response = await axiosInstance.post('/live-matches', transformedData
       );
-      console.log('Responsejlknlkllk:', response.data);
+      // console.log('Responsejlknlkllk:', response.data);
       if (response.status === 200 || response.status === 201) {
         toast.success('Match created successfully');
         onClose(); // Optional: Close the modal or form
@@ -122,7 +122,7 @@ export function CreateMatchModal({ open, onClose }) {
                 value={formData.gameType}
                 onValueChange={(value) => {
                   setFormData({ ...formData, gameType: value });
-                  console.log("you selected gameType :", value);
+                  // console.log("you selected gameType :", value);
                 }}
 
               >
@@ -142,7 +142,7 @@ export function CreateMatchModal({ open, onClose }) {
                 value={formData.status}
                 onValueChange={(value) => {
                   setFormData({ ...formData, status: value })
-                  console.log('you selected status: ', value)
+                  // console.log('you selected status: ', value)
                 }
                 }
                >
@@ -180,7 +180,7 @@ export function CreateMatchModal({ open, onClose }) {
                 value={formData.homeTeam}
                 onValueChange={(value) => {
                   setFormData({ ...formData, homeTeam: value })
-                  console.log('you selected National Team: ', value)
+                  // console.log('you selected National Team: ', value)
                 }
                 }
                >
@@ -205,7 +205,7 @@ export function CreateMatchModal({ open, onClose }) {
                 value={formData.awayTeam}
                 onValueChange={(value) => {
                   setFormData({ ...formData, awayTeam: value })
-                  console.log('you selected National Team: ', value)
+                  // console.log('you selected National Team: ', value)
                 }
                 }
                >

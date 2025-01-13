@@ -54,7 +54,7 @@ function ManageGroups() {
 
       const response = await axiosInstance.get('/groups');
       const groups = Array.isArray(response.data.data) ? response.data.data : [];
-      console.log('Fetched groups:', groups); // Debugging log
+      // console.log('Fetched groups:', groups);
 
       // Fetch permissions for each group and count modules
       const groupsWithModuleCounts = await Promise.all(groups.map(async (group) => {
@@ -77,7 +77,7 @@ function ManageGroups() {
     try {
       const response = await axiosInstance.get('/users');
       const data = Array.isArray(response.data.data) ? response.data.data : [];
-      console.log('Fetched users:', data); // Debugging log
+      // console.log('Fetched users:', data); // Debugging log
       setUsersData(data);
     } catch (err) {
       console.error('Error fetching users:', err);
@@ -119,13 +119,13 @@ function ManageGroups() {
   }, []);
 
   const associateUsersWithGroups = () => {
-    console.log('Associating users with groups...');
+    // console.log('Associating users with groups...');
     return groupsData.map(group => {
       const usersInGroup = usersData.filter(user => {
         // Ensure userGroup exists and has an id before comparing
         return user.userGroup && user.userGroup.id === group.id;
       });
-      console.log(`Group: ${group.name}, User Count: ${usersInGroup.length}`); // Debugging log
+      // console.log(`Group: ${group.name}, User Count: ${usersInGroup.length}`); // Debugging log
       return { ...group, userCount: usersInGroup.length }; // Count users in the group
     });
   };
@@ -230,7 +230,7 @@ function ManageGroups() {
         }))
       };
 
-      console.log('Payload being sent:', JSON.stringify(payload, null, 2));
+      // console.log('Payload being sent:', JSON.stringify(payload, null, 2));
 
       const response = await axiosInstance.post(`/permissions/groups/${selectedGroup.id}`, payload);
 

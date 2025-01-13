@@ -12,7 +12,7 @@ const handleApiError = (error, customMessage) => {
 export const fetchEmployees = async () => {
   try {
     const response = await axiosInstance.get('/employees');
-    console.log('Raw API Response:', response.data);
+    // console.log('Raw API Response:', response.data);
     if (Array.isArray(response.data)) {
       return response.data;
     } else if (response.data?.data && Array.isArray(response.data.data)) {
@@ -31,9 +31,9 @@ export const fetchEmployees = async () => {
 };
 export const createEmployee = async (data) => {
     try {
-      console.log('Payload being sent to API:', data);
+      // console.log('Payload being sent to API:', data);
       const response = await axiosInstance.post('/employees', data);
-      console.log('Server Response:', response.data);
+      // console.log('Server Response:', response.data);
       toast.success('Employee created successfully');
       return response.data;
     } catch (error) {

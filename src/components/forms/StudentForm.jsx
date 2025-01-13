@@ -65,7 +65,7 @@ const StudentTransferForm = ({ schools, students = [], isLoading, isSubmitting, 
                 transferDate: new Date(transferDate).toISOString(), // Properly format the date
             };
 
-            console.log('Transfer Data:', transferData);
+            // console.log('Transfer Data:', transferData);
 
             const response = await axiosInstance.post('/students/transfers', transferData);
             setShowTransferConfirm(false);

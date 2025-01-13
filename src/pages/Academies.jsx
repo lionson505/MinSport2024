@@ -208,7 +208,7 @@ function Academies() {
   const handleTransferSubmit = async (e) => {
     e.preventDefault();
     try {
-      console.log('Transferring student:', transferData);
+      // console.log('Transferring student:', transferData);
       setTransferData({ fromSchool: '', student: '', toSchool: '' });
       toast.success('Student transferred successfully');
     } catch (error) {

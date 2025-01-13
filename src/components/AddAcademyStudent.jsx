@@ -74,7 +74,7 @@ function AddAcademyStudent({ isOpen, onClose, onAdd, studentData = null, isEditi
 
   const handleEditStudent = async (formDataToSend, studentId) => {
     try {
-      console.log('Sending data:', Object.fromEntries(formDataToSend.entries()));
+      // console.log('Sending data:', Object.fromEntries(formDataToSend.entries()));
       
       const response = await axiosInstance.put(`/academy-students/${studentId}`, formDataToSend, {
         headers: {
@@ -140,7 +140,7 @@ function AddAcademyStudent({ isOpen, onClose, onAdd, studentData = null, isEditi
 
       if (isEditing) {
         const response = await handleEditStudent(formDataToSend, formData.id);
-        console.log('Edit response:', response);
+        // console.log('Edit response:', response);
         onAdd(response.data);
       } else {
         await handleAddStudent(formDataToSend);

@@ -1,6 +1,6 @@
 const handleEditStudentSubmit = async (data) => {
   try {
-    console.log('Sending data to API:', data); // Debug log
+    // console.log('Sending data to API:', data); 
     const response = await axios.put(
       `${API_BASE_URL}/api/academy-students/${data.id}`,
       data,

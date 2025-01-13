@@ -25,7 +25,7 @@ const ActionMenu = ({ onEdit, onDelete, onDownload }) => {
         const urlSegments = fullUrl.split("/");
         const lastSegment = urlSegments[urlSegments.length - 1];
         setCurrentLocation(lastSegment);
-        console.log("Current Location:", lastSegment);
+        // console.log("Current Location:", lastSegment);
     };
 
 

@@ -25,7 +25,7 @@ const SportsTourism = () => {
     canDelete: false
   })
   const [events, setEvents] = useState([]);
-  console.log('events:', events)
+  // console.log('events:', events)
   const fetchPermissions = async ()=> {
     const currentPermissions =await logPermissions();
     await setPermissions(currentPermissions);

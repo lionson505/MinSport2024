@@ -183,7 +183,7 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
         }
       });
 
-      console.log('Submitting formatted data:', formattedData);
+      // console.log('Submitting formatted data:', formattedData);
 
       if (initialData && initialData.id) {
         await axiosInstance.put(`/player-staff/${initialData.id}`, formattedData);

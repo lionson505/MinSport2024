@@ -10,7 +10,7 @@ import {secureStorage} from "../../utils/crypto.js";
 // Debug logging helper
 const debugLog = (label, data) => {
   console.group(`🔍 ${label}`);
-  console.log(data);
+  // console.log(data);
   console.groupEnd();
 };
 

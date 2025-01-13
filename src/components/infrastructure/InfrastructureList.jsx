@@ -92,7 +92,7 @@ const InfrastructureList = () => {
   const fetchPermissions = async ()=>{
     const currentPermissions =await logPermissions();
     await setPermissions(currentPermissions);
-    console.log("perms:", permissions)
+    // console.log("perms:", permissions)
   }
 
   useEffect(() => {
