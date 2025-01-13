@@ -207,7 +207,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
                     eventType: eventType,
                     eventData: {
                         nationalTeamPlayerStaffId: playerId,
-                        minute: currentMinuteInt,
+                        minute: 12,
                         type: cardType
                     }
                 };

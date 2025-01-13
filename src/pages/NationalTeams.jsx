@@ -73,7 +73,8 @@ function NationalTeams() {
     name: '',
     team: '',
     federation: '',
-    club: ''
+    club: '',
+    appearances: ''
   });
 
   const [teamPage, setTeamPage] = useState(0);
@@ -785,6 +786,130 @@ function NationalTeams() {
           {renderPaginationControls(playerPage, totalPlayerPages, setPlayerPage)}
         </div>
       );
+    } else if (activeTab === 'Player Appearance') {
+      const filteredPlayers = players.filter(player => {
+        const playerFullName = `${player.firstName} ${player.lastName}`.toLowerCase();
+        return (
+          (playerSearchFilters.name ? playerFullName.includes(playerSearchFilters.name.toLowerCase()) : true) &&
+          (playerSearchFilters.team ? player.teamName?.toLowerCase().includes(playerSearchFilters.team.toLowerCase()) : true) &&
+          (playerSearchFilters.federation ? player.federation?.name?.toLowerCase().includes(playerSearchFilters.federation.toLowerCase()) : true) &&
+          (playerSearchFilters.appearances ? (player.games?.length || 0) >= parseInt(playerSearchFilters.appearances) : true)
+        );
+      });
+
+      return (
+        <div className="transition-all duration-200 ease-in-out">
+          {/* Search Filters */}
+          <div className="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 className="text-lg font-medium mb-4">Search By</h2>
+            <div className="grid grid-cols-4 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Player/Staff Name:</label>
+                <select
+                  value={playerSearchFilters.name}
+                  onChange={(e) => setPlayerSearchFilters(prev => ({
+                    ...prev,
+                    name: e.target.value
+                  }))}
+                  className="w-full border rounded-lg p-2"
+                >
+                  <option value="">Select Player/Staff</option>
+                  {playerStaffList.map(staff => (
+                    <option key={staff.id} value={`${staff.firstName} ${staff.lastName}`}>
+                      {staff.firstName} {staff.lastName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Team:</label>
+                <select
+                  value={playerSearchFilters.team}
+                  onChange={(e) => setPlayerSearchFilters(prev => ({
+                    ...prev,
+                    team: e.target.value
+                  }))}
+                  className="w-full border rounded-lg p-2"
+                >
+                  <option value="">Select Team</option>
+                  {teams.map(team => (
+                    <option key={team.id} value={team.teamName}>
+                      {team.teamName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Federation:</label>
+                <select
+                  value={playerSearchFilters.federation}
+                  onChange={(e) => setPlayerSearchFilters(prev => ({
+                    ...prev,
+                    federation: e.target.value
+                  }))}
+                  className="w-full border rounded-lg p-2"
+                >
+                  <option value="">Select Federation</option>
+                  {federations.map(federation => (
+                    <option key={federation.id} value={federation.name}>
+                      {federation.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Appearances:</label>
+                <input
+                  type="number"
+                  value={playerSearchFilters.appearances}
+                  onChange={(e) => setPlayerSearchFilters(prev => ({
+                    ...prev,
+                    appearances: e.target.value
+                  }))}
+                  placeholder="Search by appearances"
+                  min="0"
+                  className="w-full border rounded-lg p-2"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Players & Appearances Table */}
+          <div className="bg-white rounded-lg shadow overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Name of Player / Staff</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Number of Appearances</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {filteredPlayers.length > 0 ? (
+                  filteredPlayers.map((player) => (
+                    <tr key={player.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3">{player.firstName} {player.lastName}</td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          player.teamId ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                          }`}>
+                          {teams.filter(team => team.id === player.teamId).length} {teams.filter(team => team.id === player.teamId).length === 1 ? 'Team' : 'Teams'}
+                        </span>
+                      </td>
+
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="2" className="px-4 py-8 text-center text-gray-500">
+                      No players found matching your search criteria
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      );
     }
   };
 
@@ -982,7 +1107,7 @@ function NationalTeams() {
                   Add Player
                 </Button>
               </div>
-              </form>
+            </form>
           </div>
         </Modal>
 
