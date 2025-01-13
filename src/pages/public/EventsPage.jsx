@@ -24,7 +24,7 @@ function EventsPage() {
   const [eventResults, setEventResults] = useState(null);
   const { events = [], eventError } = useFetchSportEvents([]);
 
-  // // console.log('id, title, subtitle, image, startDate, endDate, category, status, time', { events })
+  console.log('id, title, subtitle, image, startDate, endDate, category, status, time', { events })
 
   // const events = [
   //   {
@@ -63,7 +63,7 @@ function EventsPage() {
     return events.filter(event => event.status === status);
   };
 
-  // console.log('here is event : ',  events.id)
+  console.log('here is event : ',  events.id)
 
   // const renderEventCard = (event) => (
     
@@ -75,7 +75,7 @@ function EventsPage() {
       const timeOnly = event.startDate
         ? new Date(event.startDate).toISOString().split('T')[1].split('.')[0]
         : 'N/A';
-        // console.log('event banner :', event.banner);
+        console.log('event banner :', event.banner);
       return (
 
     <div
@@ -266,7 +266,7 @@ function EventsPage() {
                 {selectedEvent?.video ? (
                     <div className="mt-4">
                       <p><strong>Event Video:</strong></p>
-                      {// console.log('Video full path:', `${axiosInstance.defaults.baseURL}/uploads/video/${selectedEvent.video}`)}
+                      {console.log('Video full path:', `${axiosInstance.defaults.baseURL}/uploads/video/${selectedEvent.video}`)}
                       <video
                           src={`${axiosInstance.defaults.baseURL}/${selectedEvent.video}`}
                           controls

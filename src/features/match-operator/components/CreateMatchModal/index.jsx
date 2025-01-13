@@ -72,7 +72,7 @@ export function CreateMatchModal({ open, onClose }) {
       // POST request to your backend API
       // const response = await axiosInstance.post('/live-matches') // Replace with your actual endpoint
       // await // console.log('data', transformedData);
-      await // console.log('data', transformedData);
+      await console.log('data', transformedData);
       const response = await axiosInstance.post('/live-matches', transformedData
       );
       // console.log('Responsejlknlkllk:', response.data);
