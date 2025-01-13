@@ -33,7 +33,7 @@ const AddUserModal = ({ isOpen, onClose, onAdd }) => {
 
       axiosInstance.get('/groups')
         .then((response) => {
-          console.log('API Response:', response.data); // Log the API response
+          // console.log('API Response:', response.data); 
           // Access the array of groups from the response
           if (Array.isArray(response.data.data)) {
             setGroupOptions(response.data.data);
@@ -87,7 +87,7 @@ const AddUserModal = ({ isOpen, onClose, onAdd }) => {
         }
       });
 
-      console.log('Response from API:', response.data);
+      // console.log('Response from API:', response.data);
       onAdd(response.data);
       toast.success('User created successfully');
       setFormData({

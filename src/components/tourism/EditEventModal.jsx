@@ -115,7 +115,7 @@ const EditEventModal = ({ isOpen, onClose, event, onEventUpdated }) => {
         },
       });
 
-      console.log('Event updated:', response.data);
+      // console.log('Event updated:', response.data);
       toast.success('Event updated successfully!', {
         description: `${formData.name} has been updated with the following details:
         • Location: ${formData.province}, ${formData.district}

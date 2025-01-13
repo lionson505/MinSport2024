@@ -90,7 +90,7 @@ function AddEmployeeVoting() {
       criteria
     };
 
-    console.log('Submitting:', votingData);
+    // console.log('Submitting:', votingData);
     toast.success('Voting created successfully');
     setLoading(false);
   };

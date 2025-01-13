@@ -191,7 +191,7 @@ function NationalTeams() {
   };
 
   const handleAddTeam = async (data) => {
-    console.log('Submitting team data:', data); // Log the data being sent
+    // console.log('Submitting team data:', data); // Log the data being sent
 
     if (!data.teamName || !data.teamMonth || !data.teamYear || !data.federationId || !data.competition || !data.city || !data.country || !data.games) {
       toast.error('All fields are required.');
@@ -200,7 +200,7 @@ function NationalTeams() {
 
     try {
       if (selectedTeamData) {
-        console.log('Updating team with ID:', selectedTeamData.id); // Log the ID being updated
+        // console.log('Updating team with ID:', selectedTeamData.id); // Log the ID being updated
         const response = await axiosInstance.put(`/national-teams/${selectedTeamData.id}`, data);
         setTeams(prev => prev.map(team =>
           team.id === selectedTeamData.id ? response.data : team
@@ -246,7 +246,7 @@ function NationalTeams() {
       games: selectedGames,
     };
   
-    console.log('Submitting player data:', playerData); // Log the data being sent
+    // console.log('Submitting player data:', playerData); // Log the data being sent
   
     try {
       const response = await axiosInstance.post('/national-team-player-staff', playerData);
@@ -282,7 +282,7 @@ function NationalTeams() {
       games: selectedGames,
     };
 
-    console.log('Submitting player data:', playerData); // Log the data being sent
+    // console.log('Submitting player data:', playerData); // Log the data being sent
 
     try {
       const response = await axiosInstance.put(`/national-team-player-staff/${selectedPlayerData.id}`, playerData);

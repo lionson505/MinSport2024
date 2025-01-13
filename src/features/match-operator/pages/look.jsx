@@ -131,7 +131,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
             minute: currentMinute
           }
         };
-        console.log(eventData)
+        // console.log(eventData)
         await axiosInstance.post(eventEndpoint, eventData);
 
         toast.success('Goal event posted successfully!', {
@@ -186,7 +186,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
           : [];
 
   const confirmEventWithPlayer = (playerId) => {
-    console.log('ID of the player who scored:', playerId);
+    // console.log('ID of the player who scored:', playerId);
 
     if (pendingEvent.team === 'A') {
       const player = teamAPlayers.find(p => p.id === playerId);
@@ -197,7 +197,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
           }
           : null;
 
-      console.log('Selected player details:', playerDetails);
+      // console.log('Selected player details:', playerDetails);
 
       if (playerDetails) {
         addEvent(pendingEvent.type, 'A', match.id, player);
@@ -211,7 +211,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
           }
           : null;
 
-      console.log('Selected player details:', playerDetails);
+      // console.log('Selected player details:', playerDetails);
 
       if (playerDetails) {
         addEvent(pendingEvent.type, 'B', match.id, player);

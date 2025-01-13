@@ -266,7 +266,7 @@ function LandingPage() {
                             className={`aspect-square m-4 rounded-xl !w-[250px] !md:w-[280px] ${color} flex flex-col items-center justify-center p-4 cursor-pointer hover:opacity-90 transition-all transform hover:scale-105`}
                           >
                             <img
-                              src={federationImage}
+                              src={`${axiosInstance.defaults.baseURL}${federation.logo}` || federationImage}
                               alt={federation.name}
                               className="h-16 w-16 mb-4 rounded-full"
                             />

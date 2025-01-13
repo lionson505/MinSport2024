@@ -100,14 +100,14 @@ const AddEventModal = ({ isOpen, onClose }) => {
       if (formData.video) {
         formDataToSend.append('video', formData.video);
       }
-console.log(formData)
+// console.log(formData)
       const response = await axiosInstance.post('/sports-tourism-events', formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
 
-      console.log('Event added:', response.data);
+      // console.log('Event added:', response.data);
       toast.success('Event added successfully!', {
         description: `${formData.name} has been created.`
       });

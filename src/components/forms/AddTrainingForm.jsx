@@ -116,7 +116,7 @@ const AddTrainingForm = ({ onSubmit, onCancel, isSubmitting, initialData }) => {
       };
 
       // Log the exact data being sent
-      console.log('Attempting to submit:', JSON.stringify(submissionData, null, 2));
+      // console.log('Attempting to submit:', JSON.stringify(submissionData, null, 2));
 
       let response;
       if (initialData) {

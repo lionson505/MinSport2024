@@ -52,15 +52,12 @@ const MatchModal: React.FC<MatchModalProps> = ({ selectedMatch, onClose }) => {
         { id: "Info", icon: Info, label: "Match Info" },
         { id: "Line-up", icon: User2, label: "Line-up" }
     ];
-    // Conditionally add the "Line-up" tab if the game type is football
-    if (selectedMatch.gameType === 'Footballl') {
-        tabs.push({ id: "Line-up", icon: User2, label: "Line-up" });
-    }
+    
 
     const { players = [], playersError } = useFetchPlayers([]);
     const { nationalTeam = [], nationalTeamError } = useFetchNationalTeam([]);
     const [teamAPlayers, setTeamAPlayers] = useState()
-    console.log("teamAPlayers: ", teamAPlayers)
+    // console.log("teamAPlayers: ", teamAPlayers)
     const [teamBPlayers, setTeamBPlayers] = useState()
     const [homeTeamLineUp = [], setHomeTeamLineUp] = useState([]);
     // console.log("home team line up : ", homeTeamLineUp)
@@ -81,7 +78,7 @@ const MatchModal: React.FC<MatchModalProps> = ({ selectedMatch, onClose }) => {
         setTeamAPlayers(nationalTeamAPlayers);
     }, [nationalTeamAPlayers]);
 
-    console.log('nationalTeamAPlayers : ', nationalTeamAPlayers);
+    // console.log('nationalTeamAPlayers : ', nationalTeamAPlayers);
     const positions = nationalTeamAPlayers.map((player) => player.playerStaff.positionInClub);
     // console.log('positions : ', positions);
 
@@ -169,7 +166,7 @@ const MatchModal: React.FC<MatchModalProps> = ({ selectedMatch, onClose }) => {
         else {
             return <div>Uknown Game Type</div>;
         }
-        console.log('Teams LineUp: ', { homeTeamLineUp, awayTeamLineUp })
+        // console.log('Teams LineUp: ', { homeTeamLineUp, awayTeamLineUp })
     }, [selectedMatch.gameType, nationalTeamAPlayers, nationalTeamBPlayers])
 
 

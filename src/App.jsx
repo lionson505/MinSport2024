@@ -54,8 +54,8 @@ function App() {
   const userRole = localStorage.getItem('userRole');
   const isActivated = localStorage.getItem('isActivated') === 'true';
   const token = localStorage.getItem('token');
-  console.log(MODULE_IDS)
-  console.log(MODULE_IDS.DASHBOARD)
+  // // console.log(MODULE_IDS)
+  // console.log(MODULE_IDS.DASHBOARD)
 
   useEffect(() => {
     const fetchAccessibleLinks = async () => {

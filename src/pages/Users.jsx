@@ -73,8 +73,8 @@ function Users() {
       setUserData(userResponse.data);
       setGroupData(Array.isArray(groupResponse.data.data) ? groupResponse.data.data : []); // Adjusted to access the nested data array
 
-      console.log('User Data:', userResponse.data);
-      console.log('Group Data:', groupResponse.data.data);
+      // console.log('User Data:', userResponse.data);
+      // console.log('Group Data:', groupResponse.data.data);
     } catch (err) {
       setError(err.message || 'Failed to load users or groups data. Please try again later.');
       console.error('Fetch Error:', err);

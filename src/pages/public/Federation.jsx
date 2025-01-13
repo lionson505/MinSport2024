@@ -68,71 +68,12 @@ function Federation() {
     const date = new Date(dateString);
     return date.toISOString().split('T')[0]; // Returns the date in YYYY-MM-DD format
   };
-  // const events = federations.map((federation) => ({
-  //   id: federation.id,
-  //   title: federation.name,
-  //   subtitle: federation.acronym || federation.address, // Provide meaningful fallback
-  //   // image: federation.logo || federationImage , // Assuming this is the correct path for the image
-  //   image: federationImage, // Assuming this is the correct path for the image
-  //   startDate: formatDate(federation.createdAt),  // Use a relevant date field
-  //   category: federation.name,                  // Placeholder (adjust based on data)
-  // }));
-
-  // console.log(events);
-
-
-  // const filterEvents = (status) => {
-  //   if (!Array.isArray(events)) return [];
-  //   if (status === 'all') return events;
-  //   return events.filter(event => event.status === status);
-  // };
-
-  // const renderEventCard = (event) => (
-  // <div
-  //   key={federation.id}
-  //   className="relative group cursor-pointer"
-  // >
-  //   <div className="h-80 relative overflow-hidden rounded-lg bg-blue-400 flex justify-center transform transition-all duration-300 hover:shadow-xl hover:shadow-black hover:scale-105 hover:bg-blue-500 hover:shadow-lg hover:opacity-80">
-  //     <div className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-white mt-10">
-  //       <img
-  //         src={federation.image}
-  //         alt={federation.title}
-  //         className="w-full h-full object-cover"
-  //       />
-  //     </div>
-  //     <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black opacity-90"></div>
-
-  //     {/* Text content */}
-  //     <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-  //       <div className="text-xs mb-2">{federation.title}</div>
-  //       <h3 className="font-bold mb-1">{federation.subtitle}</h3>
-  //       <p className="text-sm text-gray-200">{federation.startDate}</p>
-  //     </div>
-  //   </div>
-  // </div>
-  // );
 
   const renderEventDetails = () => {
     if (!selectedEvent) return null;
 
     return (
       <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-hidden flex flex-col">
-        {/* <DialogHeader className="px-6 py-4 border-b">
-          <div className="flex items-center justify-between">
-            <div>
-              <DialogTitle className="text-2xl font-bold mb-1">{selectedEvent.title}</DialogTitle>
-              <DialogDescription className="text-gray-500">
-                {selectedEvent.category}
-              </DialogDescription>
-            </div>
-            <span className={`px-3 py-1 rounded-full text-xs font-medium ${selectedEvent.status === 'LIVE' ? 'bg-red-500 text-white' :
-              selectedEvent.status === 'UPCOMING' ? 'bg-green-500 text-white' :
-                'bg-gray-500 text-white'
-              }`}>
-              {selectedEvent.status}
-            </span>
-          </div>
-        </DialogHeader> */}
 
         <div className="flex-1 overflow-y-auto">
           <div className="p-6">
@@ -324,7 +265,7 @@ function Federation() {
         </div>
       </div>
       <PublicLayout>
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto px-6">
           <h1 className="text-4xl font-bold mb-12">FEDERATIONS</h1>
 
           <Tabs defaultValue="all" className="mb-8">

@@ -6,7 +6,7 @@ import axiosInstance from '../../utils/axiosInstance';
 
 const createEmployee = async (data) => {
   try {
-    console.log("Sending JSON data:", data);
+    // console.log("Sending JSON data:", data);
 
     const response = await axiosInstance.post('/employees', data, {
       headers: {
@@ -30,7 +30,7 @@ const updateEmployee = async (employeeId, data) => {
     throw new Error('Employee ID is required for updates');
   }
   try {
-    console.log('Updating employee with data:', data);
+    // console.log('Updating employee with data:', data);
 
     const response = await axiosInstance.put(`/employees/${employeeId}`, data, {
       headers: {
@@ -78,15 +78,15 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
       if (isEditing && employeeId) {
         try {
           const response = await axiosInstance.get(`/employees/${employeeId}`);
-          console.log('Raw API response:', response.data);
+          // console.log('Raw API response:', response.data);
 
           const employeeData = response.data.employee;
-          console.log('Employee data before mapping:', {
-            gender: employeeData.gender,
-            employee_status: employeeData.employee_status,
-            employee_type: employeeData.employee_type,
-            martial_status: employeeData.martial_status
-          });
+          // console.log('Employee data before mapping:', {
+          //   gender: employeeData.gender,
+          //   employee_status: employeeData.employee_status,
+          //   employee_type: employeeData.employee_type,
+          //   martial_status: employeeData.martial_status
+          // });
 
           // Normalize the values to match select options
           const normalizedData = {
@@ -120,12 +120,12 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
             contactPhone: normalizedData.person_of_contact_phone || ''
           });
 
-          console.log('Form data after mapping:', {
-            gender: normalizedData.gender,
-            employeeStatus: normalizedData.employee_status,
-            employeeType: normalizedData.employee_type,
-            maritalStatus: normalizedData.martial_status
-          });
+          // console.log('Form data after mapping:', {
+          //   gender: normalizedData.gender,
+          //   employeeStatus: normalizedData.employee_status,
+          //   employeeType: normalizedData.employee_type,
+          //   maritalStatus: normalizedData.martial_status
+          // });
 
         } catch (error) {
           console.error('Error fetching employee data:', error);
@@ -140,16 +140,16 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
   // Add a debug effect to monitor form data changes
   useEffect(() => {
     if (isEditing) {
-      console.log('Current form data:', formData);
+      // console.log('Current form data:', formData);
     }
   }, [formData, isEditing]);
 
   useEffect(() => {
-    console.log('FormData state updated:', formData);
+    // console.log('FormData state updated:', formData);
   }, [formData]);
 
   useEffect(() => {
-    console.log('Component props:', { isEditing, employeeId });
+    // console.log('Component props:', { isEditing, employeeId });
   }, [isEditing, employeeId]);
 
   const handleChange = (e) => {
@@ -217,11 +217,11 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
         person_of_contact_phone: formData.contactPhone
       };
 
-      console.log('Submitting data:', dataToSend);
+      // console.log('Submitting data:', dataToSend);
 
       if (isEditing) {
         const result = await updateEmployee(employeeId, dataToSend);
-        console.log('Update response:', result);
+        // console.log('Update response:', result);
         toast.success('Employee updated successfully!');
            // Add a slight delay before reloading to ensure the toast message is visible
     setTimeout(() => {
@@ -229,7 +229,7 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
     }, 1500); // 1.5 seconds delay
       } else {
         const result = await createEmployee(dataToSend);
-        console.log('Create response:', result);
+        // console.log('Create response:', result);
         toast.success('Employee created successfully!');
            // Add a slight delay before reloading to ensure the toast message is visible
     setTimeout(() => {

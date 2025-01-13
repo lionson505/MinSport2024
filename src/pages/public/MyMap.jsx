@@ -40,9 +40,9 @@ export default function MyMap() {
         setCategories(categoriesResponse.data);
         setSubCategories(subCategoriesResponse.data);
 
-        console.log('Fetched facilities:', formattedFacilities);
-        console.log('Fetched categories:', categoriesResponse.data);
-        console.log('Fetched subcategories:', subCategoriesResponse.data);
+        // console.log('Fetched facilities:', formattedFacilities);
+        // console.log('Fetched categories:', categoriesResponse.data);
+        // console.log('Fetched subcategories:', subCategoriesResponse.data);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -125,11 +125,11 @@ export default function MyMap() {
       status: 'Pending',
     };
 
-    console.log('Submitting booking data:', bookingData);
+    // console.log('Submitting booking data:', bookingData);
 
     try {
       const response = await axiosInstance.post('/booking-requests', bookingData);
-      console.log('Booking request submitted:', response.data);
+      // console.log('Booking request submitted:', response.data);
       alert('Booking request submitted successfully!');
       window.location.reload();
     } catch (error) {

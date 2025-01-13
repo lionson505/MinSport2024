@@ -102,7 +102,7 @@ const PlayerTransferReport = () => {
 
   const handleExport = (format) => {
     // Implement export functionality (CSV, PDF, etc.)
-    console.log(`Exporting in ${format} format`);
+    // console.log(`Exporting in ${format} format`);
   };
 
   const inputClasses = `w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${

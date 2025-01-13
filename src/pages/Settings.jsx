@@ -28,7 +28,7 @@ const Settings = () => {
       try {
         const response = await secureStorage.getItem('user');
         const userData = JSON.parse(response);
-        console.log('User data:', userData);
+        // console.log('User data:', userData);
 
         if (userData) {
           setProfileData({

@@ -51,7 +51,7 @@ const TourismEventsList = () => {
     const fetchEvents = async () => {
       const currentPermissions =await logPermissions();
       await setPermissions(currentPermissions);
-      console.log("perms:", permissions)
+      // console.log("perms:", permissions)
       try {
 
         const response = await axiosInstance.get('/sports-tourism-events');
