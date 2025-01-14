@@ -38,9 +38,9 @@ const AddEventModal = ({ isOpen, onClose }) => {
 
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(false); // New state for loading
 
   useEffect(() => {
-    // Fetch categories and subcategories from API
     const fetchCategories = async () => {
       try {
         const response = await axiosInstance.get('/sports-tourism-categories');
@@ -82,39 +82,35 @@ const AddEventModal = ({ isOpen, onClose }) => {
       return;
     }
 
+    setIsLoading(true); // Set loading to true when submission starts
+
     try {
-      // Create a new FormData instance
       const formDataToSend = new FormData();
 
-      // Append all regular fields
       Object.keys(formData).forEach(key => {
         if (key !== 'banner' && key !== 'video') {
           formDataToSend.append(key, formData[key]);
         }
       });
 
-      // Append files if they exist
       if (formData.banner) {
         formDataToSend.append('banner', formData.banner);
       }
       if (formData.video) {
         formDataToSend.append('video', formData.video);
       }
-// console.log(formData)
+
       const response = await axiosInstance.post('/sports-tourism-events', formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
 
-      // console.log('Event added:', response.data);
       toast.success('Event added successfully!', {
         description: `${formData.name} has been created.`
       });
-      
-      // Reload the page after successful submission
+
       window.location.reload();
-      
       onClose();
 
       setFormData({
@@ -145,10 +141,11 @@ const AddEventModal = ({ isOpen, onClose }) => {
       toast.error('Failed to add event', {
         description: error.response?.data?.message || 'Please try again later.'
       });
+    } finally {
+      setIsLoading(false); // Set loading to false when submission ends
     }
   };
 
-  // Add file handling functions
   const handleFileChange = (e, fieldName) => {
     const file = e.target.files[0];
     setFormData(prev => ({
@@ -490,8 +487,9 @@ const AddEventModal = ({ isOpen, onClose }) => {
               form="add-event-form"
               className="min-w-[140px] h-10 bg-blue-600 text-white hover:bg-blue-700"
               onClick={handleSubmit}
+              disabled={isLoading} // Disable button when loading
             >
-              Add Event
+              {isLoading ? 'Adding...' : 'Add Event'} {/* Show loading text */}
             </Button>
           </div>
         </div>
