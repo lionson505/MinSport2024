@@ -677,9 +677,9 @@ function Academies() {
       <div className="space-y-6">
         {student.photo_passport && (
           <div className="flex justify-center mb-6">
-            {console.log('Student photo full path:', `${axiosInstance.defaults.baseURL}/uploads/students/${student.photo_passport}`)}
+            {console.log('Student photo full path:', `${axiosInstance.defaults.baseURL}${student.photo_passport}`)}
             <img 
-              src={`${axiosInstance.defaults.baseURL}/uploads/students/${student.photo_passport}`}
+              src={`${axiosInstance.defaults.baseURL}${student.photo_passport}`}
               alt="Student Passport"
               className="w-32 h-32 rounded-lg object-cover"
             />

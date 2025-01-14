@@ -258,8 +258,7 @@ function EventsPage() {
                 <h3 className="font-semibold text-gray-900 mb-4">Event Description</h3>
                 <p className="text-gray-600 text-sm leading-relaxed">
                   {selectedEvent.subtitle}
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                  Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                  {selectedEvent.description}
                 </p>
 
                 {/* Video Section */}

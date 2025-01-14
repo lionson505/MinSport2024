@@ -24,14 +24,14 @@ function AddContractModal({ isOpen, onClose, onAdd, initialData }) {
       unit: 'Days'
     },
     endDate: '',
-    contractFile: null // New state for the file
+    contractFile: null
   });
 
   const [employees, setEmployees] = useState([]);
   const [administratorSearch, setAdministratorSearch] = useState('');
   const [showAdministratorDropdown, setShowAdministratorDropdown] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // New loading state
 
-  // Define currencies array
   const currencies = [
     { code: 'FRW', symbol: 'FRW' },
     { code: 'USD', symbol: '$' },
@@ -55,7 +55,7 @@ function AddContractModal({ isOpen, onClose, onAdd, initialData }) {
           unit: 'Days'
         },
         endDate: initialData.contract_end_date || '',
-        contractFile: null // Reset file when editing
+        contractFile: null
       });
     }
   }, [initialData, isOpen]);
@@ -80,7 +80,8 @@ function AddContractModal({ isOpen, onClose, onAdd, initialData }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+    setIsLoading(true); // Start loading
+
     try {
       if (!formData.contractNo || !formData.title || !formData.supplier) {
         throw new Error('Please fill in all required fields');
@@ -114,8 +115,8 @@ function AddContractModal({ isOpen, onClose, onAdd, initialData }) {
         contract_end_date: formData.endDate,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        contractFile: formData.contractFile // Include the file in the data
- };
+        contractFile: formData.contractFile
+      };
 
       const formDataToSend = new FormData();
       for (const key in transformedData) {
@@ -123,11 +124,12 @@ function AddContractModal({ isOpen, onClose, onAdd, initialData }) {
       }
 
       await onAdd(formDataToSend);
-      // console.log(formDataToSend);
       onClose();
       toast.success('Contract added successfully');
     } catch (error) {
       toast.error(error.message);
+    } finally {
+      setIsLoading(false); // End loading
     }
   };
 
@@ -186,7 +188,7 @@ function AddContractModal({ isOpen, onClose, onAdd, initialData }) {
   const handleFileChange = (e) => {
     setFormData(prev => ({
       ...prev,
-      contractFile: e.target.files[0] // Update the file state
+      contractFile: e.target.files[0]
     }));
   };
 
@@ -374,7 +376,7 @@ function AddContractModal({ isOpen, onClose, onAdd, initialData }) {
                               <button
                                 key={employee.id}
                                 type="button"
-                                className="w-full text-left px-4 py-2 hover:bg -gray-100 focus:bg-gray-100 focus:outline-none"
+                                className="w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
                                 onClick={() => handleAdministratorSelect(employee)}
                               >
                                 <div className="font-medium">{`${employee.firstname} ${employee.lastname}`}</div>
@@ -473,8 +475,9 @@ function AddContractModal({ isOpen, onClose, onAdd, initialData }) {
                     <Button
                       type="submit"
                       className="bg-blue-600 hover:bg-blue-700 text-white"
+                      disabled={isLoading} // Disable button when loading
                     >
-                      {initialData ? 'Update Contract' : 'Add Contract'}
+                      {isLoading ? 'Processing...' : (initialData ? 'Update Contract' : 'Add Contract')}
                     </Button>
                   </div>
                 </form>

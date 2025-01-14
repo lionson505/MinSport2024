@@ -13,7 +13,7 @@ import ManageEmployeeVoting from '../components/ManageEmployeeVoting';
 import { fetchEmployees, createEmployee, updateEmployee, deleteEmployee } from '../services/employee';
 import PrintButton from '../components/reusable/Print';
 import {usePermissionLogger} from "../utils/permissionLogger.js";
-
+import axiosInstance from '../utils/axiosInstance';
 function Employee() {
   const [loading1, setLoading1] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -159,8 +159,13 @@ function Employee() {
   };
 
   const renderEmployeeDetails = (employee) => {
-    if (!employee) return null;
-
+    if (!employee) return null; // Ensure employee is not null
+  
+    // Check if passportPicture is available and log the image path
+    // if (employee.photo_passport) {
+    //   console.log('Image path:', `${axiosInstance.defaults.baseURL}${employee.photo_passport}`);
+    // }
+  
     return (
       <div className="grid grid-cols-2 gap-6">
         {/* Personal Information */}
@@ -168,13 +173,17 @@ function Employee() {
           <h3 className="font-medium text-lg border-b pb-2">Personal Information</h3>
           
           <div className="mb-4">
-            <img 
-              src={employee.passportPicture || `https://dashboard.codeparrot.ai/api/assets/Z0q__nFEV176CUaS=${employee.id}&w=128&h=128`} 
-              alt={employee.names}
-              className="w-32 h-32 rounded-lg object-cover"
-            />
+            {employee.photo_passport ? (
+              <img 
+                src={`${axiosInstance.defaults.baseURL}${employee.photo_passport}`} 
+                alt={`${employee.firstname} ${employee.lastname}`}
+                className="w-32 h-32 rounded-lg object-cover"
+              />
+            ) : (
+              <p>No passport picture available</p>
+            )}
           </div>
-
+  
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm text-gray-500">Employee ID</label>
@@ -185,7 +194,7 @@ function Employee() {
               <p className="font-medium">{employee.firstname} {employee.lastname}</p>
             </div>
           </div>
-
+  
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm text-gray-500">Start Date</label>
@@ -204,7 +213,7 @@ function Employee() {
               </p>
             </div>
           </div>
-
+  
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm text-gray-500">Email</label>
@@ -215,13 +224,13 @@ function Employee() {
               <p className="font-medium">{employee.phone}</p>
             </div>
           </div>
-
+  
           <div>
             <label className="text-sm text-gray-500">National ID</label>
             <p className="font-medium">{employee.nationalId}</p>
           </div>
         </div>
-
+  
         {/* Employment Details */}
         <div className="space-y-4">
           <h3 className="font-medium text-lg border-b pb-2">Employment Details</h3>
@@ -236,13 +245,13 @@ function Employee() {
               <p className="font-medium">{employee.employee_type}</p>
             </div>
           </div>
-
+  
           <div>
             <label className="text-sm text-gray-500">Supervisor</label>
             <p className="font-medium">{employee.supervisor}</p>
           </div>
         </div>
-
+  
         {/* Address Information */}
         <div className="space-y-4">
           <h3 className="font-medium text-lg border-b pb-2">Address Information</h3>
@@ -257,7 +266,7 @@ function Employee() {
               <p className="font-medium">{employee.address_district}</p>
             </div>
           </div>
-
+  
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm text-gray-500">Sector</label>
@@ -268,13 +277,13 @@ function Employee() {
               <p className="font-medium">{employee.address_cell}</p>
             </div>
           </div>
-
+  
           <div>
             <label className="text-sm text-gray-500">Village</label>
             <p className="font-medium">{employee.address_village}</p>
           </div>
         </div>
-
+  
         {/* Emergency Contact */}
         <div className="space-y-4">
           <h3 className="font-medium text-lg border-b pb-2">Emergency Contact</h3>
@@ -289,7 +298,7 @@ function Employee() {
               <p className="font-medium">{employee.person_of_contact_relationship}</p>
             </div>
           </div>
-
+  
           <div>
             <label className="text-sm text-gray-500">Contact Phone</label>
             <p className="font-medium">{employee.person_of_contact_phone}</p>
@@ -298,7 +307,7 @@ function Employee() {
       </div>
     );
   };
-
+  
   const renderContent = () => {
     switch (activeTab) {
       case 'all':
