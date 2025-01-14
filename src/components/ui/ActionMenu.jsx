@@ -3,9 +3,11 @@ import { Pencil, Download, Trash2 } from 'lucide-react';
 import { useDarkMode } from '../../contexts/DarkModeContext';
 import { usePermissionLogger } from "../../utils/permissionLogger.js";
 
+
 const ActionMenu = ({ onEdit, onDelete, onDownload }) => {
     const { isDarkMode } = useDarkMode();
-    const [currentLocation, setCurrentLocation] = useState("");
+    const [loading, setIsLoading] = useState(false);
+    const [currentLocation, setCurrentLocation] = useState(true);
     const [permissions, setPermissions] = useState({
         canCreate: false,
         canRead: false,
@@ -13,10 +15,12 @@ const ActionMenu = ({ onEdit, onDelete, onDownload }) => {
         canDelete: false
     });
     const fetchAndSetPermissions = async (moduleName)=> {
-        const perms = await usePermissionLogger(moduleName)
-        const currentPermissions = await perms()
-        return currentpermissions;
-
+        const perms = usePermissionLogger(moduleName)
+        const currentPermissions =await perms();
+         await setPermissions(currentPermissions);
+         setIsLoading(false);
+        
+        
     };
 
 
@@ -49,6 +53,15 @@ const ActionMenu = ({ onEdit, onDelete, onDownload }) => {
     }
 
     }, [currentLocation]);
+
+    if(loading) {
+        return(
+            <div className="flex animate-spin animate justify-center items-center h-screen">
+              <Loader2/>
+            </div>
+        )
+    
+      }
 
     return (
         <div className="flex items-center gap-2">

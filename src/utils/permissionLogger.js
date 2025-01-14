@@ -18,7 +18,7 @@ export const usePermissionLogger = (moduleName) => {
             canDelete: await checkPermission(moduleId, 'delete')
         };
 
-        console.log(`Permissions for ${moduleName}:`, permissions);
+        // console.log(`Permissions for ${moduleName}:`, permissions);
         return permissions;
     };
 
