@@ -69,11 +69,20 @@ export const getPartners = async () => {
 /** Add a new partner */
 export const addPartner = async (data) => {
   try {
-    // console.log(data);
-    const response = await axiosInstance.post('/partners', data);
+    // Ensure the payload matches the expected format
+    const payload = {
+      ...data,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const response = await axiosInstance.post('/partners', payload, {
+      headers: { 'Content-Type': 'application/json' }, // Ensure headers are set
+    });
     toast.success('Partner created successfully');
     return response.data;
   } catch (error) {
+    console.error('Error details:', error.response?.data); // Log detailed error response
     handleApiError(error, 'Failed to add partner');
   }
 };

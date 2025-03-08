@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/input';
-import {Search, Plus, Eye, Download, Trash, RefreshCw, Edit, Loader2} from 'lucide-react';
+import { Search, Plus, Eye, Download, Trash, RefreshCw, Edit } from 'lucide-react';
 import toast from 'react-hot-toast';
 import AddDocumentModal from '../components/AddDocumentModal';
 import axiosInstance from '../utils/axiosInstance';
@@ -10,7 +10,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { AlertCircle } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import PrintButton from '../components/reusable/Print';
-import { usePermissionLogger } from '../utils/permissionLogger.js';
 
 function Documents() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -27,25 +26,8 @@ function Documents() {
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [updateStatusModalOpen, setUpdateStatusModalOpen] = useState(false);
   const [documentToUpdate, setDocumentToUpdate] = useState(null);
-  const logPermissions = usePermissionLogger('documents')
-  const [loading, setLoading] = useState(true);
-  const [permissions, setPermissions] = useState({
-    canCreate: false,
-    canRead: false,
-    canUpdate: false,
-    canDelete: false
-  })
 
-  const fetchPermissions = async ()=> {
-    await setLoading(true);
-    const currentPermissions =await logPermissions();
-    await setPermissions(currentPermissions);
-    await setLoading(false);
-  }
   useEffect(() => {
-    
-    fetchPermissions();
-    console.log("perms:", permissions)
     const fetchDocuments = async () => {
       try {
         const response = await axiosInstance.get('/documents');
@@ -153,15 +135,6 @@ function Documents() {
     }
   };
 
-  if(loading) {
-    return(
-        <div className="flex animate-spin animate justify-center items-center h-screen">
-          <Loader2/>
-        </div>
-    )
-
-  }
-
   return (
     <div className="p-6">
       <h1 className="text-2xl font-semibold mb-6">Manage Documents</h1>
@@ -177,20 +150,19 @@ function Documents() {
           />
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
         </div>
-        {permissions.canCreate && (
-            <Button
-                onClick={() => setIsAddModalOpen(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Document
-            </Button>
-        )}
-
+        <Button
+          onClick={() => setIsAddModalOpen(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Add Document
+        </Button>
       </div>
 
       <div className="bg-white rounded-lg shadow overflow-x-auto">
-        <PrintButton>
+        <PrintButton><h2 className="text-lg font-semibold mb-2 text-center" style={{ color: 'black', marginBottom: '10px' }}>
+            Documents List
+          </h2>
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
@@ -221,26 +193,18 @@ function Documents() {
                     <Button size="sm" variant="ghost" onClick={() => handleViewDocument(doc)}>
                       <Eye className="h-4 w-4" />
                     </Button>
-                    {/*<Button size="sm" variant="ghost" onClick={() => handleDownload(doc)}>*/}
-                    {/*  <Download className="h-4 w-4" />*/}
-                    {/*</Button>*/}
-                    {permissions.canUpdate && (
-                        <Button size="sm" variant="ghost" onClick={() => handleEditDocument(doc)}>
-                          <Edit className="h-4 w-4 text-blue-600" />
-                        </Button>
-                    )}
-
+                    <Button size="sm" variant="ghost" onClick={() => handleDownload(doc)}>
+                      <Download className="h-4 w-4" />
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => handleEditDocument(doc)}>
+                      <Edit className="h-4 w-4 text-blue-600" />
+                    </Button>
                     <Button size="sm" variant="ghost" onClick={() => handleUpdateStatus(doc)}>
                       <RefreshCw className="h-4 w-4 text-blue-600" />
                     </Button>
-                    {
-                      permissions.canDelete && (
-                            <Button size="sm" variant="ghost" onClick={() => handleDelete(doc)}>
-                              <Trash className="h-4 w-4 text-red-600" />
-                            </Button>
-                        )
-                    }
-
+                    <Button size="sm" variant="ghost" onClick={() => handleDelete(doc)}>
+                      <Trash className="h-4 w-4 text-red-600" />
+                    </Button>
                   </div>
                 </td>
               </tr>

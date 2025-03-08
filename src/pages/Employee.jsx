@@ -6,17 +6,14 @@ import { Loader2, Pencil, Download, Trash2, AlertTriangle, Eye, X } from 'lucide
 import AddEmployeeModal from '../components/AddEmployeeModal';
 import EditEmployeeModal from '../components/EditEmployeeModal';
 import toast from 'react-hot-toast';
-
 import { Dialog, Transition } from '@headlessui/react';
 import AddEmployeeVoting from '../components/AddEmployeeVoting';
 import ManageEmployeeVoting from '../components/ManageEmployeeVoting';
 import { fetchEmployees, createEmployee, updateEmployee, deleteEmployee } from '../services/employee';
 import PrintButton from '../components/reusable/Print';
-import {usePermissionLogger} from "../utils/permissionLogger.js";
-import axiosInstance from '../utils/axiosInstance';
+
 function Employee() {
-  const [loading1, setLoading1] = useState(true);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const { isDarkMode } = useTheme();
@@ -29,28 +26,14 @@ function Employee() {
   const [employeesData, setEmployeesData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 5;
-  const logPermissions = usePermissionLogger('contracts')
-  const [permissions, setPermissions] = useState({
-    canCreate: false,
-    canRead: false,
-    canUpdate: false,
-    canDelete: false
-  })
-  const fetchPermissions = async ()=> {
-    await setLoading1(true)
-    const currentPermissions =await logPermissions();
-    await setPermissions(currentPermissions);
-    await setLoading1(false);
-  }
-  useEffect(() => {
-    fetchPermissions();
-    const fetchEmployeesData = async () => {
-      await setLoading(true);
-      try {
 
+  useEffect(() => {
+    const fetchEmployeesData = async () => {
+      try {
+        setLoading(true);
         const employees = await fetchEmployees();
         console.log('Fetched employees:', employees); // Debugging line
-        await setEmployeesData(employees);
+        setEmployeesData(employees);
       } catch (error) {
         toast.error('Failed to load employees');
       } finally {
@@ -90,15 +73,6 @@ function Employee() {
   );
 
   const totalPages = Math.ceil(filteredData.length / rowsPerPage);
-
-  if(loading1) {
-    return(
-        <div className="flex animate-spin animate justify-center items-center h-screen">
-          <Loader2/>
-        </div>
-    )
-
-  }
 
   const handleAddEmployee = async (newEmployee) => {
     try {
@@ -159,13 +133,8 @@ function Employee() {
   };
 
   const renderEmployeeDetails = (employee) => {
-    if (!employee) return null; // Ensure employee is not null
-  
-    // Check if passportPicture is available and log the image path
-    // if (employee.photo_passport) {
-    //   console.log('Image path:', `${axiosInstance.defaults.baseURL}${employee.photo_passport}`);
-    // }
-  
+    if (!employee) return null;
+
     return (
       <div className="grid grid-cols-2 gap-6">
         {/* Personal Information */}
@@ -173,17 +142,13 @@ function Employee() {
           <h3 className="font-medium text-lg border-b pb-2">Personal Information</h3>
           
           <div className="mb-4">
-            {employee.photo_passport ? (
-              <img 
-                src={`${axiosInstance.defaults.baseURL}${employee.photo_passport}`} 
-                alt={`${employee.firstname} ${employee.lastname}`}
-                className="w-32 h-32 rounded-lg object-cover"
-              />
-            ) : (
-              <p>No passport picture available</p>
-            )}
+            <img 
+              src={employee.passportPicture || `https://dashboard.codeparrot.ai/api/assets/Z0q__nFEV176CUaS=${employee.id}&w=128&h=128`} 
+              alt={employee.names}
+              className="w-32 h-32 rounded-lg object-cover"
+            />
           </div>
-  
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm text-gray-500">Employee ID</label>
@@ -194,7 +159,7 @@ function Employee() {
               <p className="font-medium">{employee.firstname} {employee.lastname}</p>
             </div>
           </div>
-  
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm text-gray-500">Start Date</label>
@@ -213,7 +178,7 @@ function Employee() {
               </p>
             </div>
           </div>
-  
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm text-gray-500">Email</label>
@@ -224,13 +189,13 @@ function Employee() {
               <p className="font-medium">{employee.phone}</p>
             </div>
           </div>
-  
+
           <div>
             <label className="text-sm text-gray-500">National ID</label>
             <p className="font-medium">{employee.nationalId}</p>
           </div>
         </div>
-  
+
         {/* Employment Details */}
         <div className="space-y-4">
           <h3 className="font-medium text-lg border-b pb-2">Employment Details</h3>
@@ -245,13 +210,13 @@ function Employee() {
               <p className="font-medium">{employee.employee_type}</p>
             </div>
           </div>
-  
+
           <div>
             <label className="text-sm text-gray-500">Supervisor</label>
             <p className="font-medium">{employee.supervisor}</p>
           </div>
         </div>
-  
+
         {/* Address Information */}
         <div className="space-y-4">
           <h3 className="font-medium text-lg border-b pb-2">Address Information</h3>
@@ -266,7 +231,7 @@ function Employee() {
               <p className="font-medium">{employee.address_district}</p>
             </div>
           </div>
-  
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm text-gray-500">Sector</label>
@@ -277,13 +242,13 @@ function Employee() {
               <p className="font-medium">{employee.address_cell}</p>
             </div>
           </div>
-  
+
           <div>
             <label className="text-sm text-gray-500">Village</label>
             <p className="font-medium">{employee.address_village}</p>
           </div>
         </div>
-  
+
         {/* Emergency Contact */}
         <div className="space-y-4">
           <h3 className="font-medium text-lg border-b pb-2">Emergency Contact</h3>
@@ -298,7 +263,7 @@ function Employee() {
               <p className="font-medium">{employee.person_of_contact_relationship}</p>
             </div>
           </div>
-  
+
           <div>
             <label className="text-sm text-gray-500">Contact Phone</label>
             <p className="font-medium">{employee.person_of_contact_phone}</p>
@@ -307,7 +272,7 @@ function Employee() {
       </div>
     );
   };
-  
+
   const renderContent = () => {
     switch (activeTab) {
       case 'all':
@@ -358,15 +323,12 @@ function Employee() {
                   />
                 </svg>
               </div>
-              {permissions.canCreate && (
-                  <Button
-                      onClick={() => setIsAddModalOpen(true)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    Add Employee
-                  </Button>
-              )}
-
+              <Button
+                onClick={() => setIsAddModalOpen(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Add Employee
+              </Button>
             </div>
 
             {/* Employee Count */}
@@ -418,31 +380,27 @@ function Employee() {
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
-                            {permissions.canUpdate && (
-                                <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    onClick={() => handleEdit(employee)}
-                                >
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                            )}
-
-                            {/*<Button*/}
-                            {/*  size="icon"*/}
-                            {/*  variant="ghost"*/}
-                            {/*  onClick={() => handleDownload(employee)}*/}
-                            {/*>*/}
-                            {/*  <Download className="h-4 w-4" />*/}
-                            {/*</Button>*/}
-                            {permissions.canDelete && (<Button
-                                size="icon"
-                                variant="ghost"
-                                onClick={() => handleDelete(employee)}
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => handleEdit(employee)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => handleDownload(employee)}
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => handleDelete(employee)}
                             >
                               <Trash2 className="h-4 w-4 text-red-500" />
-                            </Button>)}
-
+                            </Button>
                           </div>
                         </td>
                       </tr>
@@ -495,7 +453,14 @@ function Employee() {
     }
   };
 
-
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <p className="mt-2 text-gray-600">Loading employee data...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">

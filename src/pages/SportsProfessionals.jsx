@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {Plus, Edit, Trash2, AlertCircle, Eye, PencilLine, Search, Loader2} from 'lucide-react';
+import { Plus, Edit, Trash2, AlertCircle, Eye, PencilLine, Search } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import PageLoading from '../components/ui/PageLoading';
 import Message from '../components/ui/Message';
@@ -10,19 +10,8 @@ import Modal from '../components/ui/Modal';
 import AddSportsProfessionalForm from '../components/forms/AddSportsProfessionalForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 import PrintButton from '../components/reusable/Print';
-import {usePermissionLogger} from "../utils/permissionLogger.js";
 
 const SportsProfessionals = () => {
-
-  const logPermissions = usePermissionLogger('SPORTS_PROFESSIONALS')
-
-  const[permissions, setPermissions] = useState({
-    canCreate: false,
-    canRead: false,
-    canUpdate: false,
-    canDelete: false
-  })
-  const [loading, setLoading] = useState(true);
   const [professionals, setProfessionals] = useState([]);
   const [disciplines, setDisciplines] = useState([]);
   const [functions, setFunctions] = useState([]);
@@ -56,19 +45,9 @@ const SportsProfessionals = () => {
   const [viewingDiscipline, setViewingDiscipline] = useState(null);
   const [viewingFunction, setViewingFunction] = useState(null);
 
-
-  const fetchPermissions = async ()=> {
-    setLoading(true);
-    const currentPermissions =await logPermissions();
-    await setPermissions(currentPermissions);
-    setLoading(false);
-  }
-
   useEffect(() => {
-    fetchPermissions();
     const fetchDisciplines = async () => {
       try {
-
         setIsLoading(true);
         const response = await axiosInstance.get('/disciplines');
         setDisciplines(response.data);
@@ -79,7 +58,6 @@ const SportsProfessionals = () => {
         toast.error('Error fetching disciplines');
       }
     };
-
 
     const fetchFunctions = async () => {
       try {
@@ -93,7 +71,6 @@ const SportsProfessionals = () => {
         toast.error('Error fetching functions');
       }
     };
-
 
     const fetchProfessionals = async () => {
       try {
@@ -112,7 +89,6 @@ const SportsProfessionals = () => {
     fetchFunctions();
     fetchProfessionals();
   }, []);
-
 
   useEffect(() => {
     const filterData = () => {
@@ -144,16 +120,6 @@ const SportsProfessionals = () => {
     filterData();
   }, [searchTerm, activeTab, professionals, disciplines, functions]);
 
-
-  if(loading) {
-    return(
-        <div className="flex animate-spin animate justify-center items-center h-screen">
-          <Loader2/>
-        </div>
-    )
-
-  }
-
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const getCurrentPageData = (data) => {
@@ -161,7 +127,6 @@ const SportsProfessionals = () => {
     const indexOfFirstRow = indexOfLastRow - rowsPerPage;
     return data.slice(indexOfFirstRow, indexOfLastRow);
   };
-
 
   const handleAddDiscipline = async () => {
     try {
@@ -204,7 +169,6 @@ const SportsProfessionals = () => {
       toast.error('Error deleting discipline');
     }
   };
-
 
   const handleAddFunction = async () => {
     try {
@@ -266,17 +230,35 @@ const SportsProfessionals = () => {
         return;
       }
 
-      // Format the data according to API requirements
-      const payload = {
-        firstName: professionalData.firstName.trim(),
-        lastName: professionalData.lastName.trim(),
-        function: professionalData.function.trim(),
-        nationality: professionalData.nationality.trim(),
-        // Add any other required fields your API expects
-      };
+      // Create a FormData object to handle file uploads
+      const formData = new FormData();
+      formData.append('firstName', professionalData.firstName.trim());
+      formData.append('lastName', professionalData.lastName.trim());
+      formData.append('function', professionalData.function.trim());
+      formData.append('nationality', professionalData.nationality.trim());
+      formData.append('idPassportNo', professionalData.idPassportNo || '');
+      formData.append('dateOfBirth', professionalData.dateOfBirth || '');
+      formData.append('gender', professionalData.gender || '');
+      formData.append('maritalStatus', professionalData.maritalStatus || '');
+      formData.append('region', professionalData.region || '');
+      formData.append('discipline', professionalData.discipline || '');
+      formData.append('license', professionalData.license || '');
+      formData.append('otherNationality', professionalData.otherNationality || '');
+      formData.append('placeOfResidence', professionalData.placeOfResidence || '');
+      formData.append('placeOfBirth', professionalData.placeOfBirth || '');
+      formData.append('fitnessStatus', professionalData.fitnessStatus || '');
+      formData.append('levelOfEducation', professionalData.levelOfEducation || '');
+      formData.append('periodOfExperience', professionalData.periodOfExperience || '');
+      formData.append('status', professionalData.status || '');
+      formData.append('resume', professionalData.resume || '');
+      formData.append('passportPicture', professionalData.passportPicture || '');
 
-      const response = await axiosInstance.post('/official-referees', payload);
-      
+      const response = await axiosInstance.post('/official-referees', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
       if (response.data) {
         setProfessionals((prevState) => [...prevState, response.data]);
         setFilteredProfessionals((prevState) => [...prevState, response.data]);
@@ -291,7 +273,35 @@ const SportsProfessionals = () => {
 
   const handleEditProfessional = async (professionalData) => {
     try {
-      const response = await axiosInstance.put(`/official-referees/${editingProfessional.id}`, professionalData);
+      // Create a FormData object to handle file uploads
+      const formData = new FormData();
+      formData.append('firstName', professionalData.firstName.trim());
+      formData.append('lastName', professionalData.lastName.trim());
+      formData.append('function', professionalData.function.trim());
+      formData.append('nationality', professionalData.nationality.trim());
+      formData.append('idPassportNo', professionalData.idPassportNo || '');
+      formData.append('dateOfBirth', professionalData.dateOfBirth || '');
+      formData.append('gender', professionalData.gender || '');
+      formData.append('maritalStatus', professionalData.maritalStatus || '');
+      formData.append('region', professionalData.region || '');
+      formData.append('discipline', professionalData.discipline || '');
+      formData.append('license', professionalData.license || '');
+      formData.append('otherNationality', professionalData.otherNationality || '');
+      formData.append('placeOfResidence', professionalData.placeOfResidence || '');
+      formData.append('placeOfBirth', professionalData.placeOfBirth || '');
+      formData.append('fitnessStatus', professionalData.fitnessStatus || '');
+      formData.append('levelOfEducation', professionalData.levelOfEducation || '');
+      formData.append('periodOfExperience', professionalData.periodOfExperience || '');
+      formData.append('status', professionalData.status || '');
+      formData.append('resume', professionalData.resume || '');
+      formData.append('passportPicture', professionalData.passportPicture || '');
+
+      const response = await axiosInstance.put(`/official-referees/${editingProfessional.id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
       setProfessionals((prevState) =>
         prevState.map((p) => (p.id === editingProfessional.id ? response.data : p))
       );
@@ -317,8 +327,6 @@ const SportsProfessionals = () => {
     }
   };
 
-
-
   const renderDisciplineRow = (discipline) => (
     <TableRow key={discipline.id}>
       <TableCell>{discipline.name}</TableCell>
@@ -332,39 +340,37 @@ const SportsProfessionals = () => {
           >
             <Eye className="w-4 h-4" />
           </button>
-          {permissions.canUpdate && ( <button
-              onClick={() => {
-                setEditingDiscipline(discipline);
-                setDisciplineForm({ name: discipline.name, type: discipline.type });
-              }}
-              className="p-2 text-gray-900 hover:bg-gray-100 rounded-md focus:outline-none"
-              title="Edit Discipline"
+          <button
+            onClick={() => {
+              setEditingDiscipline(discipline);
+              setDisciplineForm({ name: discipline.name, type: discipline.type });
+            }}
+            className="p-2 text-gray-900 hover:bg-gray-100 rounded-md focus:outline-none"
+            title="Edit Discipline"
           >
             <PencilLine className="w-4 h-4" />
-          </button>)}
-
-          {permissions.canDelete && (<button
-              onClick={() => {
-                setItemToDelete(discipline);
-                setDeleteModalOpen(true);
-              }}
-              className="p-2 text-red-500 hover:bg-red-100 rounded-md focus:outline-none"
-              title="Delete Discipline"
+          </button>
+          <button
+            onClick={() => {
+              setItemToDelete(discipline);
+              setDeleteModalOpen(true);
+            }}
+            className="p-2 text-red-500 hover:bg-red-100 rounded-md focus:outline-none"
+            title="Delete Discipline"
           >
-            <Trash2 className="w-4 h-4"/>
-          </button>)}
-
+            <Trash2 className="w-4 h-4" />
+          </button>
         </div>
       </TableCell>
     </TableRow>
   );
 
   const renderFunctionRow = (func) => (
-      <TableRow key={func.id}>
-        <TableCell>{func.name}</TableCell>
-        <TableCell>{disciplines.find((d) => d.id === func.disciplineId)?.name}</TableCell>
-        <TableCell className="operation">
-          <div className="flex items-center gap-2">
+    <TableRow key={func.id}>
+      <TableCell>{func.name}</TableCell>
+      <TableCell>{disciplines.find((d) => d.id === func.disciplineId)?.name}</TableCell>
+      <TableCell className="operation">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => setViewingFunction(func)}
             className="p-2 text-gray-900 hover:bg-gray-100 rounded-md focus:outline-none"
@@ -372,36 +378,30 @@ const SportsProfessionals = () => {
           >
             <Eye className="w-4 h-4" />
           </button>
-          {permissions.canUpdate && (<button
-              onClick={() => {
-                setEditingFunction(func);
-                setFunctionForm({name: func.name, disciplineId: func.disciplineId});
-              }}
-              className="p-2 text-gray-900 hover:bg-gray-100 rounded-md focus:outline-none"
-              title="Edit Function"
+          <button
+            onClick={() => {
+              setEditingFunction(func);
+              setFunctionForm({ name: func.name, disciplineId: func.disciplineId });
+            }}
+            className="p-2 text-gray-900 hover:bg-gray-100 rounded-md focus:outline-none"
+            title="Edit Function"
           >
-            <PencilLine className="w-4 h-4"/>
-          </button>)}
-          {permissions.canDelete && (
-              <button
-                  onClick={() => {
-                    setItemToDelete(func);
-                    setDeleteModalOpen(true);
-                  }}
-                  className="p-2 text-red-500 hover:bg-red-100 rounded-md focus:outline-none"
-                  title="Delete Function"
-              >
-                <Trash2 className="w-4 h-4"/>
-              </button>
-
-          )}
-
+            <PencilLine className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => {
+              setItemToDelete(func);
+              setDeleteModalOpen(true);
+            }}
+            className="p-2 text-red-500 hover:bg-red-100 rounded-md focus:outline-none"
+            title="Delete Function"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
         </div>
       </TableCell>
     </TableRow>
   );
-
-
 
   const renderProfessionalRow = (professional) => (
     <TableRow key={professional.id}>
@@ -420,44 +420,40 @@ const SportsProfessionals = () => {
           >
             <Eye className="w-4 h-4" />
           </button>
-          {permissions.canUpdate && (
-              <button
-                  onClick={() => {
-                    setEditingProfessional(professional);
-                    setAddingProfessional(true);
-                  }}
-                  className="p-2 text-gray-900 hover:bg-gray-100 rounded-md focus:outline-none"
-                  title="Edit Professional"
-              >
-                <PencilLine className="w-4 h-4"/>
-              </button>
-          )}
-
-          {permissions.canDelete && (<button
-              onClick={() => {
-                setItemToDelete(professional);
-                setDeleteModalOpen(true);
-              }}
-              className="p-2 text-red-500 hover:bg-red-100 rounded-md focus:outline-none"
-              title="Delete Professional"
+          <button
+            onClick={() => {
+              setEditingProfessional(professional);
+              setAddingProfessional(true);
+            }}
+            className="p-2 text-gray-900 hover:bg-gray-100 rounded-md focus:outline-none"
+            title="Edit Professional"
           >
-            <Trash2 className="w-4 h-4"/>
-          </button>)}
-
+            <PencilLine className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => {
+              setItemToDelete(professional);
+              setDeleteModalOpen(true);
+            }}
+            className="p-2 text-red-500 hover:bg-red-100 rounded-md focus:outline-none"
+            title="Delete Professional"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
         </div>
       </TableCell>
     </TableRow>
   );
 
   return (
-      <div className="p-6 bg-gray-50">
-        {message && (
-            <Message type={message.type} message={message.text} onClose={() => setMessage(null)}/>
-        )}
+    <div className="p-6 bg-gray-50">
+      {message && (
+        <Message type={message.type} message={message.text} onClose={() => setMessage(null)} />
+      )}
 
-        {/* Navigation Tabs */}
-        <div className="mb-6 overflow-x-auto">
-          <nav className="flex space-x-4 min-w-max">
+      {/* Navigation Tabs */}
+      <div className="mb-6 overflow-x-auto">
+        <nav className="flex space-x-4 min-w-max">
           {['Professionals', 'Disciplines', 'Functions'].map((tab) => (
             <button
               key={tab}
@@ -479,19 +475,16 @@ const SportsProfessionals = () => {
 
       {/* Search and Add Button Section */}
       <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
-        {
-          permissions.canCreate && ( <Button
-                onClick={() => activeTab === 'Professionals' ? setAddingProfessional(true) :
-                    activeTab === 'Disciplines' ? setAddingDiscipline(true) :
-                        setAddingFunction(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Add {activeTab === 'Professionals' ? 'Professional' :
-                activeTab === 'Disciplines' ? 'Discipline' : 'Function'}
-            </Button>)
-        }
-
+        <Button 
+          onClick={() => activeTab === 'Professionals' ? setAddingProfessional(true) : 
+                        activeTab === 'Disciplines' ? setAddingDiscipline(true) : 
+                        setAddingFunction(true)} 
+          className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+        >
+          <Plus className="h-4 w-4" />
+          Add {activeTab === 'Professionals' ? 'Professional' : 
+               activeTab === 'Disciplines' ? 'Discipline' : 'Function'}
+        </Button>
 
         <div className="flex flex-col sm:flex-row gap-4 items-center">
           <div className="relative flex-1 sm:flex-none">
@@ -639,14 +632,16 @@ const SportsProfessionals = () => {
               {/* Discipline Type */}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">Type</label>
-                <input
-                  type="text"
+                <select
                   className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={disciplineForm.type}
                   onChange={(e) => setDisciplineForm({ ...disciplineForm, type: e.target.value })}
                   required
-                  placeholder="Enter discipline type"
-                />
+                >
+                  <option value="">Select discipline type</option>
+                  <option value="Sports">Sports</option>
+                  <option value="Culture">Culture</option>
+                </select>
               </div>
 
               {/* Save Button */}

@@ -25,6 +25,7 @@ export function MatchOperatorProvider({ children }) {
     const fetchMatches = async () => {
       try {
         const data = await matchOperatorService.getMatches();
+        console.log('Fetched matches:', data); // Log fetched matches
         setMatches(data);
       } catch (error) {
         console.error('Error fetching matches:', error);
@@ -37,7 +38,7 @@ export function MatchOperatorProvider({ children }) {
   const checkMatchAvailability = async (matchId) => {
     try {
       const isAvailable = await matchOperatorService.checkMatchAvailability(matchId);
-      // console.log(`Match ${matchId} availability:`, isAvailable); // Log match availability
+      console.log(`Match ${matchId} availability:`, isAvailable); // Log match availability
       return isAvailable;
     } catch (error) {
       console.error('Match availability check failed:', error);

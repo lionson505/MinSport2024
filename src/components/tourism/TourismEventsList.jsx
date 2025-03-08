@@ -18,7 +18,6 @@ import axiosInstance from '../../utils/axiosInstance';
 import { Dialog, Transition } from '@headlessui/react';
 import EditEventModal from '../../components/tourism/EditEventModal'; // Import the EditEventModal component
 import PrintButton from '../reusable/Print';
-import { usePermissionLogger } from '../../utils/permissionLogger.js';
 
 const TourismEventsList = () => {
   const [events, setEvents] = useState([]);
@@ -37,23 +36,12 @@ const TourismEventsList = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false); // State for edit modal
   const [selectedEvent, setSelectedEvent] = useState(null);
   const itemsPerPage = 10;
-  const logPermissions = usePermissionLogger('sports_tourism')
-  const [permissions, setPermissions] = useState({
-    canCreate: false,
-    canRead: false,
-    canUpdate: false,
-    canDelete: false
-  })
 
   const statuses = ['Upcoming', 'Ongoing', 'Completed', 'Cancelled'];
 
   useEffect(() => {
     const fetchEvents = async () => {
-      const currentPermissions =await logPermissions();
-      await setPermissions(currentPermissions);
-      // console.log("perms:", permissions)
       try {
-
         const response = await axiosInstance.get('/sports-tourism-events');
         setEvents(response.data || []);
       } catch (error) {
@@ -114,6 +102,9 @@ const TourismEventsList = () => {
 
   return (
     <div className="space-y-6">
+      {/* Add a header for the table */}
+      <h2 className="text-xl font-semibold mb-4">Tourism Events</h2>
+
       {/* Search and Filter Section */}
       <div className="flex flex-col sm:flex-row justify-between gap-4">
         <div className="relative flex-1">
@@ -142,9 +133,13 @@ const TourismEventsList = () => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
           <div>
             <label className="block text-sm font-medium mb-1">Category</label>
-            <Select
+            <select
               value={filters.category}
-              onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+              onChange={(e) => {
+                console.log('Category selected:', e.target.value);
+                setFilters({ ...filters, category: e.target.value });
+              }}
+              className="w-full p-2 border rounded"
             >
               <option value="">All Categories</option>
               {categories?.map((category) => (
@@ -152,13 +147,17 @@ const TourismEventsList = () => {
                   {category.name}
                 </option>
               )) || <option disabled>No categories available</option>}
-            </Select>
+            </select>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Status</label>
-            <Select
+            <select
               value={filters.status}
-              onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+              onChange={(e) => {
+                console.log('Status selected:', e.target.value);
+                setFilters({ ...filters, status: e.target.value });
+              }}
+              className="w-full p-2 border rounded"
             >
               <option value="">All Statuses</option>
               {statuses.map((status) => (
@@ -166,14 +165,18 @@ const TourismEventsList = () => {
                   {status}
                 </option>
               ))}
-            </Select>
+            </select>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Date</label>
-            <Input
+            <input
               type="date"
               value={filters.date}
-              onChange={(e) => setFilters({ ...filters, date: e.target.value })}
+              onChange={(e) => {
+                console.log('Date selected:', e.target.value);
+                setFilters({ ...filters, date: e.target.value });
+              }}
+              className="w-full p-2 border rounded"
             />
           </div>
         </div>
@@ -188,42 +191,42 @@ const TourismEventsList = () => {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
         <PrintButton title='SPORTS TOURISM'>
           <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Event Name</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Start Date</TableHead>
-              <TableHead>Location</TableHead>
-              <TableHead className="operation">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {paginatedEvents.map((event) => (
-              <TableRow key={event.id}>
-                <TableCell className="font-medium">{event.name}</TableCell>
-                <TableCell>
-                  {categories.find(cat => cat.id === event.categoryId)?.name || 'Unknown Category'}
-                </TableCell>
-                <TableCell>
-                  {isValid(new Date(event.startDate))
-                    ? format(new Date(event.startDate), 'MMM dd, yyyy')
-                    : 'Invalid Date'}
-                </TableCell>
-                <TableCell>{`${event.province}, ${event.district}`}</TableCell>
-                <TableCell className="operation" >
-                  <div className="flex space-x-2">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      title="View Details"
-                      onClick={() => {
-                        setSelectedEvent(event);
-                        setIsViewModalOpen(true);
-                      }}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    {permissions.canUpdate && (<Button
+            <TableHeader>
+              <TableRow>
+                <TableHead>Event Name</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Start Date</TableHead>
+                <TableHead>Location</TableHead>
+                <TableHead className="operation">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {paginatedEvents.map((event) => (
+                <TableRow key={event.id}>
+                  <TableCell className="font-medium">{event.name}</TableCell>
+                  <TableCell>
+                    {categories.find(cat => cat.id === event.categoryId)?.name || 'Unknown Category'}
+                  </TableCell>
+                  <TableCell>
+                    {isValid(new Date(event.startDate))
+                      ? format(new Date(event.startDate), 'MMM dd, yyyy')
+                      : 'Invalid Date'}
+                  </TableCell>
+                  <TableCell>{`${event.province}, ${event.district}`}</TableCell>
+                  <TableCell className="operation" >
+                    <div className="flex space-x-2">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        title="View Details"
+                        onClick={() => {
+                          setSelectedEvent(event);
+                          setIsViewModalOpen(true);
+                        }}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
                         size="sm"
                         variant="ghost"
                         title="Edit"
@@ -231,43 +234,38 @@ const TourismEventsList = () => {
                           setSelectedEvent(event);
                           setIsEditModalOpen(true);
                         }}
-                    >
-                      <Pencil className="h-4 w-4 text-black" />
-                    </Button>)}
-                    {
-                      permissions.canDelete && (
-                            <Button
-                                size="sm"
-                                variant="ghost"
-                                className="text-red-600"
-                                title="Delete"
-                                onClick={() => {
-                                  setSelectedEvent(event);
-                                  setIsDeleteModalOpen(true);
-                                }}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                        )
-                    }
-
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      title="View Calendar"
-                      onClick={() => {
-                        setSelectedEvent(event);
-                        setIsScheduleModalOpen(true);
-                      }}
-                    >
-                      <Calendar className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                      >
+                        <Pencil className="h-4 w-4 text-black" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-red-600"
+                        title="Delete"
+                        onClick={() => {
+                          setSelectedEvent(event);
+                          setIsDeleteModalOpen(true);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        title="View Calendar"
+                        onClick={() => {
+                          setSelectedEvent(event);
+                          setIsScheduleModalOpen(true);
+                        }}
+                      >
+                        <Calendar className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </PrintButton>
        
 
@@ -303,11 +301,11 @@ const TourismEventsList = () => {
                 {/* Banner Section */}
                 {selectedEvent?.banner ? (
                   <div className="mb-4">
-                    {console.log('Banner full path:', `${axiosInstance.defaults.baseURL}${selectedEvent.banner}`)}
+                    {console.log('Banner full path:', `${axiosInstance.defaults.baseURL}/uploads/banners/${selectedEvent.banner}`)}
                     <img 
                       src={`${axiosInstance.defaults.baseURL}/${selectedEvent.banner}`} 
-                      controls 
-                      className="mt-2 w-full rounded-lg"
+                      alt="Event Banner" 
+                      className="w-full h-48 object-cover rounded-lg" 
                     />
                   </div>
                 ) : (

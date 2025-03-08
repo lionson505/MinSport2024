@@ -119,7 +119,7 @@ function EditAcademyStudentModal({ isOpen, onClose, onEdit, studentData, academi
         contact: formData.contact
       };
 
-      // console.log('Sending update data:', updatedData);
+      console.log('Sending update data:', updatedData);
 
       await onEdit(updatedData);
       toast.success('Student updated successfully');

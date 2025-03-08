@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
 import axios from 'axios';
-import {secureStorage} from "../utils/crypto.js";
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://mis.minisports.gov.rw/api';
 
@@ -25,7 +24,7 @@ export function useAuth() {
       localStorage.setItem('token', token);
 
       // Store user data in localStorage
-      await secureStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('user', JSON.stringify(userData));
 
       // Attach token to Axios default headers
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -56,11 +55,10 @@ export function useAuth() {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
       // Fetch user data using the stored user ID
-      const storedUser = await secureStorage.getItem('user');
+      const storedUser = JSON.parse(localStorage.getItem('user'));
       if (storedUser && storedUser.id) {
-        // const response = await axiosAsync.get();
-        const response = await axiosInstance.get(`/users/${storedUser.id}`)
-        await setUser(response.data);
+        const response = await axios.get(`${API_URL}/users/${storedUser.id}`);
+        setUser(response.data);
 
         return response.data;
       } else {
@@ -78,8 +76,6 @@ export function useAuth() {
   const logout = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    localStorage.clear();
-    secureStorage.clear();
     delete axios.defaults.headers.common['Authorization'];
     setUser(null);
   }, []);
@@ -90,18 +86,17 @@ export function useAuth() {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          const storedUser = await secureStorage.getItem('user');
+          const storedUser = JSON.parse(localStorage.getItem('user'));
 
           if (storedUser && storedUser.id) {
-            await setUser(storedUser); // Use the user data from localStorage
+            setUser(storedUser); // Use the user data from localStorage
+            await fetchUser();
+          } else {
+            // If user data is not in localStorage, try fetching it
             await fetchUser();
           }
-          // else {
-          //   // If user data is not in localStorage, try fetching it
-          //   await fetchUser();
-          // }
         } catch (error) {
-          console.error('Error initializing user:', error.data);
+          console.error('Error initializing user:', error);
         }
       }
     };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/input';
-import { Search, Plus, Eye, PencilIcon, Trash2, Loader2 ,AlertTriangle, X } from 'lucide-react';
+import { Search, Plus, Eye, PencilIcon, Trash2, AlertTriangle, X } from 'lucide-react';
 import { Dialog, Transition } from '@headlessui/react';
 import toast from 'react-hot-toast';
 import AddAcademyModal from '../components/AddAcademyModal';
@@ -10,12 +10,10 @@ import EditAcademyModal from '../components/EditAcademyModal';
 import axiosInstance from '../utils/axiosInstance';
 import PrintButton from "../components/reusable/Print";
 import EditAcademyStudentModal from '../components/EditAcademyStudentModal';
-import {usePermissionLogger} from "../utils/permissionLogger.js";
 
 function Academies() {
   const [activeTab, setActiveTab] = useState('manage');
   const [searchTerm, setSearchTerm] = useState('');
-  const [loading, setLoading] = useState(false);
   const [studentSearchTerm, setStudentSearchTerm] = useState('');
   const [entriesPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
@@ -34,14 +32,6 @@ function Academies() {
   const [isEditStudentModalOpen, setIsEditStudentModalOpen] = useState(false);
   const [isDeleteStudentModalOpen, setIsDeleteStudentModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
-  const logPermissions = usePermissionLogger('academies')
-
-  const[permissions, setPermissions] = useState({
-    canCreate: false,
-    canRead: false,
-    canUpdate: false,
-    canDelete: false
-  })
   const [transferData, setTransferData] = useState({
     fromSchool: '',
     student: '',
@@ -50,14 +40,8 @@ function Academies() {
 
   const totalPages = Math.ceil(academies.length / entriesPerPage);
   const studentTotalPages = Math.ceil(students.length / entriesPerPage);
-  const fetchPermissions = async ()=> {
-    setLoading(true);
-    const currentPermissions =await logPermissions();
-    await setPermissions(currentPermissions);
-    setLoading(false);
-  }
+
   useEffect(() => {
-    fetchPermissions();
     fetchAcademies();
     fetchStudents();
   }, []);
@@ -126,14 +110,6 @@ function Academies() {
       toast.error('Failed to delete student');
     }
   };
-
-  if(loading){
-    return <div className="flex animate-spin animate justify-center items-center h-screen">
-      <Loader2 />
-
-    </div>;
-  }
-
 
   const handleEditStudentSubmit = async (updatedData) => {
     try {
@@ -208,7 +184,7 @@ function Academies() {
   const handleTransferSubmit = async (e) => {
     e.preventDefault();
     try {
-      // console.log('Transferring student:', transferData);
+      console.log('Transferring student:', transferData);
       setTransferData({ fromSchool: '', student: '', toSchool: '' });
       toast.success('Student transferred successfully');
     } catch (error) {
@@ -314,16 +290,13 @@ function Academies() {
                 />
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               </div>
-              {permissions.canCreate && (
-                  <Button
-                      onClick={() => setIsAddModalOpen(true)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Academy
-                  </Button>
-              )}
-
+              <Button
+                onClick={() => setIsAddModalOpen(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Academy
+              </Button>
             </div>
 
             <div className="bg-white rounded-lg shadow overflow-x-auto">
@@ -359,29 +332,24 @@ function Academies() {
                           >
                             <Eye className="h-4 w-4 text-black" />
                           </Button>
-                          {permissions.canUpdate && (
-                              <Button
-                                  variant="ghost"
-                                  onClick={() => {
-                                    setSelectedAcademy(academy);
-                                    setIsEditModalOpen(true);
-                                  }}
-                              >
-                                <PencilIcon className="h-4 w-4 text-black" />
-                              </Button>
-                          )}
-                          {permissions.canDelete && (
-                              <Button
-                                  variant="ghost"
-                                  onClick={() => {
-                                    setSelectedAcademy(academy);
-                                    setIsDeleteModalOpen(true);
-                                  }}
-                              >
-                                <Trash2 className="h-4 w-4 text-red-600" />
-                              </Button>
-                          )}
-
+                          <Button
+                            variant="ghost"
+                            onClick={() => {
+                              setSelectedAcademy(academy);
+                              setIsEditModalOpen(true);
+                            }}
+                          >
+                            <PencilIcon className="h-4 w-4 text-black" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            onClick={() => {
+                              setSelectedAcademy(academy);
+                              setIsDeleteModalOpen(true);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 text-red-600" />
+                          </Button>
                         </td>
                       </tr>
                     );
@@ -446,14 +414,13 @@ function Academies() {
                 />
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               </div>
-              {permissions.canCreate && (<Button
-                  onClick={() => setIsAddStudentModalOpen(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
+              <Button
+                onClick={() => setIsAddStudentModalOpen(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Academy Student
-              </Button>)}
-
+              </Button>
             </div>
 
             <div className="bg-white rounded-lg shadow overflow-x-auto">
@@ -492,27 +459,24 @@ function Academies() {
                           >
                             <Eye className="h-4 w-4 text-black" />
                           </Button>
-                          {permissions.canUpdate && (<Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleEditStudent(student)}
-                              className="p-1 h-7 w-7"
-                              title="Edit Student"
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleEditStudent(student)}
+                            className="p-1 h-7 w-7"
+                            title="Edit Student"
                           >
                             <PencilIcon className="h-4 w-4 text-black" />
-                          </Button>)}
-                          {permissions.canDelete && (
-                              <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => handleDeleteStudent(student)}
-                                  className="p-1 h-7 w-7"
-                                  title="Delete Student"
-                              >
-                                <Trash2 className="h-4 w-4 text-red-600" />
-                              </Button>
-                          )}
-
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleDeleteStudent(student)}
+                            className="p-1 h-7 w-7"
+                            title="Delete Student"
+                          >
+                            <Trash2 className="h-4 w-4 text-red-600" />
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -677,9 +641,9 @@ function Academies() {
       <div className="space-y-6">
         {student.photo_passport && (
           <div className="flex justify-center mb-6">
-            {console.log('Student photo full path:', `${axiosInstance.defaults.baseURL}${student.photo_passport}`)}
+            {console.log('Student photo full path:', `${axiosInstance.defaults.baseURL}/uploads/students/${student.photo_passport}`)}
             <img 
-              src={`${axiosInstance.defaults.baseURL}${student.photo_passport}`}
+              src={`${axiosInstance.defaults.baseURL}/uploads/students/${student.photo_passport}`}
               alt="Student Passport"
               className="w-32 h-32 rounded-lg object-cover"
             />

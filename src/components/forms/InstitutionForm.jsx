@@ -149,15 +149,17 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
                   <label className="block text-sm font-medium text-gray-700">
                     Domain
                   </label>
-                  <input
-                    type="text"
+                  <select
                     name="domain"
                     value={values.domain}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     className={inputClassName}
-                    placeholder="Enter domain"
-                  />
+                  >
+                    <option value="">Select Domain</option>
+                    <option value="Sports">Sports</option>
+                    <option value="Culture">Culture</option>
+                  </select>
                   {errors.domain && touched.domain && (
                     <p className="text-sm text-red-500">{errors.domain}</p>
                   )}

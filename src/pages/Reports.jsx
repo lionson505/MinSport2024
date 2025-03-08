@@ -33,7 +33,8 @@ const Reports = () => {
     discipline: '',
     year: new Date().getFullYear(),
     month: '',
-    gender: ''
+    gender: '',
+    search: ''
   });
 
   const [filterOptions, setFilterOptions] = useState({
@@ -103,7 +104,8 @@ const Reports = () => {
       const matchesFederation = !filters.federation || player.federationId === filters.federation;
       const matchesDiscipline = !filters.discipline || player.discipline === filters.discipline;
       const matchesGender = !filters.gender || player.gender === filters.gender;
-      return matchesFederation && matchesDiscipline && matchesGender;
+      const matchesSearch = !filters.search || player.name.toLowerCase().includes(filters.search.toLowerCase());
+      return matchesFederation && matchesDiscipline && matchesGender && matchesSearch;
     });
 
     setStatsData({
@@ -331,6 +333,16 @@ const Reports = () => {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Search</label>
+              <input
+                type="text"
+                placeholder="Search..."
+                className="border rounded p-2 w-full"
+                onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+              />
             </div>
           </div>
         </div>

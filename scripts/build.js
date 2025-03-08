@@ -26,7 +26,7 @@ async function buildApp() {
     await fs.copy('public', 'dist/public');
     await fs.copy('.env.production', 'dist/.env');
 
-    // console.log('Build completed successfully!');
+    console.log('Build completed successfully!');
   } catch (error) {
     console.error('Build failed:', error);
     process.exit(1);

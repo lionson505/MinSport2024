@@ -15,6 +15,13 @@ import federationImage from '../../components/liveMatch/federationImgFallBack.pn
 import eventImage from '../../components/liveMatch/eventFallbackImg.jpeg';
 import PublicLayout from '../../components/layouts/PublicLayout.jsx';
 
+// Utility function to strip HTML tags
+const stripHtmlTags = (html) => {
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  return div.textContent || div.innerText || '';
+};
+
 function LandingPage() {
   const [federations, setFederations] = useState([]);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -491,7 +498,7 @@ function LandingPage() {
                             <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
                               <div className="text-xs mb-2">{categories.find(cat => cat.id === event.categoryId)?.name || 'Unknown Category'}</div>
                               <h3 className="font-bold mb-1">{event.name}</h3>
-                              <p className="text-sm text-gray-200">{event.description}</p>
+                              <p className="text-sm text-gray-200">{stripHtmlTags(event.description)}</p>
                             </div>
                           </div>
                         </SwiperSlide>

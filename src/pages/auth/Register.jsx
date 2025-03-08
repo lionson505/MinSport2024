@@ -18,7 +18,7 @@ export default function Register() {
     email: '',
     password: '',
     phoneNumber: '',
-    gender: 'male', // Default value
+    gender: '', // Default value
     reasonForRegistration: '',
     federationId: 0
   });

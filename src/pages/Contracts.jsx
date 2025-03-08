@@ -306,7 +306,9 @@ function Contracts() {
 
         {/* Contracts Table */}
         <div className="bg-white rounded-lg shadow overflow-x-auto">
-          <PrintButton title="">
+          <PrintButton title=""><h2 className="text-lg font-semibold mb-2 text-center" style={{ color: 'black', marginBottom: '10px' }}>
+            Contracts List
+          </h2>
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>

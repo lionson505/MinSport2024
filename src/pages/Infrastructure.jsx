@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {Loader2, Plus} from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import InfrastructureMap from '../components/infrastructure/InfrastructureMap';
 import InfrastructureList from '../components/infrastructure/InfrastructureList';
@@ -10,26 +10,24 @@ import { useDarkMode } from '../contexts/DarkModeContext';
 import CategoryManagementModal from '../components/infrastructure/CategoryManagementModal';
 import axiosInstance from '../utils/axiosInstance';
 import { toast } from 'react-hot-toast';
-import { usePermissionLogger } from '../utils/permissionLogger.js';
 
 const Infrastructure = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [activeTab, setActiveTab] = useState('list');
   const { isDarkMode } = useDarkMode();
-  const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([]);
   const [infrastructure, setInfrastructure] = useState([]);
   const [lastUpdate, setLastUpdate] = useState(Date.now());
-  const logPermissions = usePermissionLogger('infrastructure')
-  const [permissions, setPermissions] = useState({
-    canCreate: false,
-    canRead: false,
-    canUpdate: false,
-    canDelete: false
-  })
 
-
+  useEffect(() => {
+    const fetchData = async () => {
+      await fetchCategories();
+      await fetchInfrastructure();
+    };
+    
+    fetchData();
+  }, [lastUpdate]);
 
   const fetchCategories = async () => {
     try {
@@ -40,9 +38,6 @@ const Infrastructure = () => {
       toast.error('Failed to fetch categories');
     }
   };
-
-
-
 
   const fetchInfrastructure = async () => {
     try {
@@ -65,18 +60,6 @@ const Infrastructure = () => {
       toast.error('Failed to update categories');
     }
   };
-  useEffect(() => {
-    const fetchData = async () => {
-      await setLoading(true);
-      await fetchCategories();
-      await fetchInfrastructure();
-      const currentPermissions = await logPermissions();
-      await  setPermissions(currentPermissions);
-      await setLoading(false);
-    };
-
-    fetchData();
-  }, [lastUpdate]);
 
   const refreshData = async () => {
     try {
@@ -86,14 +69,6 @@ const Infrastructure = () => {
       toast.error('Failed to refresh data');
     }
   };
-  if(loading) {
-    return(
-        <div className="flex animate-spin animate justify-center items-center h-screen">
-          <Loader2/>
-        </div>
-    )
-
-  }
 
   const showAddButton = activeTab === 'list';
 
@@ -117,16 +92,13 @@ const Infrastructure = () => {
               >
                 Manage Categories
               </Button>
-              {permissions.canCreate && (
-                  <Button
-                      onClick={() => setShowAddModal(true)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    <Plus className="h-5 w-5 mr-2" />
-                    Add Infrastructure
-                  </Button>
-              )}
-
+              <Button
+                onClick={() => setShowAddModal(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <Plus className="h-5 w-5 mr-2" />
+                Add Infrastructure
+              </Button>
             </>
           )}
         </div>

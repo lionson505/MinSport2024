@@ -4,9 +4,9 @@ import axiosInstance from '../utils/axiosInstance';
 export const clubApi = {
   getAllClubs: async (filters = {}) => {
     try {
-      // console.log('Fetching clubs with filters:', filters);  // Log filters being passed
+      console.log('Fetching clubs with filters:', filters);  // Log filters being passed
       const response = await axiosInstance.get('/clubs', { params: filters });
-      // console.log('API response:', response.data);  // Log the response from the API
+      console.log('API response:', response.data);  // Log the response from the API
       return response.data;
     } catch (error) {
       console.error('Error fetching clubs:', error);
@@ -18,7 +18,7 @@ export const clubApi = {
   getClubDetails: async (id) => {
     try {
       const response = await axiosInstance.get(`/clubs/${id}`);
-      // console.log('Club details response:', response.data);  // Log the details
+      console.log('Club details response:', response.data);  // Log the details
       return response.data;
     } catch (error) {
       console.error('Error fetching club details:', error);
@@ -30,7 +30,7 @@ export const clubApi = {
   getClubPlayers: async (id) => {
     try {
       const response = await axiosInstance.get(`/clubs/${id}/players`);
-      // console.log('Club players response:', response.data);  // Log the players data
+      console.log('Club players response:', response.data);  // Log the players data
       return response.data;
     } catch (error) {
       console.error('Error fetching club players:', error);

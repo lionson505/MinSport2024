@@ -6,9 +6,11 @@ import axiosInstance from '../../utils/axiosInstance';
 
 const createEmployee = async (data) => {
   try {
+    console.log("Sending JSON data:", data);
+
     const response = await axiosInstance.post('/employees', data, {
       headers: {
-        'Content-Type': 'multipart/form-data', // Use multipart/form-data for file uploads
+        'Content-Type': 'application/json',
       }
     });
     
@@ -28,9 +30,11 @@ const updateEmployee = async (employeeId, data) => {
     throw new Error('Employee ID is required for updates');
   }
   try {
+    console.log('Updating employee with data:', data);
+
     const response = await axiosInstance.put(`/employees/${employeeId}`, data, {
       headers: {
-        'Content-Type': 'multipart/form-data', // Use multipart/form-data for file uploads
+        'Content-Type': 'application/json',
       },
     });
     
@@ -47,7 +51,7 @@ const updateEmployee = async (employeeId, data) => {
 
 const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
   const [formData, setFormData] = useState({
-    photoPassport: null, // Initialize as null for file input
+    photoPassport: '',
     firstName: '',
     lastName: '',
     gender: '',
@@ -69,14 +73,20 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
     contactPhone: '',
   });
 
-  const [loading, setLoading] = useState(false); // New state for loading
-
   useEffect(() => {
     const fetchEmployeeData = async () => {
       if (isEditing && employeeId) {
         try {
           const response = await axiosInstance.get(`/employees/${employeeId}`);
+          console.log('Raw API response:', response.data);
+
           const employeeData = response.data.employee;
+          console.log('Employee data before mapping:', {
+            gender: employeeData.gender,
+            employee_status: employeeData.employee_status,
+            employee_type: employeeData.employee_type,
+            martial_status: employeeData.martial_status
+          });
 
           // Normalize the values to match select options
           const normalizedData = {
@@ -110,6 +120,13 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
             contactPhone: normalizedData.person_of_contact_phone || ''
           });
 
+          console.log('Form data after mapping:', {
+            gender: normalizedData.gender,
+            employeeStatus: normalizedData.employee_status,
+            employeeType: normalizedData.employee_type,
+            maritalStatus: normalizedData.martial_status
+          });
+
         } catch (error) {
           console.error('Error fetching employee data:', error);
           toast.error(`Failed to load employee data: ${error.message}`);
@@ -118,6 +135,21 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
     };
 
     fetchEmployeeData();
+  }, [isEditing, employeeId]);
+
+  // Add a debug effect to monitor form data changes
+  useEffect(() => {
+    if (isEditing) {
+      console.log('Current form data:', formData);
+    }
+  }, [formData, isEditing]);
+
+  useEffect(() => {
+    console.log('FormData state updated:', formData);
+  }, [formData]);
+
+  useEffect(() => {
+    console.log('Component props:', { isEditing, employeeId });
   }, [isEditing, employeeId]);
 
   const handleChange = (e) => {
@@ -159,43 +191,50 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); // Set loading to true when request starts
 
     try {
-      const formDataToSend = new FormData();
-      formDataToSend.append('photo_passport', formData.photoPassport);
-      formDataToSend.append('firstname', formData.firstName);
-      formDataToSend.append('lastname', formData.lastName);
-      formDataToSend.append('gender', formData.gender);
-      formDataToSend.append('email', formData.email);
-      formDataToSend.append('phone', formData.phone);
-      formDataToSend.append('martial_status', formData.maritalStatus);
-      formDataToSend.append('address_province', formData.province);
-      formDataToSend.append('address_district', formData.district);
-      formDataToSend.append('address_sector', formData.sector);
-      formDataToSend.append('address_cell', formData.cell);
-      formDataToSend.append('address_village', formData.village);
-      formDataToSend.append('start_date', formData.startDate);
-      formDataToSend.append('employee_status', formData.employeeStatus);
-      formDataToSend.append('employee_type', formData.employeeType);
-      formDataToSend.append('department_supervisor', formData.departmentSupervisor);
-      formDataToSend.append('person_of_contact_firstname', formData.contactFirstName);
-      formDataToSend.append('person_of_contact_lastname', formData.contactLastName);
-      formDataToSend.append('person_of_contact_relationship', formData.relationship);
-      formDataToSend.append('person_of_contact_phone', formData.contactPhone);
+      // Create the data object with the correct field names
+      const dataToSend = {
+        photo_passport: formData.photoPassport || "https://example.com/images/photo.jpg",
+        firstname: formData.firstName,
+        lastname: formData.lastName,
+        gender: formData.gender,
+        email: formData.email,
+        phone: formData.phone,
+        martial_status: formData.maritalStatus,
+        address_province: formData.province,
+        address_district: formData.district,
+        address_sector: formData.sector,
+        address_cell: formData.cell,
+        address_village: formData.village,
+        start_date: formData.startDate,
+        employee_status: formData.employeeStatus,
+        employee_type: formData.employeeType,
+        department_supervisor: formData.departmentSupervisor,
+        person_of_contact_firstname: formData.contactFirstName,
+        person_of_contact_lastname: formData.contactLastName,
+        person_of_contact_relationship: formData.relationship,
+        person_of_contact_phone: formData.contactPhone
+      };
+
+      console.log('Submitting data:', dataToSend);
 
       if (isEditing) {
-        const result = await updateEmployee(employeeId, formDataToSend);
+        const result = await updateEmployee(employeeId, dataToSend);
+        console.log('Update response:', result);
         toast.success('Employee updated successfully!');
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
+           // Add a slight delay before reloading to ensure the toast message is visible
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500); // 1.5 seconds delay
       } else {
-        const result = await createEmployee(formDataToSend);
+        const result = await createEmployee(dataToSend);
+        console.log('Create response:', result);
         toast.success('Employee created successfully!');
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
+           // Add a slight delay before reloading to ensure the toast message is visible
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500); // 1.5 seconds delay
       }
       
       if (typeof onSuccess === 'function') {
@@ -206,8 +245,6 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
       console.error('Form submission error:', error);
       const errorMessage = error.response?.data?.message || error.message || 'An unknown error occurred';
       toast.error(`Failed to ${isEditing ? 'update' : 'create'} employee: ${errorMessage}`);
-    } finally {
-      setLoading(false); // Set loading to false when request completes
     }
   };
   
@@ -274,7 +311,6 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
               <option value="">Select gender</option>
               <option value="male">Male</option>
               <option value="female">Female</option>
-              <option value="other">Other</option>
             </select>
           </div>
           <div>
@@ -404,6 +440,7 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
               <option value="on_leave">On Leave</option>
+              <option value="suspended">Suspended</option>
             </select>
           </div>
           <div>
@@ -419,7 +456,9 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
               <option value="">Select Type</option>
               <option value="full_time">Full-time</option>
               <option value="part_time">Part-time</option>
-              <option value="contract">Contract</option>
+              <option value="contractor">Contractor</option>
+              <option value="intern">Intern</option>
+              <option value="temporary">Temporary</option>
             </select>
           </div>
           <div>
@@ -546,9 +585,8 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
         <button
           type="submit"
           className="bg-blue-600 text-white px-6 py-2 rounded-md"
-          disabled={loading} // Disable button when loading
         >
-          {loading ? 'Processing...' : isEditing ? 'Update' : 'Add'} Employee
+          {isEditing ? 'Update' : 'Add'} Employee
         </button>
       </div>
     </form>
@@ -567,5 +605,6 @@ AddEmployeeForm.defaultProps = {
   employeeId: null,
   onSuccess: () => {}
 };
+
 
 export default AddEmployeeForm;

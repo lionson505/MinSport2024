@@ -19,7 +19,7 @@ function Calendar({
 
   // Define the static event date
   const staticEventDate = new Date(year, month, 15); // 15th of the current month
-  // console.log("Static Event Date:", staticEventDate); // Debugging log
+  console.log("Static Event Date:", staticEventDate); // Debugging log
 
   return (
     <DayPicker

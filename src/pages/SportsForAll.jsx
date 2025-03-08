@@ -6,31 +6,23 @@ import { Input } from '../components/ui/input';
 import AddMassSportModal from '../components/AddMassSportModal';
 import toast from 'react-hot-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
-import {AlertCircle, Pencil, Download, Trash2, AlertTriangle, Eye, X, Loader2} from 'lucide-react';
+import { AlertCircle, Pencil, Download, Trash2, AlertTriangle, Eye, X} from 'lucide-react';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../components/ui/table';
 import { Search, Plus, Filter } from 'lucide-react';
 import PageLoading from '../components/ui/PageLoading';
 import Message from '../components/ui/Message';
 import PrintButton from '../components/reusable/Print';
-import {usePermissionLogger} from "../utils/permissionLogger.js";
 
 function SportsForAll() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false); // Delete modal state
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [massSportsData, setMassSportsData] = useState([]);
   const [sportToEdit, setSportToEdit] = useState(null); // For editing
   const [sportToDelete, setSportToDelete] = useState(null); // For deleting
   const [error, setError] = useState(null);
   const { isDarkMode } = useTheme();
-  const logPermissions = usePermissionLogger("sports_for_all")
-  const [permissions, setPermissions] = useState({
-    canCreate: false,
-    canRead: false,
-    canUpdate: false,
-    canDelete: false
-  })
 
   // Add pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -40,13 +32,7 @@ function SportsForAll() {
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [sportToView, setSportToView] = useState(null);
 
-  const fetchPermissions = async ()=> {
-    const currentPermissions =await logPermissions();
-    await setPermissions(currentPermissions);
-    setLoading(false);
-  }
   useEffect(() => {
-    fetchPermissions();
     const fetchSportsData = async () => {
       try {
         setLoading(true);
@@ -109,12 +95,6 @@ function SportsForAll() {
       setLoading(false);
     }
   };
-  if(loading) {
-    return(<div className="flex animate-spin animate justify-center items-center h-screen">
-      <Loader2/>
-    </div>)
-
-  }
 
   const handleViewSport = (sport) => {
     setSportToView(sport);
@@ -145,18 +125,21 @@ function SportsForAll() {
         {/* Title Section */}
         <h1 className="text-2xl font-bold mb-6">Sports For All Manage</h1>
 
+        {/* Add a header for the table */}
+        <div className="bg-white rounded-lg shadow p-4 mb-6">
+          <h2 className="text-xl font-semibold">Sports Events Overview</h2>
+          <p className="text-gray-600">Here you can manage all the sports events, including adding, editing, and deleting events.</p>
+        </div>
+
         {/* Search and Add Button Section */}
         <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
-          {permissions.canCreate && (
-              <Button
-                  onClick={() => setIsAddModalOpen(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                Add Mass Sport
-              </Button>
-          )}
-
+          <Button
+            onClick={() => setIsAddModalOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Add Mass Sport
+          </Button>
 
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1 sm:flex-none">
@@ -198,7 +181,9 @@ function SportsForAll() {
 
         {/* Sports Table */}
         <div className="bg-white rounded-lg shadow">
-          <PrintButton title='Sports For All Reports' >
+          <PrintButton title='Sports For All Reports' > 
+             <h2 className="text-xl font-semibold">Sports For All List</h2>
+          
           <Table>
             <TableHeader>
               <TableRow>
@@ -225,37 +210,29 @@ function SportsForAll() {
                   <td className="px-4 py-2">{sport.numberFemaleParticipants}</td>
                   <td className="px-4 py-2">{sport.numberMaleParticipants}</td>
                   <td className="px-4 py-2 flex gap-1 operation">
-                    {permissions.canUpdate && (
-                        <button
-                            onClick={() => {
-                              setSportToEdit(sport);
-                              setIsAddModalOpen(true);
-                            }}
-                            className="p-1 rounded-lg hover:bg-gray-100"
-                            title="Edit"
-                        >
-                          <Pencil className="h-4 w-4"/>
-                        </button>
-                    )}
-
-                    {permissions.canDelete && (
-                        <button
-                            onClick={() => handleDeleteSport(sport.id)}
-                            className="p-1 rounded-lg hover:bg-red-50 text-red-600"
-                            title="Delete"
-                        >
-                          <Trash2 className="h-4 w-4"/>
-                        </button>
-
-                    )}
-
-
                     <button
-                        onClick={() => handleViewSport(sport)}
-                        className="p-1 rounded-lg hover:bg-gray-100"
-                        title="View"
+                      onClick={() => {
+                        setSportToEdit(sport);
+                        setIsAddModalOpen(true);
+                      }}
+                      className="p-1 rounded-lg hover:bg-gray-100"
+                      title="Edit"
                     >
-                      <Eye className="h-4 w-4"/>
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteSport(sport.id)}
+                      className="p-1 rounded-lg hover:bg-red-50 text-red-600"
+                      title="Delete"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleViewSport(sport)}
+                      className="p-1 rounded-lg hover:bg-gray-100"
+                      title="View"
+                    >
+                      <Eye className="h-4 w-4" />
                     </button>
                   </td>
                 </TableRow>

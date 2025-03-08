@@ -4,8 +4,6 @@ import axiosInstance from '../../utils/axiosInstance';
 import { locations } from '../../data/locations';
 
 const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
-  const inputClassName = "w-full border rounded px-3 py-2 h-12"; // Define the inputClassName here
-
   const [formData, setFormData] = useState({
     name: '',
     sports_discipline: '',
@@ -35,12 +33,6 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
     { value: 'other', label: 'Other' },
   ];
 
-  const genderOptions = [
-    { value: 'MALE', label: 'Male' },
-    { value: 'FEMALE', label: 'Female' },
-    { value: 'OTHER', label: 'Other' },
-  ];
-  
   useEffect(() => {
     const fetchDisciplines = async () => {
       try {
@@ -105,9 +97,7 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
       updatedAt: new Date().toISOString(),
     };
 
-    if (initialData) {
-      delete payload.createdAt;
-    } else {
+    if (!initialData) {
       payload.createdAt = new Date().toISOString();
     }
   
@@ -123,15 +113,17 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
           headers: { 'Content-Type': 'application/json' },
         });
         toast.success('Data submitted successfully!');
-        window.location.reload(); // Reload the page
       }
       onSubmit(response.data);
     } catch (error) {
       if (error.response) {
         console.error('Error response:', error.response);
         toast.error(`Error: ${error.response.data.message || 'An error occurred'}`);
+      } else if (error.request) {
+        console.error('Error request:', error.request);
+        toast.error('Network error: Unable to reach the server.');
       } else {
-        console.error('Error:', error);
+        console.error('Error:', error.message);
         toast.error('There was an error submitting the form.');
       }
     }
@@ -174,7 +166,7 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
           value={formData.name}
           onChange={handleChange}
           required
-          className={inputClassName}
+          className="w-full border rounded px-3 py-2 h-12"
           placeholder="Enter name"
         />
       </div>
@@ -185,7 +177,7 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
           value={formData.sports_discipline}
           onChange={handleChange}
           required
-          className={inputClassName}
+          className="w-full border rounded px-3 py-2 h-12"
         >
           <option value="">Select Discipline</option>
           {disciplines.map((discipline) => (
@@ -202,7 +194,7 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
           value={formData.legal_status}
           onChange={handleChange}
           required
-          className={inputClassName}
+          className="w-full border rounded px-3 py-2 h-12"
         >
           <option value="">Select Legal Status</option>
           {legalStatusOptions.map((status) => (
@@ -220,7 +212,7 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
           value={formData.business}
           onChange={handleChange}
           required
-          className={inputClassName}
+          className="w-full border rounded px-3 py-2 h-12"
         />
       </div>
       <div>
@@ -230,7 +222,7 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
           value={formData.location_province}
           onChange={handleLocationChange}
           required
-          className={inputClassName}
+          className="w-full border rounded px-3 py-2 h-12"
         >
           <option value="">Select Province</option>
           {locations.provinces.map((province) => (
@@ -250,7 +242,7 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
           value={formData.location_district}
           onChange={handleLocationChange}
           required
-          className={inputClassName}
+          className="w-full border rounded px-3 py-2 h-12"
         >
           <option value="">Select District</option>
           {getDistricts().map((district) => (
@@ -267,7 +259,7 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
           value={formData.location_sector}
           onChange={handleLocationChange}
           required
-          className={inputClassName}
+          className="w-full border rounded px-3 py-2 h-12"
         >
           <option value="">Select Sector</option>
           {getSectors().map((sector) => (
@@ -284,7 +276,7 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
           value={formData.location_cell}
           onChange={handleLocationChange}
           required
-          className={inputClassName}
+          className="w-full border rounded px-3 py-2 h-12"
         >
           <option value="">Select Cell</option>
           {getCells().map((cell) => (
@@ -301,7 +293,7 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
           value={formData.location_village}
           onChange={handleLocationChange}
           required
-          className={inputClassName}
+          className="w-full border rounded px-3 py-2 h-12"
         >
           <option value="">Select Village</option>
           {getVillages().map((village) => (
@@ -319,7 +311,7 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
           value={formData.legal_representative_name}
           onChange={handleChange}
           required
-          className={inputClassName}
+          className="w-full border rounded px-3 py-2 h-12"
         />
       </div>
     </div>,
@@ -332,14 +324,12 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
           value={formData.legal_representative_gender}
           onChange={handleChange}
           required
-          className={inputClassName}
+          className="w-full border rounded px-3 py-2 h-12"
         >
           <option value="">Select Gender</option>
-          {genderOptions.map((gender) => (
-            <option key={gender.value} value={gender.value}>
-              {gender.label}
-            </option>
-          ))}
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other</option>
         </select>
       </div>
       <div>
@@ -350,7 +340,7 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
           value={formData.legal_representative_email}
           onChange={handleChange}
           required
-          className={inputClassName}
+          className="w-full border rounded px-3 py-2 h-12"
         />
       </div>
       <div>
@@ -361,10 +351,13 @@ const AddPartnerForm = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
           value={formData.legal_representative_phone}
           onChange={handleChange}
           required
-          className={inputClassName}
+          className="w-full border rounded px-3 py-2 h-12"
         />
       </div>
-      {/* Add any additional fields if needed */}
+    </div>,
+    // Step 4 (Confirmation or Summary Step)
+    <div key="step4" className="grid grid-cols-1 gap-4">
+      <p>Review your information and click "Save" to submit.</p>
     </div>,
   ];
 

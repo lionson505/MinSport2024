@@ -10,19 +10,19 @@ function AddMassSportModal({ isOpen, onClose, onAdd, sport }) {
   const { isDarkMode } = useTheme();
 
   const [formData, setFormData] = useState({
-    date: "2024-12-11",
-    province: "string",
-    district: "string",
-    sector: "string",
-    cell: "string",
-    village: "string",
+    date: "",
+    province: "",
+    district: "",
+    sector: "",
+    cell: "",
+    village: "",
     rounds: 0,
-    purposeTheam: "string",
+    purposeTheam: "",
     numberFemaleParticipants: 0,
     numberMaleParticipants: 0,
     totalParticipants: 0,
-    organisers: "string",
-    guestOfHonor: "string"
+    organisers: "",
+    guestOfHonor: ""
   });
 
   useEffect(() => {
@@ -30,19 +30,19 @@ function AddMassSportModal({ isOpen, onClose, onAdd, sport }) {
       setFormData(sport);
     } else {
       setFormData({
-        date: "2024-12-11",
-        province: "string",
-        district: "string",
-        sector: "string",
-        cell: "string",
-        village: "string",
+        date: "",
+        province: "",
+        district: "",
+        sector: "",
+        cell: "",
+        village: "",
         rounds: 0,
-        purposeTheam: "string",
+        purposeTheam: "",
         numberFemaleParticipants: 0,
         numberMaleParticipants: 0,
         totalParticipants: 0,
-        organisers: "string",
-        guestOfHonor: "string"
+        organisers: "",
+        guestOfHonor: ""
       });
     }
   }, [sport]);

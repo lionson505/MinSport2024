@@ -165,6 +165,15 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
     }
   };
 
+  const handleChange = (e) => {
+    const { name, value, files } = e.target;
+    if (name === 'passportPicture') {
+      setFormData({ ...formData, [name]: files[0] });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -174,40 +183,50 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
       return;
     }
 
-    const submitData = {
-      idPassportNo: idNumber,
-      passportPicture: nidaData.photo,
-      firstName: nidaData.names.split(' ')[0],
-      lastName: nidaData.names.split(' ')[1] || '',
-      dateOfBirth: nidaData.dateOfBirth,
-      gender: nidaData.gender.toUpperCase(),
-      maritalStatus: formData.maritalStatus,
-      region: formData.region,
-      discipline: formData.discipline,
-      function: formData.function,
-      license: formData.license,
-      nationality: nidaData.nationality,
-      otherNationality: formData.otherNationality,
-      placeOfResidence: formData.placeOfResidence,
-      placeOfBirth: nidaData.placeOfBirth,
-      fitnessStatus: formData.fitnessStatus,
-      levelOfEducation: formData.levelOfEducation,
-      periodOfExperience: formData.periodOfExperience,
-      status: formData.status,
-      resume: formData.resume
-    };
+    const formDataToSubmit = new FormData();
+    formDataToSubmit.append('idPassportNo', idNumber);
+    formDataToSubmit.append('firstName', nidaData.names.split(' ')[0]);
+    formDataToSubmit.append('lastName', nidaData.names.split(' ')[1] || '');
+    formDataToSubmit.append('dateOfBirth', nidaData.dateOfBirth);
+    formDataToSubmit.append('gender', nidaData.gender.toUpperCase());
+    formDataToSubmit.append('maritalStatus', formData.maritalStatus);
+    formDataToSubmit.append('region', formData.region);
+    formDataToSubmit.append('discipline', formData.discipline);
+    formDataToSubmit.append('function', formData.function);
+    formDataToSubmit.append('license', formData.license);
+    formDataToSubmit.append('nationality', nidaData.nationality);
+    formDataToSubmit.append('otherNationality', formData.otherNationality);
+    formDataToSubmit.append('placeOfResidence', formData.placeOfResidence);
+    formDataToSubmit.append('placeOfBirth', nidaData.placeOfBirth);
+    formDataToSubmit.append('fitnessStatus', formData.fitnessStatus);
+    formDataToSubmit.append('levelOfEducation', formData.levelOfEducation);
+    formDataToSubmit.append('periodOfExperience', formData.periodOfExperience);
+    formDataToSubmit.append('status', formData.status);
+    formDataToSubmit.append('resume', formData.resume);
+    formDataToSubmit.append('passportPicture', formData.passportPicture || nidaData.photo);
+
+    // Log the form data to the console
+    for (let [key, value] of formDataToSubmit.entries()) {
+      console.log(key, value);
+    }
 
     try {
       let response;
       if (initialData.id) {
-        // Update existing professional
-        response = await axios.put(`/official-referees/${initialData.id}`, submitData);
+        response = await axios.put(`/official-referees/${initialData.id}`, formDataToSubmit, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
         if (response.data) {
           toast.success('Professional updated successfully');
         }
       } else {
-        // Add new professional
-        response = await axios.post('/official-referees', submitData);
+        response = await axios.post('/official-referees', formDataToSubmit, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
         if (response.data) {
           toast.success('Professional added successfully');
         }
@@ -217,20 +236,14 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
         onSubmit(response.data);
       }
       
-      // Reload the page after successful submission
       window.location.reload();
     } catch (error) {
       console.error('API Error:', error);
-      // More specific error messages based on the error response
       if (error.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
         toast.error(error.response.data?.message || 'Server error occurred');
       } else if (error.request) {
-        // The request was made but no response was received
         toast.error('No response from server. Please check your connection.');
       } else {
-        // Something happened in setting up the request that triggered an Error
         toast.error('An error occurred while preparing the request');
       }
     }
@@ -238,276 +251,294 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
 
   return (
     <div className="max-h-[80vh] overflow-y-auto p-4 space-y-6">
-     <form onSubmit={handleSubmit} className="space-y-6">
-  <div className="p-4 bg-gray-50 rounded-lg space-y-4">
-    <div className="flex gap-4">
-      <label className="flex items-center">
-        <input
-          type="radio"
-          name="idType"
-          value="nid"
-          checked={idType === 'nid'}
-          onChange={(e) => {
-            setIdType(e.target.value);
-            setIdNumber('');
-            setIdError('');
-            setNidaData(null);
-          }}
-          className="mr-2"
-        />
-        National ID
-      </label>
-      <label className="flex items-center">
-        <input
-          type="radio"
-          name="idType"
-          value="passport"
-          checked={idType === 'passport'}
-          onChange={(e) => {
-            setIdType(e.target.value);
-            setIdNumber('');
-            setIdError('');
-            setNidaData(null);
-          }}
-          className="mr-2"
-        />
-        Passport
-      </label>
-    </div>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="p-4 bg-gray-50 rounded-lg space-y-4">
+          <div className="flex gap-4">
+            <label className="flex items-center">
+              <input
+                type="radio"
+                name="idType"
+                value="nid"
+                checked={idType === 'nid'}
+                onChange={(e) => {
+                  setIdType(e.target.value);
+                  setIdNumber('');
+                  setIdError('');
+                  setNidaData(null);
+                }}
+                className="mr-2"
+              />
+              National ID
+            </label>
+            <label className="flex items-center">
+              <input
+                type="radio"
+                name="idType"
+                value="passport"
+                checked={idType === 'passport'}
+                onChange={(e) => {
+                  setIdType(e.target.value);
+                  setIdNumber('');
+                  setIdError('');
+                  setNidaData(null);
+                }}
+                className="mr-2"
+              />
+              Passport
+            </label>
+          </div>
 
-    <div className="flex flex-col gap-4">
-      <div className="flex-1">
-        <label className="block text-sm font-medium mb-1">
-          {idType === 'nid' ? 'National ID Number' : 'Passport Number'}
-        </label>
-        <Input
-          type="text"
-          value={idNumber}
-          onChange={(e) => {
-            setIdNumber(e.target.value);
-            setIdError('');
-          }}
-          className={idError ? 'border-red-500' : ''}
-          placeholder={idType === 'nid' ? 'Enter 16-digit ID number' : 'Enter passport number'}
-        />
-      </div>
+          <div className="flex flex-col gap-4">
+            <div className="flex-1">
+              <label className="block text-sm font-medium mb-1">
+                {idType === 'nid' ? 'National ID Number' : 'Passport Number'}
+              </label>
+              <Input
+                type="text"
+                value={idNumber}
+                onChange={(e) => {
+                  setIdNumber(e.target.value);
+                  setIdError('');
+                }}
+                className={idError ? 'border-red-500' : ''}
+                placeholder={idType === 'nid' ? 'Enter 16-digit ID number' : 'Enter passport number'}
+              />
+            </div>
 
-      {idType === 'passport' && (
-        <div className="flex-1">
-          <label className="block text-sm font-medium mb-1">
-            Passport Expiry Date
-          </label>
-          <Input
-            type="date"
-            value={passportExpiry}
-            onChange={(e) => {
-              setPassportExpiry(e.target.value);
-              setIdError('');
-            }}
-            min={new Date().toISOString().split('T')[0]}
-            className={idError ? 'border-red-500' : ''}
-          />
+            {idType === 'passport' && (
+              <div className="flex-1">
+                <label className="block text-sm font-medium mb-1">
+                  Passport Expiry Date
+                </label>
+                <Input
+                  type="date"
+                  value={passportExpiry}
+                  onChange={(e) => {
+                    setPassportExpiry(e.target.value);
+                    setIdError('');
+                  }}
+                  min={new Date().toISOString().split('T')[0]}
+                  className={idError ? 'border-red-500' : ''}
+                />
+              </div>
+            )}
+
+            <Button
+              type="button"
+              onClick={handleNIDLookup}
+              disabled={isLoadingNIDA || !idNumber || (idType === 'passport' && !passportExpiry)}
+            >
+              {isLoadingNIDA ? 'Verifying...' : 'Verify ID'}
+            </Button>
+          </div>
+
+          {idError && (
+            <p className="text-sm text-red-500 mt-1">{idError}</p>
+          )}
         </div>
-      )}
 
-      <Button
-        type="button"
-        onClick={handleNIDLookup}
-        disabled={isLoadingNIDA || !idNumber || (idType === 'passport' && !passportExpiry)}
-      >
-        {isLoadingNIDA ? 'Verifying...' : 'Verify ID'}
-      </Button>
-    </div>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Passport Picture</label>
+            {idType === 'passport' ? (
+              <input
+                type="file"
+                name="passportPicture"
+                accept="image/*"
+                onChange={handleChange}
+                className="w-full px-3 py-2 border rounded-lg"
+              />
+            ) : (
+              <img
+                src={nidaData?.photo || ''}
+                alt="National ID Photo"
+                className="mt-2 max-w-[200px] rounded-lg border"
+              />
+            )}
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Full Name</label>
+            <Input
+              value={nidaData?.names || ''}
+              readOnly
+              className="bg-gray-50"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Date of Birth</label>
+            <Input
+              value={nidaData?.dateOfBirth || ''}
+              readOnly
+              className="bg-gray-50"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Gender</label>
+            <Input
+              value={nidaData?.gender || ''}
+              readOnly
+              className="bg-gray-50"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Nationality</label>
+            <Input
+              value={nidaData?.nationality || ''}
+              readOnly
+              className="bg-gray-50"
+            />
+          </div>
+        </div>
 
-    {idError && (
-      <p className="text-sm text-red-500 mt-1">{idError}</p>
-    )}
-  </div>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Marital Status</label>
+            <select
+              value={formData.maritalStatus}
+              onChange={(e) => setFormData({ ...formData, maritalStatus: e.target.value })}
+              className={selectClassName}
+            >
+              {maritalStatusOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Region</label>
+            <Input
+              value={formData.region}
+              onChange={(e) => setFormData({ ...formData, region: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Discipline</label>
+            <select
+              value={formData.discipline}
+              onChange={(e) => setFormData({ ...formData, discipline: e.target.value })}
+              className={selectClassName}
+            >
+              <option value="">Select a discipline</option>
+              {disciplines.map((discipline) => (
+                <option key={discipline.id} value={discipline.name}>
+                  {discipline.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">License</label>
+            <Input
+              value={formData.license}
+              onChange={(e) => setFormData({ ...formData, license: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Function</label>
+            <select
+              value={formData.function}
+              onChange={(e) => setFormData({ ...formData, function: e.target.value })}
+              className={selectClassName}
+            >
+              <option value="">Select a function</option>
+              {functions.map((func) => (
+                <option key={func.id} value={func.name}>
+                  {func.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
 
-  <div className="space-y-4">
-    <div>
-      <label className="block text-sm font-medium mb-1">Full Name</label>
-      <Input
-        value={nidaData?.names || ''}
-        readOnly
-        className="bg-gray-50"
-      />
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">Date of Birth</label>
-      <Input
-        value={nidaData?.dateOfBirth || ''}
-        readOnly
-        className="bg-gray-50"
-      />
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">Gender</label>
-      <Input
-        value={nidaData?.gender || ''}
-        readOnly
-        className="bg-gray-50"
-      />
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">Nationality</label>
-      <Input
-        value={nidaData?.nationality || ''}
-        readOnly
-        className="bg-gray-50"
-      />
-    </div>
-  </div>
-
-  <div className="space-y-4">
-    <div>
-      <label className="block text-sm font-medium mb-1">Marital Status</label>
-      <select
-        value={formData.maritalStatus}
-        onChange={(e) => setFormData({ ...formData, maritalStatus: e.target.value })}
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Other Nationality</label>
+            <select
+        value={formData.otherNationality}
+        onChange={(e) => setFormData({ ...formData, otherNationality: e.target.value })}
         className={selectClassName}
       >
-        {maritalStatusOptions.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
+        <option value="">Select a nationality</option>
+        {countries.map((country) => (
+          <option key={country} value={country}>
+            {country}
           </option>
         ))}
       </select>
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">Region</label>
-      <Input
-        value={formData.region}
-        onChange={(e) => setFormData({ ...formData, region: e.target.value })}
-      />
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">Discipline</label>
-      <select
-        value={formData.discipline}
-        onChange={(e) => setFormData({ ...formData, discipline: e.target.value })}
-        className={selectClassName}
-      >
-        <option value="">Select a discipline</option>
-        {disciplines.map((discipline) => (
-          <option key={discipline.id} value={discipline.name}>
-            {discipline.name}
-          </option>
-        ))}
-      </select>
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">License</label>
-      <Input
-        value={formData.license}
-        onChange={(e) => setFormData({ ...formData, license: e.target.value })}
-      />
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">Function</label>
-      <select
-        value={formData.function}
-        onChange={(e) => setFormData({ ...formData, function: e.target.value })}
-        className={selectClassName}
-      >
-        <option value="">Select a function</option>
-        {functions.map((func) => (
-          <option key={func.id} value={func.name}>
-            {func.name}
-          </option>
-        ))}
-      </select>
-    </div>
-  </div>
 
-  <div className="space-y-4">
-    <div>
-      <label className="block text-sm font-medium mb-1">Other Nationality</label>
-      <select
-  value={formData.otherNationality}
-  onChange={(e) => setFormData({ ...formData, otherNationality: e.target.value })}
-  className={selectClassName}
->
-  <option value="">Select a nationality</option>
-  {countries.map((country) => (
-    <option key={country} value={country}>
-      {country}
-    </option>
-  ))}
-</select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Place of Residence</label>
+            <Input
+              value={formData.placeOfResidence}
+              onChange={(e) => setFormData({ ...formData, placeOfResidence: e.target.value })}
+              placeholder="Enter place of residence"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Fitness Status</label>
+            <select
+              value={formData.fitnessStatus}
+              onChange={(e) => setFormData({ ...formData, fitnessStatus: e.target.value })}
+              className={selectClassName}
+            >
+              {fitnessStatusOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Level of Education</label>
+            <select
+              value={formData.levelOfEducation}
+              onChange={(e) => setFormData({ ...formData, levelOfEducation: e.target.value })}
+              className={selectClassName}
+            >
+              {educationLevelOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Period of Experience</label>
+            <Input
+              value={formData.periodOfExperience}
+              onChange={(e) => setFormData({ ...formData, periodOfExperience: e.target.value })}
+              placeholder="Enter period of experience"
+            />
+          </div>
+        </div>
 
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">Place of Residence</label>
-      <Input
-        value={formData.placeOfResidence}
-        onChange={(e) => setFormData({ ...formData, placeOfResidence: e.target.value })}
-        placeholder="Enter place of residence"
-      />
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">Fitness Status</label>
-      <select
-        value={formData.fitnessStatus}
-        onChange={(e) => setFormData({ ...formData, fitnessStatus: e.target.value })}
-        className={selectClassName}
-      >
-        {fitnessStatusOptions.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">Level of Education</label>
-      <select
-        value={formData.levelOfEducation}
-        onChange={(e) => setFormData({ ...formData, levelOfEducation: e.target.value })}
-        className={selectClassName}
-      >
-        {educationLevelOptions.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">Period of Experience</label>
-      <Input
-        value={formData.periodOfExperience}
-        onChange={(e) => setFormData({ ...formData, periodOfExperience: e.target.value })}
-        placeholder="Enter period of experience"
-      />
-    </div>
-  </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Resume</label>
+          <Input
+            type="file"
+            accept=".pdf,.doc,.docx"
+            onChange={(e) => {
+              const fileName = e.target.files[0]?.name || '';
+              setFormData({ ...formData, resume: fileName });
+            }}
+          />
+          {formData.resume && (
+            <p className="text-sm text-gray-600 mt-1">Selected file: {formData.resume}</p>
+          )}
+        </div>
 
-  <div>
-    <label className="block text-sm font-medium mb-1">Resume</label>
-    <Input
-      type="file"
-      accept=".pdf,.doc,.docx"
-      onChange={(e) => {
-        const fileName = e.target.files[0]?.name || '';
-        setFormData({ ...formData, resume: fileName });
-      }}
-    />
-    {formData.resume && (
-      <p className="text-sm text-gray-600 mt-1">Selected file: {formData.resume}</p>
-    )}
-  </div>
-
-  <div className="flex gap-4 justify-end">
-    <Button type="button" onClick={onCancel}>Cancel</Button>
-    <Button type="submit" disabled={isSubmitting}>
-      {initialData.id ? 'Update' : 'Submit'}
-    </Button>
-  </div>
-</form>
-
+        <div className="flex gap-4 justify-end">
+          <Button type="button" onClick={onCancel}>Cancel</Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {initialData.id ? 'Update' : 'Submit'}
+          </Button>
+        </div>
+      </form>
     </div>
   );
 };
 
 export default AddSportsProfessionalForm;
+

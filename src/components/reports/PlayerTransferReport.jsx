@@ -10,7 +10,6 @@ import {
 import { Search, Filter, X, Download, FileText } from 'lucide-react';
 import { useDarkMode } from '../../contexts/DarkModeContext';
 import axiosInstance from '../../utils/axiosInstance';
-import PrintButton from "../reusable/Print.jsx";
 
 const PlayerTransferReport = () => {
   const { isDarkMode } = useDarkMode();
@@ -102,7 +101,7 @@ const PlayerTransferReport = () => {
 
   const handleExport = (format) => {
     // Implement export functionality (CSV, PDF, etc.)
-    // console.log(`Exporting in ${format} format`);
+    console.log(`Exporting in ${format} format`);
   };
 
   const inputClasses = `w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
@@ -310,14 +309,28 @@ const PlayerTransferReport = () => {
                   <option value="100">100</option>
                 </select>
               </div>
-
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => handleExport('csv')}
+                  className="flex items-center space-x-1 px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
+                >
+                  <FileText className="h-4 w-4" />
+                  <span>CSV</span>
+                </button>
+                <button
+                  onClick={() => handleExport('pdf')}
+                  className="flex items-center space-x-1 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                >
+                  <Download className="h-4 w-4" />
+                  <span>PDF</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Table */}
         <div className="overflow-x-auto">
-          <PrintButton>
           <Table>
             <TableHeader>
               <TableRow>
@@ -352,7 +365,6 @@ const PlayerTransferReport = () => {
               ))}
             </TableBody>
           </Table>
-          </PrintButton>
         </div>
       </div>
     </div>
