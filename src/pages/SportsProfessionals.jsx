@@ -45,6 +45,8 @@ const SportsProfessionals = () => {
   const [viewingDiscipline, setViewingDiscipline] = useState(null);
   const [viewingFunction, setViewingFunction] = useState(null);
 
+  const [passportImage, setPassportImage] = useState(null);
+
   useEffect(() => {
     const fetchDisciplines = async () => {
       try {
@@ -267,7 +269,7 @@ const SportsProfessionals = () => {
       }
     } catch (error) {
       console.error('Error adding professional:', error.response?.data || error.message);
-      toast.error(error.response?.data?.message || 'Error adding professional. Please check all fields and try again.');
+      // toast.error(error.response?.data?.message || 'Error adding professional. Please check all fields and try again.');
     }
   };
 
@@ -324,6 +326,17 @@ const SportsProfessionals = () => {
       setDeleteModalOpen(false);
     } catch (error) {
       toast.error('Error deleting professional');
+    }
+  };
+
+  const fetchPassportImage = async (imageUrl) => {
+    try {
+      const response = await axiosInstance.get(imageUrl, { responseType: 'blob' });
+      const imageObjectURL = URL.createObjectURL(response.data);
+      setPassportImage(imageObjectURL);
+    } catch (error) {
+      console.error('Error fetching passport image:', error);
+      toast.error('Error fetching passport image');
     }
   };
 
@@ -414,6 +427,9 @@ const SportsProfessionals = () => {
           <button
             onClick={() => {
               setViewingProfessional(professional);
+              if (professional.passportPicture) {
+                fetchPassportImage(professional.passportPicture);
+              }
             }}
             className="p-2 text-gray-900 hover:bg-gray-100 rounded-md focus:outline-none"
             title="View Professional"
@@ -876,9 +892,9 @@ const SportsProfessionals = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm font-semibold text-gray-500">Passport Picture</p>
-                      {viewingProfessional.passportPicture ? (
+                      {passportImage ? (
                         <img 
-                          src={viewingProfessional.passportPicture} 
+                          src={passportImage} 
                           alt="Passport" 
                           className="mt-2 max-w-[200px] rounded-lg border"
                         />

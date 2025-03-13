@@ -11,7 +11,6 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
   const [passportExpiry, setPassportExpiry] = useState('');
   const [idError, setIdError] = useState('');
   const [isLoadingNIDA, setIsLoadingNIDA] = useState(false);
-  const [nidaData, setNidaData] = useState(null);
   const [formData, setFormData] = useState({
     function: 'lionson',
     email: 'q@gmail.com',
@@ -31,6 +30,7 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
   });
   const [disciplines, setDisciplines] = useState([]);
   const [functions, setFunctions] = useState([]);
+  const [nidaData, setNidaData] = useState(null);
 
   // Predefined marital status options
   const maritalStatusOptions = [
@@ -166,44 +166,46 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
   };
 
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    if (name === 'passportPicture') {
+    const { name, files } = e.target;
+    if (name === 'passportPicture' || name === 'resume') {
       setFormData({ ...formData, [name]: files[0] });
     } else {
-      setFormData({ ...formData, [name]: value });
+      setFormData({ ...formData, [name]: e.target.value });
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Check if all required fields are filled
-    if (!idNumber || !nidaData || !formData.maritalStatus || !formData.region || !formData.discipline || !formData.license) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-
     const formDataToSubmit = new FormData();
-    formDataToSubmit.append('idPassportNo', idNumber);
-    formDataToSubmit.append('firstName', nidaData.names.split(' ')[0]);
-    formDataToSubmit.append('lastName', nidaData.names.split(' ')[1] || '');
-    formDataToSubmit.append('dateOfBirth', nidaData.dateOfBirth);
-    formDataToSubmit.append('gender', nidaData.gender.toUpperCase());
-    formDataToSubmit.append('maritalStatus', formData.maritalStatus);
-    formDataToSubmit.append('region', formData.region);
-    formDataToSubmit.append('discipline', formData.discipline);
-    formDataToSubmit.append('function', formData.function);
-    formDataToSubmit.append('license', formData.license);
-    formDataToSubmit.append('nationality', nidaData.nationality);
-    formDataToSubmit.append('otherNationality', formData.otherNationality);
-    formDataToSubmit.append('placeOfResidence', formData.placeOfResidence);
-    formDataToSubmit.append('placeOfBirth', nidaData.placeOfBirth);
-    formDataToSubmit.append('fitnessStatus', formData.fitnessStatus);
-    formDataToSubmit.append('levelOfEducation', formData.levelOfEducation);
-    formDataToSubmit.append('periodOfExperience', formData.periodOfExperience);
-    formDataToSubmit.append('status', formData.status);
-    formDataToSubmit.append('resume', formData.resume);
-    formDataToSubmit.append('passportPicture', formData.passportPicture || nidaData.photo);
+    formDataToSubmit.append('idPassportNo', idNumber || '');
+    formDataToSubmit.append('firstName', nidaData?.names.split(' ')[0] || '');
+    formDataToSubmit.append('lastName', nidaData?.names.split(' ')[1] || '');
+    formDataToSubmit.append('dateOfBirth', nidaData?.dateOfBirth || '');
+    formDataToSubmit.append('gender', nidaData?.gender.toUpperCase() || '');
+    formDataToSubmit.append('maritalStatus', formData.maritalStatus || '');
+    formDataToSubmit.append('region', formData.region || '');
+    formDataToSubmit.append('discipline', formData.discipline || '');
+    formDataToSubmit.append('function', formData.function || '');
+    formDataToSubmit.append('license', formData.license || '');
+    formDataToSubmit.append('nationality', nidaData?.nationality || '');
+    formDataToSubmit.append('otherNationality', formData.otherNationality || '');
+    formDataToSubmit.append('placeOfResidence', formData.placeOfResidence || '');
+    formDataToSubmit.append('placeOfBirth', nidaData?.placeOfBirth || '');
+    formDataToSubmit.append('fitnessStatus', formData.fitnessStatus || '');
+    formDataToSubmit.append('levelOfEducation', formData.levelOfEducation || '');
+    formDataToSubmit.append('periodOfExperience', formData.periodOfExperience || '');
+    formDataToSubmit.append('status', formData.status || '');
+
+    // Handle file inputs
+    if (formData.resume) {
+      formDataToSubmit.append('resume', formData.resume);
+    }
+    if (formData.passportPicture) {
+      formDataToSubmit.append('passportPicture', formData.passportPicture);
+    } else if (nidaData?.photo) {
+      formDataToSubmit.append('passportPicture', nidaData.photo);
+    }
 
     // Log the form data to the console
     for (let [key, value] of formDataToSubmit.entries()) {
@@ -240,7 +242,11 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
     } catch (error) {
       console.error('API Error:', error);
       if (error.response) {
-        toast.error(error.response.data?.message || 'Server error occurred');
+        if (error.response.data?.message.includes('already exists')) {
+          toast.error('A record with this ID or Passport Number already exists.');
+        } else {
+          toast.error(error.response.data?.message || 'Server error occurred');
+        }
       } else if (error.request) {
         toast.error('No response from server. Please check your connection.');
       } else {
@@ -514,19 +520,20 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">Resume</label>
-          <Input
-            type="file"
-            accept=".pdf,.doc,.docx"
-            onChange={(e) => {
-              const fileName = e.target.files[0]?.name || '';
-              setFormData({ ...formData, resume: fileName });
-            }}
-          />
-          {formData.resume && (
-            <p className="text-sm text-gray-600 mt-1">Selected file: {formData.resume}</p>
-          )}
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Resume</label>
+            <input
+              type="file"
+              name="resume"
+              accept=".pdf,.doc,.docx"
+              onChange={handleChange}
+              className="w-full px-3 py-2 border rounded-lg"
+            />
+            {formData.resume && (
+              <p className="text-sm text-gray-600 mt-1">Selected file: {formData.resume.name}</p>
+            )}
+          </div>
         </div>
 
         <div className="flex gap-4 justify-end">

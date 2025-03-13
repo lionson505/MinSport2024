@@ -4,7 +4,7 @@ import { useDarkMode } from "../contexts/DarkModeContext";
 import { usePermissions } from '../utils/permissionUtils';
 import { MODULE_IDS } from '../constants/modules';
 import { LayoutGrid, Flag, Award, Users, GraduationCap, School, Building2, Plane, FileText, Briefcase, Calendar, CircleUser, UsersRound, BarChart3, Trophy, UserPlus, Timer } from 'lucide-react';
-
+ 
 const Sidebar = () => {
   const { isDarkMode } = useDarkMode();
   const location = useLocation();

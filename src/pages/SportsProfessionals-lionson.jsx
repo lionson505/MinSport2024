@@ -285,7 +285,7 @@ const SportsProfessionals = () => {
       }
     } catch (error) {
       console.error('Error adding professional:', error.response?.data || error.message);
-      toast.error(error.response?.data?.message || 'Error adding professional. Please check all fields and try again.');
+      // toast.error(error.response?.data?.message || 'Error adding professional. Please check all fields and try again.');
     }
   };
 
