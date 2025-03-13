@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/input';
 import { toast } from 'react-hot-toast';
-import axios from '../../utils/axiosInstance';
+import axiosInstance from '../../utils/axiosInstance';
 import { countries } from '../../data/countries'; // Import countries data
 
 const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSubmitting }) => {
@@ -77,7 +77,7 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
     // Fetch disciplines from API
     const fetchDisciplines = async () => {
       try {
-        const response = await axios.get('/disciplines'); // Adjust the endpoint as needed
+        const response = await axiosInstance.get('/disciplines'); // Adjust the endpoint as needed
         setDisciplines(response.data);
       } catch (error) {
         console.error('Failed to fetch disciplines', error);
@@ -91,7 +91,7 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
     // Fetch functions from API
     const fetchFunctions = async () => {
       try {
-        const response = await axios.get('/functions'); // Adjust endpoint as needed
+        const response = await axiosInstance.get('/functions'); // Adjust endpoint as needed
         setFunctions(response.data);
       } catch (error) {
         console.error('Failed to fetch functions', error);
@@ -210,7 +210,7 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
     try {
       let response;
       if (initialData.id) {
-        response = await axios.put(`/official-referees/${initialData.id}`, formDataToSubmit, {
+        response = await axiosInstance.put(`/official-referees/${initialData.id}`, formDataToSubmit, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
@@ -219,7 +219,7 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
           toast.success('Professional updated successfully');
         }
       } else {
-        response = await axios.post('/official-referees', formDataToSubmit, {
+        response = await axiosInstance.post('/official-referees', formDataToSubmit, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
