@@ -12,20 +12,20 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
   const [idError, setIdError] = useState('');
   const [isLoadingNIDA, setIsLoadingNIDA] = useState(false);
   const [formData, setFormData] = useState({
-    function: 'lionson',
-    email: 'q@gmail.com',
-    phone: 'q',
+    function: '',
+    email: '',
+    phone: '',
     status: 'ACTIVE',
-    maritalStatus: 'w',
-    region: 'k',
-    discipline: 's',
-    license: 's',
-    otherNationality: 's',
-    placeOfResidence: 's',
+    maritalStatus: '',
+    region: '',
+    discipline: '',
+    license: '',
+    otherNationality: '',
+    placeOfResidence: '',
     fitnessStatus: 'FIT',
     levelOfEducation: 'ELEMENTARY',
-    periodOfExperience: 'sa',
-    resume: 'l.p',
+    periodOfExperience: '',
+    resume: '',
     ...initialData // Spread initial data to override defaults if provided
   });
   const [disciplines, setDisciplines] = useState([]);
@@ -207,11 +207,6 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
       formDataToSubmit.append('passportPicture', nidaData.photo);
     }
 
-    // Log the form data to the console
-    for (let [key, value] of formDataToSubmit.entries()) {
-      console.log(key, value);
-    }
-
     try {
       let response;
       if (initialData.id) {
@@ -237,15 +232,13 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
       if (typeof onSubmit === 'function') {
         onSubmit(response.data);
       }
-      
-      window.location.reload();
     } catch (error) {
       console.error('API Error:', error);
       if (error.response) {
         if (error.response.data?.message.includes('already exists')) {
           toast.error('A record with this ID or Passport Number already exists.');
         } else {
-          toast.error(error.response.data?.message || 'Server error occurred');
+          toast.error(error.response?.data?.message || 'Server error occurred');
         }
       } else if (error.request) {
         toast.error('No response from server. Please check your connection.');

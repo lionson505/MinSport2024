@@ -224,99 +224,6 @@ const SportsProfessionals = () => {
     }
   };
 
-  const handleAddProfessional = async (professionalData) => {
-    try {
-      // Validate required fields
-      if (!professionalData.firstName || !professionalData.lastName || !professionalData.function || !professionalData.nationality) {
-        toast.error('Please fill in all required fields');
-        return;
-      }
-
-      // Create a FormData object to handle file uploads
-      const formData = new FormData();
-      formData.append('firstName', professionalData.firstName.trim());
-      formData.append('lastName', professionalData.lastName.trim());
-      formData.append('function', professionalData.function.trim());
-      formData.append('nationality', professionalData.nationality.trim());
-      formData.append('idPassportNo', professionalData.idPassportNo || '');
-      formData.append('dateOfBirth', professionalData.dateOfBirth || '');
-      formData.append('gender', professionalData.gender || '');
-      formData.append('maritalStatus', professionalData.maritalStatus || '');
-      formData.append('region', professionalData.region || '');
-      formData.append('discipline', professionalData.discipline || '');
-      formData.append('license', professionalData.license || '');
-      formData.append('otherNationality', professionalData.otherNationality || '');
-      formData.append('placeOfResidence', professionalData.placeOfResidence || '');
-      formData.append('placeOfBirth', professionalData.placeOfBirth || '');
-      formData.append('fitnessStatus', professionalData.fitnessStatus || '');
-      formData.append('levelOfEducation', professionalData.levelOfEducation || '');
-      formData.append('periodOfExperience', professionalData.periodOfExperience || '');
-      formData.append('status', professionalData.status || '');
-      formData.append('resume', professionalData.resume || '');
-      formData.append('passportPicture', professionalData.passportPicture || '');
-
-      const response = await axiosInstance.post('/official-referees', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      if (response.data) {
-        setProfessionals((prevState) => [...prevState, response.data]);
-        setFilteredProfessionals((prevState) => [...prevState, response.data]);
-        toast.success('Professional added successfully');
-        setAddingProfessional(false);
-      }
-    } catch (error) {
-      console.error('Error adding professional:', error.response?.data || error.message);
-      // toast.error(error.response?.data?.message || 'Error adding professional. Please check all fields and try again.');
-    }
-  };
-
-  const handleEditProfessional = async (professionalData) => {
-    try {
-      // Create a FormData object to handle file uploads
-      const formData = new FormData();
-      formData.append('firstName', professionalData.firstName.trim());
-      formData.append('lastName', professionalData.lastName.trim());
-      formData.append('function', professionalData.function.trim());
-      formData.append('nationality', professionalData.nationality.trim());
-      formData.append('idPassportNo', professionalData.idPassportNo || '');
-      formData.append('dateOfBirth', professionalData.dateOfBirth || '');
-      formData.append('gender', professionalData.gender || '');
-      formData.append('maritalStatus', professionalData.maritalStatus || '');
-      formData.append('region', professionalData.region || '');
-      formData.append('discipline', professionalData.discipline || '');
-      formData.append('license', professionalData.license || '');
-      formData.append('otherNationality', professionalData.otherNationality || '');
-      formData.append('placeOfResidence', professionalData.placeOfResidence || '');
-      formData.append('placeOfBirth', professionalData.placeOfBirth || '');
-      formData.append('fitnessStatus', professionalData.fitnessStatus || '');
-      formData.append('levelOfEducation', professionalData.levelOfEducation || '');
-      formData.append('periodOfExperience', professionalData.periodOfExperience || '');
-      formData.append('status', professionalData.status || '');
-      formData.append('resume', professionalData.resume || '');
-      formData.append('passportPicture', professionalData.passportPicture || '');
-
-      const response = await axiosInstance.put(`/official-referees/${editingProfessional.id}`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      setProfessionals((prevState) =>
-        prevState.map((p) => (p.id === editingProfessional.id ? response.data : p))
-      );
-      setFilteredProfessionals((prevState) =>
-        prevState.map((p) => (p.id === editingProfessional.id ? response.data : p))
-      );
-      toast.success('Professional updated successfully');
-      setEditingProfessional(null);
-    } catch (error) {
-      toast.error('Error updating professional');
-    }
-  };
-
   const handleDeleteProfessional = async () => {
     try {
       await axiosInstance.delete(`/official-referees/${itemToDelete.id}`);
@@ -337,6 +244,17 @@ const SportsProfessionals = () => {
     } catch (error) {
       console.error('Error fetching passport image:', error);
       toast.error('Error fetching passport image');
+    }
+  };
+
+  const fetchResume = async (resumeUrl) => {
+    try {
+      const response = await axiosInstance.get(resumeUrl, { responseType: 'blob' });
+      const resumeObjectURL = URL.createObjectURL(response.data);
+      window.open(resumeObjectURL, '_blank');
+    } catch (error) {
+      console.error('Error fetching resume:', error);
+      toast.error('Error fetching resume');
     }
   };
 
@@ -456,6 +374,17 @@ const SportsProfessionals = () => {
           >
             <Trash2 className="w-4 h-4" />
           </button>
+          <button
+            onClick={() => {
+              if (professional.resume) {
+                fetchResume(professional.resume);
+              }
+            }}
+            className="p-2 text-blue-600 hover:bg-gray-100 rounded-md focus:outline-none"
+            title="View Resume"
+          >
+            View Resume
+          </button>
         </div>
       </TableCell>
     </TableRow>
@@ -463,6 +392,7 @@ const SportsProfessionals = () => {
 
   return (
     <div className="p-6 bg-gray-50">
+      <h1 className="text-2xl font-bold mb-4">Sports Professionals Management</h1>
       {message && (
         <Message type={message.type} message={message.text} onClose={() => setMessage(null)} />
       )}
@@ -739,7 +669,21 @@ const SportsProfessionals = () => {
             setAddingProfessional(false);
             setEditingProfessional(null);
           }}
-          onSubmit={editingProfessional ? handleEditProfessional : handleAddProfessional}
+          onSubmit={(data) => {
+            if (editingProfessional) {
+              setProfessionals((prevState) =>
+                prevState.map((p) => (p.id === editingProfessional.id ? data : p))
+              );
+              setFilteredProfessionals((prevState) =>
+                prevState.map((p) => (p.id === editingProfessional.id ? data : p))
+              );
+            } else {
+              setProfessionals((prevState) => [...prevState, data]);
+              setFilteredProfessionals((prevState) => [...prevState, data]);
+            }
+            setAddingProfessional(false);
+            setEditingProfessional(null);
+          }}
           initialData={editingProfessional || { firstName: '', lastName: '', function: '', nationality: '' }}
           isSubmitting={isLoading}
         />
@@ -906,14 +850,12 @@ const SportsProfessionals = () => {
                     <div>
                       <p className="text-sm font-semibold text-gray-500">Resume</p>
                       {viewingProfessional.resume ? (
-                        <a 
-                          href={viewingProfessional.resume}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        <button 
+                          onClick={() => fetchResume(viewingProfessional.resume)}
                           className="text-blue-600 hover:underline"
                         >
                           View Resume
-                        </a>
+                        </button>
                       ) : (
                         <p className="text-base">No resume available</p>
                       )}
