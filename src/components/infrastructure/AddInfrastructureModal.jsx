@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../utils/axiosInstance';
 import { locations } from '../../data/locations';
 import { toast } from 'react-toastify';
+import CustomGoogleMap from '../reusable/GoogleMapForm';
 
-const AddInfrastructureModal = ({ isOpen, onClose, onRefresh }) => {
+const AddInfrastructureModal = ({ isOpen, onClose, onRefresh,  }) => {
   const [formData, setFormData] = useState({
     name: '',
     infra_category: 0,
@@ -132,6 +133,14 @@ const AddInfrastructureModal = ({ isOpen, onClose, onRefresh }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleMapClick = (latLng) => {
+    setFormData({
+      ...formData,
+      latitude: latLng.lat,
+      longitude: latLng.lng,
+    });
   };
 
   if (!isOpen) return null;
@@ -375,6 +384,17 @@ const AddInfrastructureModal = ({ isOpen, onClose, onRefresh }) => {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div className="col-span-2">
+            <label className="font-medium mb-1">Select Location on Map:</label>
+            <CustomGoogleMap
+              apiKey="AIzaSyA_Is24-zuhqdSyUYlYqx6JGyTrG1iqaiE"
+              center={{ lat: -1.9403, lng: 29.8739 }}
+              zoom={8}
+              onFacilityClick={handleMapClick}
+              onMapClick={handleMapClick}
+            />
           </div>
 
           <div className="flex flex-col">

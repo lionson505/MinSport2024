@@ -24,6 +24,9 @@ const CustomGoogleMap = ({ apiKey, center, zoom, facilities = [], onFacilityClic
       document.head.appendChild(script)
 
       script.onload = initializeMap
+      script.onerror = () => {
+        console.error('Failed to load Google Maps script');
+      }
     }
 
     const initializeMap = () => {
@@ -88,7 +91,7 @@ const CustomGoogleMap = ({ apiKey, center, zoom, facilities = [], onFacilityClic
         const marker = new window.google.maps.Marker({
           position: facility.position,
           map: mapInstance,
-          icon: getMarkerIcon(facility.type_level),
+          icon: getMarkerIcon(facility.type),
           title: facility.name,
         })
 
@@ -96,27 +99,8 @@ const CustomGoogleMap = ({ apiKey, center, zoom, facilities = [], onFacilityClic
           content: `
             <div>
               <h2>${facility.name}</h2>
-              <p>Description: ${facility.description || 'No description available'}</p>
+              <p>${facility.description || 'No description available'}</p>
               <p>Coordinates: ${facility.position.lat}, ${facility.position.lng}</p>
-              <p>Category ID: ${facility.infraCategoryId}</p>
-              <p>Sub-Category ID: ${facility.infraSubCategoryId}</p>
-              <p>Status: ${facility.status}</p>
-              <p>Capacity: ${facility.capacity}</p>
-              <p>Owner: ${facility.owner}</p>
-              <p>Location: ${facility.location.province}, ${facility.location.district}, ${facility.location.sector}, ${facility.location.cell}, ${facility.location.village}</p>
-              <p>UPI: ${facility.upi}</p>
-              <p>Plot Area: ${facility.plot_area}</p>
-              <p>Construction Date: ${facility.construction_date}</p>
-              <p>Main Users: ${facility.main_users}</p>
-              <p>Types of Sports: ${facility.types_of_sports}</p>
-              <p>Internet Connection: ${facility.internet_connection ? 'Yes' : 'No'}</p>
-              <p>Electricity Connection: ${facility.electricity_connection ? 'Yes' : 'No'}</p>
-              <p>Water Connection: ${facility.water_connection ? 'Yes' : 'No'}</p>
-              <p>Access Road: ${facility.access_road ? 'Yes' : 'No'}</p>
-              <p>Health Facility: ${facility.health_facility ? 'Yes' : 'No'}</p>
-              <p>Legal Representative: ${facility.legal_representative.name} (${facility.legal_representative.gender})</p>
-              <p>Email: ${facility.legal_representative.email}</p>
-              <p>Phone: ${facility.legal_representative.phone}</p>
             </div>
           `,
         })
@@ -136,24 +120,18 @@ const CustomGoogleMap = ({ apiKey, center, zoom, facilities = [], onFacilityClic
         const bounds = new window.google.maps.LatLngBounds()
         newMarkers.forEach(marker => bounds.extend(marker.getPosition()))
         mapInstance.fitBounds(bounds)
-
-        // Set a minimum zoom level to prevent zooming out too much
-        const listener = window.google.maps.event.addListener(mapInstance, "idle", () => {
-          if (mapInstance.getZoom() > 3) mapInstance.setZoom(3)
-          window.google.maps.event.removeListener(listener)
-        })
       }
     }
   }, [mapInstance, facilities, onFacilityClick])
 
-  const getMarkerIcon = (typeLevel) => {
+  const getMarkerIcon = (type) => {
     const baseUrl = 'https://maps.google.com/mapfiles/ms/icons/'
-    switch (typeLevel) {
-      case 'Sector':
+    switch (type) {
+      case 'stadium':
         return `${baseUrl}blue-dot.png`
-      case 'District':
+      case 'gym':
         return `${baseUrl}green-dot.png`
-      case 'Province':
+      case 'field':
         return `${baseUrl}yellow-dot.png`
       default:
         return `${baseUrl}red-dot.png`

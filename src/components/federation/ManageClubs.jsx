@@ -269,7 +269,11 @@ const ManageClubs = ({ onAdd, onEdit, onDelete, federations, isLoading, actionIc
                   <TableHead>Club Name</TableHead>
                   <TableHead>Federation</TableHead>
                   <TableHead>Year Founded</TableHead>
-                  <TableHead className="operation"> Actions</TableHead>
+                  <TableHead>Legal Rep. Email</TableHead>
+                  <TableHead>Division</TableHead>
+                  <TableHead>Players</TableHead>
+                  <TableHead>Staff</TableHead>
+                  <TableHead className="operation">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -281,6 +285,10 @@ const ManageClubs = ({ onAdd, onEdit, onDelete, federations, isLoading, actionIc
                     <TableCell>{club.name}</TableCell>
                     <TableCell>{federations.find((fed) => fed.id === club.federationId)?.name}</TableCell>
                     <TableCell>{club.yearFounded}</TableCell>
+                    <TableCell>{club.legalRepresentativeEmail || 'N/A'}</TableCell>
+                    <TableCell>{club.division || 'N/A'}</TableCell>
+                    <TableCell>{club.playersList?.filter(player => player.type === 'player').length || 0}</TableCell>
+                    <TableCell>{club.playersList?.filter(player => player.type === 'staff').length || 0}</TableCell>
                     <TableCell className="operation">
                       <div className="flex items-center gap-1">
                         <button

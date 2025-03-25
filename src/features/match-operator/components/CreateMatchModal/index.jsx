@@ -31,6 +31,8 @@ export function CreateMatchModal({ open, onClose }) {
   const { createMatch } = useMatchOperator();
   const [loading, setLoading] = useState(false);
   const [nationalTeams, setNationalTeams] = useState([])
+  const [isInternationalTeam, setIsInternationalTeam] = useState(false);
+  const [awayTeams, setAwayTeams] = useState([]);
   // console.log("here is national teams : ", nationalTeams)
 
   const handleSubmit = async (e) => {
@@ -103,6 +105,22 @@ export function CreateMatchModal({ open, onClose }) {
 
     fetchNationalTeams();
   }, []);
+
+  // Fetching away teams
+  useEffect(() => {
+    const fetchAwayTeams = async () => {
+      try {
+        const response = await axiosInstance.get('/away-teams');
+        setAwayTeams(response.data);
+      } catch (error) {
+        console.error('Failed to fetch Away Teams:', error);
+      }
+    };
+
+    if (isInternationalTeam) {
+      fetchAwayTeams();
+    }
+  }, [isInternationalTeam]);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -196,28 +214,51 @@ export function CreateMatchModal({ open, onClose }) {
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Away Team</label>
-              {/* <Input
-                value={formData.awayTeam}
-                onChange={(e) => setFormData({ ...formData, awayTeam: e.target.value })}
-                placeholder="Away team"
-              /> */}
-              <Select
-                value={formData.awayTeam}
-                onValueChange={(value) => {
-                  setFormData({ ...formData, awayTeam: value })
-                  // console.log('you selected National Team: ', value)
-                }
-                }
-               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select National Team" />
-                </SelectTrigger>
-                <SelectContent>
-                  {nationalTeams.map((nationalTeam) => (
-                      <SelectItem key={nationalTeam.id} value={nationalTeam.teamName}>{nationalTeam.teamName}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={isInternationalTeam}
+                  onChange={(e) => setIsInternationalTeam(e.target.checked)}
+                />
+                <span>International Team</span>
+              </div>
+              {isInternationalTeam ? (
+                <Select
+                  value={formData.awayTeam}
+                  onValueChange={(value) => {
+                    setFormData({ ...formData, awayTeam: value });
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Away Team" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {awayTeams.map((awayTeam) => (
+                      <SelectItem key={awayTeam.id} value={awayTeam.teamName}>
+                        {awayTeam.teamName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Select
+                  value={formData.awayTeam}
+                  onValueChange={(value) => {
+                    setFormData({ ...formData, awayTeam: value });
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select National Team" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {nationalTeams.map((nationalTeam) => (
+                      <SelectItem key={nationalTeam.id} value={nationalTeam.teamName}>
+                        {nationalTeam.teamName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           </div>
 

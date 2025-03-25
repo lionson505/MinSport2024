@@ -318,6 +318,9 @@ function Contracts() {
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Amount</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 operation">Currency</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Contract Admin</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Start Date</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">End Date</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Duration</th>
                 <th className="px-4 py-3 text-left text-xs font-medium operation text-gray-500">Progress</th>
                 <th className="px-4 py-3 text-left text-xs font-medium operation text-gray-500">Actions</th>
               </tr>
@@ -333,6 +336,9 @@ function Contracts() {
                     <td className="px-4 py-3">{contract.amount}</td>
                     <td className="px-4 py-3 operation">{contract.currency}</td>
                     <td className="px-4 py-3">{contract.contract_administrator}</td>
+                    <td className="px-4 py-3">{contract.start_date}</td>
+                    <td className="px-4 py-3">{contract.contract_end_date}</td>
+                    <td className="px-4 py-3">{contract.duration_of_contract}</td>
                     <td className="px-4 py-3 operation">
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div

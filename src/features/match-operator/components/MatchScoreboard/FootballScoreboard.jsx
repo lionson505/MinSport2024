@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '../../../../components/ui/Button.jsx';
 import { PlayerStatsDisplay } from '../../../../components/scoreboards/PlayerStatsDisplay';
 import { TeamStatsDisplay } from '../../../../components/scoreboards/TeamStatsDisplay';
@@ -17,7 +17,23 @@ import useFetchLiveMatches from '../../../../utils/fetchLiveMatches';
 import { toast } from 'react-hot-toast';
 import { usePermissionLogger } from "../../../../utils/permissionLogger.js";
 
-export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlayers = [], onUpdate }) {
+function renderEvents(events, teamAPlayers, teamBPlayers) {
+    return events.filter(event => {
+        return event && event.team && (event.team.id || event.teamName);
+    }).map(event => {
+        const eventId = event.id || event.someOtherId;
+        const teamId = event.team?.id || event.teamName;
+
+        return (
+            <div key={eventId}>
+                <span>Event ID: {eventId}</span>
+                <span>Team ID: {teamId}</span>
+            </div>
+        );
+    });
+}
+
+export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlayers = [], onUpdate, timePassed }) {
     const calculateMatchMinute = (startTime) => {
         if (!startTime) return '0';
         const start = new Date(startTime);
@@ -44,7 +60,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
     const [selectedPlayer, setSelectedPlayer] = useState(null);
     const [pendingEvent, setPendingEvent] = useState(null);
     const [timerRunning, setTimerRunning] = useState(false);
-    const [currentMinute, setCurrentMinute] = useState(calculateMatchMinute(match.startTime));
+    const [currentMinute, setCurrentMinute] = useState(timePassed || calculateMatchMinute(match.startTime));
     const { matches = [], liveMatchError } = useFetchLiveMatches();
     const updatedMatch = matches.filter((updatedMatch) => updatedMatch.id === match.id);
 
@@ -56,6 +72,20 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
         canDelete: false
     });
 
+    const [firstTime, setFirstTime] = useState(0);
+    const [firstAddedTime, setFirstAddedTime] = useState(0);
+    const [secondTime, setSecondTime] = useState(0);
+    const [secondAddedTime, setSecondAddedTime] = useState(0);
+    const [totalTime, setTotalTime] = useState(0);
+    const [showAddedTimeModal, setShowAddedTimeModal] = useState(false);
+    const [showAddedLastTimeModal, setShowAddedLastTimeModal] = useState(false);
+    const [addedTimeSet, setAddedTimeSet] = useState(false);
+    const [addedLastTimeSet, setAddedLastTimeSet] = useState(false);
+    const timerRef = useRef(null);
+
+    const [teamBPlayersState, setTeamBPlayersState] = useState([]);
+    const [teamAPlayersState, setTeamAPlayersState] = useState([]);
+
     const fetchPermissions = async () => {
         const currentPermissions = await permissionLogger();
         setPermissions(currentPermissions);
@@ -66,13 +96,89 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
     }, []);
 
     useEffect(() => {
+        const fetchMatchData = async () => {
+            try {
+                const [matchResponse, awayTeamData] = await Promise.all([
+                    axiosInstance.get(`/live-matches/${match.id}`),
+                    axiosInstance.get('/away-teams')
+                ]);
+
+                const { firstTime, firstAddedTime, secondTime, secondAddedTime } = matchResponse.data;
+                setFirstTime(firstTime);
+                setFirstAddedTime(firstAddedTime);
+                setSecondTime(secondTime);
+                setSecondAddedTime(secondAddedTime);
+                setTotalTime(firstTime + firstAddedTime + secondTime + secondAddedTime);
+
+                const awayTeam = awayTeamData.data.find(team => team.teamName === match.awayTeam);
+
+                if (awayTeam) {
+                    const [goalsResponse, cardsResponse] = await Promise.all([
+                        axiosInstance.get(`/live-matches/${match.id}/away-team-goals`),
+                        axiosInstance.get(`/live-matches/${match.id}/away-team-cards`)
+                    ]);
+
+                    const awayTeamGoals = goalsResponse.data.filter(goal => goal.awayTeamId === awayTeam.id);
+                    const awayTeamCards = cardsResponse.data.filter(card => card.awayTeamId === awayTeam.id);
+
+                    const newEvents = [
+                        ...awayTeamGoals.map(goal => ({
+                            type: 'GOAL',
+                            playerName: goal.playerName.trim(),
+                            minute: goal.minute
+                        })),
+                        ...awayTeamCards.map(card => ({
+                            type: card.type,
+                            playerName: card.playerName.trim(),
+                            minute: card.minute
+                        }))
+                    ];
+
+                    setMatchData(prev => ({
+                        ...prev,
+                        events: [
+                            ...prev.events.filter(event => 
+                                !newEvents.some(newEvent => 
+                                    newEvent.type === event.type &&
+                                    newEvent.playerName === event.playerName &&
+                                    newEvent.minute === event.minute
+                                )
+                            ),
+                            ...newEvents
+                        ],
+                        teamBScore: awayTeamGoals.length
+                    }));
+                }
+            } catch (error) {
+                console.error('Failed to fetch match data:', error);
+            }
+        };
+
+        fetchMatchData();
+    }, [match.id, match.awayTeam]);
+
+    // Log the events after they have been updated
+    useEffect(() => {
+        console.log('Updated Match Data Events:', matchData.events);
+    }, [matchData.events]);
+
+    useEffect(() => {
         if (match.status === 'LIVE' && timerRunning) {
             const minuteInterval = setInterval(() => {
-                setCurrentMinute(calculateMatchMinute(match.startTime));
+                setCurrentMinute(prevMinute => {
+                    const nextMinute = parseInt(prevMinute) + 1;
+                    if (nextMinute >= totalTime) {
+                        clearInterval(timerRef.current);
+                        setTimerRunning(false);
+                        setMatchData(prev => ({ ...prev, status: 'FULL_TIME' }));
+                        toast.success('Match ended');
+                    }
+                    return nextMinute.toString();
+                });
             }, 60000); // Updates every minute
             return () => clearInterval(minuteInterval);
         }
-    }, [match.startTime, match.status, timerRunning]);
+    }, [match.startTime, match.status, timerRunning, totalTime]);
 
     useEffect(() => {
         const combinedEvents = [
@@ -84,6 +190,39 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
         setMatchData(prev => ({ ...prev, events: combinedEvents }));
     }, [match]);
 
+    useEffect(() => {
+        const fetchAwayTeamPlayers = async () => {
+            try {
+                const response = await axiosInstance.get('/away-teams');
+                const awayTeamData = response.data.find(team => team.teamName === match.awayTeam);
+
+                if (awayTeamData && awayTeamData.players) {
+                    console.log(`Team name ${match.awayTeam} found in /away-teams`);
+                    const playersFromApi = Object.entries(awayTeamData.players).map(([key, value]) => ({
+                        id: key,
+                        playerStaff: { firstName: value, lastName: '' }
+                    }));
+                    setTeamBPlayersState(playersFromApi);
+                } else {
+                    console.log(`Team name ${match.awayTeam} not found in /away-teams`);
+                    setTeamBPlayersState(teamBPlayers);
+                }
+            } catch (error) {
+                console.error('Failed to fetch away team players:', error);
+                setTeamBPlayersState(teamBPlayers);
+            }
+        };
+
+        if (match.awayTeam) {
+            fetchAwayTeamPlayers();
+        }
+    }, [match.awayTeam, teamBPlayers]);
+
+    useEffect(() => {
+        // Assuming home team players are fetched differently
+        setTeamAPlayersState(teamAPlayers);
+    }, [teamAPlayers]);
+
     const handleStartMatch = async () => {
         try {
             await axiosInstance.patch(`/live-matches/${match.id}/status`, {
@@ -94,7 +233,12 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
 
             await axiosInstance.put(`/live-matches/${match.id}`, {
                 startTime: startTimeIOso
-            })
+            });
+
+            await axiosInstance.patch(`/live-matches/${match.id}/first-time`, {
+                firstTime: 45
+            });
+
             setTimerRunning(true);
             setMatchData(prev => ({ ...prev, status: 'FIRST_HALF' }));
             toast.success('Match started successfully');
@@ -123,6 +267,11 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
             await axiosInstance.patch(`/live-matches/${match.id}/status`, {
                 status: 'HALFTIME'
             });
+
+            await axiosInstance.patch(`/live-matches/${match.id}/second-time`, {
+                secondTime: 45
+            });
+
             setTimerRunning(false);
             setMatchData(prev => ({ ...prev, status: 'HALF_TIME' }));
             toast.success('Half time started');
@@ -132,22 +281,33 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
         }
     };
 
-    const handleSecondHalf = async () => {
+    const handleSaveAddedTime = async () => {
         try {
-            await axiosInstance.patch(`/live-matches/${match.id}/status`, {
-                status: 'HTL'
+            await axiosInstance.patch(`/live-matches/${match.id}/first-added-time`, {
+                firstAddedTime: firstAddedTime
             });
-            setTimerRunning(true);
-            setCurrentMinute('45');
-            setMatchData(prev => ({ ...prev, status: 'SECOND_HALF' }));
-            toast.success('Second half started');
+            toast.success('Added first time saved successfully');
+            setShowAddedTimeModal(false);
+            setAddedTimeSet(true);
         } catch (error) {
-            toast.error('Failed to start second half');
+            toast.error('Failed to save added first time');
             console.error(error);
         }
     };
 
-
+    const handleSaveAddedLastTime = async () => {
+        try {
+            await axiosInstance.patch(`/live-matches/${match.id}/second-added-time`, {
+                secondAddedTime: secondAddedTime
+            });
+            toast.success('Added last time saved successfully');
+            setShowAddedLastTimeModal(false);
+            setAddedLastTimeSet(true);
+        } catch (error) {
+            toast.error('Failed to save added last time');
+            console.error(error);
+        }
+    };
 
     const addEvent = async (type, team, player) => {
         try {
@@ -169,57 +329,112 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
             }
 
             const playerId = player.playerStaff.id;
+            const playerName = `${player.playerStaff.firstName} ${player.playerStaff.lastName}`;
             const currentMinuteInt = parseInt(currentMinute);
 
             if (type === 'GOAL') {
-                let updatedMatchData = {};
                 if (team === 'A') {
                     const anotherGoal = (updatedMatch[0]?.homeScore || 0) + 1;
                     setMatchData(prev => ({ ...prev, teamAScore: anotherGoal }));
-                    updatedMatchData = { homeScore: anotherGoal };
+                    const scoreEndpoint = `/live-matches/${match.id}/score`;
+                    await axiosInstance.patch(scoreEndpoint, { homeScore: anotherGoal });
+                    const eventEndpoint = `/live-matches/${match.id}/event`;
+                    const eventData = {
+                        eventType: "goal",
+                        eventData: {
+                            nationalTeamPlayerStaffId: playerId,
+                            minute: currentMinuteInt
+                        }
+                    };
+                    await axiosInstance.post(eventEndpoint, eventData);
+                    toast.success('Goal recorded successfully');
+                    onUpdate?.();
                 } else if (team === 'B') {
-                    const anotherGoal = (updatedMatch[0]?.awayScore || 0) + 1;
-                    setMatchData(prev => ({ ...prev, teamBScore: anotherGoal }));
-                    updatedMatchData = { awayScore: anotherGoal };
-                }
+                    const awayTeamData = await axiosInstance.get('/away-teams');
+                    const awayTeam = awayTeamData.data.find(team => team.teamName === match.awayTeam);
 
-                const scoreEndpoint = `/live-matches/${match.id}/score`;
-                await axiosInstance.patch(scoreEndpoint, updatedMatchData);
-
-                const eventEndpoint = `/live-matches/${match.id}/event`;
-                const eventData = {
-                    eventType: "goal",
-                    eventData: {
-                        nationalTeamPlayerStaffId: playerId,
-                        minute: currentMinuteInt
+                    if (awayTeam) {
+                        const goalEndpoint = `/live-matches/${match.id}/away-team-goal`;
+                        const goalData = {
+                            awayTeamId: awayTeam.id,
+                            playerName: playerName,
+                            minute: currentMinuteInt
+                        };
+                        await axiosInstance.post(goalEndpoint, goalData);
+                        toast.success('Goal recorded successfully for away team');
+                    } else {
+                        const anotherGoal = (updatedMatch[0]?.awayScore || 0) + 1;
+                        setMatchData(prev => ({ ...prev, teamBScore: anotherGoal }));
+                        const scoreEndpoint = `/live-matches/${match.id}/score`;
+                        await axiosInstance.patch(scoreEndpoint, { awayScore: anotherGoal });
+                        const eventEndpoint = `/live-matches/${match.id}/event`;
+                        const eventData = {
+                            eventType: "goal",
+                            eventData: {
+                                nationalTeamPlayerStaffId: playerId,
+                                minute: currentMinuteInt
+                            }
+                        };
+                        await axiosInstance.post(eventEndpoint, eventData);
+                        toast.success('Goal recorded successfully');
+                        onUpdate?.();
                     }
-                };
-
-                await axiosInstance.post(eventEndpoint, eventData);
-                toast.success('Goal recorded successfully');
-                onUpdate?.();
+                }
             } else if (type === 'YELLOW_CARD' || type === 'RED_CARD') {
-                const eventType = "card";
                 const cardType = type === 'YELLOW_CARD' ? 'YELLOW' : 'RED';
 
-                const eventEndpoint = `/live-matches/${match.id}/event`;
-                const eventData = {
-                    eventType: eventType,
-                    eventData: {
-                        nationalTeamPlayerStaffId: playerId,
-                        minute: 12,
-                        type: cardType
+                if (team === 'A') {
+                    const eventEndpoint = `/live-matches/${match.id}/event`;
+                    const eventData = {
+                        eventType: "card",
+                        eventData: {
+                            nationalTeamPlayerStaffId: playerId,
+                            minute: 12,
+                            type: cardType
+                        }
+                    };
+                    await axiosInstance.post(eventEndpoint, eventData);
+                    toast.success(`${cardType} card recorded`);
+                    onUpdate?.();
+
+                    setMatchData(prev => ({
+                        ...prev,
+                        events: [...prev.events, { ...eventData.eventData, type: cardType }]
+                    }));
+                } else if (team === 'B') {
+                    const awayTeamData = await axiosInstance.get('/away-teams');
+                    const awayTeam = awayTeamData.data.find(team => team.teamName === match.awayTeam);
+
+                    if (awayTeam) {
+                        const cardEndpoint = `/live-matches/${match.id}/away-team-card`;
+                        const cardData = {
+                            awayTeamId: awayTeam.id,
+                            playerName: playerName,
+                            type: cardType,
+                            minute: currentMinuteInt
+                        };
+                        await axiosInstance.post(cardEndpoint, cardData);
+                        toast.success(`${cardType} card recorded for away team`);
+                    } else {
+                        const eventEndpoint = `/live-matches/${match.id}/event`;
+                        const eventData = {
+                            eventType: "card",
+                            eventData: {
+                                nationalTeamPlayerStaffId: playerId,
+                                minute: 12,
+                                type: cardType
+                            }
+                        };
+                        await axiosInstance.post(eventEndpoint, eventData);
+                        toast.success(`${cardType} card recorded`);
+                        onUpdate?.();
+
+                        setMatchData(prev => ({
+                            ...prev,
+                            events: [...prev.events, { ...eventData.eventData, type: cardType }]
+                        }));
                     }
-                };
-
-                await axiosInstance.post(eventEndpoint, eventData);
-                toast.success(`${cardType} card recorded`);
-                onUpdate?.();
-
-                setMatchData(prev => ({
-                    ...prev,
-                    events: [...prev.events, { ...eventData.eventData, type: cardType }]
-                }));
+                }
             }
         } catch (error) {
             console.error('Error updating:', error.response ? error.response.data : error.message);
@@ -233,7 +448,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
     };
 
     const confirmEventWithPlayer = (playerId) => {
-        const players = pendingEvent.team === 'A' ? teamAPlayers : teamBPlayers;
+        const players = pendingEvent.team === 'A' ? teamAPlayers : teamBPlayersState;
         const player = players.find(p => p.id === playerId);
 
         if (player) {
@@ -258,25 +473,31 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
                             size="sm"
                             variant={matchData.status === 'NOT_STARTED' ? 'default' : 'outline'}
                             onClick={handleStartMatch}
-                            disabled={matchData.status !== 'UPCOMING'}
+                            disabled={firstTime !== 0}
                         >
                             Start Match
                         </Button>
                         <Button
                             size="sm"
+                            onClick={() => setShowAddedTimeModal(true)}
+                            disabled={firstTime === 0 || firstAddedTime !== 0}
+                        >
+                            Added First Time
+                        </Button>
+                        <Button
+                            size="sm"
                             variant={matchData.status === 'HALF_TIME' ? 'default' : 'outline'}
                             onClick={handleHalfTime}
-                            disabled={!timerRunning || parseInt(currentMinute) <= 45}
+                            disabled={firstTime === 0 || secondTime !== 0}
                         >
                             Half Time
                         </Button>
                         <Button
                             size="sm"
-                            variant={matchData.status === 'SECOND_HALF' ? 'default' : 'outline'}
-                            onClick={handleSecondHalf}
-                            disabled={matchData.status !== 'HALF_TIME'}
+                            onClick={() => setShowAddedLastTimeModal(true)}
+                            disabled={secondTime === 0}
                         >
-                            Second Half
+                            Added Second Time
                         </Button>
                         <Button
                             size="sm"
@@ -370,11 +591,19 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
 
     const EventItem = ({ event, players }) => {
         let eventType = '';
-        let playerName = '';
+        let playerName = event.playerName || 'Unknown Player';
         let minute = event.minute !== undefined ? event.minute : 'Unknown Minute';
 
         if (event.type) {
-            eventType = event.type === 'YELLOW' ? 'Yellow Card' : event.type === 'RED' ? 'Red Card' : 'Card';
+            if (event.type === 'YELLOW') {
+                eventType = 'Yellow Card';
+            } else if (event.type === 'RED') {
+                eventType = 'Red Card';
+            } else if (event.type === 'GOAL') {
+                eventType = 'Goal';
+            } else {
+                eventType = 'Card';
+            }
         } else if (event.position) {
             eventType = 'Lineup';
             minute = '';
@@ -385,8 +614,13 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
             minute = '';
         }
 
-        const player = players.find(p => p.playerStaff.id === event.nationalTeamPlayerStaffId);
-        playerName = player ? `${player.playerStaff.firstName} ${player.playerStaff.lastName}` : 'Unknown Player';
+        // Check if playerName is not set and try to find it from players
+        if (!event.playerName) {
+            const player = players.find(p => p.playerStaff.id === event.nationalTeamPlayerStaffId);
+            if (player) {
+                playerName = `${player.playerStaff.firstName} ${player.playerStaff.lastName}`;
+            }
+        }
 
         return (
             <div className="flex items-center justify-between py-2 border-b last:border-0">
@@ -395,8 +629,8 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
                     {eventType === 'Yellow Card' && '🟨'}
                     {eventType === 'Red Card' && '🟥'}
                     <span>
-            {eventType} - {playerName}
-          </span>
+                        {eventType} - {playerName}
+                    </span>
                 </div>
                 {minute && <span className="text-sm text-gray-500">{minute}</span>}
             </div>
@@ -404,18 +638,22 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
     };
 
     const renderEvents = () => {
+        console.log('Current Match Data Events:', matchData.events);
+
         const homeTeamEvents = matchData.events.filter(event =>
-            teamAPlayers.some(player => player.playerStaff.id === event.nationalTeamPlayerStaffId)
+            teamAPlayersState.some(player => player.playerStaff.id === event.nationalTeamPlayerStaffId)
         );
         const awayTeamEvents = matchData.events.filter(event =>
-            teamBPlayers.some(player => player.playerStaff.id === event.nationalTeamPlayerStaffId)
+            teamBPlayersState.some(player => player.playerStaff.id === event.nationalTeamPlayerStaffId)
         );
+
+        console.log('Home Team Events:', homeTeamEvents);
+        console.log('Away Team Events:', awayTeamEvents);
 
         return (
             <div className="bg-white rounded-lg border">
                 <div className="p-4 border-b flex justify-between items-center">
                     <h3 className="font-medium">Match Events</h3>
-
                 </div>
                 <div className="p-4 grid grid-cols-2 gap-4">
                     <div>
@@ -427,7 +665,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
                         ) : (
                             <div className="space-y-2">
                                 {homeTeamEvents.map((event, index) => (
-                                    <EventItem key={index} event={event} players={teamAPlayers} />
+                                    <EventItem key={index} event={event} players={teamAPlayersState} />
                                 ))}
                             </div>
                         )}
@@ -441,7 +679,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
                         ) : (
                             <div className="space-y-2">
                                 {awayTeamEvents.map((event, index) => (
-                                    <EventItem key={index} event={event} players={teamBPlayers} />
+                                    <EventItem key={index} event={event} players={teamBPlayersState} />
                                 ))}
                             </div>
                         )}
@@ -470,7 +708,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
                                 #{player.playerStaff.id} - {player.playerStaff.lastName} {player.playerStaff.firstName}
                             </SelectItem>
                         ))}
-                        {pendingEvent?.team === 'B' && teamBPlayers?.map(player => (
+                        {pendingEvent?.team === 'B' && teamBPlayersState?.map(player => (
                             <SelectItem key={player.id} value={player.id}>
                                 #{player.playerStaff.id} - {player.playerStaff.lastName} {player.playerStaff.firstName}
                             </SelectItem>
@@ -481,13 +719,63 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
         </Dialog>
     );
 
+    const renderAddedTimeModal = () => (
+        <Dialog open={showAddedTimeModal} onOpenChange={setShowAddedTimeModal}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Enter Added First Time</DialogTitle>
+                </DialogHeader>
+                <Input
+                    type="number"
+                    min="0"
+                    value={firstAddedTime}
+                    onChange={(e) => setFirstAddedTime(parseInt(e.target.value, 10))}
+                    className="w-full"
+                />
+                <Button onClick={handleSaveAddedTime} className="mt-4">
+                    Save
+                </Button>
+            </DialogContent>
+        </Dialog>
+    );
+
+    const renderAddedLastTimeModal = () => (
+        <Dialog open={showAddedLastTimeModal} onOpenChange={setShowAddedLastTimeModal}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Enter Added Last Time</DialogTitle>
+                </DialogHeader>
+                <Input
+                    type="number"
+                    min="0"
+                    value={secondAddedTime}
+                    onChange={(e) => setSecondAddedTime(parseInt(e.target.value, 10))}
+                    className="w-full"
+                />
+                <Button onClick={handleSaveAddedLastTime} className="mt-4">
+                    Save
+                </Button>
+            </DialogContent>
+        </Dialog>
+    );
+
+    // Ensure events is an array
+    const events = Array.isArray(match.events) ? match.events : [];
+    if (!Array.isArray(match.events)) {
+        console.error("Events is not an array, defaulting to empty array");
+    }
+
+    const filteredEvents = renderEvents(events, teamAPlayers, teamBPlayersState);
+
     return (
         <div className="space-y-6">
             {renderMatchControls()}
             {renderScoreboard()}
             {renderControls()}
-            {renderEvents()}
+            {filteredEvents}
             {renderPlayerSelect()}
+            {renderAddedTimeModal()}
+            {renderAddedLastTimeModal()}
             <Dialog open={showPlayerStats} onOpenChange={setShowPlayerStats}>
                 <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
                     <DialogHeader>
@@ -498,7 +786,7 @@ export default function FootballScoreboard({ match, teamAPlayers = [], teamBPlay
                     </DialogHeader>
                     <div className="flex-1 overflow-y-auto p-4">
                         <PlayerStatsDisplay
-                            players={[...(teamAPlayers || []), ...(teamBPlayers || [])]}
+                            players={[...(teamAPlayers || []), ...(teamBPlayersState || [])]}
                             gameType="football"
                             events={matchData.events}
                         />

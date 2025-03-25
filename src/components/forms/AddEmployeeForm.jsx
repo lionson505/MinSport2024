@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import toast from 'react-hot-toast';
-import { locations } from '../../data/locations'; // Import locations data
+import locData from '../../data/loc.json'; // Import loc.json directly
 import axiosInstance from '../../utils/axiosInstance';
 
 const createEmployee = async (data) => {
@@ -188,6 +188,25 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
       }),
     }));
   };
+
+  const provinces = locData.items.map(item => item.name);
+  const districts = {};
+  const sectors = {};
+  const cells = {};
+  const villages = {};
+
+  locData.items.forEach(province => {
+    districts[province.name] = province.districts.map(district => district.name);
+    province.districts.forEach(district => {
+      sectors[district.name] = district.sectors.map(sector => sector.name);
+      district.sectors.forEach(sector => {
+        cells[sector.name] = sector.cells.map(cell => cell.name);
+        sector.cells.forEach(cell => {
+          villages[cell.name] = cell.villages;
+        });
+      });
+    });
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -488,7 +507,7 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
               required
             >
               <option value="">Select Province</option>
-              {locations.provinces.map((province) => (
+              {provinces.map((province) => (
                 <option key={province} value={province}>
                   {province}
                 </option>
@@ -507,7 +526,7 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
               required
             >
               <option value="">Select District</option>
-              {(locations.districts[formData.province] || []).map((district) => (
+              {(districts[formData.province] || []).map((district) => (
                 <option key={district} value={district}>
                   {district}
                 </option>
@@ -526,7 +545,7 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
               required
             >
               <option value="">Select Sector</option>
-              {(locations.sectors[formData.district] || []).map((sector) => (
+              {(sectors[formData.district] || []).map((sector) => (
                 <option key={sector} value={sector}>
                   {sector}
                 </option>
@@ -545,7 +564,7 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
               required
             >
               <option value="">Select Cell</option>
-              {(locations.cells[formData.sector] || []).map((cell) => (
+              {(cells[formData.sector] || []).map((cell) => (
                 <option key={cell} value={cell}>
                   {cell}
                 </option>
@@ -564,7 +583,7 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
               required
             >
               <option value="">Select Village</option>
-              {(locations.villages[formData.cell] || []).map((village) => (
+              {(villages[formData.cell] || []).map((village) => (
                 <option key={village} value={village}>
                   {village}
                 </option>

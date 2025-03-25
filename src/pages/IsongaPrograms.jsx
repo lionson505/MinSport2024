@@ -331,9 +331,9 @@ const IsongaPrograms = () => {
   const totalStudentPages = Math.ceil(filteredStudents.length / itemsPerPage);
 
   const renderLocation = (location) => {
-    if (!location) return '';
-    const { province, district, sector, cell, village } = location;
-    return `${province}, ${district}, ${sector}, ${cell}, ${village}`;
+    if (!location) return 'N/A';
+    const { location_province, location_district, location_sector, location_cell, location_village } = location;
+    return `${location_province || 'N/A'}, ${location_district || 'N/A'}, ${location_sector || 'N/A'}, ${location_cell || 'N/A'}, ${location_village || 'N/A'}`;
   };
 
   const renderTabContent = () => {
@@ -390,6 +390,8 @@ const IsongaPrograms = () => {
                         <TableHead className="min-w-[200px] text-xs">Name</TableHead>
                         <TableHead className="min-w-[150px] text-xs">Domain</TableHead>
                         <TableHead className="min-w-[150px] text-xs">Category</TableHead>
+                        <TableHead className="min-w-[150px] text-xs">Students</TableHead>
+                        <TableHead className="min-w-[150px] text-xs">Location</TableHead>
                         <TableHead className="w-[150px] text-xs">Operation</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -399,6 +401,8 @@ const IsongaPrograms = () => {
                           <TableCell className="text-xs font-medium">{program.name}</TableCell>
                           <TableCell className="text-xs">{program.domain}</TableCell>
                           <TableCell className="text-xs">{program.category}</TableCell>
+                          <TableCell>{program.students || 0}</TableCell>
+                          <TableCell className="text-xs">{renderLocation(program)}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-1">
                               <button
@@ -496,6 +500,7 @@ const IsongaPrograms = () => {
                         <TableHead className="min-w-[80px] text-xs">Class</TableHead>
                         <TableHead className="min-w-[100px] text-xs">Game Type</TableHead>
                         <TableHead className="min-w-[150px] text-xs">Contact</TableHead>
+                        <TableHead className="min-w-[150px] text-xs">Nationality</TableHead>
                         <TableHead className="w-[150px] text-xs">Operation</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -508,6 +513,7 @@ const IsongaPrograms = () => {
                           <TableCell className="text-xs">{student.class}</TableCell>
                           <TableCell className="text-xs">{student.typeOfGame}</TableCell>
                           <TableCell className="text-xs">{student.contact}</TableCell>
+                          <TableCell className="text-xs">{student.nationality || 'N/A'}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-1">
                               <button

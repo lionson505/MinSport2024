@@ -17,11 +17,13 @@ import axiosInstance from '../../utils/axiosInstance';
 import { Dialog, Transition } from '@headlessui/react';
 import { locations } from '../../data/locations';
 import PrintButton from '../reusable/Print';
+import GoogleMap from '../reusable/GoogleMapForm';
 
-const InfrastructureList = () => {
-  const [infrastructures, setInfrastructures] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [subCategories, setSubCategories] = useState([]);
+const InfrastructureList = ({ infrastructures, categories, subCategories }) => {
+  // Rename state variables to avoid conflict with props
+  const [localInfrastructures, setLocalInfrastructures] = useState([]);
+  const [localCategories, setLocalCategories] = useState([]);
+  const [localSubCategories, setLocalSubCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
     category: '',
@@ -65,6 +67,7 @@ const InfrastructureList = () => {
     legal_representative_email: '',
     legal_representative_phone: ''
   });
+  const [isMapVisible, setIsMapVisible] = useState(false);
   const provinces = ['Kigali City', 'Eastern', 'Western', 'Northern', 'Southern'];
   const statuses = ['Active', 'Under Construction', 'Under Maintenance', 'Inactive'];
   const typeLevels = ['International', 'National', 'Provincial', 'District', 'Sector'];
@@ -78,18 +81,20 @@ const InfrastructureList = () => {
   };
 
   useEffect(() => {
-    fetchInfrastructures();
-    fetchCategories();
-  }, []);
+    // Use props directly or fetch data if needed
+    setLocalInfrastructures(infrastructures);
+    setLocalCategories(categories);
+    setLocalSubCategories(subCategories);
+  }, [infrastructures, categories, subCategories]);
 
   const fetchInfrastructures = async () => {
     try {
       const response = await axiosInstance.get('/infrastructures');
-      setInfrastructures(response.data);
+      setLocalInfrastructures(response.data);
+      // Uncomment the toast if needed
       // toast.success('Infrastructure list loaded', {
-        // description: `Successfully loaded ${response.data.length} infrastructures`
-      // }
-    // );
+      //   description: `Successfully loaded ${response.data.length} infrastructures`
+      // });
     } catch (error) {
       console.error('Error fetching infrastructures:', error);
       toast.error('Failed to load infrastructures', {
@@ -101,7 +106,7 @@ const InfrastructureList = () => {
   const fetchCategories = async () => {
     try {
       const response = await axiosInstance.get('/infrastructure-categories');
-      setCategories(response.data);
+      setLocalCategories(response.data);
       // toast.success('Categories loaded successfully');
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -111,10 +116,10 @@ const InfrastructureList = () => {
     }
   };
 
-  const fetchSubCategories = async (categoryId) => {
+  const fetchSubCategories = async () => {
     try {
-      const response = await axiosInstance.get(`/infrastructure-subcategories?category=${categoryId}`);
-      setSubCategories(response.data);
+      const response = await axiosInstance.get('/infrastructure-subcategories');
+      setLocalSubCategories(response.data);
       // toast.success('Subcategories loaded successfully');
     } catch (error) {
       console.error('Error fetching subcategories:', error);
@@ -135,7 +140,7 @@ const InfrastructureList = () => {
       
       if (response.status === 200 || response.status === 204) {
         // First update the state
-        setInfrastructures(prev => 
+        setLocalInfrastructures(prev => 
           prev.filter(infra => infra.id !== selectedInfrastructure.id)
         );
         
@@ -183,7 +188,7 @@ const InfrastructureList = () => {
       toast.success('Infrastructure added successfully!');
       if (response.status === 200) {
         // First update the state
-        setInfrastructures(prevInfrastructures => 
+        setLocalInfrastructures(prevInfrastructures => 
           prevInfrastructures.map(infra => 
             infra.id === selectedInfrastructure.id ? response.data : infra
           )
@@ -289,7 +294,7 @@ const InfrastructureList = () => {
       legal_representative_email: infrastructure.legal_representative_email || '',
       legal_representative_phone: infrastructure.legal_representative_phone || ''
     });
-    fetchSubCategories(infrastructure.infra_category);
+    fetchSubCategories();
     setIsEditModalOpen(true);
     toast.info('Edit mode', {
       description: `You are now editing "${infrastructure.name}"`
@@ -306,7 +311,7 @@ const InfrastructureList = () => {
     });
 
     if (name === 'infra_category') {
-      fetchSubCategories(value);
+      fetchSubCategories();
     }
   };
 
@@ -339,7 +344,7 @@ const InfrastructureList = () => {
     });
   };
 
-  const filteredInfrastructures = infrastructures.filter(infra => {
+  const filteredInfrastructures = localInfrastructures.filter(infra => {
     const matchesSearch = searchTerm === '' || 
       (infra.name && infra.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (infra.infra_category && infra.infra_category.toString().includes(searchTerm.toLowerCase())) ||
@@ -393,6 +398,22 @@ const InfrastructureList = () => {
     return errors;
   };
 
+  const handleMapClick = (latLng) => {
+    setEditFormData((prev) => ({
+      ...prev,
+      latitude: latLng.lat,
+      longitude: latLng.lng,
+    }));
+    toast.info('Location updated on map', {
+      description: `Latitude: ${latLng.lat}, Longitude: ${latLng.lng}`
+    });
+  };
+
+  // Log data to compare
+  console.log('Received Infrastructure Data:', localInfrastructures);
+  console.log('Received Categories:', localCategories);
+  console.log('Received Subcategories:', localSubCategories);
+
   return (
     <div className="space-y-6">
       <Toaster
@@ -440,7 +461,7 @@ const InfrastructureList = () => {
     <SelectValue placeholder="All Categories" />
   </SelectTrigger>
   <SelectContent>
-    {categories.map(category => (
+    {localCategories.map(category => (
       <SelectItem key={category.id} value={category.id}>
         {category.name}
       </SelectItem>
@@ -513,8 +534,33 @@ const InfrastructureList = () => {
 
       {/* Results Summary */}
       <div className="text-sm text-gray-500">
-        Showing {filteredInfrastructures.length} of {infrastructures.length} infrastructures
+        Showing {filteredInfrastructures.length} of {localInfrastructures.length} infrastructures
       </div>
+
+      {/* Toggle Map Button */}
+      <div className="flex justify-end">
+        <Button
+          variant="outline"
+          onClick={() => setIsMapVisible(!isMapVisible)}
+          className="flex items-center gap-2"
+        >
+          <MapPin className="h-4 w-4" />
+          {isMapVisible ? 'Hide Map' : 'Show Map'}
+        </Button>
+      </div>
+
+      {/* Map Section */}
+      {isMapVisible && (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+          <GoogleMap
+            apiKey="AIzaSyA_Is24-zuhqdSyUYlYqx6JGyTrG1iqaiE"
+            center={{ lat: -1.9403, lng: 29.8739 }}
+            zoom={8}
+            onFacilityClick={handleMapClick}
+            onMapClick={handleMapClick}
+          />
+        </div>
+      )}
 
       {/* Infrastructure Table */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
@@ -524,6 +570,7 @@ const InfrastructureList = () => {
             <TableRow>
               <TableHead>Name</TableHead>
               <TableHead>Category</TableHead>
+              <TableHead>Subcategory</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Capacity</TableHead>
               <TableHead>Location</TableHead>
@@ -531,51 +578,62 @@ const InfrastructureList = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredInfrastructures.map((infra) => (
-              <TableRow key={infra.id}>
-                <TableCell className="font-medium">{infra.name}</TableCell>
-                <TableCell>{infra.infra_category}</TableCell>
-                <TableCell>
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    infra.status === 'Active' 
-                      ? 'bg-green-100 text-green-800' 
-                      : infra.status === 'Under Construction'
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : infra.status === 'Under Maintenance'
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'bg-red-100 text-red-800'
-                  }`}>
-                    {infra.status}
-                  </span>
-                </TableCell>
-                <TableCell>{infra.capacity}</TableCell>
-                <TableCell>
-                  {`${infra.location_province}, ${infra.location_district}`}
-                </TableCell>
-                <TableCell>
-                  <div className="flex space-x-2">
-                    <Button size="sm" variant="ghost" title="View Details" onClick={() => openViewModal(infra)}>
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" variant="ghost" title="Edit" onClick={() => openEditModal(infra)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="ghost" 
-                      className="text-red-600" 
-                      title="Delete"
-                      onClick={() => openDeleteModal(infra)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" variant="ghost" title="View on Map">
-                      <MapPin className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
+            {filteredInfrastructures.map((infra) => {
+              const categoryName = localCategories.find(cat => cat.id === infra.infraCategoryId )?.name || 'N/A';
+              const subCategoryName = localSubCategories.find(sub => sub.id === infra.infraSubCategoryId)?.name || 'N/A';
+
+              // Log the category and subcategory names to the console
+              // console.log(`Infrastructure: ${infra.name}`);
+              // console.log(`Category: ${categoryName}`);
+              // console.log(`Subcategory: ${subCategoryName}`);
+
+              return (
+                <TableRow key={infra.id}>
+                  <TableCell className="font-medium">{infra.name}</TableCell>
+                  <TableCell>{categoryName}</TableCell>
+                  <TableCell>{subCategoryName}</TableCell>
+                  <TableCell>
+                    <span className={`px-2 py-1 rounded-full text-xs ${
+                      infra.status === 'Active' 
+                        ? 'bg-green-100 text-green-800' 
+                        : infra.status === 'Under Construction'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : infra.status === 'Under Maintenance'
+                        ? 'bg-blue-100 text-blue-800'
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {infra.status}
+                    </span>
+                  </TableCell>
+                  <TableCell>{infra.capacity}</TableCell>
+                  <TableCell>
+                    {`${infra.location_province}, ${infra.location_district}`}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex space-x-2">
+                      <Button size="sm" variant="ghost" title="View Details" onClick={() => openViewModal(infra)}>
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" title="Edit" onClick={() => openEditModal(infra)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        className="text-red-600" 
+                        title="Delete"
+                        onClick={() => openDeleteModal(infra)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" title="View on Map">
+                        <MapPin className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
         </PrintButton>
@@ -640,7 +698,7 @@ const InfrastructureList = () => {
                       className={`border ${!editFormData.infra_category ? 'border-red-500' : 'border-gray-300'} rounded p-2`}
                     >
                       <option value="">Select Category</option>
-                      {categories.map((category) => (
+                      {localCategories.map((category) => (
                         <option key={category.id} value={category.id}>
                           {category.name}
                         </option>
@@ -664,7 +722,7 @@ const InfrastructureList = () => {
                       disabled={!editFormData.infra_category}
                     >
                       <option value="">Select Sub Category</option>
-                      {subCategories.map((subCategory) => (
+                      {localSubCategories.map((subCategory) => (
                         <option key={subCategory.id} value={subCategory.id}>
                           {subCategory.name}
                         </option>
@@ -1107,6 +1165,18 @@ const InfrastructureList = () => {
                     />
                   </div>
 
+                  {/* Map Section */}
+                  <div className="col-span-2">
+                    <label className="font-medium mb-1">Select Location on Map:</label>
+                    <GoogleMap
+                      apiKey="AIzaSyA_Is24-zuhqdSyUYlYqx6JGyTrG1iqaiE"
+                      center={{ lat: editFormData.latitude || -1.9403, lng: editFormData.longitude || 29.8739 }}
+                      zoom={8}
+                      onFacilityClick={handleMapClick}
+                      onMapClick={handleMapClick}
+                    />
+                  </div>
+
                   <div className="flex justify-end col-span-2">
                     <Button
                       variant="outline"
@@ -1163,8 +1233,8 @@ const InfrastructureList = () => {
                     <h3 className="font-semibold mb-2 text-blue-600">Basic Information</h3>
                     <div className="grid grid-cols-2 gap-4">
                       <p><span className="font-medium">Name:</span> {selectedInfrastructure?.name}</p>
-                      <p><span className="font-medium">Category:</span> {selectedInfrastructure?.infra_category}</p>
-                      <p><span className="font-medium">Sub Category:</span> {selectedInfrastructure?.infra_sub_category}</p>
+                      <p><span className="font-medium">Category:</span> {localCategories.find(cat => cat.id === selectedInfrastructure?.infra_category)?.name || 'N/A'}</p>
+                      <p><span className="font-medium">Sub Category:</span> {localSubCategories.find(sub => sub.id === selectedInfrastructure?.infra_sub_category)?.name || 'N/A'}</p>
                       <p><span className="font-medium">Type Level:</span> {selectedInfrastructure?.type_level}</p>
                       <p><span className="font-medium">Status:</span> 
                         <span className={`ml-2 px-2 py-1 rounded-full text-xs ${

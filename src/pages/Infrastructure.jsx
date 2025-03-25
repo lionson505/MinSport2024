@@ -19,11 +19,13 @@ const Infrastructure = () => {
   const [categories, setCategories] = useState([]);
   const [infrastructure, setInfrastructure] = useState([]);
   const [lastUpdate, setLastUpdate] = useState(Date.now());
+  const [subCategories, setSubCategories] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       await fetchCategories();
       await fetchInfrastructure();
+      await fetchSubCategories();
     };
     
     fetchData();
@@ -49,6 +51,16 @@ const Infrastructure = () => {
     }
   };
 
+  const fetchSubCategories = async () => {
+    try {
+      const response = await axiosInstance.get('/infrastructure-subcategories');
+      setSubCategories(response.data);
+    } catch (error) {
+      console.error('Error fetching subcategories:', error);
+      toast.error('Failed to fetch subcategories');
+    }
+  };
+
   const updateCategories = async (updatedCategories) => {
     try {
       await axiosInstance.put('/infrastructure-categories', updatedCategories);
@@ -71,6 +83,11 @@ const Infrastructure = () => {
   };
 
   const showAddButton = activeTab === 'list';
+
+  // Log data to compare
+  console.log('Infrastructure Data:', infrastructure);
+  console.log('Categories:', categories);
+  console.log('Subcategories:', subCategories);
 
   return (
     <div className="p-6">
@@ -118,7 +135,11 @@ const Infrastructure = () => {
         </TabsList>
 
         <TabsContent value="list">
-          <InfrastructureList infrastructure={infrastructure} />
+          <InfrastructureList
+            infrastructures={infrastructure}
+            categories={categories}
+            subCategories={subCategories}
+          />
         </TabsContent>
 
         <TabsContent value="map">

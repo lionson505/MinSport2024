@@ -33,6 +33,7 @@ export function MatchScoreboard({ match, homeTeamPlayers, awayTeamPlayers, onClo
               onClose={onClose}
               teamAPlayers={homeTeamPlayers}
               teamBPlayers={awayTeamPlayers}
+              timePassed={match.timePassed}
             />
           )}
           {match.gameType === 'Basketball' && (

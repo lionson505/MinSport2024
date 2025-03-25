@@ -195,8 +195,12 @@ const TourismEventsList = () => {
               <TableRow>
                 <TableHead>Event Name</TableHead>
                 <TableHead>Category</TableHead>
+                <TableHead>Sub Category</TableHead>
                 <TableHead>Start Date</TableHead>
+                <TableHead>End Date</TableHead>
                 <TableHead>Location</TableHead>
+                <TableHead>Fees</TableHead>
+                <TableHead>Published</TableHead>
                 <TableHead className="operation">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -208,11 +212,21 @@ const TourismEventsList = () => {
                     {categories.find(cat => cat.id === event.categoryId)?.name || 'Unknown Category'}
                   </TableCell>
                   <TableCell>
+                    {categories.find(cat => cat.id === event.subCategoryId)?.name || 'Unknown Sub Category'}
+                  </TableCell>
+                  <TableCell>
                     {isValid(new Date(event.startDate))
                       ? format(new Date(event.startDate), 'MMM dd, yyyy')
                       : 'Invalid Date'}
                   </TableCell>
+                  <TableCell>
+                    {isValid(new Date(event.endDate))
+                      ? format(new Date(event.endDate), 'MMM dd, yyyy')
+                      : 'Invalid Date'}
+                  </TableCell>
                   <TableCell>{`${event.province}, ${event.district}`}</TableCell>
+                  <TableCell>${event.participantsFee}</TableCell>
+                  <TableCell>{event.isPublished ? 'Yes' : 'No'}</TableCell>
                   <TableCell className="operation" >
                     <div className="flex space-x-2">
                       <Button

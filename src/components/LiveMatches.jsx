@@ -5,27 +5,16 @@ import aprLogo from './liveMatch/aprLogo.jpeg';
 import rayonLogo from './liveMatch/rayonLogo.jpg';
 import useFetchLiveMatches from '../utils/fetchLiveMatches';
 import MatchModal from './matchDetailsModal';
+import { calculateMatchMinute } from '../utils/matchTimeUtils';
 
 const LiveMatches = () => {
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [activeTab, setActiveTab] = useState("Summary");
   const { matches = [], liveMatchError } = useFetchLiveMatches();
   const [matchMinutes, setMatchMinutes] = useState({});
-
-  const calculateMatchMinute = (startTime) => {
-    if (!startTime) return '0';
-
-    const start = new Date(startTime);
-    const now = new Date();
-
-    if (isNaN(start.getTime())) {
-      console.error('Invalid start time:', startTime);
-      return '0';
-    }
-
-    const diffInMinutes = Math.floor((now - start) / (1000 * 60));
-    return Math.max(0, diffInMinutes).toString();
-  };
+  
+  // Calculate the count of matches
+  const count = matches.length;
 
   const formatMatchTime = (matchId) => {
     if (!matchMinutes[matchId]) return '0\'';
@@ -79,8 +68,15 @@ const LiveMatches = () => {
 
       const newMinutes = {};
       matches.forEach(match => {
-        if ((match.status === 'LIVE' || match.status === 'ONGOING') && match.startTime) {
-          newMinutes[match.id] = calculateMatchMinute(match.startTime);
+        if (match.startTime && match.updatedAt) {
+          newMinutes[match.id] = calculateMatchMinute(
+            match.startTime,
+            match.updatedAt,
+            match.firstTime,
+            match.firstAddedTime,
+            match.secondTime || 0,
+            match.secondAddedTime || 0
+          );
         }
       });
       setMatchMinutes(newMinutes);

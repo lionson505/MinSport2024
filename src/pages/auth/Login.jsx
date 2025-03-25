@@ -170,7 +170,7 @@ export default function Login() {
     e.preventDefault();
     setIsLoading(true);
 
-    const userId =  await secureStorage.getItem('tempUserId');
+    const userId = await secureStorage.getItem('tempUserId');
     debugLog('OTP verification attempt', { userId, otp });
 
     try {

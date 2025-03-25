@@ -171,6 +171,9 @@ function Documents() {
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Reference No.</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Phone</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Email ID</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Person/Institution</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Date of Recording</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Date of Reception/Sending</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Status</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 operation">Operations</th>
             </tr>
@@ -183,6 +186,9 @@ function Documents() {
                 <td className="px-4 py-3 text-sm">{doc.referenceNo}</td>
                 <td className="px-4 py-3 text-sm">{doc.phone}</td>
                 <td className="px-4 py-3 text-sm">{doc.emailId}</td>
+                <td className="px-4 py-3 text-sm">{doc.personOrInstitution}</td>
+                <td className="px-4 py-3 text-sm">{doc.dateOfRecording}</td>
+                <td className="px-4 py-3 text-sm">{doc.dateOfReceptionOrSending}</td>
                 <td className="px-4 py-3">
                   <span className={`inline-flex px-2 py-1 text-xs rounded-full ${doc.status === 'Received' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
                     {doc.status}

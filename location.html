@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Selector</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        select {
+            margin: 10px 0;
+            padding: 5px;
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Select Your Location</h1>
+    <form id="locationForm">
+        <label for="district">District:</label>
+        <select id="district" name="district">
+            <option value="">Select District</option>
+        </select>
+
+        <label for="sector">Sector:</label>
+        <select id="sector" name="sector" disabled>
+            <option value="">Select Sector</option>
+        </select>
+
+        <label for="cell">Cell:</label>
+        <select id="cell" name="cell" disabled>
+            <option value="">Select Cell</option>
+        </select>
+
+        <label for="village">Village:</label>
+        <select id="village" name="village" disabled>
+            <option value="">Select Village</option>
+        </select>
+    </form>
+
+    <script type="module">
+        import { locations } from './src/data/locations.js';
+
+        const districtSelect = document.getElementById('district');
+        const sectorSelect = document.getElementById('sector');
+        const cellSelect = document.getElementById('cell');
+        const villageSelect = document.getElementById('village');
+
+        // Populate districts
+        Object.keys(locations.districts).forEach(province => {
+            locations.districts[province].forEach(district => {
+                const option = document.createElement('option');
+                option.value = district;
+                option.textContent = district;
+                districtSelect.appendChild(option);
+            });
+        });
+
+        // Event listener for district change
+        districtSelect.addEventListener('change', function() {
+            sectorSelect.innerHTML = '<option value="">Select Sector</option>';
+            cellSelect.innerHTML = '<option value="">Select Cell</option>';
+            villageSelect.innerHTML = '<option value="">Select Village</option>';
+            sectorSelect.disabled = true;
+            cellSelect.disabled = true;
+            villageSelect.disabled = true;
+
+            const selectedDistrict = districtSelect.value;
+            if (selectedDistrict) {
+                const sectors = locations.sectors[selectedDistrict] || [];
+                sectors.forEach(sector => {
+                    const option = document.createElement('option');
+                    option.value = sector;
+                    option.textContent = sector;
+                    sectorSelect.appendChild(option);
+                });
+                sectorSelect.disabled = false;
+            }
+        });
+
+        // Event listener for sector change
+        sectorSelect.addEventListener('change', function() {
+            cellSelect.innerHTML = '<option value="">Select Cell</option>';
+            villageSelect.innerHTML = '<option value="">Select Village</option>';
+            cellSelect.disabled = true;
+            villageSelect.disabled = true;
+
+            const selectedSector = sectorSelect.value;
+            if (selectedSector) {
+                const cells = locations.cells[selectedSector] || [];
+                cells.forEach(cell => {
+                    const option = document.createElement('option');
+                    option.value = cell;
+                    option.textContent = cell;
+                    cellSelect.appendChild(option);
+                });
+                cellSelect.disabled = false;
+            }
+        });
+
+        // Event listener for cell change
+        cellSelect.addEventListener('change', function() {
+            villageSelect.innerHTML = '<option value="">Select Village</option>';
+            villageSelect.disabled = true;
+
+            const selectedCell = cellSelect.value;
+            if (selectedCell) {
+                const villages = locations.villages[selectedCell] || [];
+                villages.forEach(village => {
+                    const option = document.createElement('option');
+                    option.value = village;
+                    option.textContent = village;
+                    villageSelect.appendChild(option);
+                });
+                villageSelect.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html> 

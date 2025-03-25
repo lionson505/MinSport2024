@@ -338,8 +338,15 @@ const SportsProfessionals = () => {
     <TableRow key={professional.id}>
       <TableCell>{professional.firstName}</TableCell>
       <TableCell>{professional.lastName}</TableCell>
-      <TableCell>{professional.function}</TableCell>
+      <TableCell>
+        {functions.find((func) => func.id === professional.functionId)?.name || 'N/A'}
+      </TableCell>
       <TableCell>{professional.nationality}</TableCell>
+      <TableCell>
+        {disciplines.find((discipline) => discipline.id === professional.disciplineId)?.name || 'N/A'}
+      </TableCell>
+      <TableCell>{professional.functionality || 'N/A'}</TableCell>
+      <TableCell>{professional.status || 'N/A'}</TableCell>
       <TableCell className="operation">
         <div className="flex items-center gap-2">
           <button
@@ -472,6 +479,9 @@ const SportsProfessionals = () => {
                   <TableHead>Last Name</TableHead>
                   <TableHead>Function</TableHead>
                   <TableHead>Nationality</TableHead>
+                  <TableHead>Division</TableHead>
+                  <TableHead>Function</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead className="operation">Actions</TableHead>
                 </>
               ) : activeTab === 'Disciplines' ? (

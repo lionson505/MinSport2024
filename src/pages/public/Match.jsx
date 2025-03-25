@@ -11,6 +11,7 @@ import MatchModal from '../../components/matchDetailsModal';
 import useFetchLiveMatches from '../../utils/fetchLiveMatches';
 import Fallback from './fallback';
 import PublicLayout from '../../components/layouts/PublicLayout.jsx';
+import { calculateMatchMinute } from '../../utils/matchTimeUtils';
 
 function LandingPageMatch() {
     const [imageIndex, setImageIndex] = useState(0);
@@ -41,21 +42,6 @@ function LandingPageMatch() {
         );
     });
 
-    const calculateMatchMinute = (startTime) => {
-        if (!startTime) return '0';
-
-        const start = new Date(startTime);
-        const now = new Date();
-
-        if (isNaN(start.getTime())) {
-            console.error('Invalid start time:', startTime);
-            return '0';
-        }
-
-        const diffInMinutes = Math.floor((now - start) / (1000 * 60));
-        return Math.max(0, diffInMinutes).toString();
-    };
-
     const formatMatchTime = (matchId) => {
         if (!matchMinutes[matchId]) return '0\'';
 
@@ -75,8 +61,15 @@ function LandingPageMatch() {
             if (!Array.isArray(matches)) return;
             const newMinutes = {};
             matches.forEach(match => {
-                if (match.status === 'LIVE' || match.status === 'ONGOING') {
-                    newMinutes[match.id] = calculateMatchMinute(match.startTime);
+                if (match.startTime && match.updatedAt) {
+                    newMinutes[match.id] = calculateMatchMinute(
+                        match.startTime,
+                        match.updatedAt,
+                        match.firstTime,
+                        match.firstAddedTime,
+                        match.secondTime || 0,
+                        match.secondAddedTime || 0
+                    );
                 }
             });
             setMatchMinutes(newMinutes);

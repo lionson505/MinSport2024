@@ -47,6 +47,8 @@ import MinisterAppointments from "./pages/AppointmentsMinister.jsx";
 import PSAppointments from "./pages/AppointmentsPs.jsx";
 import PasswordReset from './pages/auth/ResetPassword.jsx';
 import AppointmentRequest from './pages/public/AppointmentRequest.jsx';
+import VerifyEmail from './pages/auth/VerifyEmail.jsx';
+import setupInactivityHandler from './utils/inactivityHandler';
 
 function App() {
   const [accessibleLinks, setAccessibleLinks] = useState(null);
@@ -89,6 +91,10 @@ function App() {
     if (process.env.NODE_ENV === 'development') {
       // localStorage.setItem('userRole', 'admin');
     }
+  }, []);
+
+  useEffect(() => {
+    setupInactivityHandler();
   }, []);
 
   if (isLoading) {
@@ -138,6 +144,7 @@ function App() {
                       <Route path="/login" element={<Login />} />
                       <Route path="/forgot-password" element={<ForgotPassword />} />
                       <Route path="/check-email/:token" element={<CheckEmail />} />
+                      <Route path="/verify-email/:token" element={<VerifyEmail />} />
                       <Route path="/" element={<LandingPage />} />
                       <Route path="/home" element={<LandingPage />} />
                       <Route path="/sports-events" element={<AllSportsEvents />} />

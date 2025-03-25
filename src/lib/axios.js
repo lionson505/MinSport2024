@@ -34,11 +34,14 @@ axiosInstance.interceptors.response.use(
         case 401:
           // Unauthorized - clear token and redirect to login
           localStorage.removeItem('token');
+          localStorage.removeItem('user');
           window.location.href = '/login';
           break;
         case 403:
-          // Forbidden
-          console.error('Access forbidden');
+          // Forbidden - clear token and redirect to login
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          window.location.href = '/login';
           break;
         case 404:
           // Not found

@@ -75,6 +75,7 @@
 import React, { useState } from 'react'
 import GoogleMap from '../components/reusable/GoogleMap'
 import BookingModal from '../components/reusable/BookingModal'
+import ErrorBoundary from '../components/ErrorBoundary'
 
 const sportsFacilities = [
   { id: '1', name: 'Amahoro National Stadium', position: { lat: -1.9441, lng: 30.0619 }, type: 'stadium' },
@@ -106,56 +107,58 @@ export default function MyMap() {
   }
 
   return (
-    <div className="container mx-auto p-4 text-black">
-      <h1 className="text-3xl font-bold mb-6 text-center">Sports Facilities in Rwanda</h1>
+    <ErrorBoundary>
+      <div className="container mx-auto p-4 text-black">
+        <h1 className="text-3xl font-bold mb-6 text-center">Sports Facilities in Rwanda</h1>
 
-      <div className="mb-4 flex gap-2">
-        <input
-          type="text"
-          placeholder="Search facilities..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+        <div className="mb-4 flex gap-2">
+          <input
+            type="text"
+            placeholder="Search facilities..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          />
+          <button onClick={handleSearch} className="px-4 py-2 bg-blue-500 text-white rounded-lg">
+            Search
+          </button>
+          <button onClick={handleReset} className="px-4 py-2 border rounded-lg hover:bg-gray-100">
+            Reset
+          </button>
+        </div>
+
+        <GoogleMap
+          apiKey={apiKey}
+          center={{ lat: -1.9403, lng: 29.8739 }}
+          zoom={8}
+          facilities={filteredFacilities}
+          onFacilityClick={handleFacilityClick}
         />
-        <button onClick={handleSearch} className="px-4 py-2 bg-blue-500 text-white rounded-lg">
-          Search
-        </button>
-        <button onClick={handleReset} className="px-4 py-2 border rounded-lg hover:bg-gray-100">
-          Reset
-        </button>
-      </div>
 
-      <GoogleMap
-        apiKey={apiKey}
-        center={{ lat: -1.9403, lng: 29.8739 }}
-        zoom={8}
-        facilities={filteredFacilities}
-        onFacilityClick={handleFacilityClick}
-      />
-
-      <div className="mt-6">
-        <h2 className="text-xl font-semibold mb-2">Legend</h2>
-        <div className="flex gap-4">
-          <div className="flex items-center">
-            <div className="w-4 h-4 bg-blue-500 rounded-full mr-2"></div> <span>Stadium</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-4 h-4 bg-green-500 rounded-full mr-2"></div> <span>Gym</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-4 h-4 bg-yellow-500 rounded-full mr-2"></div> <span>Field</span>
+        <div className="mt-6">
+          <h2 className="text-xl font-semibold mb-2">Legend</h2>
+          <div className="flex gap-4">
+            <div className="flex items-center">
+              <div className="w-4 h-4 bg-blue-500 rounded-full mr-2"></div> <span>Stadium</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-4 h-4 bg-green-500 rounded-full mr-2"></div> <span>Gym</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-4 h-4 bg-yellow-500 rounded-full mr-2"></div> <span>Field</span>
+            </div>
           </div>
         </div>
+
+        {selectedFacility && (
+          <BookingModal
+            isOpen={!!selectedFacility}
+            onClose={() => setSelectedFacility(null)}
+            facilityName={selectedFacility.name}
+          />
+        )}
+
       </div>
-
-      {selectedFacility && (
-        <BookingModal
-          isOpen={!!selectedFacility}
-          onClose={() => setSelectedFacility(null)}
-          facilityName={selectedFacility.name}
-        />
-      )}
-
-    </div>
+    </ErrorBoundary>
   )
 }

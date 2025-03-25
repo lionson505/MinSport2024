@@ -11,6 +11,9 @@ import useFetchLiveMatches from '../../../utils/fetchLiveMatches';
 import {useFetchNationalTeam, useFetchPlayers} from '../../../utils/fetchMatchAndPlayers';
 import {usePermissionLogger} from '../../../utils/permissionLogger.js';
 import Fallback from '../../../pages/public/fallback.jsx';
+import AwayTeam from './AwayTeam';
+import { useFetchAwayTeams } from '../../../utils/fetchAwayTeams';
+import { calculateMatchMinute } from '../../../utils/matchTimeUtils';
 
 export function MatchOperatorDashboard() {
   const [matchMinutes, setMatchMinutes] = useState({});
@@ -33,12 +36,15 @@ export function MatchOperatorDashboard() {
     canUpdate: false,
     canDelete: false
   })
+  const [currentMatchMinute, setCurrentMatchMinute] = useState('0');
 
   const {
     oldMatches = [],
     initializeMatchSetup,
     checkMatchAvailability
   } = useMatchOperator();
+
+  const { awayTeams = [], awayTeamsError } = useFetchAwayTeams();
 
   const fetchPermissions = async () => {
     await setLoading(true);
@@ -52,72 +58,73 @@ export function MatchOperatorDashboard() {
 
   }, []);
 
-  // Add this new function to calculate match minutes
-  const calculateMatchMinute = (startTime) => {
-
-
-    const start = new Date(startTime);
-    const now = new Date();
-
-    // Check if the date is valid
-    // if (isNaN(start.getTime())) {
-    //   console.error('Invalid start time:', startTime);
-    //   return '0';
-    // }
-
-
-
-    const diffInMinutes = Math.floor((now - start) / (1000 * 60));
-
-    return Math.max(0, diffInMinutes).toString();
-  };
-
-
-
-
   const renderMatchTime = (matchId) => {
     const minutes = matchMinutes[matchId];
     if (!minutes) return '0 min';
 
     const numericMinutes = Number(minutes);
-    if (numericMinutes <= 90) {
+    if (numericMinutes <= 45) {
       return `${numericMinutes} min`;
+    } else if (numericMinutes <= 90) {
+      return `${numericMinutes} min (HALFTIME)`;
     } else {
       const extraTime = numericMinutes - 90;
       return `90+${extraTime} min`;
     }
   };
 
-
   const handleMatchClick = async (match) => {
     try {
       setError(null);
       await checkMatchAvailability(match.id);
 
-      const awayTeam = nationalTeam.find(team => team.teamName === match.awayTeam);
+      console.log('National Teams:', nationalTeam);
+      console.log('Away Teams:', awayTeams);
+      console.log('Match Home Team:', match.homeTeam);
+      console.log('Match Away Team:', match.awayTeam);
+
+      if (match.status === 'ONGOING') {
+        console.log(`Live match clicked: ${match.id}`);
+        const minute = matchMinutes[match.id] || localStorage.getItem(`matchMinute_${match.id}`) || '0';
+        console.log(`Current match minute: ${minute} min`);
+        setCurrentMatchMinute(minute);
+      }
+
+      const awayTeam = nationalTeam.find(team => team.teamName === match.awayTeam) ||
+                      awayTeams.find(team => team.teamName === match.awayTeam);
       const homeTeam = nationalTeam.find(team => team.teamName === match.homeTeam);
 
       if (!homeTeam || !awayTeam) {
-        console.warn("No matching national team found for one or both teams.");
+        console.warn("No matching national team or away team found for one or both teams.");
         return;
       }
 
       const homeTeamPlayersId = homeTeam.id;
       const awayTeamPlayersId = awayTeam.id;
 
-
       const filteredAPlayers = players.filter(player => player.team?.id === homeTeamPlayersId);
       setNationalTeamAPlayers(filteredAPlayers);
 
-      const filteredBPlayers = players.filter(player => player.team?.id === awayTeamPlayersId);
-      setNationalTeamBPlayers(filteredBPlayers);
+      const awayTeamPlayers = players.filter(player => player.team?.id === awayTeamPlayersId) || 
+                              (awayTeam.players ? Object.values(awayTeam.players) : []);
+      setNationalTeamBPlayers(awayTeamPlayers);
+
+      // Calculate time passed since match start
+      const timePassed = calculateMatchMinute(
+        match.startTime,
+        match.updatedAt,
+        match.firstTime,
+        match.firstAddedTime,
+        match.secondTime || 0,
+        match.secondAddedTime || 0
+      );
+
+      setSelectedMatch({ ...match, timePassed });
 
       if (match.status === 'COMPLETED') {
         await initializeMatchSetup(match.id);
-        setSelectedMatch(match);
         setSetupMode(true);
-      } else if (match.status === 'ONGOING' || match.status === 'UPCOMING' || match.status === 'HALFTIME' ) {
-        setSelectedMatch(match);
+      } else if (match.status === 'ONGOING' || match.status === 'UPCOMING' || match.status === 'HALFTIME') {
         setSetupMode(false);
       }
     } catch (error) {
@@ -126,36 +133,45 @@ export function MatchOperatorDashboard() {
     }
   };
 
-
   useEffect(() => {
     const initializeMinutes = () => {
       if (!Array.isArray(matches)) return;
 
       const newMinutes = {};
       matches.forEach(match => {
-        // Check for matches with ONGOING status and valid startTime
-        if (match.status === 'ONGOING' && match.startTime) {
-          newMinutes[match.id] = calculateMatchMinute(match.startTime);
+        if (match.startTime && match.updatedAt) {
+          const calculatedMinute = calculateMatchMinute(
+            match.startTime,
+            match.updatedAt,
+            match.firstTime,
+            match.firstAddedTime,
+            match.secondTime || 0,
+            match.secondAddedTime || 0
+          );
+
+          if (match.status === 'ONGOING' || match.status === 'HALFTIME') {
+            newMinutes[match.id] = calculatedMinute;
+            localStorage.setItem(`matchMinute_${match.id}`, calculatedMinute);
+          } else if (match.status === 'COMPLETED') {
+            const totalAllowedMinutes = match.firstTime + match.firstAddedTime + (match.secondTime || 0) + (match.secondAddedTime || 0);
+            newMinutes[match.id] = totalAllowedMinutes.toString();
+          } else if (match.status === 'UPCOMING') {
+            newMinutes[match.id] = '0';
+          }
         }
       });
       setMatchMinutes(newMinutes);
     };
 
-    // Initial setup
     initializeMinutes();
-
-    // Update every minute
     const timer = setInterval(initializeMinutes, 60000);
-
     return () => clearInterval(timer);
   }, [matches]);
-
 
   useEffect(() => {
     // console.log('Current matches:', matches);
     // console.log('Match minutes:', matchMinutes);
   }, [matches, matchMinutes]);
-
 
   if(loading) {
     return(
@@ -163,7 +179,6 @@ export function MatchOperatorDashboard() {
           <Loader2/>
         </div>
     )
-
   }
 
   const getExtra = (id) => {
@@ -171,33 +186,22 @@ export function MatchOperatorDashboard() {
     return Number(matchMin) - 90;
   };
 
-
-
-
-
   if (liveMatchError) {
-    console.error("Problem in getting matches")
+    // console.error("Problem in getting matches")
   }
-
 
   if (!matches.length) {
     console.error("Problem in getting matches")
   }
 
-  // national team
-
-
   if (nationalTeamError) {
-    console.error("Problem in getting national teams")
+    // console.error("Problem in getting national teams")
   }
 
-
-  // console.log('teams : ', nationalTeam)
   if (!nationalTeam.length) {
     console.error("No Teams Available")
   }
 
-  // nation team players 
   if (playerError) {
     console.error("Problem in getting Players")
   }
@@ -209,7 +213,6 @@ export function MatchOperatorDashboard() {
   const handleSetupComplete = () => {
     setSetupMode(false);
   };
-
 
   const formatDate = (dateString) => {
     try {
@@ -228,11 +231,6 @@ export function MatchOperatorDashboard() {
     return matches.filter(match => match.status === status);
   };
 
-
-  // console.log(matchMinutes)
-  // console.log("filterMatches: ", { filterMatches })
-
-  // console.log(matches)
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -262,6 +260,7 @@ export function MatchOperatorDashboard() {
           <TabsTrigger value="HALFTIME">HALFTIME</TabsTrigger>
           <TabsTrigger value="NOT_STARTED">Upcoming</TabsTrigger>
           <TabsTrigger value="ENDED">Completed</TabsTrigger>
+          <TabsTrigger value="awayteam">AwayTeam</TabsTrigger>
         </TabsList>
 
         {['all', 'ONGOING', 'HALFTIME', 'NOT_STARTED', 'ENDED'].map((status) => (
@@ -277,15 +276,14 @@ export function MatchOperatorDashboard() {
                     response={status}
                   />
                 </div>
-                // <h1>No matches with status: {status}</h1>
               ) : (
                 filterMatches(status).map((currentMatch) => {
-                  const dateOnly = currentMatch.startTime
-                    ? new Date(currentMatch.startTime).toISOString().split('T')[0]
+                  const dateOnly = currentMatch.updatedAt
+                    ? new Date(currentMatch.updatedAt).toISOString().split('T')[0]
                     : 'N/A';
 
-                  const timeOnly = currentMatch.startTime
-                    ? new Date(currentMatch.startTime).toISOString().split('T')[1].split('.')[0]
+                  const timeOnly = currentMatch.updatedAt
+                    ? new Date(currentMatch.updatedAt).toISOString().split('T')[1].split('.')[0]
                     : 'N/A';
 
                   return (
@@ -305,24 +303,25 @@ export function MatchOperatorDashboard() {
                         </div>
 
                         <div className="flex justify-between items-center mb-4">
-
                           <div className="flex flex-col items-end gap-1">
                             <div className="flex flex-col items-end">
-      <span
-          className={`px-3 py-1 rounded-full text-xs font-medium ${
-              currentMatch.status === 'ONGOING'
-                  ? 'bg-red-100 text-red-600'
-                  : currentMatch.status === 'UPCOMING'
-                      ? 'bg-green-100 text-green-600'
-                      : 'bg-gray-100 text-gray-600'
-          }`}
-      >
-        {currentMatch.status}
-      </span>
-                              {currentMatch.status === 'ONGOING' && (
-                                  <span className="text-xs font-medium text-red-600 mt-1">
-          {(matchMinutes[currentMatch.id] > 90) ? `90 + ${getExtra(currentMatch.id)}  `: `${matchMinutes[currentMatch.id]} '`}min
-        </span>
+                              <span
+                                className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                  currentMatch.status === 'ONGOING'
+                                    ? 'bg-red-100 text-red-600'
+                                    : currentMatch.status === 'UPCOMING'
+                                    ? 'bg-green-100 text-green-600'
+                                    : currentMatch.status === 'HALFTIME'
+                                    ? 'bg-yellow-100 text-yellow-600'
+                                    : 'bg-gray-100 text-gray-600'
+                                }`}
+                              >
+                                {currentMatch.status}
+                              </span>
+                              {(currentMatch.status === 'ONGOING' || currentMatch.status === 'HALFTIME') && (
+                                <span className="text-xs font-medium text-red-600 mt-1">
+                                  {renderMatchTime(currentMatch.id)}
+                                </span>
                               )}
                             </div>
                           </div>
@@ -370,6 +369,10 @@ export function MatchOperatorDashboard() {
 
           </TabsContent>
         ))}
+
+        <TabsContent value="awayteam">
+          <AwayTeam />
+        </TabsContent>
       </Tabs>
 
       {showCreateModal && (
@@ -392,8 +395,21 @@ export function MatchOperatorDashboard() {
           homeTeamPlayers={nationalTeamAPlayers}
           awayTeamPlayers={nationalTeamBPlayers}
           onClose={() => setSelectedMatch(null)}
+          matchTime={matchMinutes[selectedMatch.id]}
+          currentMatchMinute={currentMatchMinute}
+          timePassed={selectedMatch.timePassed}
         />
       )}
     </div>
   );
+}
+
+function openMatch(match) {
+  if (match.status === 'UPCOMING') {
+    // Logic to open the match
+    console.log(`Opening match: ${match.id}`);
+    // Add your logic here to handle the match opening
+  } else {
+    console.warn(`Match with status ${match.status} cannot be opened.`);
+  }
 }

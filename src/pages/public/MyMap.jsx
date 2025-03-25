@@ -33,6 +33,34 @@ export default function MyMap() {
           },
           infraCategoryId: facility.infraCategoryId,
           infraSubCategoryId: facility.infraSubCategoryId,
+          description: facility.description,
+          type_level: facility.type_level,
+          status: facility.status,
+          capacity: facility.capacity,
+          location: {
+            province: facility.location_province,
+            district: facility.location_district,
+            sector: facility.location_sector,
+            cell: facility.location_cell,
+            village: facility.location_village,
+          },
+          upi: facility.upi,
+          plot_area: facility.plot_area,
+          construction_date: facility.construction_date,
+          owner: facility.owner,
+          main_users: facility.main_users,
+          types_of_sports: facility.types_of_sports,
+          internet_connection: facility.internet_connection,
+          electricity_connection: facility.electricity_connection,
+          water_connection: facility.water_connection,
+          access_road: facility.access_road,
+          health_facility: facility.health_facility,
+          legal_representative: {
+            name: facility.legal_representative_name,
+            gender: facility.legal_representative_gender,
+            email: facility.legal_representative_email,
+            phone: facility.legal_representative_phone,
+          },
         }));
 
         setFacilities(formattedFacilities);
@@ -149,6 +177,11 @@ export default function MyMap() {
     }
   };
 
+  const handleMapClick = (location) => {
+    console.log('Map clicked at:', location);
+    // You can add additional logic here if needed
+  };
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="lg:text-3xl md:text-2xl text-lg font-bold mb-6 text-center">Sports Facilities in Rwanda</h1>
@@ -183,6 +216,7 @@ export default function MyMap() {
             zoom={8}
             facilities={filteredFacilities}
             onFacilityClick={handleFacilityClick}
+            onMapClick={handleMapClick}
           />
 
           <div className="mt-6">
