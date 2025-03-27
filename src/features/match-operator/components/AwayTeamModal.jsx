@@ -2,18 +2,46 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '../../../components/ui/Button';
 import { Modal } from '../../../components/ui/Modal'; // Assuming you have a reusable Modal component
 import toast from 'react-hot-toast';
+import { secureStorage } from '../../../utils/crypto.js'; // Import secureStorage
+import axios from 'axios';
+
+// Define or import API_URL
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.mis.minisports.gov.rw/api';
 
 export function AwayTeamModal({ isOpen, onClose, onSave, teamToEdit }) {
-  const [newTeam, setNewTeam] = useState({ teamName: '', players: {} });
+  const [newTeam, setNewTeam] = useState({ teamName: '', players: {}, federationId: '' });
   const [playerCount, setPlayerCount] = useState(1);
+  const [federationName, setFederationName] = useState(''); // Add state for federation name
+
+  // Fetch federation details
+  const fetchFederationDetails = async () => {
+    try {
+      const storedUser = await secureStorage.getItem('user');
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        const response = await axios.get(`${API_URL}users/email/${encodeURIComponent(parsedUser.email)}`);
+        const userDetailsFromAPI = response.data;
+        setFederationName(userDetailsFromAPI.federation.name || '');
+        setNewTeam((prev) => ({ ...prev, federationId: userDetailsFromAPI.federation.id || '' }));
+      } else {
+        console.warn('No user found');
+      }
+    } catch (error) {
+      console.error('Error fetching federation details:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchFederationDetails();
+  }, []);
 
   // Update state when teamToEdit changes
   useEffect(() => {
     if (teamToEdit) {
-      setNewTeam(teamToEdit);
+      setNewTeam({ ...teamToEdit, federationId: newTeam.federationId });
       setPlayerCount(Object.keys(teamToEdit.players).length || 1);
     } else {
-      setNewTeam({ teamName: '', players: {} });
+      setNewTeam({ teamName: '', players: {}, federationId: newTeam.federationId });
       setPlayerCount(1);
     }
   }, [teamToEdit]);
@@ -52,7 +80,7 @@ export function AwayTeamModal({ isOpen, onClose, onSave, teamToEdit }) {
       toast.error('At least one player is required.');
       return;
     }
-    onSave(newTeam);
+    onSave(newTeam); // Pass the newTeam object including federationId
     onClose();
   };
 
@@ -60,6 +88,15 @@ export function AwayTeamModal({ isOpen, onClose, onSave, teamToEdit }) {
     <Modal isOpen={isOpen} onClose={onClose}>
       <h2 className="text-xl font-semibold mb-4">{teamToEdit ? 'Edit Away Team' : 'Add New Away Team'}</h2>
       <form onSubmit={handleFormSubmit}>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700">Federation</label>
+          <input
+            type="text"
+            value={federationName}
+            readOnly
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+          />
+        </div>
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700">Team Name</label>
           <input

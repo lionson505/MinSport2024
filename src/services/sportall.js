@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { toast } from 'sonner';
 
-const API_URL = 'https://mis.minisports.gov.rw/api'; // Replace with the actual API base URL
+const API_URL = import.meta.env.VITE_API_URL; // Replace with the actual API base URL
 
 const api = axios.create({
   baseURL: API_URL,

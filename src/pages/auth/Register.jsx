@@ -20,7 +20,8 @@ export default function Register() {
     phoneNumber: '',
     gender: '', // Default value
     reasonForRegistration: '',
-    federationId: 0
+    federationId: 0,
+    active: false // Ensure active is always false
   });
 
   const handleChange = (e) => {
@@ -34,12 +35,18 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    console.log('Form Data:', formData);
+
     setIsLoading(true);
     try {
-      const response = await axiosInstance.post('/auth/register', formData);
+      const response = await axiosInstance.post('/auth/register', {
+        ...formData,
+        active: false // Explicitly set active to false
+      });
       toast.success('Registration successful! Please check your email for verification.');
       navigate('/login');
     } catch (error) {
+      console.error('Registration error:', error.response?.data);
       toast.error(error.response?.data?.message || 'Registration failed');
     } finally {
       setIsLoading(false);
@@ -236,6 +243,7 @@ export default function Register() {
                   value={formData.gender}
                   onChange={handleChange}
                 >
+                  <option value="" disabled>Select Gender</option>
                   <option value="male">Male</option>
                   <option value="female">Female</option>
                   <option value="other">Other</option>

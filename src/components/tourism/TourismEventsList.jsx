@@ -18,6 +18,7 @@ import axiosInstance from '../../utils/axiosInstance';
 import { Dialog, Transition } from '@headlessui/react';
 import EditEventModal from '../../components/tourism/EditEventModal'; // Import the EditEventModal component
 import PrintButton from '../reusable/Print';
+import { locations } from '../../data/locations';
 
 const TourismEventsList = () => {
   const [events, setEvents] = useState([]);
@@ -27,6 +28,12 @@ const TourismEventsList = () => {
     category: '',
     status: '',
     date: '',
+    subCategory: '',
+    province: '',
+    district: '',
+    sector: '',
+    cell: '',
+    village: '',
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
@@ -36,6 +43,10 @@ const TourismEventsList = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false); // State for edit modal
   const [selectedEvent, setSelectedEvent] = useState(null);
   const itemsPerPage = 10;
+  const [selectedProvince, setSelectedProvince] = useState('');
+  const [selectedDistrict, setSelectedDistrict] = useState('');
+  const [selectedSector, setSelectedSector] = useState('');
+  const [selectedCell, setSelectedCell] = useState('');
 
   const statuses = ['Upcoming', 'Ongoing', 'Completed', 'Cancelled'];
 
@@ -88,10 +99,27 @@ const TourismEventsList = () => {
       event.categoryId.toString().includes(searchTerm.toLowerCase());
 
     const matchesCategory = filters.category === '' || event.categoryId === parseInt(filters.category);
+    const matchesSubCategory = filters.subCategory === '' || event.subCategoryId === parseInt(filters.subCategory);
     const matchesStatus = filters.status === '' || event.status === filters.status;
     const matchesDate = filters.date === '' || event.startDate.includes(filters.date);
+    const matchesProvince = filters.province === '' || event.province === filters.province;
+    const matchesDistrict = filters.district === '' || event.district === filters.district;
+    const matchesSector = filters.sector === '' || event.sector === filters.sector;
+    const matchesCell = filters.cell === '' || event.cell === filters.cell;
+    const matchesVillage = filters.village === '' || event.village === filters.village;
 
-    return matchesSearch && matchesCategory && matchesStatus && matchesDate;
+    return (
+      matchesSearch &&
+      matchesCategory &&
+      matchesSubCategory &&
+      matchesStatus &&
+      matchesDate &&
+      matchesProvince &&
+      matchesDistrict &&
+      matchesSector &&
+      matchesCell &&
+      matchesVillage
+    );
   });
 
   const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
@@ -135,10 +163,7 @@ const TourismEventsList = () => {
             <label className="block text-sm font-medium mb-1">Category</label>
             <select
               value={filters.category}
-              onChange={(e) => {
-                console.log('Category selected:', e.target.value);
-                setFilters({ ...filters, category: e.target.value });
-              }}
+              onChange={(e) => setFilters({ ...filters, category: e.target.value })}
               className="w-full p-2 border rounded"
             >
               <option value="">All Categories</option>
@@ -150,13 +175,25 @@ const TourismEventsList = () => {
             </select>
           </div>
           <div>
+            <label className="block text-sm font-medium mb-1">Subcategory</label>
+            <select
+              value={filters.subCategory}
+              onChange={(e) => setFilters({ ...filters, subCategory: e.target.value })}
+              className="w-full p-2 border rounded"
+            >
+              <option value="">All Subcategories</option>
+              {categories?.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              )) || <option disabled>No subcategories available</option>}
+            </select>
+          </div>
+          <div>
             <label className="block text-sm font-medium mb-1">Status</label>
             <select
               value={filters.status}
-              onChange={(e) => {
-                console.log('Status selected:', e.target.value);
-                setFilters({ ...filters, status: e.target.value });
-              }}
+              onChange={(e) => setFilters({ ...filters, status: e.target.value })}
               className="w-full p-2 border rounded"
             >
               <option value="">All Statuses</option>
@@ -172,12 +209,110 @@ const TourismEventsList = () => {
             <input
               type="date"
               value={filters.date}
-              onChange={(e) => {
-                console.log('Date selected:', e.target.value);
-                setFilters({ ...filters, date: e.target.value });
-              }}
+              onChange={(e) => setFilters({ ...filters, date: e.target.value })}
               className="w-full p-2 border rounded"
             />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Province</label>
+            <select
+              value={selectedProvince}
+              onChange={(e) => {
+                setSelectedProvince(e.target.value);
+                setSelectedDistrict('');
+                setSelectedSector('');
+                setSelectedCell('');
+                setFilters({ ...filters, province: e.target.value });
+              }}
+              className="w-full p-2 border rounded"
+            >
+              <option value="">All Provinces</option>
+              {locations.provinces.map((province) => (
+                <option key={province} value={province}>
+                  {province}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">District</label>
+            <select
+              value={selectedDistrict}
+              onChange={(e) => {
+                setSelectedDistrict(e.target.value);
+                setSelectedSector('');
+                setSelectedCell('');
+                setFilters({ ...filters, district: e.target.value });
+              }}
+              className="w-full p-2 border rounded"
+              disabled={!selectedProvince}
+            >
+              <option value="">All Districts</option>
+              {selectedProvince &&
+                locations.districts[selectedProvince].map((district) => (
+                  <option key={district} value={district}>
+                    {district}
+                  </option>
+                ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Sector</label>
+            <select
+              value={selectedSector}
+              onChange={(e) => {
+                setSelectedSector(e.target.value);
+                setSelectedCell('');
+                setFilters({ ...filters, sector: e.target.value });
+              }}
+              className="w-full p-2 border rounded"
+              disabled={!selectedDistrict}
+            >
+              <option value="">All Sectors</option>
+              {selectedDistrict &&
+                locations.sectors[selectedDistrict].map((sector) => (
+                  <option key={sector} value={sector}>
+                    {sector}
+                  </option>
+                ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Cell</label>
+            <select
+              value={selectedCell}
+              onChange={(e) => {
+                setSelectedCell(e.target.value);
+                setFilters({ ...filters, cell: e.target.value });
+              }}
+              className="w-full p-2 border rounded"
+              disabled={!selectedSector}
+            >
+              <option value="">All Cells</option>
+              {selectedSector &&
+                locations.cells[selectedSector].map((cell) => (
+                  <option key={cell} value={cell}>
+                    {cell}
+                  </option>
+                ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Village</label>
+            <select
+              value={filters.village}
+              onChange={(e) => setFilters({ ...filters, village: e.target.value })}
+              className="w-full p-2 border rounded"
+              disabled={!selectedCell}
+            >
+              <option value="">All Villages</option>
+              {selectedCell &&
+                locations.villages[selectedCell].map((village) => (
+                  <option key={village} value={village}>
+                    {village}
+                  </option>
+                ))}
+            </select>
           </div>
         </div>
       )}

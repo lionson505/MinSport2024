@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://mis.minisports.gov.rw/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.mis.minisports.gov.rw/api';
 
 export function useTrainings() {
   const [loading, setLoading] = useState(false);

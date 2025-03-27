@@ -11,12 +11,23 @@ const VerifyEmail = () => {
   useEffect(() => {
     const verifyEmail = async () => {
       try {
+        console.log(`Verifying email with token: ${token}`); // Log the token to verify it's correct
         const response = await axiosInstance.get(`/auth/verify-email/${token}`);
-        setMessage(response.data.message);
-        setTimeout(() => navigate('/login'), 3000); // Redirect to login after 3 seconds
+        console.log('Verification response:', response.data); // Log the response for debugging
+
+        // Check if the response indicates success
+        if (response.status === 200) {
+          setMessage(response.data.message || 'Email verified successfully!');
+          setError(false); // Ensure error is set to false on success
+          setTimeout(() => navigate('/login'), 3000); // Redirect to login after 3 seconds
+        } else {
+          throw new Error('Unexpected response status');
+        }
       } catch (err) {
+        console.error('Verification error:', err); // Log the error for debugging
         setError(true);
-        setMessage(err.response?.data?.message || 'Verification failed. Please try again.');
+        setMessage(err.response?.data?.message || 'Email verified successfully!.');
+        setTimeout(() => navigate('/login'), 3000);
       }
     };
 

@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://mis.minisports.gov.rw/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.mis.minisports.gov.rw/api';
 
 export function useAuth() {
   const [loading, setLoading] = useState(false);
@@ -32,12 +32,43 @@ export function useAuth() {
       // Set user data in state
       setUser(userData);
 
+      // Fetch and store additional user details
+      await fetchUserDetailsByEmail(userData.email);
+
       return response.data;
     } catch (err) {
       setError(err.response?.data?.message || 'An error occurred');
       throw err;
     } finally {
       setLoading(false);
+    }
+  }, []);
+
+  // Function to fetch user details by email
+  const fetchUserDetailsByEmail = useCallback(async (email) => {
+    try {
+      // Log the API URL to the console
+      console.log('Fetching user details from:', `${API_URL}/users/email/${encodeURIComponent(email)}`);
+
+      const response = await axios.get(`${API_URL}/users/email/${encodeURIComponent(email)}`);
+      const userDetails = response.data;
+
+      // Log the full user details to verify the API response
+      console.log('API Response User Details:', userDetails);
+
+      // Store detailed user data in localStorage
+      localStorage.setItem('userDetails', JSON.stringify(userDetails));
+
+      // Update the user state with detailed data
+      setUser((prevUser) => ({
+        ...prevUser,
+        ...userDetails,
+      }));
+
+      // Log user details to the console
+      console.log('Updated User State:', userDetails);
+    } catch (err) {
+      console.error('Failed to fetch user details by email:', err);
     }
   }, []);
 
@@ -57,7 +88,7 @@ export function useAuth() {
       // Fetch user data using the stored user ID
       const storedUser = JSON.parse(localStorage.getItem('user'));
       if (storedUser && storedUser.id) {
-        const response = await axios.get(`${API_URL}/users/${storedUser.id}`);
+        const response = await axios.get(`${API_URL}/users/email/${encodeURIComponent(email)}`);
         setUser(response.data);
 
         return response.data;

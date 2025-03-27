@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import axiosInstance from '../../../../utils/axiosInstance';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../../../../components/ui/dialog';
@@ -12,8 +12,15 @@ import {
   SelectValue,
 } from "../../../../components/ui/select";
 import { useMatchOperator } from '../../../../contexts/MatchOperatorContext';  // Fix this import
+import { useAuth } from '../../../../hooks/useAuth'; // Example import for user context
+import axios from 'axios';
+import { secureStorage } from '../../../../utils/crypto.js';
+
+// Define or import API_URL
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.mis.minisports.gov.rw/api';
 
 export function CreateMatchModal({ open, onClose }) {
+  const { user } = useAuth(); // Assuming useAuth provides user details
   const [formData, setFormData] = useState({
     competition: '',
     gameType: '',
@@ -24,8 +31,11 @@ export function CreateMatchModal({ open, onClose }) {
     venue: '',
     startTime: '',
     date: '',
-    status: ''
+    status: '',
+    federationId: '', // Change to federationId
+    federationName: '', // Store federation name
   });
+  const [userDetails, setUserDetails] = useState(null);
   
   // on swagger db there are 11 fields needs to be created and save
   const { createMatch } = useMatchOperator();
@@ -34,6 +44,41 @@ export function CreateMatchModal({ open, onClose }) {
   const [isInternationalTeam, setIsInternationalTeam] = useState(false);
   const [awayTeams, setAwayTeams] = useState([]);
   // console.log("here is national teams : ", nationalTeams)
+
+  const fetchUserDetails = async () => {
+    try {
+      const storedUser = await secureStorage.getItem('user');
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        setUserDetails(parsedUser);
+
+        // Fetch user details from the API
+        const response = await axios.get(`${API_URL}users/email/${encodeURIComponent(parsedUser.email)}`);
+        const userDetailsFromAPI = response.data;
+
+        // Update the state with the fetched user details
+        setUserDetails(userDetailsFromAPI);
+      } else {
+        console.warn('No user found');
+      }
+    } catch (error) {
+      console.error('Error fetching user details:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserDetails();
+  }, []);
+
+  useEffect(() => {
+    if (userDetails && userDetails.federation) {
+      setFormData((prevData) => ({
+        ...prevData,
+        federationId: userDetails.federation.id || '', // Use federation ID
+        federationName: userDetails.federation.name || '', // Use federation name
+      }));
+    }
+  }, [userDetails]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,36 +93,14 @@ export function CreateMatchModal({ open, onClose }) {
       "matchDate": `${formData.date}T${formData.startTime}:00Z` || "2024-07-15T19:00:00Z", 
       "startTime": `${formData.date}T${formData.startTime}:00Z` || "2024-07-15T19:00:00Z", 
       "gameType": formData.gameType, 
-      "status" :   formData.status
-    }
-
-    formData.status
-    
-    
-
-    // const transformedData = {
-    //   "homeTeam": formData.homeTeam || "Rwanda National Team",  // Default to empty string if not provided
-    //   "awayTeam": formData.awayTeam || "Argentina National Team",  // Default to empty string if not provided
-    //   "homeScore": formData.homeScore || 0,  // Default to 0 if not provided
-    //   "awayScore": formData.awayScore || 0,  // Default to 0 if not providedformData.homeScore
-    //   "competition": formData.competition || "International Friendly",  // Default to empty string if not provided
-    //   "venue": formData.venue || "Maracanã Stadium",  // Default to empty string if not provided
-    //   "matchDate": "2024-07-15T19:00:00Z",  // Ensure this is correctly formatted
-    //   "startTime": "2024-07-15T19:00:00Z",  // Matches ISO 8601 format
-    //   "gameType": "FOOTBALL",  // Default to "FOOTBALL" if not provided
-    //   "status" :  "ONGOING"
-    // }
+      "status": formData.status,
+      "federationId": formData.federationId, // Send federation ID
+    };
 
     setLoading(true);
 
     try {
-      // POST request to your backend API
-      // const response = await axiosInstance.post('/live-matches') // Replace with your actual endpoint
-      // await // console.log('data', transformedData);
-      await console.log('data', transformedData);
-      const response = await axiosInstance.post('/live-matches', transformedData
-      );
-      // console.log('Responsejlknlkllk:', response.data);
+      const response = await axiosInstance.post('/live-matches', transformedData);
       if (response.status === 200 || response.status === 201) {
         toast.success('Match created successfully');
         onClose(); // Optional: Close the modal or form
@@ -86,7 +109,6 @@ export function CreateMatchModal({ open, onClose }) {
       }
     } catch (error) {
       console.error('Error posting data:', error.response?.data || error.message);
-      // console.error(error);
       toast.error('Failed to create match. Please try again.');
     } finally {
       setLoading(false);
@@ -97,21 +119,23 @@ export function CreateMatchModal({ open, onClose }) {
     const fetchNationalTeams = async () => {
       try {
         const response = await axiosInstance.get('/national-teams');
-        setNationalTeams(response.data);
+        const filteredTeams = response.data.filter(team => team.federationId === formData.federationId);
+        setNationalTeams(filteredTeams);
       } catch (error) {
         console.error('Failed to fetch National Teams:', error);
       }
     };
 
     fetchNationalTeams();
-  }, []);
+  }, [formData.federationId]);
 
   // Fetching away teams
   useEffect(() => {
     const fetchAwayTeams = async () => {
       try {
         const response = await axiosInstance.get('/away-teams');
-        setAwayTeams(response.data);
+        const filteredTeams = response.data.filter(team => team.federationId === formData.federationId);
+        setAwayTeams(filteredTeams);
       } catch (error) {
         console.error('Failed to fetch Away Teams:', error);
       }
@@ -120,7 +144,7 @@ export function CreateMatchModal({ open, onClose }) {
     if (isInternationalTeam) {
       fetchAwayTeams();
     }
-  }, [isInternationalTeam]);
+  }, [isInternationalTeam, formData.federationId]);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -183,6 +207,15 @@ export function CreateMatchModal({ open, onClose }) {
               value={formData.competition}
               onChange={(e) => setFormData({ ...formData, competition: e.target.value })}
               placeholder="Enter competition name"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Federation</label>
+            <Input
+              value={formData.federationName} // Display federation name
+              placeholder="Federation"
+              readOnly // Make it read-only if it should not be changed
             />
           </div>
 
@@ -275,6 +308,12 @@ export function CreateMatchModal({ open, onClose }) {
             <div className="space-y-2">
               <label className="text-sm font-medium">Date</label>
               <Input
+                style={{
+                  backgroundColor: 'white',
+                  color: 'black',
+                  
+                  width: '65%',
+                }}
                 type="date"
                 value={formData.date}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
@@ -283,6 +322,11 @@ export function CreateMatchModal({ open, onClose }) {
             <div className="space-y-2">
               <label className="text-sm font-medium">Start Time</label>
               <Input
+                style={{
+                  backgroundColor: 'white',
+                  color: 'black',
+                  width: '50%',
+                }}
                 type="time"
                 value={formData.startTime}
                 onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}

@@ -51,10 +51,12 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
   const educationLevelOptions = [
     { value: '', label: 'Select education level' },
     { value: 'ELEMENTARY', label: 'Elementary' },
-    { value: 'SECONDARY', label: 'Secondary' },
+    { value: 'HIGH_SCHOOL', label: 'High School' },
+    { value: 'ASSOCIATE', label: 'Associate' },
     { value: 'BACHELOR', label: 'Bachelor' },
     { value: 'MASTER', label: 'Master' },
-    { value: 'PHD', label: 'PhD' }
+    { value: 'PROFESSIONAL', label: 'Professional' },
+    { value: 'DOCTORATE', label: 'Doctorate' }
   ];
 
   const selectClassName = "h-12 w-full px-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500";
@@ -358,34 +360,51 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
           <div>
             <label className="block text-sm font-medium mb-1">Full Name</label>
             <Input
-              value={nidaData?.names || ''}
-              readOnly
-              className="bg-gray-50"
+              value={idType === 'passport' ? formData.names : nidaData?.names || ''}
+              onChange={(e) => idType === 'passport' && setFormData({ ...formData, names: e.target.value })}
+              readOnly={idType !== 'passport'}
+              className={idType !== 'passport' ? 'bg-gray-50' : ''}
             />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Date of Birth</label>
             <Input
-              value={nidaData?.dateOfBirth || ''}
-              readOnly
-              className="bg-gray-50"
+              type="date"
+              value={idType === 'passport' ? formData.dateOfBirth : nidaData?.dateOfBirth || ''}
+              onChange={(e) => idType === 'passport' && setFormData({ ...formData, dateOfBirth: e.target.value })}
+              readOnly={idType !== 'passport'}
+              className={idType !== 'passport' ? 'bg-gray-50' : ''}
             />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Gender</label>
-            <Input
-              value={nidaData?.gender || ''}
-              readOnly
-              className="bg-gray-50"
-            />
+            <select
+              value={idType === 'passport' ? formData.gender : nidaData?.gender || ''}
+              onChange={(e) => idType === 'passport' && setFormData({ ...formData, gender: e.target.value })}
+              disabled={idType !== 'passport'}
+              className={idType !== 'passport' ? 'bg-gray-50' : selectClassName}
+            >
+              <option value="">Select gender</option>
+              <option value="MALE">Male</option>
+              <option value="FEMALE">Female</option>
+              <option value="OTHER">Other</option>
+            </select>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Nationality</label>
-            <Input
-              value={nidaData?.nationality || ''}
-              readOnly
-              className="bg-gray-50"
-            />
+            <select
+              value={idType === 'passport' ? formData.nationality : nidaData?.nationality || ''}
+              onChange={(e) => idType === 'passport' && setFormData({ ...formData, nationality: e.target.value })}
+              disabled={idType !== 'passport'}
+              className={idType !== 'passport' ? 'bg-gray-50' : selectClassName}
+            >
+              <option value="">Select a nationality</option>
+              {countries.map((country) => (
+                <option key={country} value={country}>
+                  {country}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 

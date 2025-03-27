@@ -90,7 +90,7 @@ function EventsPage() {
           
 
           // // For selectedEvent in modal
-          // src={`${import.meta.env.VITE_API_URL || 'https://mis.minisports.gov.rw/api'}${selectedEvent.banner}`}
+          // src={`${import.meta.env.VITE_API_URL || 'https://api.mis.minisports.gov.rw/api'}${selectedEvent.banner}`}
           alt={event.title}
           className="w-full aspect-[3/4] object-cover transition-transform duration-300 group-hover:scale-110"
         />

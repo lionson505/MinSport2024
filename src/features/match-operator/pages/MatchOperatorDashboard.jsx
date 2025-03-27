@@ -14,6 +14,12 @@ import Fallback from '../../../pages/public/fallback.jsx';
 import AwayTeam from './AwayTeam';
 import { useFetchAwayTeams } from '../../../utils/fetchAwayTeams';
 import { calculateMatchMinute } from '../../../utils/matchTimeUtils';
+import {useAuth} from '../../../hooks/useAuth';
+import { secureStorage } from '../../../utils/crypto.js';
+import axios from 'axios';
+
+// Define or import API_URL
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.mis.minisports.gov.rw/api';
 
 export function MatchOperatorDashboard() {
   const [matchMinutes, setMatchMinutes] = useState({});
@@ -37,6 +43,8 @@ export function MatchOperatorDashboard() {
     canDelete: false
   })
   const [currentMatchMinute, setCurrentMatchMinute] = useState('0');
+  const { user } = useAuth();
+  const [userDetails, setUserDetails] = useState(null);
 
   const {
     oldMatches = [],
@@ -53,9 +61,30 @@ export function MatchOperatorDashboard() {
     await setLoading(false);
   }
 
+  const fetchUserDetails = async () => {
+    try {
+      const storedUser = await secureStorage.getItem('user');
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        setUserDetails(parsedUser);
+
+        // Fetch user details from the API
+        const response = await axios.get(`${API_URL}users/email/${encodeURIComponent(parsedUser.email)}`);
+        const userDetailsFromAPI = response.data;
+
+        // Update the state with the fetched user details
+        setUserDetails(userDetailsFromAPI);
+      } else {
+        console.warn('No user found');
+      }
+    } catch (error) {
+      console.error('Error fetching user details:', error);
+    }
+  };
+
   useEffect(() => {
     fetchPermissions();
-
+    fetchUserDetails();
   }, []);
 
   const renderMatchTime = (matchId) => {
@@ -137,6 +166,8 @@ export function MatchOperatorDashboard() {
     const initializeMinutes = () => {
       if (!Array.isArray(matches)) return;
 
+      // console.log("All Matches:", matches);
+
       const newMinutes = {};
       matches.forEach(match => {
         if (match.startTime && match.updatedAt) {
@@ -169,9 +200,16 @@ export function MatchOperatorDashboard() {
   }, [matches]);
 
   useEffect(() => {
-    // console.log('Current matches:', matches);
-    // console.log('Match minutes:', matchMinutes);
-  }, [matches, matchMinutes]);
+    if (liveMatchError) {
+      console.error("Problem in getting live matches:", liveMatchError);
+    }
+    if (nationalTeamError) {
+      console.error("Problem in getting national teams:", nationalTeamError);
+    }
+    if (playerError) {
+      console.error("Problem in getting players:", playerError);
+    }
+  }, [liveMatchError, nationalTeamError, playerError]);
 
   if(loading) {
     return(
@@ -227,8 +265,14 @@ export function MatchOperatorDashboard() {
 
   const filterMatches = (status) => {
     if (!Array.isArray(matches)) return [];
-    if (status === 'all') return matches;
-    return matches.filter(match => match.status === status);
+
+    const filteredMatches = matches.filter(match => {
+      const isStatusMatch = status === 'all' || match.status === status;
+      const isFederationMatch = userDetails && userDetails.federation && match.federationId === userDetails.federation.id;
+      return isStatusMatch && isFederationMatch;
+    });
+
+    return filteredMatches;
   };
 
   return (
@@ -237,14 +281,31 @@ export function MatchOperatorDashboard() {
         <div>
           <h1 className="text-2xl font-bold">Match Operator Dashboard</h1>
           <p className="text-gray-500 mt-1">Manage ONGOING matches and upcoming events</p>
+          {userDetails && (
+            <p className="text-gray-500 mt-1">
+              {/* Logged in as: {userDetails.firstName || 'User'} */}
+            </p>
+          )}
+          {userDetails && userDetails.federation && (
+            <p className="text-gray-500 mt-1">
+              {/* Federation: {userDetails.federation.name} */}
+            </p>
+          )}
         </div>
         {permissions.canCreate && (
-            <Button onClick={() => setShowCreateModal(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Create Match
-        </Button>)}
-
+          <Button onClick={() => setShowCreateModal(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Create Match
+          </Button>
+        )}
       </div>
+
+      {(!userDetails || !userDetails.federation) && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>You are not allowed to control this module as you do not belong to any federation.</AlertDescription>
+        </Alert>
+      )}
 
       {error && (
         <Alert variant="destructive">
@@ -267,7 +328,6 @@ export function MatchOperatorDashboard() {
           <TabsContent key={status} value={status}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filterMatches(status).length === 0 ? (
-
                 <div className="flex items-center justify-center col-span-full min-h-[400px]">
                   <Fallback
                     className="w-full h-full flex items-center justify-center bg-gray-50 rounded-lg shadow-md"
@@ -366,7 +426,6 @@ export function MatchOperatorDashboard() {
                 })
               )}
             </div>
-
           </TabsContent>
         ))}
 

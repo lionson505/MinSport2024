@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import axios from 'axios';
 import {secureStorage} from "../utils/crypto.js";
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://mis.minisports.gov.rw/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.mis.minisports.gov.rw/api';
 
 export function useAuth() {
   const [loading, setLoading] = useState(false);

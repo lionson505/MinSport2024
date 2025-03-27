@@ -186,6 +186,7 @@ export default function Login() {
 
         // Store user session data directly
         localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
         await storeValue('user', response.data.user);
         await storeValue('userRole', response.data.user.userGroup.name);
         await storeValue('userId', response.data.user.id);

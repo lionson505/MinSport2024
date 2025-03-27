@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://mis.minisports.gov.rw/api';
+const API_BASE_URL = 'https://api.mis.minisports.gov.rw/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,

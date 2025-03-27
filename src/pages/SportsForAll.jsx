@@ -37,7 +37,7 @@ function SportsForAll() {
       try {
         setLoading(true);
         const data = await getSportsEvents();
-        setMassSportsData(data);
+        setMassSportsData(Array.isArray(data) ? data : []);
       } catch (err) {
         setError(err.message);
       } finally {
