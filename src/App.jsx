@@ -49,6 +49,7 @@ import PasswordReset from './pages/auth/ResetPassword.jsx';
 import AppointmentRequest from './pages/public/AppointmentRequest.jsx';
 import VerifyEmail from './pages/auth/VerifyEmail.jsx';
 import setupInactivityHandler from './utils/inactivityHandler';
+import UpdateEmployeeVoting from './components/UpdateEmployeeVoting';
 
 function App() {
   const [accessibleLinks, setAccessibleLinks] = useState(null);
@@ -156,6 +157,7 @@ function App() {
                       <Route path="/pending-activation" element={<PendingActivation />} />
                       <Route path="/notAuthorized" element={<NoPageFound/>} />
                       <Route path="/reset-password" element={<PasswordReset/>} />
+                      <Route path="/employee-voting/:votingId" element={<UpdateEmployeeVoting />} />
 
                       {/* Protected Routes */}
                       <Route element={<DashboardLayout />}>

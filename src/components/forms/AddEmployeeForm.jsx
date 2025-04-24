@@ -6,11 +6,22 @@ import axiosInstance from '../../utils/axiosInstance';
 
 const createEmployee = async (data) => {
   try {
-    console.log("Sending JSON data:", data);
+    console.log("Sending data:", data);
 
-    const response = await axiosInstance.post('/employees', data, {
+    const formData = new FormData();
+    
+    // Add all fields to FormData
+    Object.keys(data).forEach(key => {
+      if (key === 'photo_passport' && data[key] instanceof File) {
+        formData.append(key, data[key]);
+      } else {
+        formData.append(key, data[key]);
+      }
+    });
+
+    const response = await axiosInstance.post('/employees', formData, {
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'multipart/form-data',
       }
     });
     
@@ -32,9 +43,20 @@ const updateEmployee = async (employeeId, data) => {
   try {
     console.log('Updating employee with data:', data);
 
-    const response = await axiosInstance.put(`/employees/${employeeId}`, data, {
+    const formData = new FormData();
+    
+    // Add all fields to FormData
+    Object.keys(data).forEach(key => {
+      if (key === 'photo_passport' && data[key] instanceof File) {
+        formData.append(key, data[key]);
+      } else {
+        formData.append(key, data[key]);
+      }
+    });
+
+    const response = await axiosInstance.put(`/employees/${employeeId}`, formData, {
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'multipart/form-data',
       },
     });
     
@@ -51,26 +73,26 @@ const updateEmployee = async (employeeId, data) => {
 
 const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
   const [formData, setFormData] = useState({
-    photoPassport: '',
-    firstName: '',
-    lastName: '',
+    photo_passport: '',
+    firstname: '',
+    lastname: '',
     gender: '',
     email: '',
     phone: '',
-    maritalStatus: '',
-    province: '',
-    district: '',
-    sector: '',
-    cell: '',
-    village: '',
-    startDate: '',
-    employeeStatus: '',
-    employeeType: '',
-    departmentSupervisor: '',
-    contactFirstName: '',
-    contactLastName: '',
-    relationship: '',
-    contactPhone: '',
+    martial_status: '',
+    address_province: '',
+    address_district: '',
+    address_sector: '',
+    address_cell: '',
+    address_village: '',
+    start_date: '',
+    employee_status: '',
+    employee_type: '',
+    department_supervisor: '',
+    person_of_contact_firstname: '',
+    person_of_contact_lastname: '',
+    person_of_contact_relationship: '',
+    person_of_contact_phone: '',
   });
 
   useEffect(() => {
@@ -98,33 +120,33 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
           };
 
           setFormData({
-            photoPassport: normalizedData.photo_passport || '',
-            firstName: normalizedData.firstname || '',
-            lastName: normalizedData.lastname || '',
+            photo_passport: normalizedData.photo_passport || '',
+            firstname: normalizedData.firstname || '',
+            lastname: normalizedData.lastname || '',
             gender: normalizedData.gender || '',
             email: normalizedData.email || '',
             phone: normalizedData.phone || '',
-            maritalStatus: normalizedData.martial_status || '',
-            province: normalizedData.address_province || '',
-            district: normalizedData.address_district || '',
-            sector: normalizedData.address_sector || '',
-            cell: normalizedData.address_cell || '',
-            village: normalizedData.address_village || '',
-            startDate: normalizedData.start_date ? new Date(normalizedData.start_date).toISOString().split('T')[0] : '',
-            employeeStatus: normalizedData.employee_status || '',
-            employeeType: normalizedData.employee_type || '',
-            departmentSupervisor: normalizedData.department_supervisor || '',
-            contactFirstName: normalizedData.person_of_contact_firstname || '',
-            contactLastName: normalizedData.person_of_contact_lastname || '',
-            relationship: normalizedData.person_of_contact_relationship || '',
-            contactPhone: normalizedData.person_of_contact_phone || ''
+            martial_status: normalizedData.martial_status || '',
+            address_province: normalizedData.address_province || '',
+            address_district: normalizedData.address_district || '',
+            address_sector: normalizedData.address_sector || '',
+            address_cell: normalizedData.address_cell || '',
+            address_village: normalizedData.address_village || '',
+            start_date: normalizedData.start_date ? new Date(normalizedData.start_date).toISOString().split('T')[0] : '',
+            employee_status: normalizedData.employee_status || '',
+            employee_type: normalizedData.employee_type || '',
+            department_supervisor: normalizedData.department_supervisor || '',
+            person_of_contact_firstname: normalizedData.person_of_contact_firstname || '',
+            person_of_contact_lastname: normalizedData.person_of_contact_lastname || '',
+            person_of_contact_relationship: normalizedData.person_of_contact_relationship || '',
+            person_of_contact_phone: normalizedData.person_of_contact_phone || ''
           });
 
           console.log('Form data after mapping:', {
             gender: normalizedData.gender,
-            employeeStatus: normalizedData.employee_status,
-            employeeType: normalizedData.employee_type,
-            maritalStatus: normalizedData.martial_status
+            employee_status: normalizedData.employee_status,
+            employee_type: normalizedData.employee_type,
+            martial_status: normalizedData.martial_status
           });
 
         } catch (error) {
@@ -160,7 +182,7 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setFormData((prev) => ({ ...prev, photoPassport: file }));
+      setFormData((prev) => ({ ...prev, photo_passport: file }));
     }
   };
 
@@ -168,23 +190,23 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
-      ...(field === 'province' && {
-        district: '',
-        sector: '',
-        cell: '',
-        village: '',
+      ...(field === 'address_province' && {
+        address_district: '',
+        address_sector: '',
+        address_cell: '',
+        address_village: '',
       }),
-      ...(field === 'district' && {
-        sector: '',
-        cell: '',
-        village: '',
+      ...(field === 'address_district' && {
+        address_sector: '',
+        address_cell: '',
+        address_village: '',
       }),
-      ...(field === 'sector' && {
-        cell: '',
-        village: '',
+      ...(field === 'address_sector' && {
+        address_cell: '',
+        address_village: '',
       }),
-      ...(field === 'cell' && {
-        village: '',
+      ...(field === 'address_cell' && {
+        address_village: '',
       }),
     }));
   };
@@ -214,56 +236,42 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
     try {
       // Create the data object with the correct field names
       const dataToSend = {
-        photo_passport: formData.photoPassport || "https://example.com/images/photo.jpg",
-        firstname: formData.firstName,
-        lastname: formData.lastName,
+        photo_passport: formData.photo_passport || "https://example.com/images/photo.jpg",
+        firstname: formData.firstname,
+        lastname: formData.lastname,
         gender: formData.gender,
         email: formData.email,
         phone: formData.phone,
-        martial_status: formData.maritalStatus,
-        address_province: formData.province,
-        address_district: formData.district,
-        address_sector: formData.sector,
-        address_cell: formData.cell,
-        address_village: formData.village,
-        start_date: formData.startDate,
-        employee_status: formData.employeeStatus,
-        employee_type: formData.employeeType,
-        department_supervisor: formData.departmentSupervisor,
-        person_of_contact_firstname: formData.contactFirstName,
-        person_of_contact_lastname: formData.contactLastName,
-        person_of_contact_relationship: formData.relationship,
-        person_of_contact_phone: formData.contactPhone
+        martial_status: formData.martial_status,
+        address_province: formData.address_province,
+        address_district: formData.address_district,
+        address_sector: formData.address_sector,
+        address_cell: formData.address_cell,
+        address_village: formData.address_village,
+        start_date: formData.start_date,
+        employee_status: formData.employee_status,
+        employee_type: formData.employee_type,
+        department_supervisor: formData.department_supervisor,
+        person_of_contact_firstname: formData.person_of_contact_firstname,
+        person_of_contact_lastname: formData.person_of_contact_lastname,
+        person_of_contact_relationship: formData.person_of_contact_relationship,
+        person_of_contact_phone: formData.person_of_contact_phone,
       };
 
       console.log('Submitting data:', dataToSend);
 
       if (isEditing) {
-        const result = await updateEmployee(employeeId, dataToSend);
-        console.log('Update response:', result);
-        toast.success('Employee updated successfully!');
-           // Add a slight delay before reloading to ensure the toast message is visible
-    setTimeout(() => {
-      window.location.reload();
-    }, 1500); // 1.5 seconds delay
+        await updateEmployee(employeeId, dataToSend);
+        toast.success('Employee updated successfully');
       } else {
-        const result = await createEmployee(dataToSend);
-        console.log('Create response:', result);
-        toast.success('Employee created successfully!');
-           // Add a slight delay before reloading to ensure the toast message is visible
-    setTimeout(() => {
-      window.location.reload();
-    }, 1500); // 1.5 seconds delay
-      }
-      
-      if (typeof onSuccess === 'function') {
-        onSuccess();
+        await createEmployee(dataToSend);
+        toast.success('Employee created successfully');
       }
 
+      onSuccess();
     } catch (error) {
       console.error('Form submission error:', error);
-      const errorMessage = error.response?.data?.message || error.message || 'An unknown error occurred';
-      toast.error(`Failed to ${isEditing ? 'update' : 'create'} employee: ${errorMessage}`);
+      toast.error(`Failed to ${isEditing ? 'update' : 'create'} employee: ${error.message}`);
     }
   };
   
@@ -275,19 +283,19 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
         <div className="space-y-4">
           <h3 className="text-lg font-medium border-b pb-2">Employee Details</h3>
           <div>
-            <label htmlFor="photoPassport" className="block text-sm font-medium">Photo Passport</label>
+            <label htmlFor="photo_passport" className="block text-sm font-medium">Photo Passport</label>
             <input
-              id="photoPassport"
-              name="photoPassport"
+              id="photo_passport"
+              name="photo_passport"
               type="file"
               onChange={handleFileChange}
               className="w-full border rounded-md py-2 px-3 mt-1"
             />
-            {formData.photoPassport && (
+            {formData.photo_passport && (
               <p className="text-sm mt-1">
-                {formData.photoPassport instanceof File 
-                  ? `Selected file: ${formData.photoPassport.name}`
-                  : `Current photo: ${formData.photoPassport}`
+                {formData.photo_passport instanceof File 
+                  ? `Selected file: ${formData.photo_passport.name}`
+                  : `Current photo: ${formData.photo_passport}`
                 }
               </p>
             )}
@@ -295,22 +303,22 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
           {/* Other form fields remain unchanged */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="firstName" className="block text-sm font-medium">First Name</label>
+              <label htmlFor="firstname" className="block text-sm font-medium">First Name</label>
               <input
-                id="firstName"
-                name="firstName"
-                value={formData.firstName}
+                id="firstname"
+                name="firstname"
+                value={formData.firstname}
                 onChange={handleChange}
                 className="w-full border rounded-md py-2 px-3 mt-1"
                 required
               />
             </div>
             <div>
-              <label htmlFor="lastName" className="block text-sm font-medium">Last Name</label>
+              <label htmlFor="lastname" className="block text-sm font-medium">Last Name</label>
               <input
-                id="lastName"
-                name="lastName"
-                value={formData.lastName}
+                id="lastname"
+                name="lastname"
+                value={formData.lastname}
                 onChange={handleChange}
                 className="w-full border rounded-md py-2 px-3 mt-1"
                 required
@@ -357,11 +365,11 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
             />
           </div>
           <div>
-            <label htmlFor="maritalStatus" className="block text-sm font-medium">Marital Status</label>
+            <label htmlFor="martial_status" className="block text-sm font-medium">Marital Status</label>
             <select
-              id="maritalStatus"
-              name="maritalStatus"
-              value={formData.maritalStatus}
+              id="martial_status"
+              name="martial_status"
+              value={formData.martial_status}
               onChange={handleChange}
               className="w-full border rounded-md py-2 px-3 mt-1"
               required
@@ -380,22 +388,22 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
           <h3 className="text-lg font-medium border-b pb-2">Emergency Contact</h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="contactFirstName" className="block text-sm font-medium">Contact First Name</label>
+              <label htmlFor="person_of_contact_firstname" className="block text-sm font-medium">Contact First Name</label>
               <input
-                id="contactFirstName"
-                name="contactFirstName"
-                value={formData.contactFirstName}
+                id="person_of_contact_firstname"
+                name="person_of_contact_firstname"
+                value={formData.person_of_contact_firstname}
                 onChange={handleChange}
                 className="w-full border rounded-md py-2 px-3 mt-1"
                 required
               />
             </div>
             <div>
-              <label htmlFor="contactLastName" className="block text-sm font-medium">Contact Last Name</label>
+              <label htmlFor="person_of_contact_lastname" className="block text-sm font-medium">Contact Last Name</label>
               <input
-                id="contactLastName"
-                name="contactLastName"
-                value={formData.contactLastName}
+                id="person_of_contact_lastname"
+                name="person_of_contact_lastname"
+                value={formData.person_of_contact_lastname}
                 onChange={handleChange}
                 className="w-full border rounded-md py-2 px-3 mt-1"
                 required
@@ -403,22 +411,22 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
             </div>
           </div>
           <div>
-            <label htmlFor="relationship" className="block text-sm font-medium">Relationship</label>
+            <label htmlFor="person_of_contact_relationship" className="block text-sm font-medium">Relationship</label>
             <input
-              id="relationship"
-              name="relationship"
-              value={formData.relationship}
+              id="person_of_contact_relationship"
+              name="person_of_contact_relationship"
+              value={formData.person_of_contact_relationship}
               onChange={handleChange}
               className="w-full border rounded-md py-2 px-3 mt-1"
               required
             />
           </div>
           <div>
-            <label htmlFor="contactPhone" className="block text-sm font-medium">Contact Phone</label>
+            <label htmlFor="person_of_contact_phone" className="block text-sm font-medium">Contact Phone</label>
             <input
-              id="contactPhone"
-              name="contactPhone"
-              value={formData.contactPhone}
+              id="person_of_contact_phone"
+              name="person_of_contact_phone"
+              value={formData.person_of_contact_phone}
               onChange={handleChange}
               className="w-full border rounded-md py-2 px-3 mt-1"
               type="tel"
@@ -434,11 +442,11 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
         <div className="space-y-4">
           <h3 className="text-lg font-medium border-b pb-2">Employee Status</h3>
           <div>
-            <label htmlFor="startDate" className="block text-sm font-medium">Start Date</label>
+            <label htmlFor="start_date" className="block text-sm font-medium">Start Date</label>
             <input
-              id="startDate"
-              name="startDate"
-              value={formData.startDate}
+              id="start_date"
+              name="start_date"
+              value={formData.start_date}
               onChange={handleChange}
               className="w-full border rounded-md py-2 px-3 mt-1"
               type="date"
@@ -446,11 +454,11 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
             />
           </div>
           <div>
-            <label htmlFor="employeeStatus" className="block text-sm font-medium">Employee Status</label>
+            <label htmlFor="employee_status" className="block text-sm font-medium">Employee Status</label>
             <select
-              id="employeeStatus"
-              name="employeeStatus"
-              value={formData.employeeStatus}
+              id="employee_status"
+              name="employee_status"
+              value={formData.employee_status}
               onChange={handleChange}
               className="w-full border rounded-md py-2 px-3 mt-1"
               required
@@ -463,11 +471,11 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
             </select>
           </div>
           <div>
-            <label htmlFor="employeeType" className="block text-sm font-medium">Employee Type</label>
+            <label htmlFor="employee_type" className="block text-sm font-medium">Employee Type</label>
             <select
-              id="employeeType"
-              name="employeeType"
-              value={formData.employeeType}
+              id="employee_type"
+              name="employee_type"
+              value={formData.employee_type}
               onChange={handleChange}
               className="w-full border rounded-md py-2 px-3 mt-1"
               required
@@ -481,11 +489,11 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
             </select>
           </div>
           <div>
-            <label htmlFor="departmentSupervisor" className="block text-sm font-medium">Department Supervisor</label>
+            <label htmlFor="department_supervisor" className="block text-sm font-medium">Department Supervisor</label>
             <input
-              id="departmentSupervisor"
-              name="departmentSupervisor"
-              value={formData.departmentSupervisor}
+              id="department_supervisor"
+              name="department_supervisor"
+              value={formData.department_supervisor}
               onChange={handleChange}
               className="w-full border rounded-md py-2 px-3 mt-1"
               required
@@ -497,12 +505,12 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
         <div className="space-y-4">
           <h3 className="text-lg font-medium border-b pb-2">Address Details</h3>
           <div>
-            <label htmlFor="province" className="block text-sm font-medium">Province</label>
+            <label htmlFor="address_province" className="block text-sm font-medium">Province</label>
             <select
-              id="province"
-              name="province"
-              value={formData.province}
-              onChange={(e) => handleLocationChange('province', e.target.value)}
+              id="address_province"
+              name="address_province"
+              value={formData.address_province}
+              onChange={(e) => handleLocationChange('address_province', e.target.value)}
               className="w-full border rounded-md py-2 px-3 mt-1"
               required
             >
@@ -515,18 +523,18 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
             </select>
           </div>
           <div>
-            <label htmlFor="district" className="block text-sm font-medium">District</label>
+            <label htmlFor="address_district" className="block text-sm font-medium">District</label>
             <select
-              id="district"
-              name="district"
-              value={formData.district}
-              onChange={(e) => handleLocationChange('district', e.target.value)}
+              id="address_district"
+              name="address_district"
+              value={formData.address_district}
+              onChange={(e) => handleLocationChange('address_district', e.target.value)}
               className="w-full border rounded-md py-2 px-3 mt-1"
-              disabled={!formData.province}
+              disabled={!formData.address_province}
               required
             >
               <option value="">Select District</option>
-              {(districts[formData.province] || []).map((district) => (
+              {(districts[formData.address_province] || []).map((district) => (
                 <option key={district} value={district}>
                   {district}
                 </option>
@@ -534,18 +542,18 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
             </select>
           </div>
           <div>
-            <label htmlFor="sector" className="block text-sm font-medium">Sector</label>
+            <label htmlFor="address_sector" className="block text-sm font-medium">Sector</label>
             <select
-              id="sector"
-              name="sector"
-              value={formData.sector}
-              onChange={(e) => handleLocationChange('sector', e.target.value)}
+              id="address_sector"
+              name="address_sector"
+              value={formData.address_sector}
+              onChange={(e) => handleLocationChange('address_sector', e.target.value)}
               className="w-full border rounded-md py-2 px-3 mt-1"
-              disabled={!formData.district}
+              disabled={!formData.address_district}
               required
             >
               <option value="">Select Sector</option>
-              {(sectors[formData.district] || []).map((sector) => (
+              {(sectors[formData.address_district] || []).map((sector) => (
                 <option key={sector} value={sector}>
                   {sector}
                 </option>
@@ -553,18 +561,18 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
             </select>
           </div>
           <div>
-            <label htmlFor="cell" className="block text-sm font-medium">Cell</label>
+            <label htmlFor="address_cell" className="block text-sm font-medium">Cell</label>
             <select
-              id="cell"
-              name="cell"
-              value={formData.cell}
-              onChange={(e) => handleLocationChange('cell', e.target.value)}
+              id="address_cell"
+              name="address_cell"
+              value={formData.address_cell}
+              onChange={(e) => handleLocationChange('address_cell', e.target.value)}
               className="w-full border rounded-md py-2 px-3 mt-1"
-              disabled={!formData.sector}
+              disabled={!formData.address_sector}
               required
             >
               <option value="">Select Cell</option>
-              {(cells[formData.sector] || []).map((cell) => (
+              {(cells[formData.address_sector] || []).map((cell) => (
                 <option key={cell} value={cell}>
                   {cell}
                 </option>
@@ -572,18 +580,18 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
             </select>
           </div>
           <div>
-            <label htmlFor="village" className="block text-sm font-medium">Village</label>
+            <label htmlFor="address_village" className="block text-sm font-medium">Village</label>
             <select
-              id="village"
-              name="village"
-              value={formData.village}
-              onChange={(e) => handleLocationChange('village', e.target.value)}
+              id="address_village"
+              name="address_village"
+              value={formData.address_village}
+              onChange={(e) => handleLocationChange('address_village', e.target.value)}
               className="w-full border rounded-md py-2 px-3 mt-1"
-              disabled={!formData.cell}
+              disabled={!formData.address_cell}
               required
             >
               <option value="">Select Village</option>
-              {(villages[formData.cell] || []).map((village) => (
+              {(villages[formData.address_cell] || []).map((village) => (
                 <option key={village} value={village}>
                   {village}
                 </option>

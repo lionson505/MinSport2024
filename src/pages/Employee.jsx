@@ -143,9 +143,13 @@ function Employee() {
           
           <div className="mb-4">
             <img 
-              src={employee.passportPicture || `https://dashboard.codeparrot.ai/api/assets/Z0q__nFEV176CUaS=${employee.id}&w=128&h=128`} 
-              alt={employee.names}
+              src={`${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/${employee.photo_passport.replace(/^\//, '')}`}
+              alt={`${employee.firstname} ${employee.lastname}`}
               className="w-32 h-32 rounded-lg object-cover"
+              onError={(e) => {
+                console.error('Image failed to load:', e.target.src);
+                e.target.src = 'https://via.placeholder.com/150'; // Using a reliable placeholder service
+              }}
             />
           </div>
 
@@ -202,18 +206,13 @@ function Employee() {
           
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm text-gray-500">Department</label>
-              <p className="font-medium">{employee.department_supervisor}</p>
+              <label className="text-sm text-gray-500">Department/Supervisor</label>
+              <p className="font-medium">{employee.department_supervisor || 'N/A'}</p>
             </div>
             <div>
               <label className="text-sm text-gray-500">Employee Type</label>
               <p className="font-medium">{employee.employee_type}</p>
             </div>
-          </div>
-
-          <div>
-            <label className="text-sm text-gray-500">Supervisor</label>
-            <p className="font-medium">{employee.supervisor}</p>
           </div>
         </div>
 
@@ -348,9 +347,8 @@ function Employee() {
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Start Date</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Employee Status</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Employee Type</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase ">Department</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Supervisor</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500  operation uppercase">Action</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Department/Supervisor</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
@@ -365,13 +363,12 @@ function Employee() {
                               ? 'bg-green-100 text-green-800'
                               : 'bg-red-100 text-red-800'
                           }`}>
-                          {employee.employee_status}
+                            {employee.employee_status}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-sm">{employee.employee_type}</td>
-                        <td className="px-4 py-3 text-sm">{employee.department}</td>
-                        <td className="px-4 py-3 text-sm">{employee.department_supervisor}</td>
-                        <td className="px-4 py-3 operation">
+                        <td className="px-4 py-3 text-sm">{employee.department_supervisor || 'N/A'}</td>
+                        <td className="px-4 py-3">
                           <div className="flex space-x-2">
                             <Button
                               size="icon"

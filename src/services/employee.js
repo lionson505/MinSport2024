@@ -13,12 +13,10 @@ export const fetchEmployees = async () => {
   try {
     const response = await axiosInstance.get('/employees');
     console.log('Raw API Response:', response.data);
-    if (Array.isArray(response.data)) {
-      return response.data;
-    } else if (response.data?.data && Array.isArray(response.data.data)) {
-      return response.data.data;
-    } else if (response.data?.employees && Array.isArray(response.data.employees)) {
+    if (response.data?.employees && Array.isArray(response.data.employees)) {
       return response.data.employees;
+    } else if (Array.isArray(response.data)) {
+      return response.data;
     } else {
       console.warn('Unexpected API Response Structure:', response.data);
       toast.error('Unexpected API response format');
@@ -29,6 +27,7 @@ export const fetchEmployees = async () => {
     return [];
   }
 };
+
 export const createEmployee = async (data) => {
     try {
       console.log('Payload being sent to API:', data);
