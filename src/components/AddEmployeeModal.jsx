@@ -51,7 +51,6 @@ function AddEmployeeModal({ isOpen, onClose, onAdd }) {
                 <AddEmployeeForm 
                   onSubmit={(data) => {
                     onAdd(data);
-                    onClose();
                   }}
                   onCancel={onClose}
                 />

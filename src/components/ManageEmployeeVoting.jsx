@@ -5,6 +5,7 @@ import { Eye, Download, Trash2, X, Plus, Edit, Search, BarChart2, Send, Trophy }
 import { Dialog, Transition } from '@headlessui/react';
 import toast from 'react-hot-toast';
 import axios from 'axios';
+import Select from 'react-select';
 
 // Get API URL from environment variables
 const API_URL = import.meta.env.VITE_API_URL;
@@ -21,6 +22,7 @@ function ManageEmployeeVoting() {
   const [employeeVotings, setEmployeeVotings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedVotingYear, setSelectedVotingYear] = useState(''); // Add this state
   
   // State for modals
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -52,13 +54,25 @@ function ManageEmployeeVoting() {
   const [votingPeriods, setVotingPeriods] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [selectedEmployees, setSelectedEmployees] = useState([]);
+  const [departments, setDepartments] = useState([]);
   
   // State for publish status
   const [publishStatus, setPublishStatus] = useState({});
   
-  // Group employee votings by department
+  // Filter employee votings by selected year
+  const filteredEmployeeVotings = useMemo(() => {
+    if (!selectedVotingYear) {
+      return employeeVotings;
+    }
+    return employeeVotings.filter(voting => {
+      const period = votingPeriods.find(p => p.id === voting.voting_period_id);
+      return period && period.voting_year.toString() === selectedVotingYear;
+    });
+  }, [employeeVotings, selectedVotingYear, votingPeriods]);
+  
+  // Group employee votings by department (using filtered data)
   const groupedVotings = useMemo(() => {
-    return employeeVotings.reduce((acc, voting) => {
+    return filteredEmployeeVotings.reduce((acc, voting) => {
       const department = voting.department || 'Unassigned';
       if (!acc[department]) {
         acc[department] = [];
@@ -66,18 +80,25 @@ function ManageEmployeeVoting() {
       acc[department].push(voting);
       return acc;
     }, {});
-  }, [employeeVotings]);
+  }, [filteredEmployeeVotings]);
   
   // Get unique departments
-  const departments = useMemo(() => {
+  const departmentsList = useMemo(() => {
     return Object.keys(groupedVotings);
   }, [groupedVotings]);
+  
+  // Get unique voting years for filter
+  const votingYears = useMemo(() => {
+    const years = [...new Set(votingPeriods.map(period => period.voting_year))];
+    return years.sort((a, b) => b - a); // Sort descending (newest first)
+  }, [votingPeriods]);
   
   // Fetch data on component mount
   useEffect(() => {
     fetchEmployeeVotings();
     fetchVotingPeriods();
     fetchEmployees();
+    fetchDepartments();
   }, []);
   
   // Update employee votings when employees or voting periods change
@@ -178,6 +199,17 @@ function ManageEmployeeVoting() {
     }
   };
   
+  // Fetch departments on mount
+  const fetchDepartments = async () => {
+    try {
+      const res = await axios.get(`${API_URL}departments`);
+      setDepartments(res.data.departments || []);
+    } catch (error) {
+      toast.error('Failed to load departments');
+      setDepartments([]);
+    }
+  };
+  
   // Filter employee votings based on search term
   const filteredVotings = Array.isArray(employeeVotings) 
     ? employeeVotings.filter(voting => {
@@ -261,7 +293,7 @@ function ManageEmployeeVoting() {
     setFormData(prev => ({
       ...prev,
       voting_period_id: periodId,
-      criteria: Object.fromEntries(Object.entries(criteria).map(([key, maxPoints]) => [key, '']))
+      criteria: Object.fromEntries(Object.entries(criteria).map(([key, maxPoints]) => [key, 0]))
     }));
   };
   
@@ -301,12 +333,12 @@ function ManageEmployeeVoting() {
       }
 
       if (!formData.department) {
-        toast.error('Please enter the department');
+        toast.error('Please select a department');
         return;
       }
 
       if (!formData.department_email) {
-        toast.error('Please enter the department email');
+        toast.error('Department email is not available for this department');
         return;
       }
 
@@ -314,7 +346,7 @@ function ManageEmployeeVoting() {
       const periodCriteria = getVotingPeriodCriteria(formData.voting_period_id);
       for (const [criteriaName, maxPoints] of Object.entries(periodCriteria)) {
         const value = formData.criteria[criteriaName];
-        if (value === undefined || value === '') {
+        if (value === undefined || value === '' || isNaN(value)) {
           toast.error(`Please enter a value for ${criteriaName}`);
           return;
         }
@@ -326,13 +358,15 @@ function ManageEmployeeVoting() {
       
       // Create voting for each selected employee
       const promises = selectedEmployees.map(employeeId => {
-        return axios.post(`${API_URL}voting/employee-votings`, {
+        const payload = {
           voting_period_id: formData.voting_period_id,
           employee_id: employeeId,
           department: formData.department,
           department_email: formData.department_email,
-          criteria: formData.criteria
-        });
+          criteria: Object.entries(formData.criteria).map(([name, points]) => ({ name, points }))
+        };
+        console.log('Payload sent to /voting/employee-votings:', payload);
+        return axios.post(`${API_URL}voting/employee-votings`, payload);
       });
       
       await Promise.all(promises);
@@ -537,7 +571,21 @@ function ManageEmployeeVoting() {
 
       // Send personalized email to each employee with their voting link
       const emailPromises = employeeData.map(async ({ email, votingId, employeeId }) => {
-        const votingUrl = `${window.location.origin}/employee-voting/${votingId}?employeeId=${employeeId}`;
+        // Create a new token for this voting
+        let newToken = null;
+        try {
+          const tokenRes = await axios.post(`${API_URL}voting/voting-link-tokens`, {
+            employeeId: employeeId,
+            employeeVotingId: votingId
+          });
+          newToken = tokenRes.data.link_token;
+          console.log('Created new token for voting', votingId, newToken);
+        } catch (err) {
+          console.error('Failed to create token for voting', votingId, err);
+          return false;
+        }
+        
+        const votingUrl = `${window.location.origin}/employee-voting/${votingId}?employeeId=${employeeId}&token=${newToken}`;
         const emailSubject = `Update Your Performance Marks - ${department} Department`;
         const emailMessage = `
           <div style="font-family: Arial, sans-serif; padding: 20px;">
@@ -580,7 +628,7 @@ function ManageEmployeeVoting() {
   const calculateAllDepartmentResults = () => {
     const allResults = {};
     
-    departments.forEach(department => {
+    departmentsList.forEach(department => {
       const results = calculateDepartmentResults(department);
       if (results.length > 0) {
         allResults[department] = results[0]; // Get the top performer
@@ -627,15 +675,30 @@ function ManageEmployeeVoting() {
           });
 
           // Add all employee links for this department
-          departmentVotings.forEach(voting => {
+          for (const voting of departmentVotings) {
+            // Create a new token for this voting
+            let newToken = null;
+            try {
+              const tokenRes = await axios.post(`${API_URL}voting/voting-link-tokens`, {
+                employeeId: voting.employee_id,
+                employeeVotingId: voting.id
+              });
+              newToken = tokenRes.data.link_token;
+              console.log('Created new token for voting', voting.id, newToken);
+            } catch (err) {
+              console.error('Failed to create token for voting', voting.id, err);
+              // Skip this voting if token creation fails
+              continue;
+            }
+            
             const employee = employees.find(emp => emp.id === voting.employee_id);
-            const votingUrl = `${window.location.origin}/employee-voting/${voting.id}?employeeId=${voting.employee_id}`;
+            const votingUrl = `${window.location.origin}/employee-voting/${voting.id}?employeeId=${voting.employee_id}&token=${newToken}`;
             allVotingLinks.push({
               type: 'link',
               name: employee ? `${employee.firstname} ${employee.lastname}` : 'Unknown Employee',
               link: votingUrl
             });
-          });
+          }
         }
       }
 
@@ -811,23 +874,40 @@ function ManageEmployeeVoting() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Manage Employee Votings</h1>
-        <div className="flex space-x-2">
-          <Button 
-            onClick={() => setIsOverallTopPerformerModalOpen(true)} 
-            variant="outline"
-            className="bg-purple-100 hover:bg-purple-200 text-purple-700"
-          >
-            <Trophy className="w-4 h-4 mr-2" />
-            Overall Top Performer
-          </Button>
-          <Button onClick={handleAllResultsModalOpen} variant="outline">
-            <Trophy className="w-4 h-4 mr-2" />
-            All Top Performers
-          </Button>
-          <Button onClick={handleCreateModalOpen}>
-            <Plus className="w-4 h-4 mr-2" />
-            Create New Voting
-          </Button>
+        <div className="flex items-center space-x-4">
+          {/* Voting Year Filter */}
+          <div className="flex items-center space-x-2">
+            <label className="text-sm font-medium text-gray-700">Filter by Year:</label>
+            <select
+              value={selectedVotingYear}
+              onChange={(e) => setSelectedVotingYear(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">All Years</option>
+              {votingYears.map(year => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+          </div>
+          
+          <div className="flex space-x-2">
+            <Button 
+              onClick={() => setIsOverallTopPerformerModalOpen(true)} 
+              variant="outline"
+              className="bg-purple-100 hover:bg-purple-200 text-purple-700"
+            >
+              <Trophy className="w-4 h-4 mr-2" />
+              Overall Top Performer
+            </Button>
+            <Button onClick={handleAllResultsModalOpen} variant="outline">
+              <Trophy className="w-4 h-4 mr-2" />
+              All Top Performers
+            </Button>
+            <Button onClick={handleCreateModalOpen}>
+              <Plus className="w-4 h-4 mr-2" />
+              Create New Voting
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -857,7 +937,7 @@ function ManageEmployeeVoting() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {departments
+              {departmentsList
                 .filter(dept => dept.toLowerCase().includes(searchTerm.toLowerCase()))
                 .map((department) => (
                 <tr key={department}>
@@ -1173,59 +1253,66 @@ function ManageEmployeeVoting() {
                       </select>
                     </div>
 
+                    {/* Department Select */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Department
-                      </label>
-                      <Input
-                        type="text"
-                        name="department"
-                        value={formData.department}
-                        onChange={handleInputChange}
-                        placeholder="Enter department"
+                      <label className="block text-sm font-medium text-gray-700">Department</label>
+                      <Select
+                        options={departments.map(dept => ({ value: dept.id, label: dept.name, email: dept.email }))}
+                        value={departments.find(d => d.name === formData.department) ? { value: departments.find(d => d.name === formData.department).id, label: formData.department, email: formData.department_email } : null}
+                        onChange={option => {
+                          setFormData(prev => ({
+                            ...prev,
+                            department: option.label,
+                            department_email: option.email
+                          }));
+                        }}
+                        placeholder="Select department..."
+                        isSearchable
                         className="mt-1"
-                        required
                       />
                     </div>
-
+                    {/* Department Email (auto-filled) */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Department Email
-                      </label>
+                      <label className="block text-sm font-medium text-gray-700">Department Email</label>
                       <Input
                         type="email"
                         name="department_email"
                         value={formData.department_email}
                         onChange={handleInputChange}
-                        placeholder="Enter department email"
+                        placeholder="Department email will auto-fill"
                         className="mt-1"
                         required
+                        readOnly
                       />
                     </div>
 
                     {formData.voting_period_id && (
                       <>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Select Employees
-                          </label>
-                          <div className="max-h-60 overflow-y-auto border border-gray-300 rounded-md p-2">
-                            {employees.map((employee) => (
-                              <div key={employee.id} className="flex items-center py-1">
-                                <input
-                                  type="checkbox"
-                                  id={`employee-${employee.firstname}-${employee.lastname}`}
-                                  checked={selectedEmployees.includes(employee.id)}
-                                  onChange={() => handleEmployeeSelection(employee.id)}
-                                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                />
-                                <label htmlFor={`employee-${employee.firstname}-${employee.lastname}`} className="ml-2 block text-sm text-gray-900">
-                                  {employee.firstname} {employee.lastname}
-                                </label>
-                              </div>
-                            ))}
+                        {/* Select Employees (filtered by department) */}
+                        {formData.department && (
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Select Employees</label>
+                            <div className="max-h-60 overflow-y-auto border border-gray-300 rounded-md p-2">
+                              {employees.filter(emp => {
+                                const dept = departments.find(d => d.name === formData.department);
+                                return dept && emp.departmentId === dept.id;
+                              }).map(employee => (
+                                <div key={employee.id} className="flex items-center py-1">
+                                  <input
+                                    type="checkbox"
+                                    id={`employee-${employee.firstname}-${employee.lastname}`}
+                                    checked={selectedEmployees.includes(employee.id)}
+                                    onChange={() => handleEmployeeSelection(employee.id)}
+                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                  />
+                                  <label htmlFor={`employee-${employee.firstname}-${employee.lastname}`} className="ml-2 block text-sm text-gray-900">
+                                    {employee.firstname} {employee.lastname}
+                                  </label>
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                        </div>
+                        )}
 
                         <div className="space-y-4">
                           <h4 className="font-medium">Criteria</h4>
@@ -1752,6 +1839,11 @@ function ManageEmployeeVoting() {
                   className="text-lg font-medium leading-6 text-gray-900 mb-4"
                 >
                   All Department Top Performers
+                  {selectedVotingYear && (
+                    <span className="text-sm font-normal text-gray-500 ml-2">
+                      (Year: {selectedVotingYear})
+                    </span>
+                  )}
                 </Dialog.Title>
 
                 <div className="mt-4">
@@ -1762,31 +1854,44 @@ function ManageEmployeeVoting() {
                     if (departmentsWithResults.length === 0) {
                       return (
                         <div className="text-center py-8 text-gray-500">
-                          No voting data available for any department.
+                          {selectedVotingYear 
+                            ? `No voting data available for ${selectedVotingYear}.`
+                            : 'No voting data available for any department.'
+                          }
                         </div>
                       );
                     }
                     
                     return (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {departmentsWithResults.map(department => {
-                          const topPerformer = allResults[department];
-                          return (
-                            <div key={department} className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 shadow-md">
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <h4 className="text-lg font-bold text-gray-900">{department}</h4>
-                                  <p className="text-sm text-gray-500">Top Performer</p>
-                                </div>
-                                <div className="text-right">
-                                  <p className="text-md font-medium text-blue-600">
-                                    {topPerformer.employee?.email || 'Email not available'}
-                                  </p>
+                      <div className="space-y-4">
+                        {selectedVotingYear && (
+                          <div className="bg-blue-50 p-3 rounded-md">
+                            <p className="text-sm text-blue-800">
+                              Showing top performers for voting year: <strong>{selectedVotingYear}</strong>
+                            </p>
+                          </div>
+                        )}
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {departmentsWithResults.map(department => {
+                            const topPerformer = allResults[department];
+                            return (
+                              <div key={department} className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 shadow-md">
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <h4 className="text-lg font-bold text-gray-900">{department}</h4>
+                                    <p className="text-sm text-gray-500">Top Performer</p>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-md font-medium text-blue-600">
+                                      {topPerformer.employee?.email || 'Email not available'}
+                                    </p>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          );
-                        })}
+                            );
+                          })}
+                        </div>
                       </div>
                     );
                   })()}
@@ -1977,6 +2082,11 @@ function ManageEmployeeVoting() {
                   className="text-xl font-bold leading-6 text-gray-900 mb-4"
                 >
                   Overall Top Performer
+                  {selectedVotingYear && (
+                    <span className="text-sm font-normal text-gray-500 ml-2">
+                      (Year: {selectedVotingYear})
+                    </span>
+                  )}
                 </Dialog.Title>
 
                 {(() => {
@@ -1985,13 +2095,24 @@ function ManageEmployeeVoting() {
                   if (!topPerformer) {
                     return (
                       <div className="text-center py-8 text-gray-500">
-                        No voting data available.
+                        {selectedVotingYear 
+                          ? `No voting data available for ${selectedVotingYear}.`
+                          : 'No voting data available.'
+                        }
                       </div>
                     );
                   }
 
                   return (
                     <div className="space-y-6">
+                      {selectedVotingYear && (
+                        <div className="bg-purple-50 p-3 rounded-md">
+                          <p className="text-sm text-purple-800">
+                            Showing overall top performer for voting year: <strong>{selectedVotingYear}</strong>
+                          </p>
+                        </div>
+                      )}
+                      
                       <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-6 shadow-md">
                         <div className="grid grid-cols-2 gap-4">
                           <div>

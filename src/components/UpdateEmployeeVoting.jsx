@@ -12,43 +12,45 @@ function UpdateEmployeeVoting() {
   const { votingId } = useParams();
   const [searchParams] = useSearchParams();
   const employeeId = searchParams.get('employeeId');
+  const token = searchParams.get('token');
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [votingData, setVotingData] = useState(null);
-  const [formData, setFormData] = useState([]); // Changed to array to store new criteria
+  const [formData, setFormData] = useState([]);
+  const [used, setUsed] = useState(false);
 
   useEffect(() => {
     fetchVotingData();
-  }, [votingId]);
+  }, [votingId, token]);
 
   const fetchVotingData = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}voting/employee-votings/${votingId}`);
-      
+      const response = await axios.get(`${API_URL}voting/employee-votings/${votingId}?token=${token}`);
       if (response.data && response.data.employeeVoting) {
         const voting = response.data.employeeVoting;
         setVotingData(voting);
-        
+        setUsed(response.data.used);
         // Get the voting period to fetch its criteria
         const periodResponse = await axios.get(`${API_URL}voting/periods/${voting.voting_period_id}`);
         if (periodResponse.data && periodResponse.data.votingPeriod) {
           const period = periodResponse.data.votingPeriod;
-          
           // Initialize form data with existing criteria names and empty points
           const initialFormData = Object.entries(period.criteria || {}).map(([name, maxPoints]) => ({
             name,
             maxPoints,
-            points: '' // Empty points for user to fill
+            points: ''
           }));
-          
           setFormData(initialFormData);
         }
       } else {
         toast.error('Voting data not found');
       }
     } catch (error) {
+      if (error.response && error.response.data && error.response.data.error === 'This voting link has already been used.') {
+        setUsed(true);
+      }
       console.error('Error fetching voting data:', error);
       toast.error('Failed to load voting data');
     } finally {
@@ -67,45 +69,33 @@ function UpdateEmployeeVoting() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     try {
       setSubmitting(true);
-
-      // Validate criteria values
-      const validCriteria = formData.filter(criteria => 
-        criteria.name && criteria.points !== undefined && criteria.points !== ''
-      );
-
+      const validCriteria = formData.filter(criteria => criteria.name && criteria.points !== undefined && criteria.points !== '');
       if (validCriteria.length === 0) {
         toast.error('Please fill in all criteria points');
         return;
       }
-
-      // Validate points against max points
       for (const criteria of validCriteria) {
         if (criteria.points > criteria.maxPoints) {
           toast.error(`Points for ${criteria.name} cannot exceed ${criteria.maxPoints}`);
           return;
         }
       }
-
-      // Format criteria data according to API requirements
-      const criteriaData = validCriteria.map(criteria => ({
-        name: criteria.name,
-        points: criteria.points // Changed from mark to points to match API schema
-      }));
-
-      // Add criteria using POST endpoint
-      await axios.post(`${API_URL}voting/employee-votings/${votingId}/criteria`, {
+      const criteriaData = validCriteria.map(criteria => ({ name: criteria.name, points: criteria.points }));
+      await axios.post(`${API_URL}voting/employee-votings/${votingId}/criteria?token=${token}`, {
         criteria: criteriaData
       });
-
       toast.success('Criteria added successfully');
-      // Refresh voting data
       fetchVotingData();
     } catch (error) {
+      if (error.response && error.response.status === 403) {
+        setUsed(true);
+        toast.error('This voting link has already been used.');
+      } else {
       console.error('Error adding criteria:', error);
       toast.error('Failed to add criteria');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -163,6 +153,12 @@ function UpdateEmployeeVoting() {
             </div>
           </div>
 
+          {used ? (
+            <div className="bg-yellow-100 text-yellow-800 p-4 rounded mb-6 text-center font-semibold">
+              This voting link has already been used. You can view the voting details, but cannot submit again.
+            </div>
+          ) : null}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-4">
               {formData.map((criteria, index) => (
@@ -181,6 +177,7 @@ function UpdateEmployeeVoting() {
                         max={criteria.maxPoints}
                         className="w-full mt-1"
                         required
+                        disabled={used}
                       />
                     </div>
                   </div>
@@ -191,7 +188,7 @@ function UpdateEmployeeVoting() {
             <div className="flex justify-end pt-4">
               <Button
                 type="submit"
-                disabled={submitting}
+                disabled={submitting || used}
                 className="bg-indigo-600 hover:bg-indigo-700 text-white"
               >
                 {submitting ? 'Updating...' : 'Update Voting'}

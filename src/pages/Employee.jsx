@@ -11,6 +11,9 @@ import AddEmployeeVoting from '../components/AddEmployeeVoting';
 import ManageEmployeeVoting from '../components/ManageEmployeeVoting';
 import { fetchEmployees, createEmployee, updateEmployee, deleteEmployee } from '../services/employee';
 import PrintButton from '../components/reusable/Print';
+import { useNavigate } from 'react-router-dom';
+import Department from './Department';
+import axiosInstance from '../utils/axiosInstance';
 
 function Employee() {
   const [loading, setLoading] = useState(true);
@@ -26,6 +29,7 @@ function Employee() {
   const [employeesData, setEmployeesData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 5;
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchEmployeesData = async () => {
@@ -56,7 +60,8 @@ function Employee() {
     { id: 'all', label: `All ${counts.total}` },
     { id: 'manage', label: 'Manage Employee' },
     { id: 'addVoting', label: 'Add Employee Voting' },
-    { id: 'manageVoting', label: 'Manage Employee Voting' }
+    { id: 'manageVoting', label: 'Manage Employee Voting' },
+    { id: 'department', label: 'Departments' }, // New tab
   ];
 
   const [activeTab, setActiveTab] = useState(tabs[0].id);
@@ -77,10 +82,11 @@ function Employee() {
   const handleAddEmployee = async (newEmployee) => {
     try {
       setIsAddModalOpen(false);
-      const addedEmployee = await createEmployee(newEmployee);
+      await createEmployee(newEmployee);
       const freshEmployees = await fetchEmployees();
       setEmployeesData(freshEmployees);
       toast.success('Employee added successfully');
+      window.location.reload(); // Force full page reload
     } catch (error) {
       toast.error('Failed to add employee');
     }
@@ -93,14 +99,12 @@ function Employee() {
 
   const handleEditSubmit = async (updatedEmployee) => {
     try {
-      const updated = await updateEmployee(updatedEmployee.id, updatedEmployee);
-      setEmployeesData(prev => 
-        prev.map(emp => 
-          emp.id === updated.id ? updated : emp
-        )
-      );
+      await updateEmployee(updatedEmployee.id, updatedEmployee);
+      const freshEmployees = await fetchEmployees();
+      setEmployeesData(freshEmployees);
       setIsEditModalOpen(false);
       toast.success('Employee updated successfully');
+      window.location.reload(); // Force full page reload
     } catch (error) {
       toast.error('Failed to update employee');
     }
@@ -143,12 +147,15 @@ function Employee() {
           
           <div className="mb-4">
             <img 
-              src={`${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/${employee.photo_passport.replace(/^\//, '')}`}
+              src={
+                employee.photo_passport
+                  ? `${axiosInstance.defaults.baseURL.replace(/api\/?$/, '').replace(/\/$/, '')}/${employee.photo_passport.replace(/^\//, '')}`
+                  : 'https://via.placeholder.com/150'
+              }
               alt={`${employee.firstname} ${employee.lastname}`}
               className="w-32 h-32 rounded-lg object-cover"
               onError={(e) => {
-                console.error('Image failed to load:', e.target.src);
-                e.target.src = 'https://via.placeholder.com/150'; // Using a reliable placeholder service
+                e.target.src = 'https://via.placeholder.com/150';
               }}
             />
           </div>
@@ -206,8 +213,8 @@ function Employee() {
           
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm text-gray-500">Department/Supervisor</label>
-              <p className="font-medium">{employee.department_supervisor || 'N/A'}</p>
+              <label className="text-sm text-gray-500">Department</label>
+              <p className="font-medium">{employee.department?.name || 'N/A'}</p>
             </div>
             <div>
               <label className="text-sm text-gray-500">Employee Type</label>
@@ -347,7 +354,7 @@ function Employee() {
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Start Date</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Employee Status</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Employee Type</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Department/Supervisor</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Department</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
                     </tr>
                   </thead>
@@ -367,7 +374,7 @@ function Employee() {
                           </span>
                         </td>
                         <td className="px-4 py-3 text-sm">{employee.employee_type}</td>
-                        <td className="px-4 py-3 text-sm">{employee.department_supervisor || 'N/A'}</td>
+                        <td className="px-4 py-3 text-sm">{employee.department?.name || 'N/A'}</td>
                         <td className="px-4 py-3">
                           <div className="flex space-x-2">
                             <Button
@@ -445,6 +452,8 @@ function Employee() {
       case 'manageVoting':
         return <ManageEmployeeVoting />;
 
+      case 'department':
+        return <Department />;
       default:
         return null;
     }

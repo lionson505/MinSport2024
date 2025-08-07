@@ -52,8 +52,7 @@ function EditEmployeeModal({ isOpen, onClose, onEdit, employeeData }) {
                 {/* AddEmployeeForm Component */}
                 <AddEmployeeForm 
                   onSubmit={(data) => {
-                    onEdit({ id: employeeData.id, ...data }); // Passing the id along with the updated data
-                    onClose(); // Close the modal after the edit
+                    onEdit({ id: employeeData.id, ...data });
                   }}
                   onCancel={onClose} // onCancel should also close the modal
                   initialData={employeeData} // Initialize form with existing employee data

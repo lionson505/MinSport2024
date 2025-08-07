@@ -3,6 +3,9 @@ import PropTypes from 'prop-types';
 import toast from 'react-hot-toast';
 import locData from '../../data/loc.json'; // Import loc.json directly
 import axiosInstance from '../../utils/axiosInstance';
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const createEmployee = async (data) => {
   try {
@@ -72,6 +75,7 @@ const updateEmployee = async (employeeId, data) => {
 };
 
 const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
+  const [departments, setDepartments] = useState([]);
   const [formData, setFormData] = useState({
     photo_passport: '',
     firstname: '',
@@ -88,12 +92,18 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
     start_date: '',
     employee_status: '',
     employee_type: '',
-    department_supervisor: '',
+    departmentId: '',
     person_of_contact_firstname: '',
     person_of_contact_lastname: '',
     person_of_contact_relationship: '',
     person_of_contact_phone: '',
   });
+
+  useEffect(() => {
+    axios.get(`${API_URL}departments`).then(res => {
+      setDepartments(res.data.departments || []);
+    });
+  }, []);
 
   useEffect(() => {
     const fetchEmployeeData = async () => {
@@ -116,7 +126,8 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
             gender: employeeData.gender?.trim() || '',
             employee_status: employeeData.employee_status?.trim() || '',
             employee_type: employeeData.employee_type?.trim() || '',
-            martial_status: employeeData.martial_status?.trim() || ''
+            martial_status: employeeData.martial_status?.trim() || '',
+            departmentId: employeeData.departmentId || '',
           };
 
           setFormData({
@@ -135,7 +146,7 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
             start_date: normalizedData.start_date ? new Date(normalizedData.start_date).toISOString().split('T')[0] : '',
             employee_status: normalizedData.employee_status || '',
             employee_type: normalizedData.employee_type || '',
-            department_supervisor: normalizedData.department_supervisor || '',
+            departmentId: normalizedData.departmentId || '',
             person_of_contact_firstname: normalizedData.person_of_contact_firstname || '',
             person_of_contact_lastname: normalizedData.person_of_contact_lastname || '',
             person_of_contact_relationship: normalizedData.person_of_contact_relationship || '',
@@ -251,7 +262,7 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
         start_date: formData.start_date,
         employee_status: formData.employee_status,
         employee_type: formData.employee_type,
-        department_supervisor: formData.department_supervisor,
+        departmentId: formData.departmentId,
         person_of_contact_firstname: formData.person_of_contact_firstname,
         person_of_contact_lastname: formData.person_of_contact_lastname,
         person_of_contact_relationship: formData.person_of_contact_relationship,
@@ -269,6 +280,7 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
       }
 
       onSuccess();
+      window.location.reload(); // Force full page reload after add/edit
     } catch (error) {
       console.error('Form submission error:', error);
       toast.error(`Failed to ${isEditing ? 'update' : 'create'} employee: ${error.message}`);
@@ -488,16 +500,22 @@ const AddEmployeeForm = ({ isEditing, employeeId, onSuccess, onCancel }) => {
               <option value="temporary">Temporary</option>
             </select>
           </div>
+          {/* Replace department_supervisor input with department dropdown */}
           <div>
-            <label htmlFor="department_supervisor" className="block text-sm font-medium">Department Supervisor</label>
-            <input
-              id="department_supervisor"
-              name="department_supervisor"
-              value={formData.department_supervisor}
+            <label htmlFor="departmentId" className="block text-sm font-medium">Department</label>
+            <select
+              id="departmentId"
+              name="departmentId"
+              value={formData.departmentId}
               onChange={handleChange}
               className="w-full border rounded-md py-2 px-3 mt-1"
               required
-            />
+            >
+              <option value="">Select Department</option>
+              {departments.map((dept) => (
+                <option key={dept.id} value={dept.id}>{dept.name}</option>
+              ))}
+            </select>
           </div>
         </div>
 

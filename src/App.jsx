@@ -50,6 +50,7 @@ import AppointmentRequest from './pages/public/AppointmentRequest.jsx';
 import VerifyEmail from './pages/auth/VerifyEmail.jsx';
 import setupInactivityHandler from './utils/inactivityHandler';
 import UpdateEmployeeVoting from './components/UpdateEmployeeVoting';
+import Department from './pages/Department';
 
 function App() {
   const [accessibleLinks, setAccessibleLinks] = useState(null);
@@ -116,7 +117,8 @@ function App() {
     '/match',
     '/map',
     '/reset-password',
-    '/appointmentrequest'
+    '/appointmentrequest',
+    '/department'
 
   ];
 
@@ -158,6 +160,7 @@ function App() {
                       <Route path="/notAuthorized" element={<NoPageFound/>} />
                       <Route path="/reset-password" element={<PasswordReset/>} />
                       <Route path="/employee-voting/:votingId" element={<UpdateEmployeeVoting />} />
+                      {/* Remove the public /department route here */}
 
                       {/* Protected Routes */}
                       <Route element={<DashboardLayout />}>
@@ -242,6 +245,7 @@ function App() {
                             <Employee />
                           </ProtectedRoute>
                         } />
+                        <Route path="/department" element={<Department />} />
                         <Route path="/users" element={
                           <ProtectedRoute moduleId={MODULE_IDS.USERS}>
                             <Users />
