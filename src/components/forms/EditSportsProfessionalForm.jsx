@@ -58,25 +58,27 @@ const EditSportsProfessionalForm = ({ onCancel, isSubmitting }) => {
 
     setIsLoadingNIDA(true);
     try {
-      // Simulate NIDA API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Sample response
-      const response = {
-        documentNumber: idNumber,
-        names: "NSHUTI Jean Baptiste",
-        dateOfBirth: "1995-02-19",
-        gender: "MALE",
-        nationality: "Rwandan",
-        placeOfBirth: "Kigali",
-        photo: "base64_encoded_photo_string"
-      };
+      const res = await fetch(`/api/player-staff/citizen/${idNumber}`, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+      });
 
-      setNidaData(response);
+      if (!res.ok) {
+        const errorBody = await res.json().catch(() => ({}));
+        throw new Error(errorBody?.message || `Lookup failed with status ${res.status}`);
+      }
+
+      const data = await res.json();
+      if (data?.status_code === 200) {
+        setNidaData(data.details || null);
       toast.success('ID verified successfully');
+      } else {
+        setNidaData(null);
+        toast.error('Failed to verify ID');
+      }
     } catch (error) {
-      toast.error('Failed to verify ID');
       setNidaData(null);
+      toast.error('Failed to verify ID');
     } finally {
       setIsLoadingNIDA(false);
     }

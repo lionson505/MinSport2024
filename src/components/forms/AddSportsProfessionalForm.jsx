@@ -131,37 +131,27 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
 
     setIsLoadingNIDA(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Two example NIDA responses
-      const nidaResponses = {
-        '1199880012345678': {
-          documentNumber: '1199880012345678',
-          names: "NSHUTI Jean Baptiste",
-          dateOfBirth: "1995-02-19",
-          gender: "MALE",
-          nationality: "Rwandan",
-          placeOfBirth: "Kigali",
-          photo: "base64_encoded_photo_string"
-        },
-        '1199770012345678': {
-          documentNumber: '1199770012345678',
-          names: "UWASE Marie Claire",
-          dateOfBirth: "1997-06-15",
-          gender: "FEMALE",
-          nationality: "Rwandan",
-          placeOfBirth: "Musanze",
-          photo: "base64_encoded_photo_string"
-        }
-      };
+      const res = await fetch(`/api/player-staff/citizen/${idNumber}`, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+      });
 
-      const response = nidaResponses[idNumber] || nidaResponses['1199880012345678']; // Default to first example if ID not found
-      
-      setNidaData(response);
+      if (!res.ok) {
+        const errorBody = await res.json().catch(() => ({}));
+        throw new Error(errorBody?.message || `Lookup failed with status ${res.status}`);
+      }
+
+      const data = await res.json();
+      if (data?.status_code === 200) {
+        setNidaData(data.details || null);
       toast.success('ID verified successfully');
+      } else {
+        setNidaData(null);
+        toast.error('Failed to verify ID');
+      }
     } catch (error) {
-      toast.error('Failed to verify ID');
       setNidaData(null);
+      toast.error('Failed to verify ID');
     } finally {
       setIsLoadingNIDA(false);
     }
