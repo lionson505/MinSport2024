@@ -131,19 +131,26 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
 
     setIsLoadingNIDA(true);
     try {
-      const res = await fetch(`/api/player-staff/citizen/${idNumber}`, {
-        method: 'GET',
-        headers: { 'Accept': 'application/json' },
-      });
+      const response = await axiosInstance.get(`/player-staff/citizen/${idNumber}`);
+      console.log('Frontend: Raw API response data:', response.data);
 
-      if (!res.ok) {
-        const errorBody = await res.json().catch(() => ({}));
-        throw new Error(errorBody?.message || `Lookup failed with status ${res.status}`);
-      }
-
-      const data = await res.json();
-      if (data?.status_code === 200) {
-        setNidaData(data.details || null);
+      if (response.status === 200) {
+        const details = response.data.details;
+        if (details) {
+          const newNidaData = {
+            names: `${details.first_name || ''} ${details.last_name || ''}`.trim(),
+            dateOfBirth: details.dob || '',
+            gender: details.gender || '',
+            nationality: details.nationality || 'Rwandan', // Default to Rwandan if not provided
+            placeOfBirth: details.placeOfBirth || '',
+            photo: details.photo || ''
+          };
+          setNidaData(newNidaData);
+          console.log('Frontend: NIDA data set to:', newNidaData);
+        } else {
+          setNidaData(null);
+          console.log('Frontend: No NIDA details found in response.');
+        }
       toast.success('ID verified successfully');
       } else {
         setNidaData(null);
@@ -151,7 +158,7 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
       }
     } catch (error) {
       setNidaData(null);
-      toast.error('Failed to verify ID');
+      toast.error(error.response?.data?.message || 'An error occurred while verifying ID');
     } finally {
       setIsLoadingNIDA(false);
     }
@@ -341,7 +348,7 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
               />
             ) : (
               <img
-                src={nidaData?.photo || ''}
+                src={`data:image/jpeg;base64,${nidaData?.photo || ''}`}
                 alt="National ID Photo"
                 className="mt-2 max-w-[200px] rounded-lg border"
               />

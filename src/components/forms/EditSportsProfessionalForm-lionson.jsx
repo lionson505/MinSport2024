@@ -58,19 +58,26 @@ const EditSportsProfessionalForm = ({ onCancel, isSubmitting }) => {
 
     setIsLoadingNIDA(true);
     try {
-      const res = await fetch(`/api/player-staff/citizen/${idNumber}`, {
-        method: 'GET',
-        headers: { 'Accept': 'application/json' },
-      });
+      const response = await axios.get(`/api/player-staff/citizen/${idNumber}`); // Use axiosInstance
+      console.log('Frontend: Raw API response data:', response.data);
 
-      if (!res.ok) {
-        const errorBody = await res.json().catch(() => ({}));
-        throw new Error(errorBody?.message || `Lookup failed with status ${res.status}`);
-      }
-
-      const data = await res.json();
-      if (data?.status_code === 200) {
-        setNidaData(data.details || null);
+      if (response.status === 200) {
+        const details = response.data.details;
+        if (details) {
+          const newNidaData = {
+            names: `${details.first_name || ''} ${details.last_name || ''}`.trim(),
+            dateOfBirth: details.dob || '',
+            gender: details.gender || '',
+            nationality: details.nationality || 'Rwandan', // Default to Rwandan if not provided
+            placeOfBirth: details.placeOfBirth || '',
+            photo: details.photo || ''
+          };
+          setNidaData(newNidaData);
+          console.log('Frontend: NIDA data set to:', newNidaData);
+        } else {
+          setNidaData(null);
+          console.log('Frontend: No NIDA details found in response.');
+        }
       toast.success('ID verified successfully');
       } else {
         setNidaData(null);
@@ -78,7 +85,7 @@ const EditSportsProfessionalForm = ({ onCancel, isSubmitting }) => {
       }
     } catch (error) {
       setNidaData(null);
-      toast.error('Failed to verify ID');
+      toast.error(error.response?.data?.message || 'An error occurred while verifying ID');
     } finally {
       setIsLoadingNIDA(false);
     }
@@ -226,6 +233,16 @@ const EditSportsProfessionalForm = ({ onCancel, isSubmitting }) => {
 
         {/* Personal Information - Read-only from NIDA */}
         <div className="grid grid-cols-2 gap-4">
+          <div className="col-span-2">
+            <label className="block text-sm font-medium mb-1">Passport Photo</label>
+            {nidaData?.photo && (
+              <img
+                src={`data:image/jpeg;base64,${nidaData.photo}`}
+                alt="National ID Photo"
+                className="mt-2 max-w-[200px] rounded-lg border"
+              />
+            )}
+          </div>
           <div>
             <label className="block text-sm font-medium mb-1">Full Name</label>
             <Input
@@ -244,11 +261,17 @@ const EditSportsProfessionalForm = ({ onCancel, isSubmitting }) => {
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Gender</label>
-            <Input
+            <select
               value={nidaData?.gender || ''}
               readOnly
-              className="bg-gray-50"
-            />
+              className="bg-gray-50 h-12 w-full px-4 border border-gray-300 rounded-md"
+              disabled // Make it disabled as it's read-only
+            >
+              <option value="">Select gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Nationality</label>
