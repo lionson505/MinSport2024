@@ -68,7 +68,7 @@ const EditSportsProfessionalForm = ({ onCancel, isSubmitting }) => {
             names: `${details.first_name || ''} ${details.last_name || ''}`.trim(),
             dateOfBirth: details.dob || '',
             gender: details.gender || '',
-            nationality: details.nationality || 'Rwandan', // Default to Rwandan if not provided
+            nationality: details.nationality || 'Rwanda', // Default to Rwanda if not provided
             placeOfBirth: details.placeOfBirth || '',
             photo: details.photo || ''
           };

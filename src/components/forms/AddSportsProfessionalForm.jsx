@@ -141,7 +141,7 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
             names: `${details.first_name || ''} ${details.last_name || ''}`.trim(),
             dateOfBirth: details.dob || '',
             gender: details.gender || '',
-            nationality: details.nationality || 'Rwandan', // Default to Rwandan if not provided
+            nationality: details.nationality || 'Rwanda', // Default to Rwanda if not provided
             placeOfBirth: details.placeOfBirth || '',
             photo: details.photo || ''
           };
@@ -382,9 +382,9 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
               className={idType !== 'passport' ? 'bg-gray-50' : selectClassName}
             >
               <option value="">Select gender</option>
-              <option value="MALE">Male</option>
-              <option value="FEMALE">Female</option>
-              <option value="OTHER">Other</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
             </select>
           </div>
           <div>
