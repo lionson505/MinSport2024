@@ -147,18 +147,23 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
           };
           setNidaData(newNidaData);
           console.log('Frontend: NIDA data set to:', newNidaData);
+          toast.success('ID verified successfully');
         } else {
           setNidaData(null);
           console.log('Frontend: No NIDA details found in response.');
+          toast.error('ID not found');
         }
-      toast.success('ID verified successfully');
       } else {
         setNidaData(null);
         toast.error('Failed to verify ID');
       }
     } catch (error) {
       setNidaData(null);
-      toast.error(error.response?.data?.message || 'An error occurred while verifying ID');
+      if (error.response?.status === 404) {
+        toast.error('ID not found');
+      } else {
+        toast.error(error.response?.data?.message || 'An error occurred while verifying ID');
+      }
     } finally {
       setIsLoadingNIDA(false);
     }
