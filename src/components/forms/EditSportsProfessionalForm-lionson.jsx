@@ -58,35 +58,34 @@ const EditSportsProfessionalForm = ({ onCancel, isSubmitting }) => {
 
     setIsLoadingNIDA(true);
     try {
-      const response = await axios.get(`/api/player-staff/citizen/${idNumber}`); // Use axiosInstance
+      const response = await axios.get(`/player-staff/citizen/${idNumber}`); // Use axiosInstance baseURL
       console.log('Frontend: Raw API response data:', response.data);
 
-      if (response.status === 200) {
-        const details = response.data.details;
-        if (details) {
-          const newNidaData = {
-            names: `${details.first_name || ''} ${details.last_name || ''}`.trim(),
-            dateOfBirth: details.dob || '',
-            gender: details.gender || '',
-            nationality: details.nationality || 'Rwanda', // Default to Rwanda if not provided
-            placeOfBirth: details.placeOfBirth || '',
-            photo: details.photo || ''
-          };
-          setNidaData(newNidaData);
-          console.log('Frontend: NIDA data set to:', newNidaData);
-          toast.success('ID verified successfully');
-        } else {
-          setNidaData(null);
-          console.log('Frontend: No NIDA details found in response.');
-          toast.error('ID not found');
-        }
+      const statusCode = response?.data?.status_code ?? response?.status;
+      const details = response?.data?.details;
+
+      if (statusCode === 200 && details) {
+        const newNidaData = {
+          names: `${details.first_name || ''} ${details.last_name || ''}`.trim(),
+          dateOfBirth: details.dob || '',
+          gender: details.gender || '',
+          nationality: details.nationality || 'Rwanda', // Default to Rwanda if not provided
+          placeOfBirth: details.placeOfBirth || '',
+          photo: details.photo || ''
+        };
+        setNidaData(newNidaData);
+        console.log('Frontend: NIDA data set to:', newNidaData);
+        toast.success('ID verified successfully');
       } else {
         setNidaData(null);
-        toast.error('Failed to verify ID');
+        console.log('Frontend: No NIDA details found in response.');
+        const message = response?.data?.message || (statusCode === 404 ? 'ID not found' : 'Failed to verify ID');
+        toast.error(message);
       }
     } catch (error) {
       setNidaData(null);
-      if (error.response?.status === 404) {
+      const status = error.response?.status || error.response?.data?.status_code;
+      if (status === 404) {
         toast.error('ID not found');
       } else {
         toast.error(error.response?.data?.message || 'An error occurred while verifying ID');
