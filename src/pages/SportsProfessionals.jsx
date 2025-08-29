@@ -341,7 +341,17 @@ const SportsProfessionals = () => {
       <TableCell>{professional.function ? professional.function : 'N/A'}</TableCell>
       <TableCell>{professional.nationality}</TableCell>
       <TableCell>{professional.discipline || 'N/A'}</TableCell>
-      {/* <TableCell>{professional.functionality || 'N/A'}</TableCell> */}
+      <TableCell>
+        {professional.idVerified ? (
+          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            ✅ Verified
+          </span>
+        ) : (
+          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+            ❌ Not Verified
+          </span>
+        )}
+      </TableCell>
       <TableCell>{professional.status || 'N/A'}</TableCell>
       <TableCell className="operation">
         <div className="flex items-center gap-2">
@@ -476,7 +486,7 @@ const SportsProfessionals = () => {
                   <TableHead>Function</TableHead>
                   <TableHead>Nationality</TableHead>
                   <TableHead>Division</TableHead>
-                  {/* <TableHead>Function</TableHead> */}
+                  <TableHead>ID Status</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="operation">Actions</TableHead>
                 </>
@@ -762,16 +772,11 @@ const SportsProfessionals = () => {
 
                 {/* Location Information */}
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-lg border-b pb-2">Location Details</h3>
+                  <h3 className="font-semibold text-lg border-b pb-2">Location Information</h3>
                   
                   <div>
                     <p className="text-sm font-semibold text-gray-500">Region</p>
                     <p className="text-base">{viewingProfessional.region || 'N/A'}</p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-semibold text-gray-500">Place of Birth</p>
-                    <p className="text-base">{viewingProfessional.placeOfBirth || 'N/A'}</p>
                   </div>
 
                   <div>
@@ -780,20 +785,17 @@ const SportsProfessionals = () => {
                   </div>
 
                   <div>
-                    <p className="text-sm font-semibold text-gray-500">Nationality</p>
-                    <p className="text-base">{viewingProfessional.nationality || 'N/A'}</p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-semibold text-gray-500">Other Nationality</p>
-                    <p className="text-base">{viewingProfessional.otherNationality || 'N/A'}</p>
+                    <p className="text-sm font-semibold text-gray-500">Place of Birth</p>
+                    <p className="text-base">{viewingProfessional.placeOfBirth || 'N/A'}</p>
                   </div>
                 </div>
+              </div>
 
-                {/* Professional Information */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-lg border-b pb-2">Professional Details</h3>
-                  
+              {/* Professional Information */}
+              <div className="mt-6 space-y-4">
+                <h3 className="font-semibold text-lg border-b pb-2">Professional Information</h3>
+                
+                <div className="grid grid-cols-2 gap-6">
                   <div>
                     <p className="text-sm font-semibold text-gray-500">Discipline</p>
                     <p className="text-base">{viewingProfessional.discipline || 'N/A'}</p>
@@ -810,15 +812,59 @@ const SportsProfessionals = () => {
                   </div>
 
                   <div>
-                    <p className="text-sm font-semibold text-gray-500">Period of Experience</p>
-                    <p className="text-base">{viewingProfessional.periodOfExperience || 'N/A'}</p>
+                    <p className="text-sm font-semibold text-gray-500">Status</p>
+                    <p className="text-base">{viewingProfessional.status || 'N/A'}</p>
                   </div>
                 </div>
+              </div>
 
-                {/* Status Information */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-lg border-b pb-2">Status & Education</h3>
+              {/* ID Verification Information */}
+              {viewingProfessional.idVerified && (
+                <div className="mt-6 space-y-4">
+                  <h3 className="font-semibold text-lg border-b pb-2">ID Verification</h3>
                   
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-500">ID Passport Number</p>
+                      <p className="text-base">{viewingProfessional.idPassportNo}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-sm font-semibold text-gray-500">Verification Status</p>
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          ✅ Verified
+                        </span>
+                      </div>
+                    </div>
+
+                    {viewingProfessional.idVerificationDate && (
+                      <div>
+                        <p className="text-sm font-semibold text-gray-500">Verification Date</p>
+                        <p className="text-base">
+                          {new Date(viewingProfessional.idVerificationDate).toLocaleDateString()}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Additional Information */}
+              <div className="mt-6 space-y-4">
+                <h3 className="font-semibold text-lg border-b pb-2">Additional Information</h3>
+                
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-500">Nationality</p>
+                    <p className="text-base">{viewingProfessional.nationality || 'N/A'}</p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-semibold text-gray-500">Other Nationality</p>
+                    <p className="text-base">{viewingProfessional.otherNationality || 'N/A'}</p>
+                  </div>
+
                   <div>
                     <p className="text-sm font-semibold text-gray-500">Fitness Status</p>
                     <p className="text-base">{viewingProfessional.fitnessStatus || 'N/A'}</p>
@@ -830,50 +876,11 @@ const SportsProfessionals = () => {
                   </div>
 
                   <div>
-                    <p className="text-sm font-semibold text-gray-500">Status</p>
-                    <p className="text-base">{viewingProfessional.status || 'N/A'}</p>
-                  </div>
-                </div>
-
-                {/* Documents */}
-                <div className="col-span-2 space-y-4">
-                  <h3 className="font-semibold text-lg border-b pb-2">Documents</h3>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm font-semibold text-gray-500">Passport Picture</p>
-                      {passportImage ? (
-                        <img 
-                          src={passportImage} 
-                          alt="Passport" 
-                          className="mt-2 max-w-[200px] rounded-lg border"
-                        />
-                      ) : (
-                        <p className="text-base">No picture available</p>
-                      )}
-                    </div>
-                    
-                    <div>
-                      <p className="text-sm font-semibold text-gray-500">Resume</p>
-                      {viewingProfessional.resume ? (
-                        <button 
-                          onClick={() => fetchResume(viewingProfessional.resume)}
-                          className="text-blue-600 hover:underline"
-                        >
-                          View Resume
-                        </button>
-                      ) : (
-                        <p className="text-base">No resume available</p>
-                      )}
-                    </div>
+                    <p className="text-sm font-semibold text-gray-500">Period of Experience</p>
+                    <p className="text-base">{viewingProfessional.periodOfExperience || 'N/A'}</p>
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="flex justify-end pt-4 border-t">
-              <Button variant="outline" onClick={() => setViewingProfessional(null)}>
-                Close
-              </Button>
             </div>
           </DialogContent>
         </Dialog>

@@ -168,6 +168,56 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
     }
   };
 
+  // ID Verification with existing system
+  const handleIDVerification = async () => {
+    if (!idNumber) {
+      toast.error('Please enter ID number first');
+      return;
+    }
+
+    setIsLoadingNIDA(true);
+    try {
+      // Call the ID verification service using existing idPassportNo
+      const response = await axiosInstance.post(`/official-referees/${initialData.id || 'new'}/verify-id`, {
+        documentNumber: idNumber
+      });
+
+      if (response.data.success) {
+        const idData = response.data.data;
+        
+        // Update form with verified ID data using existing fields
+        setFormData(prev => ({
+          ...prev,
+          // Use existing fields instead of duplicate fields
+          maritalStatus: idData.civilStatus || prev.maritalStatus,
+          region: idData.province || prev.region,
+          placeOfResidence: `${idData.district || ''}, ${idData.sector || ''}, ${idData.cell || ''}, ${idData.village || ''}`.replace(/^,\s*/, '').replace(/,\s*,/g, ',') || prev.placeOfResidence
+        }));
+
+        // Also update basic info if available
+        if (idData.foreName && idData.surnames) {
+          setNidaData({
+            names: `${idData.foreName} ${idData.surnames}`,
+            dateOfBirth: idData.dateOfBirth || '',
+            gender: idData.sex || '',
+            nationality: 'Rwanda',
+            placeOfBirth: '',
+            photo: idData.photo || ''
+          });
+        }
+        
+        toast.success('ID verified successfully!');
+      } else {
+        toast.error('Failed to verify ID');
+      }
+    } catch (error) {
+      console.error('ID verification error:', error);
+      toast.error(error.response?.data?.message || 'Error verifying ID');
+    } finally {
+      setIsLoadingNIDA(false);
+    }
+  };
+
   const handleChange = (e) => {
     const { name, files } = e.target;
     if (name === 'passportPicture' || name === 'resume') {
@@ -411,11 +461,17 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Marital Status</label>
+            <label className="block text-sm font-medium mb-1">
+              Marital Status 
+              {nidaData?.names && (
+                <span className="text-xs text-blue-600 ml-2">(from NIDA: Civil Status)</span>
+              )}
+            </label>
             <select
               value={formData.maritalStatus}
               onChange={(e) => setFormData({ ...formData, maritalStatus: e.target.value })}
-              className={selectClassName}
+              className={`${selectClassName} ${nidaData?.names ? 'bg-blue-50' : ''}`}
+              readOnly={!!nidaData?.names}
             >
               {maritalStatusOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -429,6 +485,9 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
             <Input
               value={formData.region}
               onChange={(e) => setFormData({ ...formData, region: e.target.value })}
+              placeholder={nidaData?.names ? "Auto-populated from NIDA" : "e.g., Province"}
+              className={nidaData?.names ? 'bg-blue-50' : ''}
+              readOnly={!!nidaData?.names}
             />
           </div>
           <div>
@@ -488,11 +547,18 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
 
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Place of Residence</label>
+            <label className="block text-sm font-medium mb-1">
+              Place of Residence 
+              {nidaData?.names && (
+                <span className="text-xs text-blue-600 ml-2">(from NIDA: Village, Cell, Sector, District)</span>
+              )}
+            </label>
             <Input
               value={formData.placeOfResidence}
               onChange={(e) => setFormData({ ...formData, placeOfResidence: e.target.value })}
-              placeholder="Enter place of residence"
+              placeholder={nidaData?.names ? "Auto-populated from NIDA" : "e.g., District, Sector, Cell, Village"}
+              className={nidaData?.names ? 'bg-blue-50' : ''}
+              readOnly={!!nidaData?.names}
             />
           </div>
           <div>
@@ -548,6 +614,31 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
             )}
           </div>
         </div>
+
+        {/* NIDA Information Box */}
+        {nidaData?.names && (
+          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-start gap-3">
+              <div className="text-blue-600 mt-0.5">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-blue-800">NIDA Verification Complete</h4>
+                <p className="text-sm text-blue-700 mt-1">
+                  The following fields have been automatically populated from your verified ID:
+                  <br />
+                  • <strong>Marital Status:</strong> {formData.maritalStatus}
+                  <br />
+                  • <strong>Region:</strong> {formData.region}
+                  <br />
+                  • <strong>Place of Residence:</strong> {formData.placeOfResidence}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="flex gap-4 justify-end">
           <Button type="button" onClick={onCancel}>Cancel</Button>
