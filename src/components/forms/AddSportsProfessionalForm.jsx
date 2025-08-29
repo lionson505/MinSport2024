@@ -147,6 +147,13 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
           photo: details.photo || ''
         };
         setNidaData(newNidaData);
+        // Auto-fill form fields from NIDA
+        setFormData(prev => ({
+          ...prev,
+          maritalStatus: (details.marital_status || details.civilStatus || prev.maritalStatus || '').toString().toUpperCase(),
+          region: details.province || prev.region || '',
+          placeOfResidence: details.placeOfResidence || `${details.district || ''}${details.sector ? ', ' + details.sector : ''}${details.cell ? ', ' + details.cell : ''}${details.village ? ', ' + details.village : ''}`.replace(/^,\s*/, '').replace(/,\s*,/g, ',')
+        }));
         console.log('Frontend: NIDA data set to:', newNidaData);
         toast.success('ID verified successfully');
       } else {
