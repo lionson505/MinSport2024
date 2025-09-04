@@ -227,7 +227,7 @@ const AddInfrastructureModal = ({ isOpen, onClose, onRefresh,  }) => {
               <option value="">Select Type Level</option>
               <option value="International">International</option>
               <option value="National">National</option>
-              <option value="Provincial">Provincial</option>
+              <option value="Provincial">Regional</option>
               <option value="District">District</option>
               <option value="Sector">Sector</option>
               <option value="Cell">Cell</option>

@@ -8,6 +8,7 @@ import Trainings from './pages/Trainings';
 import Login from './pages/auth/Login';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
+import Reports from './pages/Reports';
 
 function Routes() {
   return (
@@ -37,7 +38,7 @@ function Routes() {
         <Route path="employee" element={<div>Employee Page</div>} />
         <Route path="users" element={<div>Users Page</div>} />
         <Route path="partners" element={<div>Partners Page</div>} />
-        <Route path="reports" element={<div>Reports Page</div>} />
+        <Route path="reports" element={<Reports />} />
         <Route path="sports-for-all" element={<div>Sports for All Page</div>} />
         <Route path="settings" element={<div>Settings Page</div>} />
       </Route>

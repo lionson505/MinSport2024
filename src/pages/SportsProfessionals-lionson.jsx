@@ -99,8 +99,8 @@ const SportsProfessionals = () => {
       try {
         setIsLoading(true);
         const response = await axiosInstance.get('/official-referees');
-        setProfessionals(response.data);
-        setFilteredProfessionals(response.data);
+        setProfessionals(response.data?.data || []);
+        setFilteredProfessionals(response.data?.data || []);
         setIsLoading(false);
       } catch (error) {
         setIsLoading(false);

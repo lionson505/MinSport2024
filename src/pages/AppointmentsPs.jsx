@@ -27,6 +27,8 @@ function PSAppointments() {
     const [isLoading, setIsLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState("");
+    const [filters, setFilters] = useState({ from: '', to: '', status: '', person: '' });
+    const setFilter = (k, v) => setFilters((p) => ({ ...p, [k]: v }));
     const [loading, setLoading] = useState(true);
     const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
@@ -238,15 +240,19 @@ function PSAppointments() {
         }
     };
 
-    const filteredAppointments = appointments.filter(appointment => {
-        const searchLower = searchTerm.toLowerCase();
-        return (
-            appointment.person_to_meet.toLowerCase() === "ps" &&
-            (appointment.names.toLowerCase().includes(searchLower) ||
-                appointment.purpose.toLowerCase().includes(searchLower) ||
-                appointment.institution.toLowerCase().includes(searchLower))
-        );
+    const filteredAppointments = appointments.filter((a) => {
+        const hay = `${a.names} ${a.institution} ${a.function} ${a.status}`.toLowerCase();
+        if (searchTerm && !hay.includes(searchTerm.toLowerCase())) return false;
+        if (filters.status && a.status?.toLowerCase() !== filters.status.toLowerCase()) return false;
+        if (filters.person && a.person_to_meet !== filters.person) return false;
+        if (filters.from && new Date(a.request_date || a.createdAt) < new Date(filters.from)) return false;
+        if (filters.to && new Date(a.request_date || a.createdAt) > new Date(filters.to)) return false;
+        return true;
     });
+    const itemsPerPage = 10;
+    const totalPages = Math.ceil(filteredAppointments.length / itemsPerPage) || 1;
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const currentItems = filteredAppointments.slice(startIndex, startIndex + itemsPerPage);
 
     return (
         <div className="p-4">
@@ -267,6 +273,42 @@ function PSAppointments() {
                     <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 </div>
                 {permissions.canCreate && <Button onClick={() => setAddModalOpen(true)}>Add Appointment</Button>}
+            </div>
+
+            {/* Filter Bar */}
+            <div className="bg-white rounded-lg shadow p-4 mb-4">
+                <h3 className="text-sm font-semibold mb-3">Search By</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                    <div>
+                        <label className="block text-xs text-gray-600 mb-1">Requested From</label>
+                        <Input type="date" value={filters.from} onChange={(e) => setFilter('from', e.target.value)} />
+                    </div>
+                    <div>
+                        <label className="block text-xs text-gray-600 mb-1">Requested To</label>
+                        <Input type="date" value={filters.to} onChange={(e) => setFilter('to', e.target.value)} />
+                    </div>
+                    <div>
+                        <label className="block text-xs text-gray-600 mb-1">Status</label>
+                        <select className="w-full border rounded px-2 py-1" value={filters.status} onChange={(e) => setFilter('status', e.target.value)}>
+                            <option value="">Select</option>
+                            <option value="PENDING">Pending</option>
+                            <option value="GRANTED">Granted</option>
+                            <option value="RESCHEDULED">Rescheduled</option>
+                            <option value="REJECTED">Rejected</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-xs text-gray-600 mb-1">Person</label>
+                        <select className="w-full border rounded px-2 py-1" value={filters.person} onChange={(e) => setFilter('person', e.target.value)}>
+                            <option value="">Select</option>
+                            <option value="MINISTER">MINISTER</option>
+                            <option value="PS">PS</option>
+                        </select>
+                    </div>
+                </div>
+                <div className="flex items-center gap-2 mt-3">
+                    <Button variant="outline" onClick={() => setFilters({ from: '', to: '', status: '', person: '' })}>View All</Button>
+                </div>
             </div>
 
             <div className="bg-white rounded-lg shadow">
@@ -296,7 +338,7 @@ function PSAppointments() {
                         </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
-                        {filteredAppointments.map((appointment) => (
+                        {currentItems.map((appointment) => (
                             <tr key={appointment.id} className="hover:bg-gray-50">
                                 <td className="px-3 py-2">
                                     <input
@@ -366,19 +408,30 @@ function PSAppointments() {
                 </PrintButton>
             </div>
 
-            <div className="flex justify-between items-center mt-4">
-                <Button
-                    variant="outline"
-                    onClick={() => handlePageChange(currentPage - 1)}
+            {/* Pagination */}
+            <div className="flex items-center justify-end mt-4 space-x-2">
+                <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
                     disabled={currentPage === 1}
+                    className="px-3 py-1 text-sm border rounded-md"
                 >
                     Previous
                 </Button>
-                <span>Page {currentPage}</span>
-                <Button
-                    variant="outline"
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={filteredAppointments.length < 10}
+
+                <div className="flex items-center">
+                    <span className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md">
+                        {currentPage}
+                    </span>
+                </div>
+
+                <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1 text-sm border rounded-md"
                 >
                     Next
                 </Button>

@@ -1,6 +1,6 @@
 export const institutionTypes = [
+  "Academy: (For Student Between 12-17 Years)",
   "School",
-  "Academy",
   "Training Center",
   "Sports Club",
   "Community Center",

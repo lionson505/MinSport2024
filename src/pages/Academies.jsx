@@ -38,6 +38,38 @@ function Academies() {
     toSchool: ''
   });
 
+  // Location filters
+  const [filters, setFilters] = useState({
+    province: '',
+    district: '',
+    sector: '',
+    cell: '',
+    village: ''
+  });
+  const setFilter = (k, v) => setFilters((p) => ({ ...p, [k]: v }));
+
+  const derivedLocationOptions = React.useMemo(() => {
+    const provinces = new Set();
+    const districts = new Set();
+    const sectors = new Set();
+    const cells = new Set();
+    const villages = new Set();
+    (academies || []).forEach((a) => {
+      if (a.location_province) provinces.add(a.location_province);
+      if (a.location_district) districts.add(a.location_district);
+      if (a.location_sector) sectors.add(a.location_sector);
+      if (a.location_cell) cells.add(a.location_cell);
+      if (a.location_village) villages.add(a.location_village);
+    });
+    return {
+      provinces: Array.from(provinces),
+      districts: Array.from(districts),
+      sectors: Array.from(sectors),
+      cells: Array.from(cells),
+      villages: Array.from(villages),
+    };
+  }, [academies]);
+
   const totalPages = Math.ceil(academies.length / entriesPerPage);
   const studentTotalPages = Math.ceil(students.length / entriesPerPage);
 
@@ -269,9 +301,16 @@ function Academies() {
     switch (activeTab) {
       case 'manage':
         // Filter academies based on search term
-        const filteredAcademies = academies.filter(academy =>
-          academy.name.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+        const filteredAcademies = academies.filter((academy) => {
+          const matchesSearch = academy.name.toLowerCase().includes(searchTerm.toLowerCase());
+          if (!matchesSearch) return false;
+          if (filters.province && academy.location_province !== filters.province) return false;
+          if (filters.district && academy.location_district !== filters.district) return false;
+          if (filters.sector && academy.location_sector !== filters.sector) return false;
+          if (filters.cell && academy.location_cell !== filters.cell) return false;
+          if (filters.village && academy.location_village !== filters.village) return false;
+          return true;
+        });
 
         // Calculate the academies to display based on pagination
         const startIndex = (currentPage - 1) * entriesPerPage;
@@ -297,6 +336,61 @@ function Academies() {
                 <Plus className="h-4 w-4 mr-2" />
                 Add Academy
               </Button>
+            </div>
+
+            {/* Location Filter Bar */}
+            <div className="bg-white rounded-lg shadow p-4 mb-4">
+              <h3 className="text-sm font-semibold mb-3">Search By</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">Province</label>
+                  <select className="w-full border rounded px-2 py-1" value={filters.province} onChange={(e) => setFilter('province', e.target.value)}>
+                    <option value="">Select Province</option>
+                    {derivedLocationOptions.provinces.map((o) => (
+                      <option key={o} value={o}>{o}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">District</label>
+                  <select className="w-full border rounded px-2 py-1" value={filters.district} onChange={(e) => setFilter('district', e.target.value)}>
+                    <option value="">Select District</option>
+                    {derivedLocationOptions.districts.map((o) => (
+                      <option key={o} value={o}>{o}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">Sector</label>
+                  <select className="w-full border rounded px-2 py-1" value={filters.sector} onChange={(e) => setFilter('sector', e.target.value)}>
+                    <option value="">Select Sector</option>
+                    {derivedLocationOptions.sectors.map((o) => (
+                      <option key={o} value={o}>{o}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">Cell</label>
+                  <select className="w-full border rounded px-2 py-1" value={filters.cell} onChange={(e) => setFilter('cell', e.target.value)}>
+                    <option value="">Select Cell</option>
+                    {derivedLocationOptions.cells.map((o) => (
+                      <option key={o} value={o}>{o}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">Village</label>
+                  <select className="w-full border rounded px-2 py-1" value={filters.village} onChange={(e) => setFilter('village', e.target.value)}>
+                    <option value="">Select Village</option>
+                    {derivedLocationOptions.villages.map((o) => (
+                      <option key={o} value={o}>{o}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 mt-3">
+                <Button variant="outline" onClick={() => setFilters({ province: '', district: '', sector: '', cell: '', village: '' })}>View All</Button>
+              </div>
             </div>
 
             <div className="bg-white rounded-lg shadow overflow-x-auto">

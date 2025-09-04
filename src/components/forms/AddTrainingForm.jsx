@@ -16,8 +16,9 @@ const AddTrainingForm = ({ onSubmit, onCancel, isSubmitting, initialData }) => {
       setError(null);
       try {
         const response = await axiosInstance.get('/official-referees');
-        if (response.data && Array.isArray(response.data)) {
-          const referees = response.data.map((referee) => ({
+        const list = response.data?.data;
+        if (list && Array.isArray(list)) {
+          const referees = list.map((referee) => ({
             value: referee.id,
             label: `${referee.firstName} ${referee.lastName}`,
           }));

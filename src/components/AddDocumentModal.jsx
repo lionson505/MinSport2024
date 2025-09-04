@@ -166,9 +166,9 @@ const AddDocumentModal = ({ isOpen, onClose, initialData = '', onDocumentSubmit 
                         onChange={handleChange}
                         className="w-full border rounded-lg p-2"
                       >
-                        <option value="LETTER">LETTER</option>
-                        <option value="REPORT">REPORT</option>
-                        <option value="INVOICE">INVOICE</option>
+                        <option value="PENDING">Pending</option>
+                        <option value="ONGOING">Ongoing</option>
+                        <option value="COMPLETE">Complete</option>
                       </select>
                     </div>
                   </div>

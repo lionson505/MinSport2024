@@ -47,6 +47,70 @@ const SportsProfessionals = () => {
 
   const [passportImage, setPassportImage] = useState(null);
 
+  // Filters state
+  const [filters, setFilters] = useState({
+    discipline: '',
+    func: '',
+    age: '', // e.g., '18-25', '26-35', '36-45', '46-60', '60+'
+    gender: '',
+    nationality: '',
+    status: '',
+    province: '',
+    district: '',
+    sector: '',
+    cell: '',
+    village: ''
+  });
+
+  const setFilter = (key, value) => setFilters((prev) => ({ ...prev, [key]: value }));
+
+  const getAge = (dob) => {
+    if (!dob) return null;
+    const birth = new Date(dob);
+    if (Number.isNaN(birth.getTime())) return null;
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
+  };
+
+  // Derive distinct option lists from loaded data
+  const derivedOptions = React.useMemo(() => {
+    const disciplineOpts = Array.from(new Set((professionals || []).map((p) => p.discipline).filter(Boolean)));
+    const functionOpts = Array.from(new Set((professionals || []).map((p) => p.function).filter(Boolean)));
+    const genderOpts = Array.from(new Set((professionals || []).map((p) => p.gender).filter(Boolean)));
+    const nationalityOpts = Array.from(new Set((professionals || []).map((p) => p.nationality).filter(Boolean)));
+    const statusOpts = Array.from(new Set((professionals || []).map((p) => p.status).filter(Boolean)));
+
+    // Parse placeOfResidence as "district, sector, cell, village"
+    const regions = (professionals || []).map((p) => (p.placeOfResidence || '')).filter(Boolean);
+    const districts = new Set();
+    const sectors = new Set();
+    const cells = new Set();
+    const villages = new Set();
+    regions.forEach((r) => {
+      const parts = r.split(',').map((s) => s.trim()).filter(Boolean);
+      if (parts[0]) districts.add(parts[0]);
+      if (parts[1]) sectors.add(parts[1]);
+      if (parts[2]) cells.add(parts[2]);
+      if (parts[3]) villages.add(parts[3]);
+    });
+
+    return {
+      disciplineOpts,
+      functionOpts,
+      genderOpts,
+      nationalityOpts,
+      statusOpts,
+      provinceOpts: Array.from(new Set((professionals || []).map((p) => p.region).filter(Boolean))),
+      districtOpts: Array.from(districts),
+      sectorOpts: Array.from(sectors),
+      cellOpts: Array.from(cells),
+      villageOpts: Array.from(villages)
+    };
+  }, [professionals]);
+
   useEffect(() => {
     const fetchDisciplines = async () => {
       try {
@@ -78,8 +142,8 @@ const SportsProfessionals = () => {
       try {
         setIsLoading(true);
         const response = await axiosInstance.get('/official-referees');
-        setProfessionals(response.data);
-        setFilteredProfessionals(response.data);
+        setProfessionals(response.data?.data || []);
+        setFilteredProfessionals(response.data?.data || []);
         setIsLoading(false);
       } catch (error) {
         setIsLoading(false);
@@ -95,13 +159,40 @@ const SportsProfessionals = () => {
   useEffect(() => {
     const filterData = () => {
       if (activeTab === 'Professionals') {
-        setFilteredProfessionals(
-          professionals.filter((professional) =>
-            `${professional.firstName} ${professional.lastName} ${professional.function} ${professional.nationality}`
-              .toLowerCase()
-              .includes(searchTerm.toLowerCase())
-          )
-        );
+        const result = professionals.filter((p) => {
+          const hay = `${p.firstName} ${p.lastName} ${p.function} ${p.nationality}`.toLowerCase();
+          if (searchTerm && !hay.includes(searchTerm.toLowerCase())) return false;
+
+          // Field filters
+          if (filters.discipline && p.discipline !== filters.discipline) return false;
+          if (filters.func && p.function !== filters.func) return false;
+          if (filters.gender && p.gender !== filters.gender) return false;
+          if (filters.nationality && p.nationality !== filters.nationality) return false;
+          if (filters.status && p.status !== filters.status) return false;
+          if (filters.province && p.region !== filters.province) return false;
+
+          // Region hierarchy parsed from placeOfResidence
+          const parts = (p.placeOfResidence || '').split(',').map((s) => s.trim());
+          const [district, sector, cell, village] = parts;
+          if (filters.district && district !== filters.district) return false;
+          if (filters.sector && sector !== filters.sector) return false;
+          if (filters.cell && cell !== filters.cell) return false;
+          if (filters.village && village !== filters.village) return false;
+
+          // Age filter
+          if (filters.age) {
+            const a = getAge(p.dateOfBirth);
+            if (a == null) return false;
+            if (filters.age === '60+' && !(a >= 60)) return false;
+            if (filters.age !== '60+') {
+              const [min, max] = filters.age.split('-').map((n) => parseInt(n, 10));
+              if (!(a >= min && a <= max)) return false;
+            }
+          }
+
+          return true;
+        });
+        setFilteredProfessionals(result);
       } else if (activeTab === 'Disciplines') {
         setFilteredDisciplines(
           disciplines.filter((discipline) =>
@@ -120,7 +211,7 @@ const SportsProfessionals = () => {
     };
 
     filterData();
-  }, [searchTerm, activeTab, professionals, disciplines, functions]);
+  }, [searchTerm, activeTab, professionals, disciplines, functions, filters]);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
@@ -336,21 +427,12 @@ const SportsProfessionals = () => {
 
   const renderProfessionalRow = (professional) => (
     <TableRow key={professional.id}>
-      <TableCell>{professional.firstName}</TableCell>
-      <TableCell>{professional.lastName}</TableCell>
+      <TableCell>{`${professional.firstName || ''} ${professional.lastName || ''}`.trim() || 'N/A'}</TableCell>
       <TableCell>{professional.function ? professional.function : 'N/A'}</TableCell>
       <TableCell>{professional.nationality}</TableCell>
       <TableCell>{professional.discipline || 'N/A'}</TableCell>
       <TableCell>
-        {professional.idVerified ? (
-          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-            ✅ Verified
-          </span>
-        ) : (
-          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-            ❌ Not Verified
-          </span>
-        )}
+        {professional.dateOfBirth ? new Date(professional.dateOfBirth).toLocaleDateString() : 'N/A'}
       </TableCell>
       <TableCell>{professional.status || 'N/A'}</TableCell>
       <TableCell className="operation">
@@ -473,6 +555,121 @@ const SportsProfessionals = () => {
         </div>
       </div>
 
+      {/* Filter Bar */}
+      {activeTab === 'Professionals' && (
+        <div className="bg-white rounded-lg shadow p-4 mb-4">
+          <h3 className="text-sm font-semibold mb-3">Search By</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Discipline</label>
+              <select className="w-full border rounded px-2 py-1" value={filters.discipline} onChange={(e) => setFilter('discipline', e.target.value)}>
+                <option value="">Select Discipline</option>
+                {derivedOptions.disciplineOpts.map((o) => (
+                  <option key={o} value={o}>{o}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Function</label>
+              <select className="w-full border rounded px-2 py-1" value={filters.func} onChange={(e) => setFilter('func', e.target.value)}>
+                <option value="">Select function</option>
+                {derivedOptions.functionOpts.map((o) => (
+                  <option key={o} value={o}>{o}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Age</label>
+              <select className="w-full border rounded px-2 py-1" value={filters.age} onChange={(e) => setFilter('age', e.target.value)}>
+                <option value="">Select Age</option>
+                <option value="18-25">18-25</option>
+                <option value="26-35">26-35</option>
+                <option value="36-45">36-45</option>
+                <option value="46-60">46-60</option>
+                <option value="60+">60+</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Sex</label>
+              <select className="w-full border rounded px-2 py-1" value={filters.gender} onChange={(e) => setFilter('gender', e.target.value)}>
+                <option value="">Select Sex</option>
+                {derivedOptions.genderOpts.map((o) => (
+                  <option key={o} value={o}>{o}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Nationality</label>
+              <select className="w-full border rounded px-2 py-1" value={filters.nationality} onChange={(e) => setFilter('nationality', e.target.value)}>
+                <option value="">Select</option>
+                {derivedOptions.nationalityOpts.map((o) => (
+                  <option key={o} value={o}>{o}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Status</label>
+              <select className="w-full border rounded px-2 py-1" value={filters.status} onChange={(e) => setFilter('status', e.target.value)}>
+                <option value="">Select Status</option>
+                {derivedOptions.statusOpts.map((o) => (
+                  <option key={o} value={o}>{o}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3 mt-3">
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Province</label>
+              <select className="w-full border rounded px-2 py-1" value={filters.province} onChange={(e) => setFilter('province', e.target.value)}>
+                <option value="">Select Province</option>
+                {derivedOptions.provinceOpts.map((o) => (
+                  <option key={o} value={o}>{o}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">District</label>
+              <select className="w-full border rounded px-2 py-1" value={filters.district} onChange={(e) => setFilter('district', e.target.value)}>
+                <option value="">Select District</option>
+                {derivedOptions.districtOpts.map((o) => (
+                  <option key={o} value={o}>{o}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Sector</label>
+              <select className="w-full border rounded px-2 py-1" value={filters.sector} onChange={(e) => setFilter('sector', e.target.value)}>
+                <option value="">Select Sector</option>
+                {derivedOptions.sectorOpts.map((o) => (
+                  <option key={o} value={o}>{o}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Cell</label>
+              <select className="w-full border rounded px-2 py-1" value={filters.cell} onChange={(e) => setFilter('cell', e.target.value)}>
+                <option value="">Select Cell</option>
+                {derivedOptions.cellOpts.map((o) => (
+                  <option key={o} value={o}>{o}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Village</label>
+              <select className="w-full border rounded px-2 py-1" value={filters.village} onChange={(e) => setFilter('village', e.target.value)}>
+                <option value="">Select Village</option>
+                {derivedOptions.villageOpts.map((o) => (
+                  <option key={o} value={o}>{o}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 mt-3">
+            <Button variant="outline" onClick={() => setFilters({ discipline: '', func: '', age: '', gender: '', nationality: '', status: '', province: '', district: '', sector: '', cell: '', village: '' })}>View All</Button>
+          </div>
+        </div>
+      )}
+
       {/* Table Section */}
       <div className="bg-white rounded-lg shadow">
         <PrintButton>
@@ -481,12 +678,11 @@ const SportsProfessionals = () => {
             <TableRow>
               {activeTab === 'Professionals' ? (
                 <>
-                  <TableHead>First Name</TableHead>
-                  <TableHead>Last Name</TableHead>
+                  <TableHead>Full Name</TableHead>
                   <TableHead>Function</TableHead>
                   <TableHead>Nationality</TableHead>
                   <TableHead>Division</TableHead>
-                  <TableHead>ID Status</TableHead>
+                  <TableHead>Date of Birth</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="operation">Actions</TableHead>
                 </>

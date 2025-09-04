@@ -43,6 +43,7 @@ import PlayerStaffTransfer from '../components/federation/PlayerStaffTransfer';
 import axiosInstance from '../utils/axiosInstance';
 import PrintButton from '../components/reusable/Print';
 import {usePermissionLogger} from "../utils/permissionLogger.js";
+import PlayerTransferReport from '../components/reports/PlayerTransferReport';
 
 const TransferHistoryModal = ({ isOpen, onClose, player }) => {
   const [transferHistory, setTransferHistory] = useState([]);
@@ -247,6 +248,7 @@ const Federations = () => {
     'Manage Clubs',
     'Manage Players/Staff',
     'Player/Staff Transfer',
+    'Player/Staff Transfer Report',
     // 'Players Map',
   ];
 
@@ -853,6 +855,128 @@ const Federations = () => {
     }
 
     switch (activeTab) {
+      case 'Manage Federations and associations':
+        return (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
+              {permissions.canCreate && (<Button
+                  onClick={() => setIsAddFederationModalOpen(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Add Federation
+              </Button>)}
+
+              <div className="flex flex-col gap-4 w-full sm:w-auto">
+                <div className="flex items-center gap-4">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                    <input
+                      type="text"
+                      placeholder="Search federations..."
+                      className="pl-10 pr-4 py-2 border rounded-lg w-full sm:w-64"
+                      onChange={(e) => handleSearch(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600">Show:</span>
+                    <select
+                      className="border rounded px-2 py-1"
+                      value={itemsPerPage}
+                      onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                    >
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow">
+              <PrintButton>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[30px] text-xs">
+                      <input type="checkbox" className="rounded border-gray-300" />
+                    </TableHead>
+                    <TableHead className="min-w-[180px] text-xs">Name</TableHead>
+                    <TableHead className="w-[100px] text-xs">Logo</TableHead>
+                    <TableHead className="w-[80px] text-xs">Acronym</TableHead>
+                    <TableHead className="w-[100px] text-xs">Year Founded</TableHead>
+                    <TableHead className="min-w-[120px] text-xs">Address</TableHead>
+                    <TableHead className="w-[80px] text-xs operation">Operation</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {federations.slice(indexOfFirstItem, indexOfLastItem).map((federation) => (
+                    <TableRow key={federation.id}>
+                      <TableCell>
+                        <input type="checkbox" className="rounded border-gray-300" />
+                      </TableCell>
+                      <TableCell className="font-medium">{federation.name}</TableCell>
+                      <TableCell>
+                        <img src={`${axiosInstance.defaults.baseURL}${federation.logo}`} alt="federation Logo" className="w-12 h-12 object-cover rounded-full" />
+                      </TableCell>
+                      <TableCell className="text-xs">{federation.acronym}</TableCell>
+                      <TableCell className="text-xs">{federation.yearFounded}</TableCell>
+                      <TableCell className="text-xs">{federation.address}</TableCell>
+                      <TableCell className="operation">
+                        <div className="flex items-center gap-0.5">
+                          <ActionMenu
+                            onEdit={() => handleEdit(federation)}
+                            onDelete={() => handleDeleteClick(federation)}
+                          />
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              </PrintButton>
+              <div className="flex items-center justify-between px-4 py-3 border-t">
+                <div className="flex items-center text-sm text-gray-500">
+                  Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, federations.length)} of{' '}
+                  {federations.length} entries
+                </div>
+                <div className="flex gap-2">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </Button>
+                  {[...Array(totalPages)].map((_, index) => (
+                    <Button
+                      key={index + 1}
+                      variant={currentPage === index + 1 ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setCurrentPage(index + 1)}
+                    >
+                      {index + 1}
+                    </Button>
+                  ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
       case 'Manage Clubs':
         return (
           <ManageClubs
@@ -1093,6 +1217,9 @@ const Federations = () => {
 
       case 'Player/Staff Transfer':
         return <PlayerStaffTransfer />;
+
+      case 'Player/Staff Transfer Report':
+        return <PlayerTransferReport />;
 
       case 'Players Map':
         return (

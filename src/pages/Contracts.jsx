@@ -30,6 +30,14 @@ function Contracts() {
     canUpdate: false,
     canDelete: false
   })
+  const [filters, setFilters] = useState({
+    dateFrom: '',
+    dateTo: '',
+    contractNo: '',
+    contractTitle: '',
+    supplierPercentage: ''
+  });
+  const setFilter = (k, v) => setFilters((p) => ({ ...p, [k]: v }));
   const fetchPermissions = async ()=> {
     await setLoading(true);
     const currentPermissions =await logPermissions();
@@ -76,11 +84,33 @@ function Contracts() {
   }
 
   // Filter contracts by search term
-  const filteredContracts = contracts.filter(contract =>
-    Object.values(contract).some(value =>
+  const filteredContracts = contracts.filter((contract) => {
+    const matchesSearch = Object.values(contract).some((value) =>
       value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
+    );
+    if (!matchesSearch) return false;
+
+    // Contract No filter
+    if (filters.contractNo && !contract.contract_no?.toString().toLowerCase().includes(filters.contractNo.toLowerCase())) {
+      return false;
+    }
+    // Contract Title filter
+    if (filters.contractTitle && !contract.contract_title?.toString().toLowerCase().includes(filters.contractTitle.toLowerCase())) {
+      return false;
+    }
+    // Supplier Percentage filter (assumes completion_percentage or similar)
+    if (filters.supplierPercentage) {
+      const perc = Number(contract.completion_percentage ?? contract.supplierPercentage ?? '');
+      const target = Number(filters.supplierPercentage);
+      if (!Number.isNaN(target)) {
+        if (Number.isNaN(perc) || perc < target) return false; // show >= target
+      }
+    }
+    // Date range filter using start_date
+    const fromOk = !filters.dateFrom || new Date(contract.start_date) >= new Date(filters.dateFrom);
+    const toOk = !filters.dateTo || new Date(contract.contract_end_date ?? contract.end_date ?? contract.start_date) <= new Date(filters.dateTo);
+    return fromOk && toOk;
+  });
 
   // Pagination logic
   const totalPages = Math.ceil(filteredContracts.length / itemsPerPage);
@@ -284,13 +314,16 @@ function Contracts() {
 
         {/* Search and Add */}
         <div className="flex justify-between items-center mb-6">
-          <Input
-            type="text"
-            placeholder="Search contracts..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-64"
-          />
+          <div className="relative">
+            <Input
+              type="text"
+              placeholder="Search contracts..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-64 pl-10"
+            />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          </div>
           {permissions.canCreate && (
               <Button
                   onClick={() => setIsAddModalOpen(true)}
@@ -302,6 +335,36 @@ function Contracts() {
 
           )}
 
+        </div>
+
+        {/* Filter Bar */}
+        <div className="bg-white rounded-lg shadow p-4 mb-4">
+          <h3 className="text-sm font-semibold mb-3">Search By</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Contract Date From</label>
+              <Input type="date" value={filters.dateFrom} onChange={(e) => setFilter('dateFrom', e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Contract Date To</label>
+              <Input type="date" value={filters.dateTo} onChange={(e) => setFilter('dateTo', e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Contract No</label>
+              <Input type="text" placeholder="Enter Contract No" value={filters.contractNo} onChange={(e) => setFilter('contractNo', e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Contract Title</label>
+              <Input type="text" placeholder="Enter Contract Title" value={filters.contractTitle} onChange={(e) => setFilter('contractTitle', e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Supplier Percentage</label>
+              <Input type="number" placeholder=">= %" value={filters.supplierPercentage} onChange={(e) => setFilter('supplierPercentage', e.target.value)} />
+            </div>
+          </div>
+          <div className="flex items-center gap-2 mt-3">
+            <Button variant="outline" onClick={() => setFilters({ dateFrom: '', dateTo: '', contractNo: '', contractTitle: '', supplierPercentage: '' })}>View All</Button>
+          </div>
         </div>
 
         {/* Contracts Table */}

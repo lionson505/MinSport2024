@@ -18,6 +18,10 @@ const AddClubForm = ({ isOpen, onClose }) => {
   const [federations, setFederations] = useState([]);
   const [isLoadingFederations, setIsLoadingFederations] = useState(true);
 
+  // Generate year options from 1995 to current year (inclusive)
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: currentYear - 1995 + 1 }, (_, idx) => 1995 + idx);
+
   useEffect(() => {
     const fetchFederations = async () => {
       try {
@@ -134,14 +138,11 @@ const AddClubForm = ({ isOpen, onClose }) => {
                   className="w-full p-2 border rounded"
                 >
                   <option value={0}>Select Year</option>
-                  {[...Array(10)].map((_, idx) => {
-                    const optionYear = 2020 + idx;
-                    return (
-                      <option key={optionYear} value={optionYear}>
-                        {optionYear}
-                      </option>
-                    );
-                  })}
+                  {[...yearOptions].reverse().map((optionYear) => (
+                    <option key={optionYear} value={optionYear}>
+                      {optionYear}
+                    </option>
+                  ))}
                 </select>
               </div>
 

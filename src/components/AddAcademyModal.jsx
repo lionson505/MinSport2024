@@ -288,17 +288,13 @@ function AddAcademyModal({ isOpen, onClose, onAdd, academyData = null }) {
                     <label className="block mb-1 text-sm font-medium">
                       Sports Category <span className="text-red-500">*</span>
                     </label>
-                    <select
+                    <Input
+                      type="text"
                       value={formData.sportsCategory}
                       onChange={(e) => setFormData(prev => ({ ...prev, sportsCategory: e.target.value }))}
                       required
-                      className="w-full border rounded-lg p-2"
-                    >
-                      <option value="">Select Category</option>
-                      {categoryOptions.map(option => (
-                        <option key={option} value={option}>{option}</option>
-                      ))}
-                    </select>
+                      placeholder="Enter sports category"
+                    />
                   </div>
 
                   {/* Location Section */}
