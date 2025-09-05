@@ -156,6 +156,9 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
           dateOfBirth: mapped.dateOfBirth,
           nationality: mapped.nationality,
           placeOfBirth: mapped.placeOfBirth,
+          // Auto-fill gender and marital status from NIDA
+          gender: details.gender ? details.gender.toUpperCase() : prevState.gender,
+          maritalStatus: details.marital_status ? details.marital_status.toUpperCase() : prevState.maritalStatus,
         }));
         // Clear any previously uploaded file when we have a verified NIDA photo
         setUploadedPhotoFile(null);
@@ -382,12 +385,18 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Gender</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Gender
+              {idData?.firstName && (
+                <span className="text-xs text-blue-600 ml-2">(from NIDA)</span>
+              )}
+            </label>
             <select
                 name="gender"
                 value={formData.gender}
                 onChange={handleChange}
-                className={inputClassName}
+                className={`${inputClassName} ${idData?.firstName ? 'bg-blue-50' : ''}`}
+                disabled={!!idData?.firstName}
             >
               <option value="">Select Gender</option>
               {genderOptions.map((gender) => (
@@ -398,12 +407,18 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Marital Status</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Marital Status
+              {idData?.firstName && (
+                <span className="text-xs text-blue-600 ml-2">(from NIDA)</span>
+              )}
+            </label>
             <select
                 name="maritalStatus"
                 value={formData.maritalStatus}
                 onChange={handleChange}
-                className={inputClassName}
+                className={`${inputClassName} ${idData?.firstName ? 'bg-blue-50' : ''}`}
+                disabled={!!idData?.firstName}
             >
               <option value="">Select Marital Status</option>
               {maritalStatusOptions.map((status) => (
