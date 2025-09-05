@@ -66,6 +66,7 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
   const [isLoadingID, setIsLoadingID] = useState(false);
   const [idData, setIdData] = useState(null);
   const [idType, setIdType] = useState('passport');
+  const [uploadedPhotoFile, setUploadedPhotoFile] = useState(null);
 
   useEffect(() => {
     setFormData({
@@ -131,30 +132,47 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
 
     setIsLoadingID(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await axiosInstance.get(`/player-staff/citizen/${idNumber}`);
 
-      const response = {
-        documentNumber: formData.idPassportNo,
-        firstName: "Jean",
-        lastName: "Baptiste",
-        dateOfBirth: "1995-02-19",
-        nationality: "Rwandan",
-        placeOfBirth: "Kigali",
-      };
+      const statusCode = response?.data?.status_code ?? response?.status;
+      const details = response?.data?.details;
 
-      setIdData(response);
-      setFormData(prevState => ({
-        ...prevState,
-        firstName: response.firstName,
-        lastName: response.lastName,
-        dateOfBirth: response.dateOfBirth,
-        nationality: response.nationality,
-        placeOfBirth: response.placeOfBirth,
-      }));
-      toast.success(`${idType === 'nid' ? 'National ID' : 'Passport'} verified successfully`);
+      if (statusCode === 200 && details) {
+        const mapped = {
+          documentNumber: idNumber,
+          firstName: details.first_name || '',
+          lastName: details.last_name || '',
+          dateOfBirth: details.dob || '',
+          nationality: details.nationality || 'Rwanda',
+          placeOfBirth: details.placeOfBirth || '',
+          photo: details.photo || ''
+        };
+
+        setIdData(mapped);
+        setFormData(prevState => ({
+          ...prevState,
+          firstName: mapped.firstName,
+          lastName: mapped.lastName,
+          dateOfBirth: mapped.dateOfBirth,
+          nationality: mapped.nationality,
+          placeOfBirth: mapped.placeOfBirth,
+        }));
+        // Clear any previously uploaded file when we have a verified NIDA photo
+        setUploadedPhotoFile(null);
+        toast.success(`${idType === 'nid' ? 'National ID' : 'Passport'} verified successfully`);
+      } else {
+        setIdData(null);
+        const message = response?.data?.message || (statusCode === 404 ? 'ID not found' : 'Failed to verify ID');
+        toast.error(message);
+      }
     } catch (error) {
-      toast.error(`Failed to verify ${idType === 'nid' ? 'National ID' : 'Passport'}`);
       setIdData(null);
+      const status = error.response?.status || error.response?.data?.status_code;
+      if (status === 404) {
+        toast.error('ID not found');
+      } else {
+        toast.error(error.response?.data?.message || `Failed to verify ${idType === 'nid' ? 'National ID' : 'Passport'}`);
+      }
     } finally {
       setIsLoadingID(false);
     }
@@ -171,36 +189,66 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const formattedData = {
+      // Build multipart payload
+      const payload = new FormData();
+
+      const normalized = {
         ...formData,
         dateOfBirth: formData.dateOfBirth ? new Date(formData.dateOfBirth).toISOString() : null,
         joinDate: formData.joinDate ? new Date(formData.joinDate).toISOString() : null,
       };
 
-      Object.keys(formattedData).forEach(key => {
-        if (formattedData[key] === '') {
-          formattedData[key] = null;
-        }
+      Object.keys(normalized).forEach(key => {
+        const value = normalized[key];
+        if (value === '' || value === undefined) return; // skip empties
+        payload.append(key, value);
       });
 
-      // console.log('Submitting formatted data:', formattedData);
+      // Attach photo priority: uploaded file > NIDA base64 photo
+      if (uploadedPhotoFile) {
+        payload.append('passportPicture', uploadedPhotoFile);
+      } else if (idData?.photo) {
+        try {
+          const blob = base64ToBlob(idData.photo, 'image/jpeg');
+          payload.append('passportPicture', blob, 'nida_photo.jpg');
+        } catch (e) {
+          // skip if conversion fails
+        }
+      }
 
       if (initialData && initialData.id) {
-        await axiosInstance.put(`/player-staff/${initialData.id}`, formattedData);
+        await axiosInstance.put(`/player-staff/${initialData.id}`, payload, { headers: { 'Content-Type': 'multipart/form-data' } });
         toast.success('Player/Staff updated successfully');
         window.location.reload();
       } else {
-        await axiosInstance.post('/player-staff', formattedData);
+        await axiosInstance.post('/player-staff', payload, { headers: { 'Content-Type': 'multipart/form-data' } });
         toast.success('Player/Staff added successfully');
         window.location.reload();
       }
-
-      setFormData(formattedData);
     } catch (error) {
       console.error('Submission error:', error);
       const errorMessage = error.response?.data?.message || error.message || 'Failed to save data. Please try again.';
       toast.error(errorMessage);
     }
+  };
+
+  // Helpers
+  const base64ToBlob = (base64, contentType = '') => {
+    const cleaned = base64.includes(',') ? base64.split(',')[1] : base64;
+    const byteCharacters = atob(cleaned);
+    const byteArrays = [];
+    const sliceSize = 1024;
+
+    for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+      const slice = byteCharacters.slice(offset, offset + sliceSize);
+      const byteNumbers = new Array(slice.length);
+      for (let i = 0; i < slice.length; i++) {
+        byteNumbers[i] = slice.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      byteArrays.push(byteArray);
+    }
+    return new Blob(byteArrays, { type: contentType });
   };
 
   return (
@@ -259,6 +307,49 @@ const AddPlayerStaffForm = ({ onSubmit, onCancel, initialData = {} }) => {
             >
               {isLoadingID ? 'Verifying...' : `Verify ${idType === 'nid' ? 'National ID' : 'Passport'}`}
             </Button>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Photo</label>
+            <div className="flex items-center gap-4 mt-1">
+              {idType === 'nid' ? (
+                // National ID: Show NIDA photo if available
+                idData?.photo ? (
+                  <img
+                    src={`data:image/jpeg;base64,${idData.photo}`}
+                    alt="NIDA Photo"
+                    className="w-20 h-20 object-cover rounded-md border"
+                  />
+                ) : (
+                  <div className="w-20 h-20 rounded-md border flex items-center justify-center text-xs text-gray-400">
+                    Verify National ID to load photo
+                  </div>
+                )
+              ) : (
+                // Passport: Manual upload only
+                uploadedPhotoFile ? (
+                  <img
+                    src={URL.createObjectURL(uploadedPhotoFile)}
+                    alt="Uploaded"
+                    className="w-20 h-20 object-cover rounded-md border"
+                  />
+                ) : (
+                  <div className="w-20 h-20 rounded-md border flex items-center justify-center text-xs text-gray-400">
+                    Upload passport photo
+                  </div>
+                )
+              )}
+              {idType === 'passport' && (
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] || null;
+                    setUploadedPhotoFile(file);
+                  }}
+                  className="block"
+                />
+              )}
+            </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">First Name</label>

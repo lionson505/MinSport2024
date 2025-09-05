@@ -558,6 +558,7 @@ const Federations = () => {
     federation: '',
     club: '',
   });
+  const [filteredClubs, setFilteredClubs] = useState([]);
 
   useEffect(() => {
     const fetchPlayersStaff = async () => {
@@ -612,11 +613,25 @@ const Federations = () => {
     setFilteredPlayersStaff(filtered);
   };
 
-  const handleFederationFilter = (value) => {
+  const handleFederationFilter = async (value) => {
     setPlayerFilters((prevFilters) => ({
       ...prevFilters,
       federation: value,
+      club: '', // Reset club when federation changes
     }));
+
+    // Fetch clubs for selected federation
+    if (value) {
+      try {
+        const response = await axiosInstance.get(`/federations/${value}/clubs`);
+        setFilteredClubs(response.data || []);
+      } catch (error) {
+        console.error('Failed to fetch clubs for federation:', error);
+        setFilteredClubs([]);
+      }
+    } else {
+      setFilteredClubs([]);
+    }
 
     const filtered = playersStaffData.filter((person) => {
       return (
@@ -991,6 +1006,98 @@ const Federations = () => {
       case 'Manage Players/Staff':
         return (
           <div className="space-y-6">
+            {/* Search By Filter Section */}
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="text-blue-600 font-medium mb-4">Search By</h3>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Federation :</label>
+                  <select
+                    className="w-full border rounded-lg px-3 py-2"
+                    value={playerFilters.federation}
+                    onChange={(e) => handleFederationFilter(e.target.value)}
+                  >
+                    <option value="">Select</option>
+                    {federations.map((fed) => (
+                      <option key={fed.id} value={fed.id}>
+                        {fed.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Club :</label>
+                  <select
+                    className="w-full border rounded-lg px-3 py-2"
+                    value={playerFilters.club}
+                    onChange={(e) => handleClubFilter(e.target.value)}
+                    disabled={!playerFilters.federation}
+                  >
+                    <option value="">Select</option>
+                    {filteredClubs.map((club) => (
+                      <option key={club.id} value={club.name}>
+                        {club.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Name :</label>
+                  <input
+                    type="text"
+                    className="w-full border rounded-lg px-3 py-2"
+                    placeholder="Enter name"
+                    value={playerFilters.search}
+                    onChange={(e) => handlePlayerSearch(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Type :</label>
+                  <select
+                    className="w-full border rounded-lg px-3 py-2"
+                    value={playerFilters.type}
+                    onChange={(e) => handleTypeFilter(e.target.value)}
+                  >
+                    <option value="">Select</option>
+                    <option value="PLAYER">Player</option>
+                    <option value="STAFF">Staff</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => {
+                    // Apply all current filters
+                    const filtered = playersStaffData.filter((person) => {
+                      const matchesSearch = !playerFilters.search || 
+                        person.firstName.toLowerCase().includes(playerFilters.search.toLowerCase()) ||
+                        person.lastName.toLowerCase().includes(playerFilters.search.toLowerCase());
+                      const matchesType = !playerFilters.type || person.type === playerFilters.type;
+                      const matchesFederation = !playerFilters.federation || person.federation.id === playerFilters.federation;
+                      const matchesClub = !playerFilters.club || person.currentClub.name === playerFilters.club;
+                      return matchesSearch && matchesType && matchesFederation && matchesClub;
+                    });
+                    setFilteredPlayersStaff(filtered);
+                    setCurrentPage(1);
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Search
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setPlayerFilters({ search: '', type: '', federation: '', club: '' });
+                    setFilteredClubs([]);
+                    setFilteredPlayersStaff(playersStaffData);
+                    setCurrentPage(1);
+                  }}
+                >
+                  View All
+                </Button>
+              </div>
+            </div>
+
             <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
               {permissions.canCreate && (<Button
                       onClick={() => {
