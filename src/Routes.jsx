@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import NationalTeams from './pages/NationalTeams';
 import SportsProfessionals from './pages/SportsProfessionals';
 import Trainings from './pages/Trainings';
+import TournamentRegistration from './pages/TournamentRegistration';
 import Login from './pages/auth/Login';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
@@ -28,6 +29,7 @@ function Routes() {
         <Route path="national-teams" element={<NationalTeams />} />
         <Route path="sports-professionals" element={<SportsProfessionals />} />
         <Route path="trainings" element={<Trainings />} />
+        <Route path="tournaments" element={<TournamentRegistration />} />
         <Route path="isonga-professionals" element={<div>Isonga Professionals Page</div>} />
         <Route path="academies" element={<div>Academies Page</div>} />
         <Route path="infrastructure" element={<div>Infrastructure Page</div>} />

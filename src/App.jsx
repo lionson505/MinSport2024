@@ -20,6 +20,7 @@ import IsongaPrograms from './pages/IsongaPrograms';
 import PlayerTransferReport from './components/reports/PlayerTransferReport';
 import Federations from './pages/Federations';
 import { ThemeProvider } from './context/ThemeContext';
+import { ToastProvider } from './contexts/ToastContext.jsx';
 import SportsForAll from './pages/SportsForAll';
 import Users from './pages/Users';
 import Contracts from './pages/Contracts';
@@ -28,6 +29,8 @@ import Academies from './pages/Academies';
 import { Toaster } from 'react-hot-toast';
 import Settings from './pages/Settings';
 import Reports from './pages/Reports';
+import TournamentList from './components/tournaments/TournamentList';
+import TournamentPlayers from './pages/TournamentPlayers.jsx';
 import Infrastructure from './pages/Infrastructure';
 import { InfrastructureProvider } from './contexts/InfrastructureContext';
 import SportsTourism from './pages/SportsTourism';
@@ -130,6 +133,7 @@ function App() {
               <MatchOperatorProvider>
                 <Router>
                   <AuthProvider>
+                    <ToastProvider>
                     <Toaster
                         position="top-right"
                         toastOptions={{
@@ -227,14 +231,21 @@ function App() {
                             <Contracts />
                           </ProtectedRoute>
                         } />
-
+                        <Route path="/tournaments" element={
+                          <ProtectedRoute moduleId={MODULE_IDS.TOURNAMENTS}>
+                            <TournamentList />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/tournaments/:id/players" element={
+                          <ProtectedRoute moduleId={MODULE_IDS.TOURNAMENTS}>
+                            <TournamentPlayers />
+                          </ProtectedRoute>
+                        } />
                         <Route path="/appointments" element={
                           <ProtectedRoute moduleId={MODULE_IDS.APPOINTMENTS}>
                            <Appointments />
                          </ProtectedRoute>
                         } />
-
-
                         <Route path="/appointments-ps" element={
                           <ProtectedRoute moduleId={MODULE_IDS.APPOINTMEN_PS}>
                             <PSAppointments/>
@@ -298,6 +309,7 @@ function App() {
                         )
                       } />
                     </Routes>
+                    </ToastProvider>
                   </AuthProvider>
                 </Router>
               </MatchOperatorProvider>

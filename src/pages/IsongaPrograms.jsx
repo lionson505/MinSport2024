@@ -1,5 +1,5 @@
 // src/pages/IsongaPrograms.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import axiosInstance from '../utils/axiosInstance';
 import {
   Table,
@@ -36,7 +36,7 @@ import { classOptions } from '../data/classOptions';
 
 const IsongaPrograms = () => {
   const { isDarkMode } = useDarkMode();
-  const [activeTab, setActiveTab] = useState('Manage Institution');
+  const [activeTab, setActiveTab] = useState('Manage School');
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState(null);
@@ -73,7 +73,8 @@ const IsongaPrograms = () => {
     idPassportNo: '',
     nationality: '',
     otherNationality: '',
-    namesOfParentsGuardian: '',
+    fatherGuardianNames: '',
+    motherGuardianNames: '',
     typeOfSchoolAcademyTrainingCenter: '',
     class: '',
     typeOfGame: '',
@@ -91,9 +92,33 @@ const IsongaPrograms = () => {
   const [passportExpiry, setPassportExpiry] = useState('');
   const [idError, setIdError] = useState('');
   const [isLoadingNIDA, setIsLoadingNIDA] = useState(false);
-  const [tabs] = useState(['Manage Institution', 'Manage Students', 'Student Transfer']);
+  const [tabs] = useState(['Manage School', 'Manage Students', 'Student Transfer']);
   const [selectedProgram, setSelectedProgram] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Selected institution derived from chosen institutionId
+  const derivedSelectedInstitution = useMemo(() => {
+    const id = Number(studentFormData.institutionId);
+    if (!id) return null;
+    return Array.isArray(programs) ? programs.find(p => Number(p.id) === id) : null;
+  }, [programs, studentFormData.institutionId]);
+
+  // Available game types based on selected institution's disciplines/sports
+  const availableGameTypes = useMemo(() => {
+    const inst = derivedSelectedInstitution;
+    if (!inst) return [];
+    const candidates = inst.sportsDisciplines || inst.disciplines || inst.sports || inst.gameTypes || inst.types_of_sports || inst.typesOfSports;
+    if (Array.isArray(candidates)) return candidates;
+    if (typeof candidates === 'string') {
+      return candidates.split(',').map(s => s.trim()).filter(Boolean);
+    }
+    return [];
+  }, [derivedSelectedInstitution]);
+
+  // Reset game type when institution selection changes
+  useEffect(() => {
+    setStudentFormData(prev => ({ ...prev, typeOfGame: '' }));
+  }, [studentFormData.institutionId]);
 
   // Load initial data
   useEffect(() => {
@@ -237,7 +262,8 @@ const IsongaPrograms = () => {
       idPassportNo: '',
       nationality: '',
       otherNationality: '',
-      namesOfParentsGuardian: '',
+      fatherGuardianNames: '',
+      motherGuardianNames: '',
       typeOfSchoolAcademyTrainingCenter: '',
       class: '',
       typeOfGame: '',
@@ -249,8 +275,12 @@ const IsongaPrograms = () => {
   };
 
   const handleEditStudent = (student) => {
-    const { photo_passport, transfers, ...rest } = student;
-    setStudentFormData(rest);
+    const { photo_passport, transfers, namesOfParentsGuardian, ...rest } = student;
+    setStudentFormData({
+      ...rest,
+      fatherGuardianNames: student.fatherGuardianNames || namesOfParentsGuardian || '',
+      motherGuardianNames: student.motherGuardianNames || ''
+    });
     setSelectedStudent(student);
     setShowStudentModal(true);
   };
@@ -292,7 +322,11 @@ const IsongaPrograms = () => {
     try {
       const formData = {
         ...studentFormData,
-        institutionId: parseInt(studentFormData.institutionId, 10) // Ensure institutionId is an integer
+        institutionId: parseInt(studentFormData.institutionId, 10), // Ensure institutionId is an integer
+        // Ensure type comes from the selected institution's category
+        typeOfSchoolAcademyTrainingCenter: derivedSelectedInstitution?.category || studentFormData.typeOfSchoolAcademyTrainingCenter,
+        // Backward compatibility: provide combined field if backend still expects it
+        namesOfParentsGuardian: `${studentFormData.fatherGuardianNames || ''}${studentFormData.fatherGuardianNames || studentFormData.motherGuardianNames ? ' / ' : ''}${studentFormData.motherGuardianNames || ''}`.trim()
       };
   
       if (selectedStudent) {
@@ -338,7 +372,7 @@ const IsongaPrograms = () => {
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'Manage Institution':
+      case 'Manage School':
         return (
           <div className="transition-all duration-300 ease-in-out">
             {permissions.canCreate && (<Button
@@ -347,7 +381,7 @@ const IsongaPrograms = () => {
               disabled={isSubmitting}
             >
               <Plus className="h-5 w-5" />
-              <span>Add Institution</span>
+              <span>Add School</span>
             </Button>)}
 
             <div className="space-y-6">
@@ -367,7 +401,7 @@ const IsongaPrograms = () => {
                       <option value={50}>50</option>
                       <option value={100}>100</option>
                     </select>
-                  </div>
+            </div>
 
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
@@ -381,6 +415,8 @@ const IsongaPrograms = () => {
                 </div>
               </div>
 
+              
+
               {/* Table */}
               <div className={`rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow'}`}>
                 <PrintButton title='Institutions Report'>
@@ -388,7 +424,6 @@ const IsongaPrograms = () => {
                     <TableHeader>
                       <TableRow>
                         <TableHead className="min-w-[200px] text-xs">Name</TableHead>
-                        <TableHead className="min-w-[150px] text-xs">Domain</TableHead>
                         <TableHead className="min-w-[150px] text-xs">Category</TableHead>
                         <TableHead className="min-w-[150px] text-xs">Students</TableHead>
                         <TableHead className="min-w-[150px] text-xs">Location</TableHead>
@@ -396,12 +431,16 @@ const IsongaPrograms = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {currentPrograms.map((program) => (
+                      {currentPrograms.map((program) => {
+                        const studentCount = students.filter((s) => (
+                          (s.institutionId && Number(s.institutionId) === Number(program.id)) ||
+                          (s.nameOfSchoolAcademyTrainingCenter && s.nameOfSchoolAcademyTrainingCenter === program.name)
+                        )).length;
+                        return (
                         <TableRow key={program.id}>
                           <TableCell className="text-xs font-medium">{program.name}</TableCell>
-                          <TableCell className="text-xs">{program.domain}</TableCell>
                           <TableCell className="text-xs">{program.category}</TableCell>
-                          <TableCell>{program.students || 0}</TableCell>
+                          <TableCell>{studentCount}</TableCell>
                           <TableCell className="text-xs">{renderLocation(program)}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-1">
@@ -437,7 +476,8 @@ const IsongaPrograms = () => {
                             </div>
                           </TableCell>
                         </TableRow>
-                      ))}
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </PrintButton>
@@ -636,7 +676,7 @@ const IsongaPrograms = () => {
       {/* Navigation Tabs */}
       <div className="mb-6">
         <nav className="flex space-x-4">
-          {['Manage Institution', 'Manage Students', 'Student Transfer'].map((tab) => (
+          {['Manage School', 'Manage Students', 'Student Transfer'].map((tab) => (
             <button
               key={tab}
               className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
@@ -663,7 +703,7 @@ const IsongaPrograms = () => {
       <Modal
         isOpen={showInstitutionModal}
         onClose={() => setShowInstitutionModal(false)}
-        title={selectedInstitution ? "Edit Institution" : "Add Institution"}
+        title={selectedInstitution ? "Edit School" : "Add School"}
       >
         <InstitutionForm
           institution={selectedInstitution}
@@ -830,30 +870,54 @@ const IsongaPrograms = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Parents/Guardian Names</label>
+              <label className="block text-sm font-medium mb-1">Father/Guardian Names</label>
               <input
                 type="text"
-                name="namesOfParentsGuardian"
-                value={studentFormData.namesOfParentsGuardian}
+                name="fatherGuardianNames"
+                value={studentFormData.fatherGuardianNames}
                 onChange={handleFormChange}
                 className="w-full border rounded-lg px-3 py-2"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Type of Institution</label>
+              <label className="block text-sm font-medium mb-1">Mother/Guardian Names</label>
+              <input
+                type="text"
+                name="motherGuardianNames"
+                value={studentFormData.motherGuardianNames}
+                onChange={handleFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Institution</label>
               <select
-                name="typeOfSchoolAcademyTrainingCenter"
-                value={studentFormData.typeOfSchoolAcademyTrainingCenter}
+                name="institutionId"
+                value={studentFormData.institutionId}
                 onChange={handleFormChange}
                 className="w-full border rounded-lg px-3 py-2"
                 required
               >
-                <option value="">Select Institution Type</option>
-                {institutionTypes.map((type) => (
-                  <option key={type} value={type}>{type}</option>
+                <option value="">Select Institution</option>
+                {programs.map((institution) => (
+                  <option key={institution.id} value={institution.id}>
+                    {institution.name}
+                  </option>
                 ))}
               </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Type of Institution</label>
+              <input
+                type="text"
+                name="typeOfSchoolAcademyTrainingCenter"
+                value={derivedSelectedInstitution?.category || ''}
+                readOnly
+                className="w-full border rounded-lg px-3 py-2 bg-gray-100"
+                placeholder="Auto-filled from selected Institution"
+              />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Class</label>
@@ -878,9 +942,12 @@ const IsongaPrograms = () => {
                 onChange={handleFormChange}
                 className="w-full border rounded-lg px-3 py-2"
                 required
+                disabled={!derivedSelectedInstitution || availableGameTypes.length === 0}
               >
-                <option value="">Select Game Type</option>
-                {gameTypes.map((game) => (
+                <option value="" disabled>
+                  {(!derivedSelectedInstitution) ? 'Select Institution first' : (availableGameTypes.length === 0 ? 'No game types available' : 'Select Game Type')}
+                </option>
+                {availableGameTypes.map((game) => (
                   <option key={game} value={game}>{game}</option>
                 ))}
               </select>
@@ -895,23 +962,6 @@ const IsongaPrograms = () => {
                 className="w-full border rounded-lg px-3 py-2"
                 required
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Institution</label>
-              <select
-                name="institutionId"
-                value={studentFormData.institutionId}
-                onChange={handleFormChange}
-                className="w-full border rounded-lg px-3 py-2"
-                required
-              >
-                <option value="">Select Institution</option>
-                {programs.map((institution) => (
-                  <option key={institution.id} value={institution.id}>
-                    {institution.name}
-                  </option>
-                ))}
-              </select>
             </div>
           </div>
 
@@ -1066,8 +1116,12 @@ const IsongaPrograms = () => {
                     <p className="mt-1">{selectedStudent.otherNationality || 'N/A'}</p>
                   </div>
                   <div>
-                    <label className="font-medium text-gray-600 block">Parents/Guardian</label>
-                    <p className="mt-1">{selectedStudent.namesOfParentsGuardian || 'N/A'}</p>
+                    <label className="font-medium text-gray-600 block">Father/Guardian</label>
+                    <p className="mt-1">{selectedStudent.fatherGuardianNames || selectedStudent.namesOfParentsGuardian || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="font-medium text-gray-600 block">Mother/Guardian</label>
+                    <p className="mt-1">{selectedStudent.motherGuardianNames || 'N/A'}</p>
                   </div>
                   <div>
                     <label className="font-medium text-gray-600 block">Contact</label>
@@ -1117,14 +1171,10 @@ const IsongaPrograms = () => {
                     <p className="mt-1">{selectedProgram.name}</p>
                   </div>
                   <div>
-                    <label className="font-medium text-gray-600 block">Domain</label>
-                    <p className="mt-1">{selectedProgram.domain || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <label className="font-medium text-gray-600 block">Category</label>
+                    <label className="font-medium text-gray-600 block">Levels</label>
                     <p className="mt-1">{selectedProgram.category || 'N/A'}</p>
                   </div>
-                  <div>
+                  <div className="col-span-2">
                     <label className="font-medium text-gray-600 block">Legal Representative</label>
                     <p className="mt-1">{selectedProgram.legalRepresentativeName || 'N/A'}</p>
                   </div>
@@ -1158,35 +1208,66 @@ const IsongaPrograms = () => {
                 </div>
               </div>
 
-              {/* Contact Information */}
+              {/* Contact Information (from Legal Representative) */}
               <div>
                 <h3 className="text-lg font-semibold text-blue-600 mb-3">Contact Information</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="font-medium text-gray-600 block">Email</label>
-                    <p className="mt-1">{selectedProgram.email || 'N/A'}</p>
+                    <p className="mt-1">{selectedProgram.legalRepresentativeEmail || 'N/A'}</p>
                   </div>
                   <div>
                     <label className="font-medium text-gray-600 block">Phone</label>
-                    <p className="mt-1">{selectedProgram.phone || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <label className="font-medium text-gray-600 block">Website</label>
-                    <p className="mt-1">{selectedProgram.website || 'N/A'}</p>
+                    <p className="mt-1">{selectedProgram.legalRepresentativePhone || 'N/A'}</p>
                   </div>
                 </div>
               </div>
 
-              {/* Additional Information */}
+              {/* Sports Disciplines and Sections */}
+              <div>
+                <h3 className="text-lg font-semibold text-blue-600 mb-3">Sports</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="font-medium text-gray-600 block">Disciplines</label>
+                    <p className="mt-1">
+                      {Array.isArray(selectedProgram.sportsDisciplines)
+                        ? (selectedProgram.sportsDisciplines.length > 0 ? selectedProgram.sportsDisciplines.join(', ') : 'N/A')
+                        : (typeof selectedProgram.sportsDisciplines === 'string' && selectedProgram.sportsDisciplines.trim())
+                          ? selectedProgram.sportsDisciplines
+                          : 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="font-medium text-gray-600 block">Sections</label>
+                    <div className="mt-1 space-y-1">
+                      {selectedProgram.sections && typeof selectedProgram.sections === 'object' && Object.keys(selectedProgram.sections).length > 0 ? (
+                        Object.entries(selectedProgram.sections).map(([disc, secs]) => (
+                          <div key={disc} className="text-sm">
+                            <span className="font-medium">{disc}: </span>
+                            <span>{Array.isArray(secs) ? secs.join(', ') : String(secs)}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <p>N/A</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Additional Information */
+              }
               <div>
                 <h3 className="text-lg font-semibold text-blue-600 mb-3">Additional Information</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="font-medium text-gray-600 block">Registration Date</label>
                     <p className="mt-1">
-                      {selectedProgram.registrationDate ? 
-                        new Date(selectedProgram.registrationDate).toLocaleDateString() : 
-                        'N/A'}
+                      {selectedProgram.registrationDate
+                        ? new Date(selectedProgram.registrationDate).toLocaleDateString()
+                        : (selectedProgram.createdAt
+                            ? new Date(selectedProgram.createdAt).toLocaleDateString()
+                            : 'N/A')}
                     </p>
                   </div>
                   <div>

@@ -19,7 +19,8 @@ export const MODULE_IDS = {
   REPORTS: 18,
   SPORTS_FOR_ALL: 19,
   TRANSFERS: 20,
-  MATCH: 21
+  MATCH: 21,
+  TOURNAMENTS: 22
 };
 
 

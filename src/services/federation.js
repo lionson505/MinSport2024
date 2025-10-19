@@ -206,4 +206,7 @@ export const federationApi = {
   },
 };
 
+// Provide alias named export for federationService without duplicating federationApi export
+export { federationApi as federationService };
+
 export default federationApi;

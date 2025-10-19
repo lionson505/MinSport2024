@@ -11,10 +11,4 @@ export const classOptions = [
   "Secondary 4",
   "Secondary 5",
   "Secondary 6",
-  "University Year 1",
-  "University Year 2",
-  "University Year 3",
-  "University Year 4",
-  "Professional",
-  "Other"
 ]; 

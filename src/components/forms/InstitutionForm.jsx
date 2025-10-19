@@ -8,9 +8,6 @@ const validationRules = {
     required: true,
     minLength: 3
   },
-  domain: {
-    required: true
-  },
   category: {
     required: true
   },
@@ -24,28 +21,27 @@ const validationRules = {
       village: { required: true }
     }
   },
-  legalRepresentativeName: {
+  SchoolRepresentativeName: {
     required: true
   },
-  legalRepresentativeGender: {
+  SchoolRepresentativeGender: {
     required: true
   },
-  legalRepresentativeEmail: {
+  SchoolRepresentativeEmail: {
     required: true,
     email: true
   },
-  legalRepresentativePhone: {
+  SchoolRepresentativePhone: {
     required: true
   }
 };
 
 function InstitutionForm({ institution, onSubmit, onCancel }) {
   const [loading, setLoading] = useState(false);
-  const showToast = useToast();
+  const { showToast } = useToast();
 
   const initialValues = {
     name: '',
-    domain: '',
     category: 'EXCELLENCE SCHOOL',
     location: {
       province: '',
@@ -54,10 +50,13 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
       cell: '',
       village: ''
     },
-    legalRepresentativeName: '',
-    legalRepresentativeGender: 'Male',
-    legalRepresentativeEmail: '',
-    legalRepresentativePhone: '',
+    SchoolRepresentativeName: '',
+    SchoolRepresentativeGender: 'Male',
+    SchoolRepresentativeEmail: '',
+    SchoolRepresentativePhone: '',
+    // New fields
+    sportsDisciplines: [], // string[]
+    sections: {}, // { [discipline: string]: string[] }
     ...institution
   };
 
@@ -71,7 +70,7 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
     resetForm
   } = useFormValidation(initialValues, validationRules);
 
-  const categories = ['EXCELLENCE SCHOOL', 'REGULAR SCHOOL', 'SPECIAL SCHOOL'];
+  const categories = ['District Center Of Excellence', 'Regional Center Of Excellence', 'National Center Of Excellence'];
   const genders = ['Male', 'Female'];
 
   const handleSubmit = async (e) => {
@@ -116,6 +115,53 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
 
   const inputClassName = "h-12 w-full px-4 border border-gray-300 rounded-md";
 
+  // Sports discipline options
+  const disciplineOptions = [
+    'Football',
+    'Volleyball',
+    'Basketball',
+    'Handball',
+    'Cycling',
+    'Athletics',
+    'Sitting Volleyball',
+    'Goalball'
+  ];
+
+  const genderSections = ['Male', 'Female'];
+  const isMixedOnly = (d) => ['Cycling', 'Goalball', 'Athletics'].includes(d);
+
+  const handleDisciplineToggle = (discipline) => {
+    const already = values.sportsDisciplines.includes(discipline);
+    const selected = already
+      ? values.sportsDisciplines.filter((d) => d !== discipline)
+      : [...values.sportsDisciplines, discipline];
+
+    const nextSections = { ...values.sections };
+    // Cleanup removed discipline sections
+    Object.keys(nextSections).forEach((key) => {
+      if (!selected.includes(key)) delete nextSections[key];
+    });
+    // Initialize for newly added
+    if (!already && !nextSections[discipline]) {
+      nextSections[discipline] = isMixedOnly(discipline) ? ['Mixed'] : [];
+    }
+
+    handleChange({ target: { name: 'sportsDisciplines', value: selected } });
+    handleChange({ target: { name: 'sections', value: nextSections } });
+  };
+
+  const handleSectionToggle = (discipline, section) => {
+    const current = values.sections[discipline] || [];
+    let updated;
+    if (current.includes(section)) {
+      updated = current.filter((s) => s !== section);
+    } else {
+      updated = [...current, section];
+    }
+    const next = { ...values.sections, [discipline]: updated };
+    handleChange({ target: { name: 'sections', value: next } });
+  };
+
   return (
     <div className="flex flex-col h-full max-h-[85vh]">
       <form onSubmit={handleSubmit} className="flex flex-col h-full">
@@ -144,31 +190,12 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
                   )}
                 </div>
 
-                {/* Domain */}
-                <div className="space-y-1.5">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Domain
-                  </label>
-                  <select
-                    name="domain"
-                    value={values.domain}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    className={inputClassName}
-                  >
-                    <option value="">Select Domain</option>
-                    <option value="Sports">Sports</option>
-                    <option value="Culture">Culture</option>
-                  </select>
-                  {errors.domain && touched.domain && (
-                    <p className="text-sm text-red-500">{errors.domain}</p>
-                  )}
-                </div>
+                {/* Domain removed as requested */}
 
                 {/* Category */}
                 <div className="space-y-1.5">
                   <label className="block text-sm font-medium text-gray-700">
-                    Category
+                    Levels
                   </label>
                   <select
                     name="category"
@@ -183,6 +210,59 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
                     ))}
                   </select>
                 </div>
+
+                {/* Sports Discipline */}
+                <div className="space-y-1.5">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Sports Discipline
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {disciplineOptions.map((d) => (
+                      <label key={d} className="inline-flex items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={values.sportsDisciplines.includes(d)}
+                          onChange={() => handleDisciplineToggle(d)}
+                        />
+                        <span>{d}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Sections/Teams per discipline */}
+                {values.sportsDisciplines?.length > 0 && (
+                  <div className="space-y-3">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Sections / Teams
+                    </label>
+                    <div className="space-y-2">
+                      {values.sportsDisciplines.map((d) => (
+                        <div key={d} className="border rounded-md p-3">
+                          <div className="font-medium text-gray-800 mb-2">{d}</div>
+                          {isMixedOnly(d) ? (
+                            <div className="text-sm text-gray-600">
+                              Mixed
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-4">
+                              {genderSections.map((g) => (
+                                <label key={g} className="inline-flex items-center gap-2 text-sm">
+                                  <input
+                                    type="checkbox"
+                                    checked={(values.sections[d] || []).includes(g)}
+                                    onChange={() => handleSectionToggle(d, g)}
+                                  />
+                                  <span>{g}</span>
+                                </label>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -301,35 +381,35 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
               </div>
             </div>
 
-            {/* Legal Representative Section */}
+            {/* School Representative Section */}
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Legal Representative Details</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">School Representative Details</h3>
               <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-1.5">
                   <label className="block text-sm font-medium text-gray-700">
-                    Legal Representative Name
+                    School Representative Name
                   </label>
                   <input
                     type="text"
-                    name="legalRepresentativeName"
-                    value={values.legalRepresentativeName}
+                    name="SchoolRepresentativeName"
+                    value={values.SchoolRepresentativeName}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     className={inputClassName}
-                    placeholder="Enter legal representative name"
+                    placeholder="Enter School representative name"
                   />
-                  {errors.legalRepresentativeName && touched.legalRepresentativeName && (
-                    <p className="text-sm text-red-500">{errors.legalRepresentativeName}</p>
+                  {errors.SchoolRepresentativeName && touched.SchoolRepresentativeName && (
+                    <p className="text-sm text-red-500">{errors.SchoolRepresentativeName}</p>
                   )}
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="block text-sm font-medium text-gray-700">
-                    Legal Representative Gender
+                    School Representative Gender
                   </label>
                   <select
-                    name="legalRepresentativeGender"
-                    value={values.legalRepresentativeGender}
+                    name="SchoolRepresentativeGender"
+                    value={values.SchoolRepresentativeGender}
                     onChange={handleChange}
                     className={inputClassName}
                   >
@@ -343,37 +423,37 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
 
                 <div className="space-y-1.5">
                   <label className="block text-sm font-medium text-gray-700">
-                    Legal Representative Email
+                    School Representative Email
                   </label>
                   <input
                     type="email"
-                    name="legalRepresentativeEmail"
-                    value={values.legalRepresentativeEmail}
+                    name="SchoolRepresentativeEmail"
+                    value={values.SchoolRepresentativeEmail}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     className={inputClassName}
-                    placeholder="Enter legal representative email"
+                    placeholder="Enter School representative email"
                   />
-                  {errors.legalRepresentativeEmail && touched.legalRepresentativeEmail && (
-                    <p className="text-sm text-red-500">{errors.legalRepresentativeEmail}</p>
+                  {errors.SchoolRepresentativeEmail && touched.SchoolRepresentativeEmail && (
+                    <p className="text-sm text-red-500">{errors.SchoolRepresentativeEmail}</p>
                   )}
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="block text-sm font-medium text-gray-700">
-                    Legal Representative Phone
+                    School Representative Phone
                   </label>
                   <input
                     type="text"
-                    name="legalRepresentativePhone"
-                    value={values.legalRepresentativePhone}
+                    name="SchoolRepresentativePhone"
+                    value={values.SchoolRepresentativePhone}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     className={inputClassName}
-                    placeholder="Enter legal representative phone"
+                    placeholder="Enter School representative phone"
                   />
-                  {errors.legalRepresentativePhone && touched.legalRepresentativePhone && (
-                    <p className="text-sm text-red-500">{errors.legalRepresentativePhone}</p>
+                  {errors.SchoolRepresentativePhone && touched.SchoolRepresentativePhone && (
+                    <p className="text-sm text-red-500">{errors.SchoolRepresentativePhone}</p>
                   )}
                 </div>
               </div>

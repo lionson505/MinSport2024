@@ -56,11 +56,14 @@ function ManageGroups() {
       const groups = Array.isArray(response.data.data) ? response.data.data : [];
       // console.log('Fetched groups:', groups);
 
-      // Fetch permissions for each group and count modules
+      // Fetch permissions for each group and count only enabled modules
       const groupsWithModuleCounts = await Promise.all(groups.map(async (group) => {
         const permissionsResponse = await axiosInstance.get(`/permissions/groups/${group.id}`);
         const permissions = Array.isArray(permissionsResponse.data) ? permissionsResponse.data : [];
-        const moduleCount = permissions.length; // Count the number of modules
+        const enabledPermissions = permissions.filter(
+          (p) => Boolean(p?.canRead || p?.canCreate || p?.canUpdate || p?.canDelete)
+        );
+        const moduleCount = enabledPermissions.length; // Count only modules with at least one allowed action
         return { ...group, moduleCount, permissions };
       }));
 

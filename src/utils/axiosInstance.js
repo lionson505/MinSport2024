@@ -28,10 +28,18 @@ axiosInstance.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+    if (error.response) {
+      const { status, config } = error.response;
+      console.error('API error:', status, 'on', config?.url);
+      if (status === 401) {
+        // Unauthorized: token invalid/expired -> force logout
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      } else if (status === 403) {
+        // Forbidden: keep session, redirect to not authorized page
+        window.location.href = '/notAuthorized';
+      }
     }
     return Promise.reject(error);
   }

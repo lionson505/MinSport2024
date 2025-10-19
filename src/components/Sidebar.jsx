@@ -18,6 +18,7 @@ const Sidebar = () => {
     { title: "Federations", path: "/federations", icon: Award, moduleId: MODULE_IDS.FEDERATIONS },
     { title: "Sports professionals", path: "/sports-professionals", icon: Users, moduleId: MODULE_IDS.SPORTS_PROFESSIONALS },
     { title: "Trainings", path: "/trainings", icon: GraduationCap, moduleId: MODULE_IDS.TRAININGS },
+    { title: "Tournaments", path: "/tournaments", icon: Trophy, moduleId: MODULE_IDS.TOURNAMENTS },
     { title: "Isonga Programs", path: "/isonga-programs", icon: School, moduleId: MODULE_IDS.ISONGA_PROGRAMS },
     { title: "Academies", path: "/academies", icon: Building2, moduleId: MODULE_IDS.ACADEMIES },
     { title: "Infrastructure", path: "/infrastructure", icon: Building2, moduleId: MODULE_IDS.INFRASTRUCTURE },

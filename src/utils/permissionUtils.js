@@ -62,7 +62,7 @@ export const usePermissions = () => {
             const modulePermission = permissions.find(p => p && p.moduleId === numericModuleId);
 
             if (!modulePermission) {
-                console.log(`No permissions found for module ID ${numericModuleId}`);
+                // No permissions for this module; fail silently
                 return false;
             }
 
@@ -114,7 +114,7 @@ export const hasPermissionSync = (moduleId, action) => {
 
         const modulePermission = permissions.find(p => p && p.moduleId === numericModuleId);
         if (!modulePermission) {
-            console.log(`No permissions found for module ID ${numericModuleId}`);
+            // No permissions for this module; fail silently
             return false;
         }
 
