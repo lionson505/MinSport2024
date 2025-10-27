@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
@@ -14,6 +15,7 @@ import 'swiper/css/autoplay';
 import federationImage from '../../components/liveMatch/federationImgFallBack.png';
 import eventImage from '../../components/liveMatch/eventFallbackImg.jpeg';
 import PublicLayout from '../../components/layouts/PublicLayout.jsx';
+import { toast } from 'react-hot-toast';
 
 // Utility function to strip HTML tags
 const stripHtmlTags = (html) => {
@@ -27,6 +29,7 @@ function LandingPage() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [events, setEvents] = useState([])
   const [categories, setCategories] = useState([])
+  const [error, setError] = useState(null)
 
   // fetch federation 
   useEffect(() => {

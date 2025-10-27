@@ -44,6 +44,10 @@ const IsongaPrograms = () => {
   const [filteredPrograms, setFilteredPrograms] = useState([]);
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
+  const [coaches, setCoaches] = useState([]);
+  const [filteredCoaches, setFilteredCoaches] = useState([]);
+  const [peTeachers, setPeTeachers] = useState([]);
+  const [filteredPeTeachers, setFilteredPeTeachers] = useState([]);
   const [schools, setSchools] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5); // Updated to 5 rows per page
@@ -55,6 +59,14 @@ const IsongaPrograms = () => {
   const [studentToDelete, setStudentToDelete] = useState(null);
   const [institutionToDelete, setInstitutionToDelete] = useState(null);
   const [showDeleteInstitutionModal, setShowDeleteInstitutionModal] = useState(false);
+  const [showCoachModal, setShowCoachModal] = useState(false);
+  const [selectedCoach, setSelectedCoach] = useState(null);
+  const [showDeleteCoachModal, setShowDeleteCoachModal] = useState(false);
+  const [coachToDelete, setCoachToDelete] = useState(null);
+  const [showPeTeacherModal, setShowPeTeacherModal] = useState(false);
+  const [selectedPeTeacher, setSelectedPeTeacher] = useState(null);
+  const [showDeletePeTeacherModal, setShowDeletePeTeacherModal] = useState(false);
+  const [peTeacherToDelete, setPeTeacherToDelete] = useState(null);
   const logPermissions = usePermissionLogger('isonga_programs');
   const [permissions, setPermissions] = useState({
     canCreate: false,
@@ -82,6 +94,28 @@ const IsongaPrograms = () => {
     institutionId: 0
   });
 
+  const [coachFormData, setCoachFormData] = useState({
+    name: '',
+    age: '',
+    sport: '',
+    section: '',
+    school: '',
+    qualification: '',
+    email: '',
+    tel: '',
+    position: ''
+  });
+
+  const [peTeacherFormData, setPeTeacherFormData] = useState({
+    names: '',
+    age: '',
+    experience: '',
+    school: '',
+    sportOfInterest: '',
+    email: '',
+    tel: ''
+  });
+
   const [showEditStudentModal, setShowEditStudentModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showStudentsModal, setShowStudentsModal] = useState(false);
@@ -92,7 +126,7 @@ const IsongaPrograms = () => {
   const [passportExpiry, setPassportExpiry] = useState('');
   const [idError, setIdError] = useState('');
   const [isLoadingNIDA, setIsLoadingNIDA] = useState(false);
-  const [tabs] = useState(['Manage School', 'Manage Students', 'Student Transfer']);
+  const [tabs] = useState(['Manage School', 'Manage Students', 'Student Transfer', 'Coaches', 'PE Teachers']);
   const [selectedProgram, setSelectedProgram] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -125,10 +159,9 @@ const IsongaPrograms = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [programsResponse, studentsResponse, schoolsResponse] = await Promise.all([
+        const [programsResponse, studentsResponse] = await Promise.all([
           axiosInstance.get('/institutions'),
           axiosInstance.get('/students'),
-          // axiosInstance.get('/schools') // Assuming there's an endpoint for schools
         ]);
         const currentPermissions = await logPermissions();
         await setPermissions(currentPermissions);
@@ -140,7 +173,31 @@ const IsongaPrograms = () => {
         setStudents(studentData);
         setFilteredStudents(studentData);
 
-        setSchools(schoolsResponse?.data || []);
+        // Use institutions as schools for transfer functionality
+        setSchools(programsResponse?.data || []);
+
+        // Load coaches and PE teachers from API
+        try {
+          const [coachesResponse, peTeachersResponse] = await Promise.all([
+            axiosInstance.get('/coaches'),
+            axiosInstance.get('/pe-teachers')
+          ]);
+
+          const coachesData = coachesResponse?.data?.data || [];
+          const peTeachersData = peTeachersResponse?.data?.data || [];
+
+          setCoaches(coachesData);
+          setFilteredCoaches(coachesData);
+          setPeTeachers(peTeachersData);
+          setFilteredPeTeachers(peTeachersData);
+        } catch (error) {
+          console.error('Error loading coaches and PE teachers:', error);
+          // Initialize empty arrays if API fails
+          setCoaches([]);
+          setFilteredCoaches([]);
+          setPeTeachers([]);
+          setFilteredPeTeachers([]);
+        }
 
         setIsLoading(false);
       } catch (error) {
@@ -196,12 +253,16 @@ const IsongaPrograms = () => {
     }
   };
 
-  const handleSearch = (searchValue, type) => {
+  const handleSearch = async (searchValue, type) => {
     if (!searchValue) {
       if (type === 'programs') {
         setFilteredPrograms(programs);
       } else if (type === 'students') {
         setFilteredStudents(students);
+      } else if (type === 'coaches') {
+        setFilteredCoaches(coaches);
+      } else if (type === 'peTeachers') {
+        setFilteredPeTeachers(peTeachers);
       }
       return;
     }
@@ -209,8 +270,17 @@ const IsongaPrograms = () => {
     if (type === 'programs') {
       const filtered = programs.filter(program =>
         program.name?.toLowerCase().includes(searchValue.toLowerCase()) ||
-        JSON.stringify(program.location)?.toLowerCase().includes(searchValue.toLowerCase()) ||
-        program.category?.toLowerCase().includes(searchValue.toLowerCase())
+        program.domain?.toLowerCase().includes(searchValue.toLowerCase()) ||
+        program.category?.toLowerCase().includes(searchValue.toLowerCase()) ||
+        program.location_province?.toLowerCase().includes(searchValue.toLowerCase()) ||
+        program.location_district?.toLowerCase().includes(searchValue.toLowerCase()) ||
+        program.location_sector?.toLowerCase().includes(searchValue.toLowerCase()) ||
+        program.legalRepresentativeName?.toLowerCase().includes(searchValue.toLowerCase()) ||
+        program.legalRepresentativeEmail?.toLowerCase().includes(searchValue.toLowerCase()) ||
+        (Array.isArray(program.sportsDisciplines) && 
+         program.sportsDisciplines.some(sport => sport?.toLowerCase().includes(searchValue.toLowerCase()))) ||
+        (Array.isArray(program.sections) && 
+         program.sections.some(section => section?.toLowerCase().includes(searchValue.toLowerCase())))
       );
       setFilteredPrograms(filtered);
     } else if (type === 'students') {
@@ -220,6 +290,37 @@ const IsongaPrograms = () => {
         student.nationality?.toLowerCase().includes(searchValue.toLowerCase())
       );
       setFilteredStudents(filtered);
+    } else if (type === 'coaches') {
+      try {
+        const response = await axiosInstance.get(`/coaches/search?q=${encodeURIComponent(searchValue)}`);
+        const searchResults = response?.data?.data || [];
+        setFilteredCoaches(searchResults);
+      } catch (error) {
+        console.error('Error searching coaches:', error);
+        // Fallback to local search
+        const filtered = coaches.filter(coach =>
+          coach.name?.toLowerCase().includes(searchValue.toLowerCase()) ||
+          coach.sport?.toLowerCase().includes(searchValue.toLowerCase()) ||
+          coach.school?.toLowerCase().includes(searchValue.toLowerCase()) ||
+          coach.position?.toLowerCase().includes(searchValue.toLowerCase())
+        );
+        setFilteredCoaches(filtered);
+      }
+    } else if (type === 'peTeachers') {
+      try {
+        const response = await axiosInstance.get(`/pe-teachers/search?q=${encodeURIComponent(searchValue)}`);
+        const searchResults = response?.data?.data || [];
+        setFilteredPeTeachers(searchResults);
+      } catch (error) {
+        console.error('Error searching PE teachers:', error);
+        // Fallback to local search
+        const filtered = peTeachers.filter(teacher =>
+          teacher.names?.toLowerCase().includes(searchValue.toLowerCase()) ||
+          teacher.school?.toLowerCase().includes(searchValue.toLowerCase()) ||
+          teacher.sportOfInterest?.toLowerCase().includes(searchValue.toLowerCase())
+        );
+        setFilteredPeTeachers(filtered);
+      }
     }
     setCurrentPage(1);
   };
@@ -245,7 +346,11 @@ const IsongaPrograms = () => {
       }
       setShowInstitutionModal(false);
     } catch (error) {
-      toast.error('Failed to save institution');
+      // Surface backend error to help identify 400 cause
+      const backendData = error?.response?.data;
+      const msg = backendData?.error || backendData?.message || error.message || 'Failed to save institution';
+      console.error('Institution save failed:', backendData || error);
+      toast.error(msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -356,13 +461,227 @@ const IsongaPrograms = () => {
       setIsSubmitting(false);
     }
   };
+
+  // Coach handlers
+  const handleAddCoach = () => {
+    setCoachFormData({
+      name: '',
+      age: '',
+      sport: '',
+      section: '',
+      school: '',
+      qualification: '',
+      email: '',
+      tel: '',
+      position: ''
+    });
+    setSelectedCoach(null);
+    setShowCoachModal(true);
+  };
+
+  const handleEditCoach = (coach) => {
+    setCoachFormData({
+      name: coach.name || '',
+      age: coach.age || '',
+      sport: coach.sport || '',
+      section: coach.section || '',
+      school: coach.school || '',
+      qualification: coach.qualification || '',
+      email: coach.email || '',
+      tel: coach.tel || '',
+      position: coach.position || ''
+    });
+    setSelectedCoach(coach);
+    setShowCoachModal(true);
+  };
+
+  const handleCoachFormChange = (e) => {
+    const { name, value } = e.target;
+    setCoachFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmitCoachForm = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    try {
+      const coachData = {
+        ...coachFormData,
+        age: Number(coachFormData.age)
+      };
+
+      let response;
+      if (selectedCoach) {
+        // Update existing coach
+        response = await axiosInstance.put(`/coaches/${selectedCoach.id}`, coachData);
+        toast.success('Coach updated successfully');
+      } else {
+        // Add new coach
+        response = await axiosInstance.post('/coaches', coachData);
+        toast.success('Coach added successfully');
+      }
+
+      // Refresh coaches list
+      const coachesResponse = await axiosInstance.get('/coaches');
+      const coachesData = coachesResponse?.data?.data || [];
+      setCoaches(coachesData);
+      setFilteredCoaches(coachesData);
+      
+      setShowCoachModal(false);
+    } catch (error) {
+      console.error('Error saving coach:', error);
+      toast.error(error.response?.data?.error || 'Failed to save coach');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteCoach = (coach) => {
+    setCoachToDelete(coach);
+    setShowDeleteCoachModal(true);
+  };
+
+  const handleConfirmDeleteCoach = async () => {
+    setIsSubmitting(true);
+    try {
+      await axiosInstance.delete(`/coaches/${coachToDelete.id}`);
+      
+      // Refresh coaches list
+      const coachesResponse = await axiosInstance.get('/coaches');
+      const coachesData = coachesResponse?.data?.data || [];
+      setCoaches(coachesData);
+      setFilteredCoaches(coachesData);
+
+      toast.success('Coach deleted successfully');
+      setShowDeleteCoachModal(false);
+      setCoachToDelete(null);
+    } catch (error) {
+      console.error('Error deleting coach:', error);
+      toast.error(error.response?.data?.error || 'Failed to delete coach');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Coach view details handler
+  const handleViewCoachDetails = (coach) => {
+    // TODO: Implement coach details modal
+    toast.info(`Viewing details for ${coach.name}`);
+  };
+
+  // PE Teacher handlers
+  const handleAddPeTeacher = () => {
+    setPeTeacherFormData({
+      names: '',
+      age: '',
+      experience: '',
+      school: '',
+      sportOfInterest: '',
+      email: '',
+      tel: ''
+    });
+    setSelectedPeTeacher(null);
+    setShowPeTeacherModal(true);
+  };
+
+  const handleEditPeTeacher = (teacher) => {
+    setPeTeacherFormData({
+      names: teacher.names || '',
+      age: teacher.age || '',
+      experience: teacher.experience || '',
+      school: teacher.school || '',
+      sportOfInterest: teacher.sportOfInterest || '',
+      email: teacher.email || '',
+      tel: teacher.tel || ''
+    });
+    setSelectedPeTeacher(teacher);
+    setShowPeTeacherModal(true);
+  };
+
+  const handlePeTeacherFormChange = (e) => {
+    const { name, value } = e.target;
+    setPeTeacherFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmitPeTeacherForm = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    try {
+      const teacherData = {
+        ...peTeacherFormData,
+        age: Number(peTeacherFormData.age)
+      };
+
+      let response;
+      if (selectedPeTeacher) {
+        // Update existing PE teacher
+        response = await axiosInstance.put(`/pe-teachers/${selectedPeTeacher.id}`, teacherData);
+        toast.success('PE Teacher updated successfully');
+      } else {
+        // Add new PE teacher
+        response = await axiosInstance.post('/pe-teachers', teacherData);
+        toast.success('PE Teacher added successfully');
+      }
+
+      // Refresh PE teachers list
+      const peTeachersResponse = await axiosInstance.get('/pe-teachers');
+      const peTeachersData = peTeachersResponse?.data?.data || [];
+      setPeTeachers(peTeachersData);
+      setFilteredPeTeachers(peTeachersData);
+      
+      setShowPeTeacherModal(false);
+    } catch (error) {
+      console.error('Error saving PE teacher:', error);
+      toast.error(error.response?.data?.error || 'Failed to save PE teacher');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeletePeTeacher = (teacher) => {
+    setPeTeacherToDelete(teacher);
+    setShowDeletePeTeacherModal(true);
+  };
+
+  // PE Teacher view details handler
+  const handleViewPeTeacherDetails = (teacher) => {
+    // TODO: Implement PE teacher details modal
+    toast.info(`Viewing details for ${teacher.names}`);
+  };
+
+  const handleConfirmDeletePeTeacher = async () => {
+    setIsSubmitting(true);
+    try {
+      await axiosInstance.delete(`/pe-teachers/${peTeacherToDelete.id}`);
+      
+      // Refresh PE teachers list
+      const peTeachersResponse = await axiosInstance.get('/pe-teachers');
+      const peTeachersData = peTeachersResponse?.data?.data || [];
+      setPeTeachers(peTeachersData);
+      setFilteredPeTeachers(peTeachersData);
+
+      toast.success('PE Teacher deleted successfully');
+      setShowDeletePeTeacherModal(false);
+      setPeTeacherToDelete(null);
+    } catch (error) {
+      console.error('Error deleting PE teacher:', error);
+      toast.error(error.response?.data?.error || 'Failed to delete PE teacher');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentPrograms = Array.isArray(filteredPrograms) ? filteredPrograms.slice(indexOfFirstItem, indexOfLastItem) : [];
   const currentStudents = Array.isArray(filteredStudents) ? filteredStudents.slice(indexOfFirstItem, indexOfLastItem) : [];
+  const currentCoaches = Array.isArray(filteredCoaches) ? filteredCoaches.slice(indexOfFirstItem, indexOfLastItem) : [];
+  const currentPeTeachers = Array.isArray(filteredPeTeachers) ? filteredPeTeachers.slice(indexOfFirstItem, indexOfLastItem) : [];
   const totalProgramPages = Math.ceil(filteredPrograms.length / itemsPerPage);
   const totalStudentPages = Math.ceil(filteredStudents.length / itemsPerPage);
+  const totalCoachPages = Math.ceil(filteredCoaches.length / itemsPerPage);
+  const totalPeTeacherPages = Math.ceil(filteredPeTeachers.length / itemsPerPage);
 
   const renderLocation = (location) => {
     if (!location) return 'N/A';
@@ -420,13 +739,20 @@ const IsongaPrograms = () => {
               {/* Table */}
               <div className={`rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow'}`}>
                 <PrintButton title='Institutions Report'>
-                  <Table>
+                  <div className="overflow-x-auto">
+                    <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead className="min-w-[200px] text-xs">Name</TableHead>
-                        <TableHead className="min-w-[150px] text-xs">Category</TableHead>
-                        <TableHead className="min-w-[150px] text-xs">Students</TableHead>
-                        <TableHead className="min-w-[150px] text-xs">Location</TableHead>
+                        <TableHead className="min-w-[120px] text-xs">Domain</TableHead>
+                        <TableHead className="min-w-[120px] text-xs">Category</TableHead>
+                        <TableHead className="min-w-[100px] text-xs">Students</TableHead>
+                        <TableHead className="min-w-[120px] text-xs">Province</TableHead>
+                        <TableHead className="min-w-[120px] text-xs">District</TableHead>
+                        <TableHead className="min-w-[120px] text-xs">Sector</TableHead>
+                        <TableHead className="min-w-[180px] text-xs">Legal Representative</TableHead>
+                        <TableHead className="min-w-[150px] text-xs">Contact</TableHead>
+                        <TableHead className="min-w-[150px] text-xs">Sports Disciplines</TableHead>
                         <TableHead className="w-[150px] text-xs">Operation</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -439,9 +765,43 @@ const IsongaPrograms = () => {
                         return (
                         <TableRow key={program.id}>
                           <TableCell className="text-xs font-medium">{program.name}</TableCell>
+                          <TableCell className="text-xs">{program.domain || 'N/A'}</TableCell>
                           <TableCell className="text-xs">{program.category}</TableCell>
-                          <TableCell>{studentCount}</TableCell>
-                          <TableCell className="text-xs">{renderLocation(program)}</TableCell>
+                          <TableCell className="text-xs">{studentCount}</TableCell>
+                          <TableCell className="text-xs">{program.location_province || 'N/A'}</TableCell>
+                          <TableCell className="text-xs">{program.location_district || 'N/A'}</TableCell>
+                          <TableCell className="text-xs">{program.location_sector || 'N/A'}</TableCell>
+                          <TableCell className="text-xs">
+                            <div>
+                              <p className="font-medium">{program.legalRepresentativeName || 'N/A'}</p>
+                              <p className="text-gray-500">{program.legalRepresentativeGender || 'N/A'}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-xs">
+                            <div>
+                              <p>{program.legalRepresentativeEmail || 'N/A'}</p>
+                              <p className="text-gray-500">{program.legalRepresentativePhone || 'N/A'}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-xs">
+                            {program.sportsDisciplines ? (
+                              <div className="flex flex-wrap gap-1">
+                                {Array.isArray(program.sportsDisciplines) 
+                                  ? program.sportsDisciplines.slice(0, 2).map((sport, index) => (
+                                      <span key={index} className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                                        {sport}
+                                      </span>
+                                    ))
+                                  : <span className="text-gray-500">N/A</span>
+                                }
+                                {Array.isArray(program.sportsDisciplines) && program.sportsDisciplines.length > 2 && (
+                                  <span className="text-xs text-gray-500">+{program.sportsDisciplines.length - 2} more</span>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-gray-500">N/A</span>
+                            )}
+                          </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-1">
                               <button
@@ -480,6 +840,7 @@ const IsongaPrograms = () => {
                       })}
                     </TableBody>
                   </Table>
+                  </div>
                 </PrintButton>
               </div>
             </div>
@@ -600,6 +961,284 @@ const IsongaPrograms = () => {
           />
         );
 
+      case 'Coaches':
+        return (
+          <div className="transition-all duration-300 ease-in-out">
+            {permissions.canCreate && (
+              <Button
+                onClick={handleAddCoach}
+                className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 mb-6"
+              >
+                <Plus className="h-4 w-4" />
+                Add Coach
+              </Button>
+            )}
+
+            <div className="space-y-6">
+              {/* Search and Entries Section */}
+              <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600">Show entries:</span>
+                    <select
+                      className="border rounded px-2 py-1"
+                      value={itemsPerPage}
+                      onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                    >
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                    </select>
+                  </div>
+
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                    <input
+                      type="text"
+                      placeholder="Search coaches..."
+                      className="pl-10 pr-4 py-2 border rounded-lg w-full sm:w-64"
+                      onChange={(e) => handleSearch(e.target.value, 'coaches')}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Coaches Table */}
+              <div className={`rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow'}`}>
+                <PrintButton title='Coaches Report'>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="min-w-[150px] text-xs">Name</TableHead>
+                        <TableHead className="min-w-[80px] text-xs">Age</TableHead>
+                        <TableHead className="min-w-[100px] text-xs">Sport</TableHead>
+                        <TableHead className="min-w-[100px] text-xs">Section</TableHead>
+                        <TableHead className="min-w-[150px] text-xs">School</TableHead>
+                        <TableHead className="min-w-[120px] text-xs">Qualification</TableHead>
+                        <TableHead className="min-w-[150px] text-xs">Email</TableHead>
+                        <TableHead className="min-w-[100px] text-xs">Tel</TableHead>
+                        <TableHead className="min-w-[120px] text-xs">Position</TableHead>
+                        <TableHead className="w-[150px] text-xs">Operation</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {currentCoaches.map((coach) => (
+                        <TableRow key={coach.id}>
+                          <TableCell className="text-xs font-medium">{coach.name}</TableCell>
+                          <TableCell className="text-xs">{coach.age}</TableCell>
+                          <TableCell className="text-xs">{coach.sport}</TableCell>
+                          <TableCell className="text-xs">{coach.section}</TableCell>
+                          <TableCell className="text-xs">{coach.school}</TableCell>
+                          <TableCell className="text-xs">{coach.qualification}</TableCell>
+                          <TableCell className="text-xs">{coach.email}</TableCell>
+                          <TableCell className="text-xs">{coach.tel}</TableCell>
+                          <TableCell className="text-xs">{coach.position}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleViewCoachDetails(coach)}
+                                className="p-1 rounded-lg hover:bg-gray-100"
+                                title="View Details"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </button>
+                              {permissions.canUpdate && (
+                                <button
+                                  onClick={() => handleEditCoach(coach)}
+                                  className="p-1 rounded-lg hover:bg-gray-100"
+                                  title="Edit"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </button>
+                              )}
+                              {permissions.canDelete && (
+                                <button
+                                  onClick={() => handleDeleteCoach(coach)}
+                                  className="p-1 rounded-lg hover:bg-red-50 text-red-600"
+                                  title="Delete"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </PrintButton>
+              </div>
+
+              {/* Pagination */}
+              {totalCoachPages > 1 && (
+                <div className="flex justify-between items-center mt-4">
+                  <div className="text-sm text-gray-600">
+                    Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredCoaches.length)} of {filteredCoaches.length} entries
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="px-3 py-1 border rounded disabled:opacity-50"
+                    >
+                      Previous
+                    </button>
+                    <span className="px-3 py-1">
+                      Page {currentPage} of {totalCoachPages}
+                    </span>
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalCoachPages))}
+                      disabled={currentPage === totalCoachPages}
+                      className="px-3 py-1 border rounded disabled:opacity-50"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
+      case 'PE Teachers':
+        return (
+          <div className="transition-all duration-300 ease-in-out">
+            {permissions.canCreate && (
+              <Button
+                onClick={handleAddPeTeacher}
+                className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2 mb-6"
+              >
+                <Plus className="h-4 w-4" />
+                Add PE Teacher
+              </Button>
+            )}
+
+            <div className="space-y-6">
+              {/* Search and Entries Section */}
+              <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600">Show entries:</span>
+                    <select
+                      className="border rounded px-2 py-1"
+                      value={itemsPerPage}
+                      onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                    >
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                    </select>
+                  </div>
+
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                    <input
+                      type="text"
+                      placeholder="Search PE teachers..."
+                      className="pl-10 pr-4 py-2 border rounded-lg w-full sm:w-64"
+                      onChange={(e) => handleSearch(e.target.value, 'peTeachers')}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* PE Teachers Table */}
+              <div className={`rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow'}`}>
+                <PrintButton title='PE Teachers Report'>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="min-w-[150px] text-xs">Names</TableHead>
+                        <TableHead className="min-w-[80px] text-xs">Age</TableHead>
+                        <TableHead className="min-w-[120px] text-xs">Experience</TableHead>
+                        <TableHead className="min-w-[150px] text-xs">School</TableHead>
+                        <TableHead className="min-w-[150px] text-xs">Sport of Interest</TableHead>
+                        <TableHead className="min-w-[150px] text-xs">Email</TableHead>
+                        <TableHead className="min-w-[100px] text-xs">Tel</TableHead>
+                        <TableHead className="w-[150px] text-xs">Operation</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {currentPeTeachers.map((teacher) => (
+                        <TableRow key={teacher.id}>
+                          <TableCell className="text-xs font-medium">{teacher.names}</TableCell>
+                          <TableCell className="text-xs">{teacher.age}</TableCell>
+                          <TableCell className="text-xs">{teacher.experience}</TableCell>
+                          <TableCell className="text-xs">{teacher.school}</TableCell>
+                          <TableCell className="text-xs">{teacher.sportOfInterest}</TableCell>
+                          <TableCell className="text-xs">{teacher.email}</TableCell>
+                          <TableCell className="text-xs">{teacher.tel}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleViewPeTeacherDetails(teacher)}
+                                className="p-1 rounded-lg hover:bg-gray-100"
+                                title="View Details"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </button>
+                              {permissions.canUpdate && (
+                                <button
+                                  onClick={() => handleEditPeTeacher(teacher)}
+                                  className="p-1 rounded-lg hover:bg-gray-100"
+                                  title="Edit"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </button>
+                              )}
+                              {permissions.canDelete && (
+                                <button
+                                  onClick={() => handleDeletePeTeacher(teacher)}
+                                  className="p-1 rounded-lg hover:bg-red-50 text-red-600"
+                                  title="Delete"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </PrintButton>
+              </div>
+
+              {/* Pagination */}
+              {totalPeTeacherPages > 1 && (
+                <div className="flex justify-between items-center mt-4">
+                  <div className="text-sm text-gray-600">
+                    Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredPeTeachers.length)} of {filteredPeTeachers.length} entries
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="px-3 py-1 border rounded disabled:opacity-50"
+                    >
+                      Previous
+                    </button>
+                    <span className="px-3 py-1">
+                      Page {currentPage} of {totalPeTeacherPages}
+                    </span>
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPeTeacherPages))}
+                      disabled={currentPage === totalPeTeacherPages}
+                      className="px-3 py-1 border rounded disabled:opacity-50"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
       default:
         return null;
     }
@@ -676,7 +1315,7 @@ const IsongaPrograms = () => {
       {/* Navigation Tabs */}
       <div className="mb-6">
         <nav className="flex space-x-4">
-          {['Manage School', 'Manage Students', 'Student Transfer'].map((tab) => (
+          {tabs.map((tab) => (
             <button
               key={tab}
               className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
@@ -1168,15 +1807,42 @@ const IsongaPrograms = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="font-medium text-gray-600 block">Name</label>
-                    <p className="mt-1">{selectedProgram.name}</p>
+                    <p className="mt-1 font-semibold">{selectedProgram.name}</p>
                   </div>
                   <div>
-                    <label className="font-medium text-gray-600 block">Levels</label>
+                    <label className="font-medium text-gray-600 block">Domain</label>
+                    <p className="mt-1">{selectedProgram.domain || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="font-medium text-gray-600 block">Category</label>
                     <p className="mt-1">{selectedProgram.category || 'N/A'}</p>
                   </div>
-                  <div className="col-span-2">
-                    <label className="font-medium text-gray-600 block">Legal Representative</label>
-                    <p className="mt-1">{selectedProgram.legalRepresentativeName || 'N/A'}</p>
+                  <div>
+                    <label className="font-medium text-gray-600 block">Created Date</label>
+                    <p className="mt-1">
+                      {selectedProgram.createdAt ? new Date(selectedProgram.createdAt).toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      }) : 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="font-medium text-gray-600 block">Last Updated</label>
+                    <p className="mt-1">
+                      {selectedProgram.updatedAt ? new Date(selectedProgram.updatedAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      }) : 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="font-medium text-gray-600 block">Institution ID</label>
+                    <p className="mt-1 font-mono text-sm">#{selectedProgram.id}</p>
                   </div>
                 </div>
               </div>
@@ -1208,16 +1874,24 @@ const IsongaPrograms = () => {
                 </div>
               </div>
 
-              {/* Contact Information (from Legal Representative) */}
+              {/* Legal Representative Information */}
               <div>
-                <h3 className="text-lg font-semibold text-blue-600 mb-3">Contact Information</h3>
+                <h3 className="text-lg font-semibold text-blue-600 mb-3">Legal Representative</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="font-medium text-gray-600 block">Email</label>
+                    <label className="font-medium text-gray-600 block">Full Name</label>
+                    <p className="mt-1 font-semibold">{selectedProgram.legalRepresentativeName || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="font-medium text-gray-600 block">Gender</label>
+                    <p className="mt-1">{selectedProgram.legalRepresentativeGender || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="font-medium text-gray-600 block">Email Address</label>
                     <p className="mt-1">{selectedProgram.legalRepresentativeEmail || 'N/A'}</p>
                   </div>
                   <div>
-                    <label className="font-medium text-gray-600 block">Phone</label>
+                    <label className="font-medium text-gray-600 block">Phone Number</label>
                     <p className="mt-1">{selectedProgram.legalRepresentativePhone || 'N/A'}</p>
                   </div>
                 </div>
@@ -1367,6 +2041,387 @@ const IsongaPrograms = () => {
 
           <div className="flex justify-end mt-6 pt-4 border-t">
             <Button onClick={() => setShowStudentsModal(false)}>Close</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add/Edit Coach Modal */}
+      <Modal
+        isOpen={showCoachModal}
+        onClose={() => setShowCoachModal(false)}
+        title={selectedCoach ? "Edit Coach" : "Add Coach"}
+      >
+        <form onSubmit={handleSubmitCoachForm} className="max-h-[70vh] overflow-y-auto pr-4 space-y-6">
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Name</label>
+              <input
+                type="text"
+                name="name"
+                value={coachFormData.name}
+                onChange={handleCoachFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Age</label>
+              <input
+                type="number"
+                name="age"
+                value={coachFormData.age}
+                onChange={handleCoachFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                min="18"
+                max="70"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Sport</label>
+              <select
+                name="sport"
+                value={coachFormData.sport}
+                onChange={handleCoachFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+              >
+                <option value="">Select Sport</option>
+                <option value="Football">Football</option>
+                <option value="Handball">Handball</option>
+                <option value="Volleyball">Volleyball</option>
+                <option value="Basketball">Basketball</option>
+                <option value="Athletics">Athletics</option>
+                <option value="Cycling">Cycling</option>
+                <option value="Swimming">Swimming</option>
+                <option value="Tennis">Tennis</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Section</label>
+              <select
+                name="section"
+                value={coachFormData.section}
+                onChange={handleCoachFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+              >
+                <option value="">Select Section</option>
+                <option value="Senior">Senior</option>
+                <option value="Junior">Junior</option>
+                <option value="Youth">Youth</option>
+                <option value="Cadet">Cadet</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">School</label>
+              <select
+                name="school"
+                value={coachFormData.school}
+                onChange={handleCoachFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+              >
+                <option value="">Select School</option>
+                {programs.map((program) => (
+                  <option key={program.id} value={program.name}>
+                    {program.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Qualification</label>
+              <select
+                name="qualification"
+                value={coachFormData.qualification}
+                onChange={handleCoachFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+              >
+                <option value="">Select Qualification</option>
+                {(coachFormData.sport === 'Football' || coachFormData.sport === 'Handball') ? (
+                  <>
+                    <option value="License A">License A</option>
+                    <option value="License B">License B</option>
+                    <option value="License C">License C</option>
+                    <option value="License D">License D</option>
+                  </>
+                ) : (
+                  <>
+                    <option value="Level 1">Level 1</option>
+                    <option value="Level 2">Level 2</option>
+                    <option value="Level 3">Level 3</option>
+                  </>
+                )}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Email</label>
+              <input
+                type="email"
+                name="email"
+                value={coachFormData.email}
+                onChange={handleCoachFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Tel</label>
+              <input
+                type="tel"
+                name="tel"
+                value={coachFormData.tel}
+                onChange={handleCoachFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Position</label>
+              <select
+                name="position"
+                value={coachFormData.position}
+                onChange={handleCoachFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+              >
+                <option value="">Select Position</option>
+                <option value="Head Coach">Head Coach</option>
+                <option value="Assistant Coach">Assistant Coach</option>
+                <option value="Technical Director">Technical Director</option>
+                <option value="Fitness Coach">Fitness Coach</option>
+                <option value="Goalkeeper Coach">Goalkeeper Coach</option>
+              </select>
+            </div>
+          </div>
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowCoachModal(false)}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {isSubmitting ? 'Saving...' : selectedCoach ? 'Update Coach' : 'Add Coach'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Add/Edit PE Teacher Modal */}
+      <Modal
+        isOpen={showPeTeacherModal}
+        onClose={() => setShowPeTeacherModal(false)}
+        title={selectedPeTeacher ? "Edit PE Teacher" : "Add PE Teacher"}
+      >
+        <form onSubmit={handleSubmitPeTeacherForm} className="max-h-[70vh] overflow-y-auto pr-4 space-y-6">
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Names</label>
+              <input
+                type="text"
+                name="names"
+                value={peTeacherFormData.names}
+                onChange={handlePeTeacherFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Age</label>
+              <input
+                type="number"
+                name="age"
+                value={peTeacherFormData.age}
+                onChange={handlePeTeacherFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                min="18"
+                max="70"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Experience</label>
+              <input
+                type="text"
+                name="experience"
+                value={peTeacherFormData.experience}
+                onChange={handlePeTeacherFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                placeholder="e.g., 7 years"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">School</label>
+              <select
+                name="school"
+                value={peTeacherFormData.school}
+                onChange={handlePeTeacherFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+              >
+                <option value="">Select School</option>
+                {programs.map((program) => (
+                  <option key={program.id} value={program.name}>
+                    {program.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Sport of Interest</label>
+              <select
+                name="sportOfInterest"
+                value={peTeacherFormData.sportOfInterest}
+                onChange={handlePeTeacherFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+              >
+                <option value="">Select Sport of Interest</option>
+                <option value="Football">Football</option>
+                <option value="Volleyball">Volleyball</option>
+                <option value="Basketball">Basketball</option>
+                <option value="Handball">Handball</option>
+                <option value="Athletics">Athletics</option>
+                <option value="Swimming">Swimming</option>
+                <option value="Tennis">Tennis</option>
+                <option value="Cycling">Cycling</option>
+                <option value="Gymnastics">Gymnastics</option>
+                <option value="General Physical Education">General Physical Education</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Email</label>
+              <input
+                type="email"
+                name="email"
+                value={peTeacherFormData.email}
+                onChange={handlePeTeacherFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Tel</label>
+              <input
+                type="tel"
+                name="tel"
+                value={peTeacherFormData.tel}
+                onChange={handlePeTeacherFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowPeTeacherModal(false)}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {isSubmitting ? 'Saving...' : selectedPeTeacher ? 'Update PE Teacher' : 'Add PE Teacher'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Delete Coach Confirmation Dialog */}
+      <Dialog open={showDeleteCoachModal} onOpenChange={setShowDeleteCoachModal}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <AlertCircle className="h-5 w-5" />
+              Delete Coach
+            </DialogTitle>
+            <DialogDescription className="py-4">
+              <div className="space-y-2">
+                <p>Are you sure you want to delete this coach?</p>
+                {coachToDelete && (
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <p className="font-medium">{coachToDelete.name}</p>
+                    <p className="text-sm text-gray-600">Sport: {coachToDelete.sport}</p>
+                    <p className="text-sm text-gray-600">School: {coachToDelete.school}</p>
+                    <p className="text-sm text-gray-600">Position: {coachToDelete.position}</p>
+                  </div>
+                )}
+                <p className="text-red-600 font-medium">This action cannot be undone.</p>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteCoachModal(false)}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmDeleteCoach}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Deleting...' : 'Delete Coach'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete PE Teacher Confirmation Dialog */}
+      <Dialog open={showDeletePeTeacherModal} onOpenChange={setShowDeletePeTeacherModal}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <AlertCircle className="h-5 w-5" />
+              Delete PE Teacher
+            </DialogTitle>
+            <DialogDescription className="py-4">
+              <div className="space-y-2">
+                <p>Are you sure you want to delete this PE teacher?</p>
+                {peTeacherToDelete && (
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <p className="font-medium">{peTeacherToDelete.names}</p>
+                    <p className="text-sm text-gray-600">Sport of Interest: {peTeacherToDelete.sportOfInterest}</p>
+                    <p className="text-sm text-gray-600">School: {peTeacherToDelete.school}</p>
+                    <p className="text-sm text-gray-600">Experience: {peTeacherToDelete.experience}</p>
+                  </div>
+                )}
+                <p className="text-red-600 font-medium">This action cannot be undone.</p>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowDeletePeTeacherModal(false)}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmDeletePeTeacher}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Deleting...' : 'Delete PE Teacher'}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

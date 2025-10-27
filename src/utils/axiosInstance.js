@@ -37,8 +37,8 @@ axiosInstance.interceptors.response.use(
         localStorage.removeItem('user');
         window.location.href = '/login';
       } else if (status === 403) {
-        // Forbidden: keep session, redirect to not authorized page
-        window.location.href = '/notAuthorized';
+        // Forbidden: do not redirect globally to avoid breaking public pages.
+        // Let the caller handle 403s (e.g., ProtectedRoute or page-level logic).
       }
     }
     return Promise.reject(error);

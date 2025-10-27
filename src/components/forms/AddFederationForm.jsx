@@ -13,8 +13,6 @@ const AddFederationForm = ({ onSubmit, onCancel, initialData, isEditing }) => {
     yearFounded: '',
     address: '',
     website: '',
-    loginEmail: '',
-    loginPassword: '',
     legalRepresentativeName: '',
     legalRepresentativeGender: '',
     legalRepresentativeEmail: '',
@@ -65,10 +63,10 @@ const AddFederationForm = ({ onSubmit, onCancel, initialData, isEditing }) => {
         throw new Error('Website URL must start with http:// or https://');
       }
 
-      // Email validation
+      // Email validation (legal representative email only)
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(formData.loginEmail) || !emailRegex.test(formData.legalRepresentativeEmail)) {
-        throw new Error('Please enter valid email addresses');
+      if (!emailRegex.test(formData.legalRepresentativeEmail)) {
+        throw new Error('Please enter a valid email address');
       }
 
       // Prepare the data in the requested format
@@ -79,8 +77,6 @@ const AddFederationForm = ({ onSubmit, onCancel, initialData, isEditing }) => {
         yearFounded: parseInt(formData.yearFounded, 10),
         address: formData.address,
         website: formData.website,
-        loginEmail: formData.loginEmail,
-        loginPassword: formData.loginPassword,
         legalRepresentativeName: formData.legalRepresentativeName,
         legalRepresentativeGender: formData.legalRepresentativeGender,
         legalRepresentativeEmail: formData.legalRepresentativeEmail,
@@ -195,32 +191,13 @@ const AddFederationForm = ({ onSubmit, onCancel, initialData, isEditing }) => {
         placeholder="e.g., http://www.example.com"
       />
     </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">Login Email</label>
-      <Input
-        type="email"
-        name="loginEmail"
-        value={formData.loginEmail}
-        onChange={handleChange}
-        required
-      />
-    </div>
-    <div>
-      <label className="block text-sm font-medium mb-1">Login Password</label>
-      <Input
-        type="password"
-        name="loginPassword"
-        value={formData.loginPassword}
-        onChange={handleChange}
-        required
-      />
-    </div>
   </div>
+ 
 
   {/* Legal Representative Information */}
   <div className="space-y-4">
     <div>
-      <label className="block text-sm font-medium mb-1">Legal Representative Name</label>
+      <label className="block text-sm font-medium mb-1">Federation Representative Name</label>
       <Input
         type="text"
         name="legalRepresentativeName"
@@ -230,7 +207,7 @@ const AddFederationForm = ({ onSubmit, onCancel, initialData, isEditing }) => {
       />
     </div>
     <div>
-      <label className="block text-sm font-medium mb-1">Legal Representative Gender</label>
+      <label className="block text-sm font-medium mb-1">Federation Representative Gender</label>
       <select
         name="legalRepresentativeGender"
         value={formData.legalRepresentativeGender}
@@ -244,7 +221,7 @@ const AddFederationForm = ({ onSubmit, onCancel, initialData, isEditing }) => {
       </select>
     </div>
     <div>
-      <label className="block text-sm font-medium mb-1">Legal Representative Email</label>
+      <label className="block text-sm font-medium mb-1">Federation Representative Email</label>
       <Input
         type="email"
         name="legalRepresentativeEmail"
@@ -254,7 +231,7 @@ const AddFederationForm = ({ onSubmit, onCancel, initialData, isEditing }) => {
       />
     </div>
     <div>
-      <label className="block text-sm font-medium mb-1">Legal Representative Phone</label>
+      <label className="block text-sm font-medium mb-1">Federation Representative Phone</label>
       <Input
         type="tel"
         name="legalRepresentativePhone"

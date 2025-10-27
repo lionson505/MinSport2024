@@ -12,10 +12,10 @@ const NoPageFound = () => {
           You do not have the necessary permissions to view this page.
         </p>
         <button
-          onClick={() => (window.location.href = "/dashboard")}
+          onClick={() => (window.location.href = "/")}
           className="bg-blue-500 hover:bg-blue-600 text-white font-medium px-6 py-2 rounded-lg shadow transition"
         >
-          Back to Dashboard
+          Back to Home
         </button>
       </div>
     </div>

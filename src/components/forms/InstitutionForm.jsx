@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useFormValidation } from '../../hooks/useFormValidation';
 import { useToast } from '../../contexts/ToastContext';
 import { locations } from '../../data/locations';
@@ -42,7 +42,7 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
 
   const initialValues = {
     name: '',
-    category: 'EXCELLENCE SCHOOL',
+    category: '',
     location: {
       province: '',
       district: '',
@@ -51,7 +51,7 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
       village: ''
     },
     SchoolRepresentativeName: '',
-    SchoolRepresentativeGender: 'Male',
+    SchoolRepresentativeGender: '',
     SchoolRepresentativeEmail: '',
     SchoolRepresentativePhone: '',
     // New fields
@@ -67,28 +67,92 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
     handleChange,
     handleBlur,
     validate,
-    resetForm
+    resetForm,
+    setValues
   } = useFormValidation(initialValues, validationRules);
 
   const categories = ['District Center Of Excellence', 'Regional Center Of Excellence', 'National Center Of Excellence'];
-  const genders = ['Male', 'Female'];
+  const genders = ['Female', 'Male'];
+
+  // Keep form in sync when editing existing institution
+  useEffect(() => {
+    if (institution) {
+      // Transform API data structure to form structure
+      const transformedInstitution = {
+        name: institution.name || '',
+        category: institution.category || '',
+        location: {
+          province: institution.location_province || institution.location?.province || '',
+          district: institution.location_district || institution.location?.district || '',
+          sector: institution.location_sector || institution.location?.sector || '',
+          cell: institution.location_cell || institution.location?.cell || '',
+          village: institution.location_village || institution.location?.village || '',
+        },
+        SchoolRepresentativeName: institution.legalRepresentativeName || institution.SchoolRepresentativeName || '',
+        SchoolRepresentativeGender: institution.legalRepresentativeGender || institution.SchoolRepresentativeGender || '',
+        SchoolRepresentativeEmail: institution.legalRepresentativeEmail || institution.SchoolRepresentativeEmail || '',
+        SchoolRepresentativePhone: institution.legalRepresentativePhone || institution.SchoolRepresentativePhone || '',
+        sportsDisciplines: institution.sportsDisciplines || [],
+        sections: institution.sections || {},
+      };
+
+      setValues(transformedInstitution);
+    }
+  }, [institution, setValues]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate()) {
+      showToast('Please fix the highlighted errors', 'error');
+      return;
+    }
+
+    // Extra nested validation for location
+    const { province, district, sector, cell, village } = values.location || {};
+    if (!province || !district || !sector || !cell || !village) {
+      showToast('Please complete all location fields (province, district, sector, cell, village)', 'error');
+      return;
+    }
+
+    // Ensure submit handler exists
+    if (typeof onSubmit !== 'function') {
+      console.error('InstitutionForm: onSubmit prop is not a function');
+      showToast('Internal error: submit handler missing', 'error');
+      return;
+    }
 
     setLoading(true);
     try {
-      await onSubmit(values);
+      console.debug('InstitutionForm: submitting values', values);
+      // Transform payload to API expected shape
+      const payload = {
+        name: values.name,
+        category: values.category,
+        // Transform nested location object to flat structure for API
+        location_province: values.location.province,
+        location_district: values.location.district,
+        location_sector: values.location.sector,
+        location_cell: values.location.cell,
+        location_village: values.location.village,
+        // Transform SchoolRepresentative fields to legalRepresentative fields for API
+        legalRepresentativeName: values.SchoolRepresentativeName,
+        legalRepresentativeGender: values.SchoolRepresentativeGender,
+        legalRepresentativeEmail: values.SchoolRepresentativeEmail,
+        legalRepresentativePhone: values.SchoolRepresentativePhone,
+        sportsDisciplines: values.sportsDisciplines,
+        sections: values.sections,
+      };
+      await onSubmit(payload);
       showToast('Institution saved successfully');
       resetForm();
+      if (onCancel) onCancel();
     } catch (error) {
+      console.error('InstitutionForm: submit error', error);
       showToast('Failed to save institution', 'error');
     } finally {
       setLoading(false);
     }
   };
-
   const handleLocationChange = (e) => {
     const { name, value } = e.target;
     const locationKey = name.split('.')[1];
@@ -202,13 +266,18 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
                     value={values.category}
                     onChange={handleChange}
                     className={inputClassName}
+                    required
                   >
+                    <option value="">Select Level</option>
                     {categories.map((category) => (
                       <option key={category} value={category}>
                         {category}
                       </option>
                     ))}
                   </select>
+                  {errors.category && (
+                    <p className="text-sm text-red-500">{errors.category}</p>
+                  )}
                 </div>
 
                 {/* Sports Discipline */}
@@ -412,13 +481,18 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
                     value={values.SchoolRepresentativeGender}
                     onChange={handleChange}
                     className={inputClassName}
+                    required
                   >
+                    <option value="">Select Gender</option>
                     {genders.map((gender) => (
                       <option key={gender} value={gender}>
                         {gender}
                       </option>
                     ))}
                   </select>
+                  {errors.SchoolRepresentativeGender && (
+                    <p className="text-sm text-red-500">{errors.SchoolRepresentativeGender}</p>
+                  )}
                 </div>
 
                 <div className="space-y-1.5">

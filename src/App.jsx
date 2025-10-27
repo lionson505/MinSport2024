@@ -301,13 +301,7 @@ function App() {
                       </Route>
 
                       {/* Fallback Route */}
-                      <Route path="*" element={
-                        publicRoutes.includes(window.location.pathname) ? (
-                            <Navigate to={window.location.pathname} />
-                        ) : (
-                            <Navigate to="/notAuthorized" replace />
-                        )
-                      } />
+                      <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
                     </ToastProvider>
                   </AuthProvider>
@@ -321,4 +315,3 @@ function App() {
 }
 
 export default App;
-
