@@ -69,22 +69,34 @@ const AddFederationForm = ({ onSubmit, onCancel, initialData, isEditing }) => {
         throw new Error('Please enter a valid email address');
       }
 
-      // Prepare the data in the requested format
-      const dataToSend = {
-        logo: formData.logo ? formData.logo.name : '', // Send the logo filename, not the file itself
+      // Prepare FormData for file upload
+      const formDataToSend = new FormData();
+      
+      // Add the logo file if it exists
+      if (formData.logo && formData.logo instanceof File) {
+        formDataToSend.append('logo', formData.logo);
+      }
+      
+      // Add other form fields
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('acronym', formData.acronym);
+      formDataToSend.append('yearFounded', formData.yearFounded);
+      formDataToSend.append('address', formData.address);
+      formDataToSend.append('website', formData.website || '');
+      formDataToSend.append('legalRepresentativeName', formData.legalRepresentativeName || '');
+      formDataToSend.append('legalRepresentativeGender', formData.legalRepresentativeGender || '');
+      formDataToSend.append('legalRepresentativeEmail', formData.legalRepresentativeEmail || '');
+      formDataToSend.append('legalRepresentativePhone', formData.legalRepresentativePhone || '');
+
+      // Log the data being sent for debugging
+      console.log('FormData being sent:', {
+        logo: formData.logo ? formData.logo.name : 'No logo',
         name: formData.name,
         acronym: formData.acronym,
-        yearFounded: parseInt(formData.yearFounded, 10),
+        yearFounded: formData.yearFounded,
         address: formData.address,
         website: formData.website,
-        legalRepresentativeName: formData.legalRepresentativeName,
-        legalRepresentativeGender: formData.legalRepresentativeGender,
-        legalRepresentativeEmail: formData.legalRepresentativeEmail,
-        legalRepresentativePhone: formData.legalRepresentativePhone,
-      };
-
-      // Log the final formatted data for debugging
-      console.log('Data being sent:', dataToSend);
+      });
 
       // Define the API URL and HTTP method based on editing mode
       const apiUrl = isEditing
@@ -93,10 +105,10 @@ const AddFederationForm = ({ onSubmit, onCancel, initialData, isEditing }) => {
 
       const method = isEditing ? 'put' : 'post';
 
-      // Make API request to the backend
-      const response = await axiosInstance[method](apiUrl, dataToSend, {
+      // Make API request to the backend with multipart/form-data
+      const response = await axiosInstance[method](apiUrl, formDataToSend, {
         headers: {
-          'Content-Type': 'application/json', // Sending JSON, no need for multipart/form-data anymore
+          'Content-Type': 'multipart/form-data', // Required for file uploads
         },
       });
 

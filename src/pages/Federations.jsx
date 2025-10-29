@@ -274,7 +274,10 @@ const Federations = () => {
         setLoading(true);
          const currentPermissions =await logPermissions();
          await setPermissions(currentPermissions);
-        // console.log("perms:", permissions)
+        console.log("perms:", permissions)
+        console.log("currentPermissions from logPermissions:", currentPermissions)
+        console.log("localStorage permissions:", localStorage.getItem('permissions'))
+        console.log("localStorage user:", localStorage.getItem('user'))
         setLoading(false);
 
         const filters = {
@@ -808,8 +811,9 @@ const Federations = () => {
                     </TableCell>
                     <TableCell className="text-xs font-medium">{federation.name}</TableCell>
                       <TableCell>
-                        <img src={`${axiosInstance.defaults.baseURL}${federation.logo}`} alt="federation Logo" className="w-12 h-12 object-cover rounded-full" />
-                        {/* {// console.log(`Logo Path: ${axiosInstance.defaults.baseURL}${federation.logo}`)} Log the logo path */}
+                        <img src={`http://localhost:3300${federation.logo}`} alt="federation Logo" className="w-12 h-12 object-cover rounded-full" />
+                        {console.log(`Logo Path: http://localhost:3300${federation.logo}`)}
+                        {console.log(`Federation logo value:`, federation.logo)}
   
                       </TableCell>
                     <TableCell className="text-xs">{federation.acronym}</TableCell>

@@ -67,6 +67,18 @@ const IsongaPrograms = () => {
   const [selectedPeTeacher, setSelectedPeTeacher] = useState(null);
   const [showDeletePeTeacherModal, setShowDeletePeTeacherModal] = useState(false);
   const [peTeacherToDelete, setPeTeacherToDelete] = useState(null);
+  
+  // PDF Report Filters
+  const [reportFilters, setReportFilters] = useState({
+    category: '',
+    province: '',
+    district: '',
+    sector: '',
+    sportDiscipline: '',
+    section: '',
+    schoolName: ''
+  });
+  
   const logPermissions = usePermissionLogger('isonga_programs');
   const [permissions, setPermissions] = useState({
     canCreate: false,
@@ -83,6 +95,7 @@ const IsongaPrograms = () => {
     placeOfBirth: '',
     placeOfResidence: '',
     idPassportNo: '',
+    sdmsNumber: '',
     nationality: '',
     otherNationality: '',
     fatherGuardianNames: '',
@@ -90,6 +103,7 @@ const IsongaPrograms = () => {
     typeOfSchoolAcademyTrainingCenter: '',
     class: '',
     typeOfGame: '',
+    section: '',
     contact: '',
     institutionId: 0
   });
@@ -149,10 +163,61 @@ const IsongaPrograms = () => {
     return [];
   }, [derivedSelectedInstitution]);
 
-  // Reset game type when institution selection changes
+  // Available sections based on selected institution and sport discipline
+  const availableSections = useMemo(() => {
+    const selectedSport = studentFormData.typeOfGame;
+    const inst = derivedSelectedInstitution;
+    
+    if (!selectedSport || !inst) return [];
+    
+    // Get sections from institution based on selected sport
+    // Institution sections are stored as an object with sport names as keys
+    // e.g., { "Football": ["Male", "Female"], "Volleyball": ["Male", "Female"] }
+    if (inst.sections && typeof inst.sections === 'object') {
+      // If sections is an object with sport-specific sections
+      const sportSections = inst.sections[selectedSport];
+      if (Array.isArray(sportSections)) {
+        return sportSections;
+      }
+    }
+    
+    // If sections is a simple array, return it for any sport
+    if (Array.isArray(inst.sections)) {
+      return inst.sections;
+    }
+    
+    // If sections is a string, split it
+    if (typeof inst.sections === 'string') {
+      return inst.sections.split(',').map(s => s.trim()).filter(Boolean);
+    }
+    
+    // Fallback: return default sections based on sport
+    const defaultSections = {
+      'Football': ['Male', 'Female'],
+      'Basketball': ['Male', 'Female'],
+      'Volleyball': ['Male', 'Female'],
+      'Tennis': ['Male', 'Female'],
+      'Swimming': ['Male', 'Female'],
+      'Athletics': ['Male', 'Female'],
+      'Handball': ['Male', 'Female'],
+      'Cycling': ['Male', 'Female'],
+      'Netball': ['Male', 'Female'],
+      'Rugby': ['Male', 'Female'],
+      'Hockey': ['Male', 'Female']
+    };
+    
+    return defaultSections[selectedSport] || ['Male', 'Female'];
+  }, [studentFormData.typeOfGame, derivedSelectedInstitution]);
+
+  // Reset game type and section when institution selection changes
   useEffect(() => {
-    setStudentFormData(prev => ({ ...prev, typeOfGame: '' }));
+    setStudentFormData(prev => ({ ...prev, typeOfGame: '', section: '' }));
   }, [studentFormData.institutionId]);
+
+  // Reset section when sport discipline changes
+  useEffect(() => {
+    setStudentFormData(prev => ({ ...prev, section: '' }));
+  }, [studentFormData.typeOfGame]);
 
   // Load initial data
   useEffect(() => {
@@ -212,6 +277,102 @@ const IsongaPrograms = () => {
 
     fetchData();
   }, []);
+
+  // Filter helper functions for PDF reports
+  const getUniqueCategories = () => {
+    return [...new Set(programs.map(p => p.category).filter(Boolean))];
+  };
+
+  const getUniqueProvinces = () => {
+    return [...new Set(programs.map(p => p.location_province).filter(Boolean))];
+  };
+
+  const getUniqueDistricts = () => {
+    if (reportFilters.province) {
+      return [...new Set(programs
+        .filter(p => p.location_province === reportFilters.province)
+        .map(p => p.location_district)
+        .filter(Boolean))];
+    }
+    return [...new Set(programs.map(p => p.location_district).filter(Boolean))];
+  };
+
+  const getUniqueSectors = () => {
+    let filtered = programs;
+    if (reportFilters.province) {
+      filtered = filtered.filter(p => p.location_province === reportFilters.province);
+    }
+    if (reportFilters.district) {
+      filtered = filtered.filter(p => p.location_district === reportFilters.district);
+    }
+    return [...new Set(filtered.map(p => p.location_sector).filter(Boolean))];
+  };
+
+  const getUniqueSportDisciplines = () => {
+    const allSports = programs.flatMap(p => 
+      Array.isArray(p.sportsDisciplines) ? p.sportsDisciplines : []
+    );
+    return [...new Set(allSports)];
+  };
+
+  const getUniqueSections = () => {
+    const allSections = programs.flatMap(p => {
+      if (!p.sections) return [];
+      if (Array.isArray(p.sections)) return p.sections;
+      if (typeof p.sections === 'object') return Object.values(p.sections).flat();
+      if (typeof p.sections === 'string') return p.sections.split(',').map(s => s.trim());
+      return [];
+    });
+    return [...new Set(allSections.filter(Boolean))];
+  };
+
+  // Apply filters to programs for PDF reports
+  const getFilteredProgramsForReport = () => {
+    return programs.filter(program => {
+      if (reportFilters.category && program.category !== reportFilters.category) return false;
+      if (reportFilters.province && program.location_province !== reportFilters.province) return false;
+      if (reportFilters.district && program.location_district !== reportFilters.district) return false;
+      if (reportFilters.sector && program.location_sector !== reportFilters.sector) return false;
+      if (reportFilters.schoolName && !program.name.toLowerCase().includes(reportFilters.schoolName.toLowerCase())) return false;
+      
+      if (reportFilters.sportDiscipline) {
+        const hasSport = Array.isArray(program.sportsDisciplines) && 
+          program.sportsDisciplines.includes(reportFilters.sportDiscipline);
+        if (!hasSport) return false;
+      }
+      
+      if (reportFilters.section) {
+        let hasSection = false;
+        if (Array.isArray(program.sections)) {
+          hasSection = program.sections.includes(reportFilters.section);
+        } else if (typeof program.sections === 'object' && program.sections !== null) {
+          hasSection = Object.values(program.sections).flat().includes(reportFilters.section);
+        } else if (typeof program.sections === 'string') {
+          hasSection = program.sections.split(',').map(s => s.trim()).includes(reportFilters.section);
+        }
+        if (!hasSection) return false;
+      }
+      
+      return true;
+    });
+  };
+
+  // Reset dependent filters when parent filter changes
+  const handleFilterChange = (filterName, value) => {
+    setReportFilters(prev => {
+      const newFilters = { ...prev, [filterName]: value };
+      
+      // Reset dependent filters
+      if (filterName === 'province') {
+        newFilters.district = '';
+        newFilters.sector = '';
+      } else if (filterName === 'district') {
+        newFilters.sector = '';
+      }
+      
+      return newFilters;
+    });
+  };
 
   const handleAddInstitution = () => {
     setSelectedInstitution(null);
@@ -284,11 +445,22 @@ const IsongaPrograms = () => {
       );
       setFilteredPrograms(filtered);
     } else if (type === 'students') {
-      const filtered = students.filter(student =>
-        student.firstName?.toLowerCase().includes(searchValue.toLowerCase()) ||
-        student.lastName?.toLowerCase().includes(searchValue.toLowerCase()) ||
-        student.nationality?.toLowerCase().includes(searchValue.toLowerCase())
-      );
+      const filtered = students.filter(student => {
+        // Find the institution for this student
+        const studentInstitution = programs.find(p => 
+          Number(p.id) === Number(student.institutionId)
+        );
+        
+        return (
+          student.firstName?.toLowerCase().includes(searchValue.toLowerCase()) ||
+          student.lastName?.toLowerCase().includes(searchValue.toLowerCase()) ||
+          student.sdmsNumber?.toLowerCase().includes(searchValue.toLowerCase()) ||
+          student.nationality?.toLowerCase().includes(searchValue.toLowerCase()) ||
+          studentInstitution?.name?.toLowerCase().includes(searchValue.toLowerCase()) ||
+          student.section?.toLowerCase().includes(searchValue.toLowerCase()) ||
+          student.typeOfGame?.toLowerCase().includes(searchValue.toLowerCase())
+        );
+      });
       setFilteredStudents(filtered);
     } else if (type === 'coaches') {
       try {
@@ -365,6 +537,7 @@ const IsongaPrograms = () => {
       placeOfBirth: '',
       placeOfResidence: '',
       idPassportNo: '',
+      sdmsNumber: '',
       nationality: '',
       otherNationality: '',
       fatherGuardianNames: '',
@@ -372,6 +545,7 @@ const IsongaPrograms = () => {
       typeOfSchoolAcademyTrainingCenter: '',
       class: '',
       typeOfGame: '',
+      section: '',
       contact: '',
       institutionId: 0
     });
@@ -497,7 +671,17 @@ const IsongaPrograms = () => {
 
   const handleCoachFormChange = (e) => {
     const { name, value } = e.target;
-    setCoachFormData(prev => ({ ...prev, [name]: value }));
+    setCoachFormData(prev => {
+      // Reset sport and section when school changes
+      if (name === 'school') {
+        return { ...prev, [name]: value, sport: '', section: '', qualification: '' };
+      }
+      // Reset section and qualification when sport changes
+      if (name === 'sport') {
+        return { ...prev, [name]: value, section: '', qualification: '' };
+      }
+      return { ...prev, [name]: value };
+    });
   };
 
   const handleSubmitCoachForm = async (e) => {
@@ -734,7 +918,138 @@ const IsongaPrograms = () => {
                 </div>
               </div>
 
-              
+              {/* PDF Report Filters */}
+              <div className={`rounded-lg p-4 mb-4 ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
+                <h3 className="text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">PDF Report Filters</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {/* Category Filter */}
+                  <div>
+                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Category</label>
+                    <select
+                      value={reportFilters.category}
+                      onChange={(e) => handleFilterChange('category', e.target.value)}
+                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                    >
+                      <option value="">All Categories</option>
+                      {getUniqueCategories().map(category => (
+                        <option key={category} value={category}>{category}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Province Filter */}
+                  <div>
+                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Province</label>
+                    <select
+                      value={reportFilters.province}
+                      onChange={(e) => handleFilterChange('province', e.target.value)}
+                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                    >
+                      <option value="">All Provinces</option>
+                      {getUniqueProvinces().map(province => (
+                        <option key={province} value={province}>{province}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* District Filter */}
+                  <div>
+                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">District</label>
+                    <select
+                      value={reportFilters.district}
+                      onChange={(e) => handleFilterChange('district', e.target.value)}
+                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                      disabled={!reportFilters.province}
+                    >
+                      <option value="">All Districts</option>
+                      {getUniqueDistricts().map(district => (
+                        <option key={district} value={district}>{district}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Sector Filter */}
+                  <div>
+                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Sector</label>
+                    <select
+                      value={reportFilters.sector}
+                      onChange={(e) => handleFilterChange('sector', e.target.value)}
+                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                      disabled={!reportFilters.district}
+                    >
+                      <option value="">All Sectors</option>
+                      {getUniqueSectors().map(sector => (
+                        <option key={sector} value={sector}>{sector}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Sport Discipline Filter */}
+                  <div>
+                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Sport Discipline</label>
+                    <select
+                      value={reportFilters.sportDiscipline}
+                      onChange={(e) => handleFilterChange('sportDiscipline', e.target.value)}
+                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                    >
+                      <option value="">All Sports</option>
+                      {getUniqueSportDisciplines().map(sport => (
+                        <option key={sport} value={sport}>{sport}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Section Filter */}
+                  <div>
+                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Section/Team</label>
+                    <select
+                      value={reportFilters.section}
+                      onChange={(e) => handleFilterChange('section', e.target.value)}
+                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                    >
+                      <option value="">All Sections</option>
+                      {getUniqueSections().map(section => (
+                        <option key={section} value={section}>{section}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* School Name Filter */}
+                  <div>
+                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">School Name</label>
+                    <input
+                      type="text"
+                      value={reportFilters.schoolName}
+                      onChange={(e) => handleFilterChange('schoolName', e.target.value)}
+                      placeholder="Search by name..."
+                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                    />
+                  </div>
+
+                  {/* Clear Filters Button */}
+                  <div className="flex items-end">
+                    <button
+                      onClick={() => setReportFilters({
+                        category: '',
+                        province: '',
+                        district: '',
+                        sector: '',
+                        sportDiscipline: '',
+                        section: '',
+                        schoolName: ''
+                      })}
+                      className="w-full text-xs bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded transition-colors"
+                    >
+                      Clear Filters
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Filter Summary */}
+                <div className="mt-3 text-xs text-gray-600 dark:text-gray-400">
+                  Showing {getFilteredProgramsForReport().length} of {programs.length} institutions
+                </div>
+              </div>
 
               {/* Table */}
               <div className={`rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow'}`}>
@@ -753,11 +1068,13 @@ const IsongaPrograms = () => {
                         <TableHead className="min-w-[180px] text-xs">Legal Representative</TableHead>
                         <TableHead className="min-w-[150px] text-xs">Contact</TableHead>
                         <TableHead className="min-w-[150px] text-xs">Sports Disciplines</TableHead>
-                        <TableHead className="w-[150px] text-xs">Operation</TableHead>
+                        <TableHead className="min-w-[120px] text-xs">No. of Sports</TableHead>
+                        <TableHead className="min-w-[150px] text-xs">Sections/Teams</TableHead>
+                        <TableHead className="w-[150px] text-xs operation">Operation</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {currentPrograms.map((program) => {
+                      {getFilteredProgramsForReport().slice(indexOfFirstItem, indexOfLastItem).map((program) => {
                         const studentCount = students.filter((s) => (
                           (s.institutionId && Number(s.institutionId) === Number(program.id)) ||
                           (s.nameOfSchoolAcademyTrainingCenter && s.nameOfSchoolAcademyTrainingCenter === program.name)
@@ -787,22 +1104,59 @@ const IsongaPrograms = () => {
                             {program.sportsDisciplines ? (
                               <div className="flex flex-wrap gap-1">
                                 {Array.isArray(program.sportsDisciplines) 
-                                  ? program.sportsDisciplines.slice(0, 2).map((sport, index) => (
+                                  ? program.sportsDisciplines.map((sport, index) => (
                                       <span key={index} className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
                                         {sport}
                                       </span>
                                     ))
                                   : <span className="text-gray-500">N/A</span>
                                 }
-                                {Array.isArray(program.sportsDisciplines) && program.sportsDisciplines.length > 2 && (
-                                  <span className="text-xs text-gray-500">+{program.sportsDisciplines.length - 2} more</span>
-                                )}
                               </div>
                             ) : (
                               <span className="text-gray-500">N/A</span>
                             )}
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="text-xs text-center">
+                            <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium">
+                              {Array.isArray(program.sportsDisciplines) ? program.sportsDisciplines.length : 0}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-xs">
+                            {program.sections ? (
+                              <div className="flex flex-wrap gap-1">
+                                {(() => {
+                                  let allSections = [];
+                                  
+                                  if (Array.isArray(program.sections)) {
+                                    // Simple array format: ["Male", "Female"]
+                                    allSections = program.sections;
+                                  } else if (typeof program.sections === 'object' && program.sections !== null) {
+                                    // Object format: { "Football": ["Male", "Female"], "Volleyball": ["Male", "Female"] }
+                                    allSections = Object.values(program.sections).flat();
+                                    // Remove duplicates
+                                    allSections = [...new Set(allSections)];
+                                  } else if (typeof program.sections === 'string') {
+                                    // String format: "Male,Female,Mixed"
+                                    allSections = program.sections.split(',').map(s => s.trim()).filter(Boolean);
+                                  }
+                                  
+                                  if (allSections.length === 0) {
+                                    return <span className="text-gray-500">N/A</span>;
+                                  }
+                                  
+                                  // Display ALL sections, not just first 3
+                                  return allSections.map((section, index) => (
+                                    <span key={index} className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded">
+                                      {section}
+                                    </span>
+                                  ));
+                                })()}
+                              </div>
+                            ) : (
+                              <span className="text-gray-500">N/A</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="operation">
                             <div className="flex items-center gap-1">
                               <button
                                 onClick={() => handleViewDetails(program)}
@@ -895,27 +1249,45 @@ const IsongaPrograms = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="min-w-[150px] text-xs">First Name</TableHead>
-                        <TableHead className="min-w-[150px] text-xs">Last Name</TableHead>
+                        <TableHead className="min-w-[200px] text-xs">Names</TableHead>
+                        <TableHead className="min-w-[130px] text-xs">SDMS Number</TableHead>
                         <TableHead className="min-w-[80px] text-xs">Gender</TableHead>
                         <TableHead className="min-w-[80px] text-xs">Class</TableHead>
-                        <TableHead className="min-w-[100px] text-xs">Game Type</TableHead>
+                        <TableHead className="min-w-[150px] text-xs">School Name</TableHead>
+                        <TableHead className="min-w-[120px] text-xs">Section</TableHead>
+                        <TableHead className="min-w-[120px] text-xs">Sport Discipline</TableHead>
                         <TableHead className="min-w-[150px] text-xs">Contact</TableHead>
                         <TableHead className="min-w-[150px] text-xs">Nationality</TableHead>
-                        <TableHead className="w-[150px] text-xs">Operation</TableHead>
+                        <TableHead className="w-[150px] text-xs operation">Operation</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {currentStudents.map((student) => (
+                      {currentStudents.map((student) => {
+                        // Find the institution for this student
+                        const studentInstitution = programs.find(p => 
+                          Number(p.id) === Number(student.institutionId)
+                        );
+                        
+                        // Get the student's selected section or fallback to first available section
+                        const studentSection = student.section || 
+                          (studentInstitution?.sections && Array.isArray(studentInstitution.sections) 
+                            ? studentInstitution.sections[0] 
+                            : 'N/A');
+                        
+                        return (
                         <TableRow key={student.id}>
-                          <TableCell className="text-xs font-medium">{student.firstName}</TableCell>
-                          <TableCell className="text-xs">{student.lastName}</TableCell>
+                          <TableCell className="text-xs font-medium">
+                            {`${student.firstName || ''} ${student.lastName || ''}`.trim() || 'N/A'}
+                          </TableCell>
+                          <TableCell className="text-xs">{student.sdmsNumber || 'N/A'}</TableCell>
                           <TableCell className="text-xs">{student.gender}</TableCell>
                           <TableCell className="text-xs">{student.class}</TableCell>
+                          <TableCell className="text-xs">{studentInstitution?.name || 'N/A'}</TableCell>
+                          <TableCell className="text-xs">{studentSection}</TableCell>
                           <TableCell className="text-xs">{student.typeOfGame}</TableCell>
                           <TableCell className="text-xs">{student.contact}</TableCell>
                           <TableCell className="text-xs">{student.nationality || 'N/A'}</TableCell>
-                          <TableCell>
+                          <TableCell className="operation">
                             <div className="flex items-center gap-1">
                               <button
                                 onClick={() => handleViewStudentDetails(student)}
@@ -941,7 +1313,8 @@ const IsongaPrograms = () => {
                             </div>
                           </TableCell>
                         </TableRow>
-                      ))}
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </PrintButton>
@@ -1020,7 +1393,7 @@ const IsongaPrograms = () => {
                         <TableHead className="min-w-[150px] text-xs">Email</TableHead>
                         <TableHead className="min-w-[100px] text-xs">Tel</TableHead>
                         <TableHead className="min-w-[120px] text-xs">Position</TableHead>
-                        <TableHead className="w-[150px] text-xs">Operation</TableHead>
+                        <TableHead className="w-[150px] text-xs operation">Operation</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -1035,7 +1408,7 @@ const IsongaPrograms = () => {
                           <TableCell className="text-xs">{coach.email}</TableCell>
                           <TableCell className="text-xs">{coach.tel}</TableCell>
                           <TableCell className="text-xs">{coach.position}</TableCell>
-                          <TableCell>
+                          <TableCell className="operation">
                             <div className="flex items-center gap-1">
                               <button
                                 onClick={() => handleViewCoachDetails(coach)}
@@ -1159,7 +1532,7 @@ const IsongaPrograms = () => {
                         <TableHead className="min-w-[150px] text-xs">Sport of Interest</TableHead>
                         <TableHead className="min-w-[150px] text-xs">Email</TableHead>
                         <TableHead className="min-w-[100px] text-xs">Tel</TableHead>
-                        <TableHead className="w-[150px] text-xs">Operation</TableHead>
+                        <TableHead className="w-[150px] text-xs operation">Operation</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -1172,7 +1545,7 @@ const IsongaPrograms = () => {
                           <TableCell className="text-xs">{teacher.sportOfInterest}</TableCell>
                           <TableCell className="text-xs">{teacher.email}</TableCell>
                           <TableCell className="text-xs">{teacher.tel}</TableCell>
-                          <TableCell>
+                          <TableCell className="operation">
                             <div className="flex items-center gap-1">
                               <button
                                 onClick={() => handleViewPeTeacherDetails(teacher)}
@@ -1401,6 +1774,18 @@ const IsongaPrograms = () => {
         <form onSubmit={handleSubmitStudentForm} className="max-h-[70vh] overflow-y-auto pr-4 space-y-6">
           <div className="grid grid-cols-1 gap-4">
             <div>
+              <label className="block text-sm font-medium mb-1">SDMS Number</label>
+              <input
+                type="text"
+                name="sdmsNumber"
+                value={studentFormData.sdmsNumber}
+                onChange={handleFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                placeholder="e.g., 370614161237"
+                required
+              />
+            </div>
+            <div>
               <label className="block text-sm font-medium mb-1">First Name</label>
               <input
                 type="text"
@@ -1574,7 +1959,7 @@ const IsongaPrograms = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Game Type</label>
+              <label className="block text-sm font-medium mb-1">Sport Discipline</label>
               <select
                 name="typeOfGame"
                 value={studentFormData.typeOfGame}
@@ -1584,10 +1969,30 @@ const IsongaPrograms = () => {
                 disabled={!derivedSelectedInstitution || availableGameTypes.length === 0}
               >
                 <option value="" disabled>
-                  {(!derivedSelectedInstitution) ? 'Select Institution first' : (availableGameTypes.length === 0 ? 'No game types available' : 'Select Game Type')}
+                  {(!derivedSelectedInstitution) ? 'Select Institution first' : (availableGameTypes.length === 0 ? 'No Sport Discipline available' : 'Select Sport Discipline')}
                 </option>
                 {availableGameTypes.map((game) => (
                   <option key={game} value={game}>{game}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Section/Team</label>
+              <select
+                name="section"
+                value={studentFormData.section}
+                onChange={handleFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+                disabled={!derivedSelectedInstitution || !studentFormData.typeOfGame || availableSections.length === 0}
+              >
+                <option value="" disabled>
+                  {(!derivedSelectedInstitution) ? 'Select Institution first' : 
+                   (!studentFormData.typeOfGame) ? 'Select Sport Discipline first' : 
+                   (availableSections.length === 0 ? 'No sections available for this sport' : 'Select Section/Team')}
+                </option>
+                {availableSections.map((section) => (
+                  <option key={section} value={section}>{section}</option>
                 ))}
               </select>
             </div>
@@ -1774,7 +2179,7 @@ const IsongaPrograms = () => {
                 <h3 className="text-lg font-semibold text-blue-600 mb-3">Game Information</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="font-medium text-gray-600 block">Game Type</label>
+                    <label className="font-medium text-gray-600 block">Sport Discipline</label>
                     <p className="mt-1">{selectedStudent.typeOfGame || 'N/A'}</p>
                   </div>
                   <div>
@@ -2078,42 +2483,6 @@ const IsongaPrograms = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Sport</label>
-              <select
-                name="sport"
-                value={coachFormData.sport}
-                onChange={handleCoachFormChange}
-                className="w-full border rounded-lg px-3 py-2"
-                required
-              >
-                <option value="">Select Sport</option>
-                <option value="Football">Football</option>
-                <option value="Handball">Handball</option>
-                <option value="Volleyball">Volleyball</option>
-                <option value="Basketball">Basketball</option>
-                <option value="Athletics">Athletics</option>
-                <option value="Cycling">Cycling</option>
-                <option value="Swimming">Swimming</option>
-                <option value="Tennis">Tennis</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Section</label>
-              <select
-                name="section"
-                value={coachFormData.section}
-                onChange={handleCoachFormChange}
-                className="w-full border rounded-lg px-3 py-2"
-                required
-              >
-                <option value="">Select Section</option>
-                <option value="Senior">Senior</option>
-                <option value="Junior">Junior</option>
-                <option value="Youth">Youth</option>
-                <option value="Cadet">Cadet</option>
-              </select>
-            </div>
-            <div>
               <label className="block text-sm font-medium mb-1">School</label>
               <select
                 name="school"
@@ -2128,6 +2497,72 @@ const IsongaPrograms = () => {
                     {program.name}
                   </option>
                 ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Sport Discipline</label>
+              <select
+                name="sport"
+                value={coachFormData.sport}
+                onChange={handleCoachFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+                disabled={!coachFormData.school}
+              >
+                <option value="">Select Sport</option>
+                {(() => {
+                  const selectedSchool = programs.find(p => p.name === coachFormData.school);
+                  if (selectedSchool && selectedSchool.sportsDisciplines) {
+                    return Array.isArray(selectedSchool.sportsDisciplines) 
+                      ? selectedSchool.sportsDisciplines.map(sport => (
+                          <option key={sport} value={sport}>{sport}</option>
+                        ))
+                      : <option value="">No sports available</option>;
+                  }
+                  return <option value="">Select school first</option>;
+                })()}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Section/Team</label>
+              <select
+                name="section"
+                value={coachFormData.section}
+                onChange={handleCoachFormChange}
+                className="w-full border rounded-lg px-3 py-2"
+                required
+                disabled={!coachFormData.sport}
+              >
+                <option value="">Select Section</option>
+                {(() => {
+                  // Get the selected school
+                  const selectedSchool = programs.find(p => p.name === coachFormData.school);
+                  
+                  if (!selectedSchool || !coachFormData.sport) {
+                    return <option value="">Select school and sport first</option>;
+                  }
+                  
+                  // Get sections from the school's database data
+                  if (selectedSchool.sections && typeof selectedSchool.sections === 'object') {
+                    // Check if the selected sport has sections in the school
+                    const sportSections = selectedSchool.sections[coachFormData.sport];
+                    
+                    if (Array.isArray(sportSections) && sportSections.length > 0) {
+                      return sportSections.map(section => (
+                        <option key={section} value={section}>{section}</option>
+                      ));
+                    }
+                  }
+                  
+                  // If sections is an array (not sport-specific), show all sections
+                  if (Array.isArray(selectedSchool.sections)) {
+                    return selectedSchool.sections.map(section => (
+                      <option key={section} value={section}>{section}</option>
+                    ));
+                  }
+                  
+                  return <option value="">No sections available for this sport</option>;
+                })()}
               </select>
             </div>
             <div>

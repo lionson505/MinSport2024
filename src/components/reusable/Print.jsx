@@ -30,52 +30,217 @@ const PrintButton = ({ children, title = "MIS REPORT", className = '' }) => {
 
   const exportToPDF = () => {
     return new Promise((resolve, reject) => {
-      const doc = new jsPDF();
+      const doc = new jsPDF('landscape'); // Use landscape orientation for better table display
       const image = new Image();
       image.src = '/logo/logo.png';
 
       image.onload = () => {
-        doc.addImage(image, 'PNG', 10, 10, 40, 40);
-        doc.setFontSize(24);
+        // Header with logo and title
+        doc.addImage(image, 'PNG', 15, 10, 30, 30);
+        
+        // Ministry title
+        doc.setFontSize(20);
         doc.setTextColor(41, 128, 185);
-        doc.text('MINISTRY OF SPORTS', 105, 20, null, null, 'center');
+        doc.setFont(undefined, 'bold');
+        doc.text('MINISTRY OF SPORTS', 150, 20, null, null, 'center');
 
-        doc.setFontSize(18);
-        doc.setTextColor(0);
-        doc.text(title, 105, 30, null, null, 'center');
-        doc.setFontSize(12);
+        // Report title
+        doc.setFontSize(16);
+        doc.setTextColor(0, 0, 0);
+        doc.setFont(undefined, 'bold');
+        doc.text(title, 150, 30, null, null, 'center');
+        
+        // Date and additional info
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'normal');
         const date = new Date().toLocaleDateString();
-        doc.text(`Report Date: ${date}`, 105, 40, null, null, 'center');
+        doc.text(`Report Generated: ${date}`, 150, 38, null, null, 'center');
+        
+        // Add a line separator
+        doc.setDrawColor(41, 128, 185);
+        doc.setLineWidth(0.5);
+        doc.line(15, 45, 285, 45);
 
-        // Filtered Table Content (Exclude Operation Column)
+        // Get table data
         const table = document.querySelector('.content-to-export table');
         if (table) {
-          const filteredData = Array.from(table.rows).map((row) => {
+          const rows = Array.from(table.rows);
+          const headers = Array.from(rows[0].cells)
+            .filter((cell, index) => !cell.classList.contains('operation'))
+            .map((cell) => cell.innerText.trim());
+          
+          const bodyData = rows.slice(1).map((row) => {
             return Array.from(row.cells)
-              .filter((_, index) => !row.cells[index].classList.contains('operation')) // Exclude operation column
-              .map((cell) => cell.innerText);
+              .filter((cell, index) => !cell.classList.contains('operation'))
+              .map((cell) => {
+                // Clean up cell content - remove extra spaces and line breaks
+                let content = cell.innerText.trim();
+                // Handle badge content (like sports disciplines and sections)
+                if (cell.querySelector('.bg-blue-100, .bg-purple-100, .bg-green-100')) {
+                  const badges = Array.from(cell.querySelectorAll('span')).map(span => span.innerText.trim());
+                  content = badges.join(', ');
+                }
+                return content;
+              });
           });
 
+          // Define column widths based on content type - optimized for landscape A4
+          const columnStyles = {
+            0: { cellWidth: 25 }, // Name
+            1: { cellWidth: 18 }, // Domain
+            2: { cellWidth: 20 }, // Category
+            3: { cellWidth: 12 }, // Students
+            4: { cellWidth: 20 }, // Province
+            5: { cellWidth: 20 }, // District
+            6: { cellWidth: 18 }, // Sector
+            7: { cellWidth: 25 }, // Legal Representative
+            8: { cellWidth: 22 }, // Contact
+            9: { cellWidth: 28 }, // Sports Disciplines
+            10: { cellWidth: 12 }, // No. of Sports
+            11: { cellWidth: 25 }, // Sections/Teams
+          };
+
           autoTable(doc, {
-            head: [filteredData[0]],
-            body: filteredData.slice(1),
-            startY: 60,
+            head: [headers],
+            body: bodyData,
+            startY: 55,
             theme: 'striped',
-            headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-            styles: { fontSize: 10, cellPadding: 4 },
+            headStyles: { 
+              fillColor: [41, 128, 185], 
+              textColor: 255,
+              fontSize: 7,
+              fontStyle: 'bold',
+              halign: 'center',
+              valign: 'middle'
+            },
+            bodyStyles: {
+              fontSize: 6,
+              cellPadding: 2,
+              valign: 'top'
+            },
+            alternateRowStyles: {
+              fillColor: [245, 245, 245]
+            },
+            columnStyles: columnStyles,
+            styles: {
+              overflow: 'linebreak',
+              cellWidth: 'wrap',
+              fontSize: 7,
+              cellPadding: 2,
+              halign: 'left'
+            },
+            margin: { top: 55, left: 10, right: 10 },
+            tableWidth: 'wrap',
+            didDrawPage: function (data) {
+              // Add page numbers
+              doc.setFontSize(8);
+              doc.setTextColor(128, 128, 128);
+              doc.text('Page ' + doc.internal.getNumberOfPages(), 280, 200, null, null, 'right');
+            }
           });
-          doc.save(`${title}.pdf`);
+          
+          doc.save(`${title.replace(/\s+/g, '_')}_${date.replace(/\//g, '-')}.pdf`);
+          toast.success('PDF exported successfully!');
           resolve();
         } else {
-          doc.text('No table content available.', 10, 60);
+          doc.setFontSize(12);
+          doc.text('No table content available for export.', 150, 80, null, null, 'center');
+          doc.save(`${title}_empty.pdf`);
           toast.error("No table content available.");
           resolve();
         }
       };
 
       image.onerror = () => {
-        toast.error("Failed to load logo. Ensure the PNG is valid.");
-        reject("Logo image failed to load.");
+        // Continue without logo if it fails to load
+        console.warn("Logo failed to load, continuing without logo");
+        
+        const doc = new jsPDF('landscape');
+        
+        // Header without logo
+        doc.setFontSize(20);
+        doc.setTextColor(41, 128, 185);
+        doc.setFont(undefined, 'bold');
+        doc.text('MINISTRY OF SPORTS', 150, 20, null, null, 'center');
+
+        doc.setFontSize(16);
+        doc.setTextColor(0, 0, 0);
+        doc.text(title, 150, 30, null, null, 'center');
+        
+        const date = new Date().toLocaleDateString();
+        doc.setFontSize(10);
+        doc.text(`Report Generated: ${date}`, 150, 38, null, null, 'center');
+        
+        doc.setDrawColor(41, 128, 185);
+        doc.setLineWidth(0.5);
+        doc.line(15, 45, 285, 45);
+
+        const table = document.querySelector('.content-to-export table');
+        if (table) {
+          const rows = Array.from(table.rows);
+          const headers = Array.from(rows[0].cells)
+            .filter((cell) => !cell.classList.contains('operation'))
+            .map((cell) => cell.innerText.trim());
+          
+          const bodyData = rows.slice(1).map((row) => {
+            return Array.from(row.cells)
+              .filter((cell) => !cell.classList.contains('operation'))
+              .map((cell) => {
+                let content = cell.innerText.trim();
+                if (cell.querySelector('.bg-blue-100, .bg-purple-100, .bg-green-100')) {
+                  const badges = Array.from(cell.querySelectorAll('span')).map(span => span.innerText.trim());
+                  content = badges.join(', ');
+                }
+                return content;
+              });
+          });
+
+          const columnStyles = {
+            0: { cellWidth: 25 }, // Name
+            1: { cellWidth: 18 }, // Domain
+            2: { cellWidth: 20 }, // Category
+            3: { cellWidth: 12 }, // Students
+            4: { cellWidth: 20 }, // Province
+            5: { cellWidth: 20 }, // District
+            6: { cellWidth: 18 }, // Sector
+            7: { cellWidth: 25 }, // Legal Representative
+            8: { cellWidth: 22 }, // Contact
+            9: { cellWidth: 28 }, // Sports Disciplines
+            10: { cellWidth: 12 }, // No. of Sports
+            11: { cellWidth: 25 }, // Sections/Teams
+          };
+
+          autoTable(doc, {
+            head: [headers],
+            body: bodyData,
+            startY: 55,
+            theme: 'striped',
+            headStyles: { 
+              fillColor: [41, 128, 185], 
+              textColor: 255,
+              fontSize: 7,
+              fontStyle: 'bold',
+              halign: 'center'
+            },
+            bodyStyles: {
+              fontSize: 6,
+              cellPadding: 2,
+              valign: 'top'
+            },
+            columnStyles: columnStyles,
+            styles: { 
+              fontSize: 7, 
+              cellPadding: 2,
+              overflow: 'linebreak',
+              cellWidth: 'wrap'
+            },
+            margin: { top: 55, left: 10, right: 10 },
+            tableWidth: 'wrap'
+          });
+        }
+        
+        doc.save(`${title.replace(/\s+/g, '_')}_${date.replace(/\//g, '-')}.pdf`);
+        resolve();
       };
     });
   };
