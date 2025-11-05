@@ -35,31 +35,31 @@ const PrintButton = ({ children, title = "MIS REPORT", className = '' }) => {
       image.src = '/logo/logo.png';
 
       image.onload = () => {
-        // Header with logo and title
-        doc.addImage(image, 'PNG', 15, 10, 30, 30);
+        // Header with logo and title (reduced logo size)
+        doc.addImage(image, 'PNG', 15, 10, 20, 20);
         
-        // Ministry title
+        // Ministry title (adjusted for smaller logo)
         doc.setFontSize(20);
         doc.setTextColor(41, 128, 185);
         doc.setFont(undefined, 'bold');
-        doc.text('MINISTRY OF SPORTS', 150, 20, null, null, 'center');
+        doc.text('MINISTRY OF SPORTS', 150, 18, null, null, 'center');
 
         // Report title
         doc.setFontSize(16);
         doc.setTextColor(0, 0, 0);
         doc.setFont(undefined, 'bold');
-        doc.text(title, 150, 30, null, null, 'center');
+        doc.text(title, 150, 26, null, null, 'center');
         
         // Date and additional info
         doc.setFontSize(10);
         doc.setFont(undefined, 'normal');
         const date = new Date().toLocaleDateString();
-        doc.text(`Report Generated: ${date}`, 150, 38, null, null, 'center');
+        doc.text(`Report Generated: ${date}`, 150, 32, null, null, 'center');
         
         // Add a line separator
         doc.setDrawColor(41, 128, 185);
         doc.setLineWidth(0.5);
-        doc.line(15, 45, 285, 45);
+        doc.line(15, 38, 285, 38);
 
         // Get table data
         const table = document.querySelector('.content-to-export table');
@@ -103,7 +103,7 @@ const PrintButton = ({ children, title = "MIS REPORT", className = '' }) => {
           autoTable(doc, {
             head: [headers],
             body: bodyData,
-            startY: 55,
+            startY: 45,
             theme: 'striped',
             headStyles: { 
               fillColor: [41, 128, 185], 
@@ -129,8 +129,8 @@ const PrintButton = ({ children, title = "MIS REPORT", className = '' }) => {
               cellPadding: 2,
               halign: 'left'
             },
-            margin: { top: 55, left: 10, right: 10 },
-            tableWidth: 'wrap',
+            margin: { top: 45, left: 15, right: 15 },
+            tableWidth: 'auto',
             didDrawPage: function (data) {
               // Add page numbers
               doc.setFontSize(8);
@@ -161,19 +161,19 @@ const PrintButton = ({ children, title = "MIS REPORT", className = '' }) => {
         doc.setFontSize(20);
         doc.setTextColor(41, 128, 185);
         doc.setFont(undefined, 'bold');
-        doc.text('MINISTRY OF SPORTS', 150, 20, null, null, 'center');
+        doc.text('MINISTRY OF SPORTS', 150, 18, null, null, 'center');
 
         doc.setFontSize(16);
         doc.setTextColor(0, 0, 0);
-        doc.text(title, 150, 30, null, null, 'center');
+        doc.text(title, 150, 26, null, null, 'center');
         
         const date = new Date().toLocaleDateString();
         doc.setFontSize(10);
-        doc.text(`Report Generated: ${date}`, 150, 38, null, null, 'center');
+        doc.text(`Report Generated: ${date}`, 150, 32, null, null, 'center');
         
         doc.setDrawColor(41, 128, 185);
         doc.setLineWidth(0.5);
-        doc.line(15, 45, 285, 45);
+        doc.line(15, 38, 285, 38);
 
         const table = document.querySelector('.content-to-export table');
         if (table) {
@@ -213,7 +213,7 @@ const PrintButton = ({ children, title = "MIS REPORT", className = '' }) => {
           autoTable(doc, {
             head: [headers],
             body: bodyData,
-            startY: 55,
+            startY: 45,
             theme: 'striped',
             headStyles: { 
               fillColor: [41, 128, 185], 
@@ -234,8 +234,8 @@ const PrintButton = ({ children, title = "MIS REPORT", className = '' }) => {
               overflow: 'linebreak',
               cellWidth: 'wrap'
             },
-            margin: { top: 55, left: 10, right: 10 },
-            tableWidth: 'wrap'
+            margin: { top: 45, left: 15, right: 15 },
+            tableWidth: 'auto'
           });
         }
         

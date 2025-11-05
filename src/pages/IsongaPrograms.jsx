@@ -78,6 +78,25 @@ const IsongaPrograms = () => {
     section: '',
     schoolName: ''
   });
+
+  // Coach Report Filters
+  const [coachFilters, setCoachFilters] = useState({
+    name: '',
+    school: '',
+    sport: '',
+    section: '',
+    qualification: '',
+    position: '',
+    trainingType: ''
+  });
+
+  // PE Teacher Report Filters
+  const [peTeacherFilters, setPeTeacherFilters] = useState({
+    name: '',
+    school: '',
+    sportOfInterest: '',
+    experience: ''
+  });
   
   const logPermissions = usePermissionLogger('isonga_programs');
   const [permissions, setPermissions] = useState({
@@ -117,8 +136,21 @@ const IsongaPrograms = () => {
     qualification: '',
     email: '',
     tel: '',
-    position: ''
+    position: '',
+    trainingTypes: []
   });
+
+  // Training type options
+  const trainingTypeOptions = [
+    'Technical and Tactical Training',
+    'Physical Conditioning and Fitness Training',
+    'Coaching Methodology and Pedagogy',
+    'Communication and Leadership Skills',
+    'Sports Psychology and Athlete Well-being',
+    'Monitoring, Evaluation, and Data Management',
+    'Governance, Ethics, and Professional Development',
+    'Administrative and Program Management'
+  ];
 
   const [peTeacherFormData, setPeTeacherFormData] = useState({
     names: '',
@@ -372,6 +404,76 @@ const IsongaPrograms = () => {
       
       return newFilters;
     });
+  };
+
+  // Coach filter functions
+  const getUniqueCoachSchools = () => {
+    return [...new Set(coaches.map(c => c.school).filter(Boolean))];
+  };
+
+  const getUniqueCoachSports = () => {
+    return [...new Set(coaches.map(c => c.sport).filter(Boolean))];
+  };
+
+  const getUniqueCoachSections = () => {
+    return [...new Set(coaches.map(c => c.section).filter(Boolean))];
+  };
+
+  const getUniqueCoachQualifications = () => {
+    return [...new Set(coaches.map(c => c.qualification).filter(Boolean))];
+  };
+
+  const getUniqueCoachPositions = () => {
+    return [...new Set(coaches.map(c => c.position).filter(Boolean))];
+  };
+
+  const getUniqueCoachTrainingTypes = () => {
+    const allTypes = coaches.flatMap(c => c.trainingTypes || []);
+    return [...new Set(allTypes)].filter(Boolean);
+  };
+
+  const getFilteredCoachesForReport = () => {
+    return coaches.filter(coach => {
+      if (coachFilters.name && !coach.name?.toLowerCase().includes(coachFilters.name.toLowerCase())) return false;
+      if (coachFilters.school && coach.school !== coachFilters.school) return false;
+      if (coachFilters.sport && coach.sport !== coachFilters.sport) return false;
+      if (coachFilters.section && coach.section !== coachFilters.section) return false;
+      if (coachFilters.qualification && coach.qualification !== coachFilters.qualification) return false;
+      if (coachFilters.position && coach.position !== coachFilters.position) return false;
+      if (coachFilters.trainingType && (!coach.trainingTypes || !coach.trainingTypes.includes(coachFilters.trainingType))) return false;
+      return true;
+    });
+  };
+
+  const handleCoachFilterChange = (filterName, value) => {
+    setCoachFilters(prev => ({ ...prev, [filterName]: value }));
+  };
+
+  // PE Teacher filter functions
+  const getUniquePeTeacherSchools = () => {
+    return [...new Set(peTeachers.map(t => t.school).filter(Boolean))];
+  };
+
+  const getUniquePeTeacherSports = () => {
+    return [...new Set(peTeachers.map(t => t.sportOfInterest).filter(Boolean))];
+  };
+
+  const getUniquePeTeacherExperience = () => {
+    return [...new Set(peTeachers.map(t => t.experience).filter(Boolean))];
+  };
+
+  const getFilteredPeTeachersForReport = () => {
+    return peTeachers.filter(teacher => {
+      if (peTeacherFilters.name && !teacher.names?.toLowerCase().includes(peTeacherFilters.name.toLowerCase())) return false;
+      if (peTeacherFilters.school && teacher.school !== peTeacherFilters.school) return false;
+      if (peTeacherFilters.sportOfInterest && teacher.sportOfInterest !== peTeacherFilters.sportOfInterest) return false;
+      if (peTeacherFilters.experience && teacher.experience !== peTeacherFilters.experience) return false;
+      return true;
+    });
+  };
+
+  const handlePeTeacherFilterChange = (filterName, value) => {
+    setPeTeacherFilters(prev => ({ ...prev, [filterName]: value }));
   };
 
   const handleAddInstitution = () => {
@@ -647,7 +749,8 @@ const IsongaPrograms = () => {
       qualification: '',
       email: '',
       tel: '',
-      position: ''
+      position: '',
+      trainingTypes: []
     });
     setSelectedCoach(null);
     setShowCoachModal(true);
@@ -663,7 +766,8 @@ const IsongaPrograms = () => {
       qualification: coach.qualification || '',
       email: coach.email || '',
       tel: coach.tel || '',
-      position: coach.position || ''
+      position: coach.position || '',
+      trainingTypes: coach.trainingTypes || []
     });
     setSelectedCoach(coach);
     setShowCoachModal(true);
@@ -860,12 +964,12 @@ const IsongaPrograms = () => {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentPrograms = Array.isArray(filteredPrograms) ? filteredPrograms.slice(indexOfFirstItem, indexOfLastItem) : [];
   const currentStudents = Array.isArray(filteredStudents) ? filteredStudents.slice(indexOfFirstItem, indexOfLastItem) : [];
-  const currentCoaches = Array.isArray(filteredCoaches) ? filteredCoaches.slice(indexOfFirstItem, indexOfLastItem) : [];
-  const currentPeTeachers = Array.isArray(filteredPeTeachers) ? filteredPeTeachers.slice(indexOfFirstItem, indexOfLastItem) : [];
+  const currentCoaches = Array.isArray(getFilteredCoachesForReport()) ? getFilteredCoachesForReport().slice(indexOfFirstItem, indexOfLastItem) : [];
+  const currentPeTeachers = Array.isArray(getFilteredPeTeachersForReport()) ? getFilteredPeTeachersForReport().slice(indexOfFirstItem, indexOfLastItem) : [];
   const totalProgramPages = Math.ceil(filteredPrograms.length / itemsPerPage);
   const totalStudentPages = Math.ceil(filteredStudents.length / itemsPerPage);
-  const totalCoachPages = Math.ceil(filteredCoaches.length / itemsPerPage);
-  const totalPeTeacherPages = Math.ceil(filteredPeTeachers.length / itemsPerPage);
+  const totalCoachPages = Math.ceil(getFilteredCoachesForReport().length / itemsPerPage);
+  const totalPeTeacherPages = Math.ceil(getFilteredPeTeachersForReport().length / itemsPerPage);
 
   const renderLocation = (location) => {
     if (!location) return 'N/A';
@@ -919,9 +1023,9 @@ const IsongaPrograms = () => {
               </div>
 
               {/* PDF Report Filters */}
-              <div className={`rounded-lg p-4 mb-4 ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
-                <h3 className="text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">PDF Report Filters</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className={`rounded-lg p-3 mb-4 ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
+                <h3 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">PDF Report Filters</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
                   {/* Category Filter */}
                   <div>
                     <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Category</label>
@@ -1052,25 +1156,25 @@ const IsongaPrograms = () => {
               </div>
 
               {/* Table */}
-              <div className={`rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow'}`}>
+              <div className={`rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow'} overflow-hidden`}>
                 <PrintButton title='Institutions Report'>
-                  <div className="overflow-x-auto">
-                    <Table>
+                  <div className="overflow-x-auto" style={{maxWidth: '100%'}}>
+                    <Table className="w-full" style={{minWidth: '800px'}}>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="min-w-[200px] text-xs">Name</TableHead>
-                        <TableHead className="min-w-[120px] text-xs">Domain</TableHead>
-                        <TableHead className="min-w-[120px] text-xs">Category</TableHead>
-                        <TableHead className="min-w-[100px] text-xs">Students</TableHead>
-                        <TableHead className="min-w-[120px] text-xs">Province</TableHead>
-                        <TableHead className="min-w-[120px] text-xs">District</TableHead>
-                        <TableHead className="min-w-[120px] text-xs">Sector</TableHead>
-                        <TableHead className="min-w-[180px] text-xs">Legal Representative</TableHead>
-                        <TableHead className="min-w-[150px] text-xs">Contact</TableHead>
-                        <TableHead className="min-w-[150px] text-xs">Sports Disciplines</TableHead>
-                        <TableHead className="min-w-[120px] text-xs">No. of Sports</TableHead>
-                        <TableHead className="min-w-[150px] text-xs">Sections/Teams</TableHead>
-                        <TableHead className="w-[150px] text-xs operation">Operation</TableHead>
+                        <TableHead className="min-w-[140px] text-xs">Name</TableHead>
+                        <TableHead className="min-w-[80px] text-xs">Domain</TableHead>
+                        <TableHead className="min-w-[100px] text-xs">Category</TableHead>
+                        <TableHead className="min-w-[70px] text-xs">Students</TableHead>
+                        <TableHead className="min-w-[80px] text-xs">Province</TableHead>
+                        <TableHead className="min-w-[80px] text-xs">District</TableHead>
+                        <TableHead className="min-w-[80px] text-xs">Sector</TableHead>
+                        <TableHead className="min-w-[120px] text-xs">School Representative</TableHead>
+                        <TableHead className="min-w-[100px] text-xs">Contact</TableHead>
+                        <TableHead className="min-w-[120px] text-xs">Sports Disciplines</TableHead>
+                        <TableHead className="min-w-[80px] text-xs">No. of Sports</TableHead>
+                        <TableHead className="min-w-[120px] text-xs">Sections/Teams</TableHead>
+                        <TableHead className="w-[100px] text-xs operation">Operation</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -1125,29 +1229,54 @@ const IsongaPrograms = () => {
                             {program.sections ? (
                               <div className="flex flex-wrap gap-1">
                                 {(() => {
-                                  let allSections = [];
+                                  let sportSectionCombinations = [];
                                   
                                   if (Array.isArray(program.sections)) {
                                     // Simple array format: ["Male", "Female"]
-                                    allSections = program.sections;
+                                    // Combine with all sports disciplines
+                                    const sports = Array.isArray(program.sportsDisciplines) ? program.sportsDisciplines : [];
+                                    if (sports.length > 0) {
+                                      sports.forEach(sport => {
+                                        program.sections.forEach(section => {
+                                          sportSectionCombinations.push(`${sport} ${section}`);
+                                        });
+                                      });
+                                    } else {
+                                      // If no sports, just show sections
+                                      sportSectionCombinations = program.sections;
+                                    }
                                   } else if (typeof program.sections === 'object' && program.sections !== null) {
                                     // Object format: { "Football": ["Male", "Female"], "Volleyball": ["Male", "Female"] }
-                                    allSections = Object.values(program.sections).flat();
-                                    // Remove duplicates
-                                    allSections = [...new Set(allSections)];
+                                    Object.entries(program.sections).forEach(([sport, sections]) => {
+                                      if (Array.isArray(sections)) {
+                                        sections.forEach(section => {
+                                          sportSectionCombinations.push(`${sport} ${section}`);
+                                        });
+                                      }
+                                    });
                                   } else if (typeof program.sections === 'string') {
                                     // String format: "Male,Female,Mixed"
-                                    allSections = program.sections.split(',').map(s => s.trim()).filter(Boolean);
+                                    const sections = program.sections.split(',').map(s => s.trim()).filter(Boolean);
+                                    const sports = Array.isArray(program.sportsDisciplines) ? program.sportsDisciplines : [];
+                                    if (sports.length > 0) {
+                                      sports.forEach(sport => {
+                                        sections.forEach(section => {
+                                          sportSectionCombinations.push(`${sport} ${section}`);
+                                        });
+                                      });
+                                    } else {
+                                      sportSectionCombinations = sections;
+                                    }
                                   }
                                   
-                                  if (allSections.length === 0) {
+                                  if (sportSectionCombinations.length === 0) {
                                     return <span className="text-gray-500">N/A</span>;
                                   }
                                   
-                                  // Display ALL sections, not just first 3
-                                  return allSections.map((section, index) => (
-                                    <span key={index} className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded">
-                                      {section}
+                                  // Display all combinations
+                                  return sportSectionCombinations.map((combination, index) => (
+                                    <span key={index} className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
+                                      {combination}
                                     </span>
                                   ));
                                 })()}
@@ -1378,6 +1507,137 @@ const IsongaPrograms = () => {
                 </div>
               </div>
 
+              {/* Coach Report Filters */}
+              <div className={`rounded-lg p-3 mb-4 ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
+                <h3 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">PDF Report Filters</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+                  {/* Coach Name Filter */}
+                  <div>
+                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Coach Name</label>
+                    <input
+                      type="text"
+                      value={coachFilters.name}
+                      onChange={(e) => handleCoachFilterChange('name', e.target.value)}
+                      placeholder="Search by name..."
+                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                    />
+                  </div>
+
+                  {/* School Filter */}
+                  <div>
+                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">School</label>
+                    <select
+                      value={coachFilters.school}
+                      onChange={(e) => handleCoachFilterChange('school', e.target.value)}
+                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                    >
+                      <option value="">All Schools</option>
+                      {getUniqueCoachSchools().map(school => (
+                        <option key={school} value={school}>{school}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Sport Filter */}
+                  <div>
+                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Sport</label>
+                    <select
+                      value={coachFilters.sport}
+                      onChange={(e) => handleCoachFilterChange('sport', e.target.value)}
+                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                    >
+                      <option value="">All Sports</option>
+                      {getUniqueCoachSports().map(sport => (
+                        <option key={sport} value={sport}>{sport}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Section Filter */}
+                  <div>
+                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Section</label>
+                    <select
+                      value={coachFilters.section}
+                      onChange={(e) => handleCoachFilterChange('section', e.target.value)}
+                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                    >
+                      <option value="">All Sections</option>
+                      {getUniqueCoachSections().map(section => (
+                        <option key={section} value={section}>{section}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Qualification Filter */}
+                  <div>
+                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Qualification</label>
+                    <select
+                      value={coachFilters.qualification}
+                      onChange={(e) => handleCoachFilterChange('qualification', e.target.value)}
+                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                    >
+                      <option value="">All Qualifications</option>
+                      {getUniqueCoachQualifications().map(qualification => (
+                        <option key={qualification} value={qualification}>{qualification}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Position Filter */}
+                  <div>
+                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Position</label>
+                    <select
+                      value={coachFilters.position}
+                      onChange={(e) => handleCoachFilterChange('position', e.target.value)}
+                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                    >
+                      <option value="">All Positions</option>
+                      {getUniqueCoachPositions().map(position => (
+                        <option key={position} value={position}>{position}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Training Type Filter */}
+                  <div>
+                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Training Type</label>
+                    <select
+                      value={coachFilters.trainingType}
+                      onChange={(e) => handleCoachFilterChange('trainingType', e.target.value)}
+                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                    >
+                      <option value="">All Training Types</option>
+                      {getUniqueCoachTrainingTypes().map(type => (
+                        <option key={type} value={type}>{type}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Clear Filters Button */}
+                <div className="mt-3 flex justify-end">
+                  <button
+                    onClick={() => setCoachFilters({
+                      name: '',
+                      school: '',
+                      sport: '',
+                      section: '',
+                      qualification: '',
+                      position: '',
+                      trainingType: ''
+                    })}
+                    className="text-xs bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded transition-colors"
+                  >
+                    Clear Filters
+                  </button>
+                </div>
+                
+                {/* Filter Summary */}
+                <div className="mt-3 text-xs text-gray-600 dark:text-gray-400">
+                  Showing {getFilteredCoachesForReport().length} of {coaches.length} coaches
+                </div>
+              </div>
+
               {/* Coaches Table */}
               <div className={`rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow'}`}>
                 <PrintButton title='Coaches Report'>
@@ -1393,6 +1653,8 @@ const IsongaPrograms = () => {
                         <TableHead className="min-w-[150px] text-xs">Email</TableHead>
                         <TableHead className="min-w-[100px] text-xs">Tel</TableHead>
                         <TableHead className="min-w-[120px] text-xs">Position</TableHead>
+                        <TableHead className="min-w-[200px] text-xs">Training Types</TableHead>
+                        <TableHead className="min-w-[100px] text-xs">Training Count</TableHead>
                         <TableHead className="w-[150px] text-xs operation">Operation</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -1408,6 +1670,39 @@ const IsongaPrograms = () => {
                           <TableCell className="text-xs">{coach.email}</TableCell>
                           <TableCell className="text-xs">{coach.tel}</TableCell>
                           <TableCell className="text-xs">{coach.position}</TableCell>
+                          <TableCell className="text-xs">
+                            <div className="flex flex-wrap gap-1">
+                              {coach.trainingTypes && coach.trainingTypes.length > 0 ? (
+                                coach.trainingTypes.slice(0, 2).map((type, index) => (
+                                  <span
+                                    key={index}
+                                    className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full"
+                                    title={type}
+                                  >
+                                    {type.length > 15 ? `${type.substring(0, 15)}...` : type}
+                                  </span>
+                                ))
+                              ) : (
+                                <span className="text-gray-400">None</span>
+                              )}
+                              {coach.trainingTypes && coach.trainingTypes.length > 2 && (
+                                <span className="text-xs text-gray-500">
+                                  +{coach.trainingTypes.length - 2} more
+                                </span>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-xs text-center">
+                            <div className="flex items-center justify-center">
+                              <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-xs font-medium ${
+                                coach.trainingTypes && coach.trainingTypes.length > 0 
+                                  ? 'bg-blue-100 text-blue-800' 
+                                  : 'bg-gray-100 text-gray-500'
+                              }`}>
+                                {coach.trainingTypes ? coach.trainingTypes.length : 0}
+                              </span>
+                            </div>
+                          </TableCell>
                           <TableCell className="operation">
                             <div className="flex items-center gap-1">
                               <button
@@ -1516,6 +1811,89 @@ const IsongaPrograms = () => {
                       onChange={(e) => handleSearch(e.target.value, 'peTeachers')}
                     />
                   </div>
+                </div>
+              </div>
+
+              {/* PE Teacher Report Filters */}
+              <div className={`rounded-lg p-3 mb-4 ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
+                <h3 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">PDF Report Filters</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                  {/* Teacher Name Filter */}
+                  <div>
+                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Teacher Name</label>
+                    <input
+                      type="text"
+                      value={peTeacherFilters.name}
+                      onChange={(e) => handlePeTeacherFilterChange('name', e.target.value)}
+                      placeholder="Search by name..."
+                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                    />
+                  </div>
+
+                  {/* School Filter */}
+                  <div>
+                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">School</label>
+                    <select
+                      value={peTeacherFilters.school}
+                      onChange={(e) => handlePeTeacherFilterChange('school', e.target.value)}
+                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                    >
+                      <option value="">All Schools</option>
+                      {getUniquePeTeacherSchools().map(school => (
+                        <option key={school} value={school}>{school}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Sport of Interest Filter */}
+                  <div>
+                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Sport of Interest</label>
+                    <select
+                      value={peTeacherFilters.sportOfInterest}
+                      onChange={(e) => handlePeTeacherFilterChange('sportOfInterest', e.target.value)}
+                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                    >
+                      <option value="">All Sports</option>
+                      {getUniquePeTeacherSports().map(sport => (
+                        <option key={sport} value={sport}>{sport}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Experience Filter */}
+                  <div>
+                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Experience</label>
+                    <select
+                      value={peTeacherFilters.experience}
+                      onChange={(e) => handlePeTeacherFilterChange('experience', e.target.value)}
+                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                    >
+                      <option value="">All Experience Levels</option>
+                      {getUniquePeTeacherExperience().map(experience => (
+                        <option key={experience} value={experience}>{experience}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Clear Filters Button */}
+                <div className="mt-3 flex justify-end">
+                  <button
+                    onClick={() => setPeTeacherFilters({
+                      name: '',
+                      school: '',
+                      sportOfInterest: '',
+                      experience: ''
+                    })}
+                    className="text-xs bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded transition-colors"
+                  >
+                    Clear Filters
+                  </button>
+                </div>
+                
+                {/* Filter Summary */}
+                <div className="mt-3 text-xs text-gray-600 dark:text-gray-400">
+                  Showing {getFilteredPeTeachersForReport().length} of {peTeachers.length} PE teachers
                 </div>
               </div>
 
@@ -1670,7 +2048,7 @@ const IsongaPrograms = () => {
   }
 
   return (
-    <div className={`p-6 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <div className={`p-4 overflow-x-hidden ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`} style={{maxWidth: '100%'}}>
       {message && (
         <Message
           type={message.type}
@@ -2279,9 +2657,9 @@ const IsongaPrograms = () => {
                 </div>
               </div>
 
-              {/* Legal Representative Information */}
+              {/* School Representative Information */}
               <div>
-                <h3 className="text-lg font-semibold text-blue-600 mb-3">Legal Representative</h3>
+                <h3 className="text-lg font-semibold text-blue-600 mb-3">School Representative</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="font-medium text-gray-600 block">Full Name</label>
@@ -2629,6 +3007,35 @@ const IsongaPrograms = () => {
                 <option value="Fitness Coach">Fitness Coach</option>
                 <option value="Goalkeeper Coach">Goalkeeper Coach</option>
               </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Training Types</label>
+              <div className="border rounded-lg px-3 py-2 max-h-40 overflow-y-auto bg-white">
+                <div className="space-y-2">
+                  {trainingTypeOptions.map((type) => (
+                    <label key={type} className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={coachFormData.trainingTypes.includes(type)}
+                        onChange={(e) => {
+                          const updatedTypes = e.target.checked
+                            ? [...coachFormData.trainingTypes, type]
+                            : coachFormData.trainingTypes.filter(t => t !== type);
+                          setCoachFormData(prev => ({
+                            ...prev,
+                            trainingTypes: updatedTypes
+                          }));
+                        }}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700">{type}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Selected: {coachFormData.trainingTypes.length} of {trainingTypeOptions.length}
+              </p>
             </div>
           </div>
           <div className="flex justify-end gap-3 pt-4 border-t">
