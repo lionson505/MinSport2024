@@ -982,57 +982,17 @@ const IsongaPrograms = () => {
       case 'Manage School':
         return (
           <div className="transition-all duration-300 ease-in-out">
-            {permissions.canCreate && (<Button
-              onClick={handleAddInstitution}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
-              disabled={isSubmitting}
-            >
-              <Plus className="h-5 w-5" />
-              <span>Add School</span>
-            </Button>)}
-
-            <div className="space-y-6">
-              {/* Search and Entries Section */}
-              <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">Show entries:</span>
-                    <select
-                      className="border rounded px-2 py-1"
-                      value={itemsPerPage}
-                      onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                    >
-                      <option value={5}>5</option>
-                      <option value={10}>10</option>
-                      <option value={25}>25</option>
-                      <option value={50}>50</option>
-                      <option value={100}>100</option>
-                    </select>
-            </div>
-
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                    <input
-                      type="text"
-                      placeholder="Search institutions..."
-                      className="pl-10 pr-4 py-2 border rounded-lg w-full sm:w-64"
-                      onChange={(e) => handleSearch(e.target.value, 'programs')}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* PDF Report Filters */}
-              <div className={`rounded-lg p-3 mb-4 ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
-                <h3 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">PDF Report Filters</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+            <div className="space-y-4">
+              {/* PDF Report Filters - Smaller and Above Table */}
+              <div className={`rounded-lg p-2 ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
+                <h3 className="text-xs font-medium mb-2 text-gray-700 dark:text-gray-300">Filters</h3>
+                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
                   {/* Category Filter */}
                   <div>
-                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Category</label>
                     <select
                       value={reportFilters.category}
                       onChange={(e) => handleFilterChange('category', e.target.value)}
-                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                      className="w-full text-xs border rounded px-1.5 py-0.5 bg-white dark:bg-gray-700 dark:border-gray-600"
                     >
                       <option value="">All Categories</option>
                       {getUniqueCategories().map(category => (
@@ -1043,11 +1003,10 @@ const IsongaPrograms = () => {
 
                   {/* Province Filter */}
                   <div>
-                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Province</label>
                     <select
                       value={reportFilters.province}
                       onChange={(e) => handleFilterChange('province', e.target.value)}
-                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                      className="w-full text-xs border rounded px-1.5 py-0.5 bg-white dark:bg-gray-700 dark:border-gray-600"
                     >
                       <option value="">All Provinces</option>
                       {getUniqueProvinces().map(province => (
@@ -1058,11 +1017,10 @@ const IsongaPrograms = () => {
 
                   {/* District Filter */}
                   <div>
-                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">District</label>
                     <select
                       value={reportFilters.district}
                       onChange={(e) => handleFilterChange('district', e.target.value)}
-                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                      className="w-full text-xs border rounded px-1.5 py-0.5 bg-white dark:bg-gray-700 dark:border-gray-600"
                       disabled={!reportFilters.province}
                     >
                       <option value="">All Districts</option>
@@ -1074,11 +1032,10 @@ const IsongaPrograms = () => {
 
                   {/* Sector Filter */}
                   <div>
-                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Sector</label>
                     <select
                       value={reportFilters.sector}
                       onChange={(e) => handleFilterChange('sector', e.target.value)}
-                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                      className="w-full text-xs border rounded px-1.5 py-0.5 bg-white dark:bg-gray-700 dark:border-gray-600"
                       disabled={!reportFilters.district}
                     >
                       <option value="">All Sectors</option>
@@ -1090,11 +1047,10 @@ const IsongaPrograms = () => {
 
                   {/* Sport Discipline Filter */}
                   <div>
-                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Sport Discipline</label>
                     <select
                       value={reportFilters.sportDiscipline}
                       onChange={(e) => handleFilterChange('sportDiscipline', e.target.value)}
-                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                      className="w-full text-xs border rounded px-1.5 py-0.5 bg-white dark:bg-gray-700 dark:border-gray-600"
                     >
                       <option value="">All Sports</option>
                       {getUniqueSportDisciplines().map(sport => (
@@ -1105,11 +1061,10 @@ const IsongaPrograms = () => {
 
                   {/* Section Filter */}
                   <div>
-                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Section/Team</label>
                     <select
                       value={reportFilters.section}
                       onChange={(e) => handleFilterChange('section', e.target.value)}
-                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                      className="w-full text-xs border rounded px-1.5 py-0.5 bg-white dark:bg-gray-700 dark:border-gray-600"
                     >
                       <option value="">All Sections</option>
                       {getUniqueSections().map(section => (
@@ -1118,20 +1073,8 @@ const IsongaPrograms = () => {
                     </select>
                   </div>
 
-                  {/* School Name Filter */}
-                  <div>
-                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">School Name</label>
-                    <input
-                      type="text"
-                      value={reportFilters.schoolName}
-                      onChange={(e) => handleFilterChange('schoolName', e.target.value)}
-                      placeholder="Search by name..."
-                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
-                    />
-                  </div>
-
                   {/* Clear Filters Button */}
-                  <div className="flex items-end">
+                  <div>
                     <button
                       onClick={() => setReportFilters({
                         category: '',
@@ -1142,39 +1085,56 @@ const IsongaPrograms = () => {
                         section: '',
                         schoolName: ''
                       })}
-                      className="w-full text-xs bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded transition-colors"
+                      className="w-full text-xs bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded transition-colors"
                     >
-                      Clear Filters
+                      Clear
                     </button>
                   </div>
                 </div>
                 
-                {/* Filter Summary */}
-                <div className="mt-3 text-xs text-gray-600 dark:text-gray-400">
-                  Showing {getFilteredProgramsForReport().length} of {programs.length} institutions
+                {/* Show entries and Filter Summary */}
+                <div className="mt-2 flex justify-between items-center text-xs text-gray-600 dark:text-gray-400">
+                  <div className="flex items-center gap-2">
+                    <span>Show:</span>
+                    <select
+                      className="border rounded px-1 py-0.5 text-xs"
+                      value={itemsPerPage}
+                      onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                    >
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                    </select>
+                    <span>entries</span>
+                  </div>
+                  <div>
+                    Showing {getFilteredProgramsForReport().length} of {programs.length} institutions
+                  </div>
                 </div>
               </div>
 
               {/* Table */}
-              <div className={`rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow'} overflow-hidden`}>
+              <div className={`rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow'}`}>
                 <PrintButton title='Institutions Report'>
-                  <div className="overflow-x-auto" style={{maxWidth: '100%'}}>
-                    <Table className="w-full" style={{minWidth: '800px'}}>
+                  <div className="w-full">
+                    <Table className="w-full table-auto">
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="min-w-[140px] text-xs">Name</TableHead>
-                        <TableHead className="min-w-[80px] text-xs">Domain</TableHead>
-                        <TableHead className="min-w-[100px] text-xs">Category</TableHead>
-                        <TableHead className="min-w-[70px] text-xs">Students</TableHead>
-                        <TableHead className="min-w-[80px] text-xs">Province</TableHead>
-                        <TableHead className="min-w-[80px] text-xs">District</TableHead>
-                        <TableHead className="min-w-[80px] text-xs">Sector</TableHead>
-                        <TableHead className="min-w-[120px] text-xs">School Representative</TableHead>
-                        <TableHead className="min-w-[100px] text-xs">Contact</TableHead>
-                        <TableHead className="min-w-[120px] text-xs">Sports Disciplines</TableHead>
-                        <TableHead className="min-w-[80px] text-xs">No. of Sports</TableHead>
-                        <TableHead className="min-w-[120px] text-xs">Sections/Teams</TableHead>
-                        <TableHead className="w-[100px] text-xs operation">Operation</TableHead>
+                        <TableHead className="text-xs p-2 sm:min-w-[140px]">Name</TableHead>
+                        <TableHead className="text-xs p-2 hidden sm:table-cell sm:min-w-[80px]">Domain</TableHead>
+                        <TableHead className="text-xs p-2 sm:min-w-[100px]">Category</TableHead>
+                        <TableHead className="text-xs p-2 sm:min-w-[70px]">Students</TableHead>
+                        <TableHead className="text-xs p-2 hidden md:table-cell sm:min-w-[80px]">Province</TableHead>
+                        <TableHead className="text-xs p-2 hidden md:table-cell sm:min-w-[80px]">District</TableHead>
+                        <TableHead className="text-xs p-2 hidden lg:table-cell sm:min-w-[80px]">Sector</TableHead>
+                        <TableHead className="text-xs p-2 hidden lg:table-cell sm:min-w-[120px]">School Representative</TableHead>
+                        <TableHead className="text-xs p-2 hidden lg:table-cell sm:min-w-[100px]">Contact</TableHead>
+                        <TableHead className="text-xs p-2 hidden xl:table-cell sm:min-w-[120px]">Sports Disciplines</TableHead>
+                        <TableHead className="text-xs p-2 hidden xl:table-cell sm:min-w-[80px]">No. of Sports</TableHead>
+                        <TableHead className="text-xs p-2 hidden xl:table-cell sm:min-w-[120px]">Sections/Teams</TableHead>
+                        <TableHead className="text-xs p-2 w-[80px] sm:w-[100px]">Action</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -1375,19 +1335,20 @@ const IsongaPrograms = () => {
               {/* Students Table */}
               <div className={`rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow'}`}>
                 <PrintButton title='Students Report'>
-                  <Table>
+                  <div className="w-full">
+                    <Table className="w-full table-auto">
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="min-w-[200px] text-xs">Names</TableHead>
-                        <TableHead className="min-w-[130px] text-xs">SDMS Number</TableHead>
-                        <TableHead className="min-w-[80px] text-xs">Gender</TableHead>
-                        <TableHead className="min-w-[80px] text-xs">Class</TableHead>
-                        <TableHead className="min-w-[150px] text-xs">School Name</TableHead>
-                        <TableHead className="min-w-[120px] text-xs">Section</TableHead>
-                        <TableHead className="min-w-[120px] text-xs">Sport Discipline</TableHead>
-                        <TableHead className="min-w-[150px] text-xs">Contact</TableHead>
-                        <TableHead className="min-w-[150px] text-xs">Nationality</TableHead>
-                        <TableHead className="w-[150px] text-xs operation">Operation</TableHead>
+                        <TableHead className="text-xs p-2 sm:min-w-[200px]">Names</TableHead>
+                        <TableHead className="text-xs p-2 hidden sm:table-cell sm:min-w-[130px]">SDMS Number</TableHead>
+                        <TableHead className="text-xs p-2 sm:min-w-[80px]">Gender</TableHead>
+                        <TableHead className="text-xs p-2 hidden md:table-cell sm:min-w-[80px]">Class</TableHead>
+                        <TableHead className="text-xs p-2 sm:min-w-[150px]">School Name</TableHead>
+                        <TableHead className="text-xs p-2 hidden lg:table-cell sm:min-w-[120px]">Section</TableHead>
+                        <TableHead className="text-xs p-2 hidden lg:table-cell sm:min-w-[120px]">Sport Discipline</TableHead>
+                        <TableHead className="text-xs p-2 hidden xl:table-cell sm:min-w-[150px]">Contact</TableHead>
+                        <TableHead className="text-xs p-2 hidden xl:table-cell sm:min-w-[150px]">Nationality</TableHead>
+                        <TableHead className="text-xs p-2 w-[80px] sm:w-[150px]">Action</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -1445,7 +1406,8 @@ const IsongaPrograms = () => {
                         );
                       })}
                     </TableBody>
-                  </Table>
+                    </Table>
+                  </div>
                 </PrintButton>
               </div>
             </div>
@@ -1466,70 +1428,28 @@ const IsongaPrograms = () => {
       case 'Coaches':
         return (
           <div className="transition-all duration-300 ease-in-out">
-            {permissions.canCreate && (
-              <Button
-                onClick={handleAddCoach}
-                className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 mb-6"
-              >
-                <Plus className="h-4 w-4" />
-                Add Coach
-              </Button>
-            )}
-
-            <div className="space-y-6">
-              {/* Search and Entries Section */}
-              <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">Show entries:</span>
-                    <select
-                      className="border rounded px-2 py-1"
-                      value={itemsPerPage}
-                      onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                    >
-                      <option value={5}>5</option>
-                      <option value={10}>10</option>
-                      <option value={25}>25</option>
-                      <option value={50}>50</option>
-                      <option value={100}>100</option>
-                    </select>
-                  </div>
-
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                    <input
-                      type="text"
-                      placeholder="Search coaches..."
-                      className="pl-10 pr-4 py-2 border rounded-lg w-full sm:w-64"
-                      onChange={(e) => handleSearch(e.target.value, 'coaches')}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Coach Report Filters */}
-              <div className={`rounded-lg p-3 mb-4 ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
-                <h3 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">PDF Report Filters</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+            <div className="space-y-4">
+              {/* Coach Report Filters - Smaller and Above Table */}
+              <div className={`rounded-lg p-1.5 ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
+                <h3 className="text-xs font-medium mb-2 text-gray-700 dark:text-gray-300">Filters</h3>
+                <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-1.5">
                   {/* Coach Name Filter */}
                   <div>
-                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Coach Name</label>
                     <input
                       type="text"
                       value={coachFilters.name}
                       onChange={(e) => handleCoachFilterChange('name', e.target.value)}
-                      placeholder="Search by name..."
-                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                      placeholder="Coach name..."
+                      className="w-full text-xs border rounded px-1.5 py-0.5 bg-white dark:bg-gray-700 dark:border-gray-600"
                     />
                   </div>
 
                   {/* School Filter */}
                   <div>
-                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">School</label>
                     <select
                       value={coachFilters.school}
                       onChange={(e) => handleCoachFilterChange('school', e.target.value)}
-                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                      className="w-full text-xs border rounded px-1.5 py-0.5 bg-white dark:bg-gray-700 dark:border-gray-600"
                     >
                       <option value="">All Schools</option>
                       {getUniqueCoachSchools().map(school => (
@@ -1540,11 +1460,10 @@ const IsongaPrograms = () => {
 
                   {/* Sport Filter */}
                   <div>
-                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Sport</label>
                     <select
                       value={coachFilters.sport}
                       onChange={(e) => handleCoachFilterChange('sport', e.target.value)}
-                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                      className="w-full text-xs border rounded px-1.5 py-0.5 bg-white dark:bg-gray-700 dark:border-gray-600"
                     >
                       <option value="">All Sports</option>
                       {getUniqueCoachSports().map(sport => (
@@ -1555,11 +1474,10 @@ const IsongaPrograms = () => {
 
                   {/* Section Filter */}
                   <div>
-                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Section</label>
                     <select
                       value={coachFilters.section}
                       onChange={(e) => handleCoachFilterChange('section', e.target.value)}
-                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                      className="w-full text-xs border rounded px-1.5 py-0.5 bg-white dark:bg-gray-700 dark:border-gray-600"
                     >
                       <option value="">All Sections</option>
                       {getUniqueCoachSections().map(section => (
@@ -1570,11 +1488,10 @@ const IsongaPrograms = () => {
 
                   {/* Qualification Filter */}
                   <div>
-                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Qualification</label>
                     <select
                       value={coachFilters.qualification}
                       onChange={(e) => handleCoachFilterChange('qualification', e.target.value)}
-                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                      className="w-full text-xs border rounded px-1.5 py-0.5 bg-white dark:bg-gray-700 dark:border-gray-600"
                     >
                       <option value="">All Qualifications</option>
                       {getUniqueCoachQualifications().map(qualification => (
@@ -1585,11 +1502,10 @@ const IsongaPrograms = () => {
 
                   {/* Position Filter */}
                   <div>
-                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Position</label>
                     <select
                       value={coachFilters.position}
                       onChange={(e) => handleCoachFilterChange('position', e.target.value)}
-                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                      className="w-full text-xs border rounded px-1.5 py-0.5 bg-white dark:bg-gray-700 dark:border-gray-600"
                     >
                       <option value="">All Positions</option>
                       {getUniqueCoachPositions().map(position => (
@@ -1600,11 +1516,10 @@ const IsongaPrograms = () => {
 
                   {/* Training Type Filter */}
                   <div>
-                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Training Type</label>
                     <select
                       value={coachFilters.trainingType}
                       onChange={(e) => handleCoachFilterChange('trainingType', e.target.value)}
-                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                      className="w-full text-xs border rounded px-1.5 py-0.5 bg-white dark:bg-gray-700 dark:border-gray-600"
                     >
                       <option value="">All Training Types</option>
                       {getUniqueCoachTrainingTypes().map(type => (
@@ -1612,89 +1527,101 @@ const IsongaPrograms = () => {
                       ))}
                     </select>
                   </div>
-                </div>
-
-                {/* Clear Filters Button */}
-                <div className="mt-3 flex justify-end">
-                  <button
-                    onClick={() => setCoachFilters({
-                      name: '',
-                      school: '',
-                      sport: '',
-                      section: '',
-                      qualification: '',
-                      position: '',
-                      trainingType: ''
-                    })}
-                    className="text-xs bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded transition-colors"
-                  >
-                    Clear Filters
-                  </button>
+                  
+                  {/* Clear Filters Button */}
+                  <div>
+                    <button
+                      onClick={() => setCoachFilters({
+                        name: '',
+                        school: '',
+                        sport: '',
+                        section: '',
+                        qualification: '',
+                        position: '',
+                        trainingType: ''
+                      })}
+                      className="w-full text-xs bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded transition-colors"
+                    >
+                      Clear
+                    </button>
+                  </div>
                 </div>
                 
-                {/* Filter Summary */}
-                <div className="mt-3 text-xs text-gray-600 dark:text-gray-400">
-                  Showing {getFilteredCoachesForReport().length} of {coaches.length} coaches
+                {/* Show entries and Filter Summary */}
+                <div className="mt-2 flex justify-between items-center text-xs text-gray-600 dark:text-gray-400">
+                  <div className="flex items-center gap-2">
+                    <span>Show:</span>
+                    <select
+                      className="border rounded px-1 py-0.5 text-xs"
+                      value={itemsPerPage}
+                      onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                    >
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                    </select>
+                    <span>entries</span>
+                  </div>
+                  <div>
+                    Showing {getFilteredCoachesForReport().length} of {coaches.length} coaches
+                  </div>
                 </div>
               </div>
 
               {/* Coaches Table */}
               <div className={`rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow'}`}>
                 <PrintButton title='Coaches Report'>
-                  <Table>
+                  <div className="w-full content-to-export">
+                    <Table className="w-full table-auto">
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="min-w-[150px] text-xs">Name</TableHead>
-                        <TableHead className="min-w-[80px] text-xs">Age</TableHead>
-                        <TableHead className="min-w-[100px] text-xs">Sport</TableHead>
-                        <TableHead className="min-w-[100px] text-xs">Section</TableHead>
-                        <TableHead className="min-w-[150px] text-xs">School</TableHead>
-                        <TableHead className="min-w-[120px] text-xs">Qualification</TableHead>
-                        <TableHead className="min-w-[150px] text-xs">Email</TableHead>
-                        <TableHead className="min-w-[100px] text-xs">Tel</TableHead>
-                        <TableHead className="min-w-[120px] text-xs">Position</TableHead>
-                        <TableHead className="min-w-[200px] text-xs">Training Types</TableHead>
-                        <TableHead className="min-w-[100px] text-xs">Training Count</TableHead>
-                        <TableHead className="w-[150px] text-xs operation">Operation</TableHead>
+                        <TableHead className="text-xs p-2 sm:min-w-[120px]">Name</TableHead>
+                        <TableHead className="text-xs p-2 hidden sm:table-cell sm:min-w-[60px]">Age</TableHead>
+                        <TableHead className="text-xs p-2 sm:min-w-[80px]">Sport</TableHead>
+                        <TableHead className="text-xs p-2 hidden md:table-cell sm:min-w-[80px]">Section</TableHead>
+                        <TableHead className="text-xs p-2 sm:min-w-[120px]">School</TableHead>
+                        <TableHead className="text-xs p-2 hidden lg:table-cell sm:min-w-[100px]">Qualification</TableHead>
+                        <TableHead className="text-xs p-2 hidden lg:table-cell sm:min-w-[120px]">Email</TableHead>
+                        <TableHead className="text-xs p-2 hidden xl:table-cell sm:min-w-[80px]">Tel</TableHead>
+                        <TableHead className="text-xs p-2 hidden xl:table-cell sm:min-w-[100px]">Position</TableHead>
+                        <TableHead className="text-xs p-2 hidden xl:table-cell sm:min-w-[250px]">Training Types</TableHead>
+                        <TableHead className="text-xs p-2 hidden xl:table-cell sm:min-w-[140px]">Training Count</TableHead>
+                        <TableHead className="text-xs p-2 w-[80px] sm:w-[120px] operation">Action</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {currentCoaches.map((coach) => (
                         <TableRow key={coach.id}>
-                          <TableCell className="text-xs font-medium">{coach.name}</TableCell>
-                          <TableCell className="text-xs">{coach.age}</TableCell>
-                          <TableCell className="text-xs">{coach.sport}</TableCell>
-                          <TableCell className="text-xs">{coach.section}</TableCell>
-                          <TableCell className="text-xs">{coach.school}</TableCell>
-                          <TableCell className="text-xs">{coach.qualification}</TableCell>
-                          <TableCell className="text-xs">{coach.email}</TableCell>
-                          <TableCell className="text-xs">{coach.tel}</TableCell>
-                          <TableCell className="text-xs">{coach.position}</TableCell>
-                          <TableCell className="text-xs">
-                            <div className="flex flex-wrap gap-1">
+                          <TableCell className="text-xs font-medium p-2">{coach.name}</TableCell>
+                          <TableCell className="text-xs p-2 hidden sm:table-cell">{coach.age}</TableCell>
+                          <TableCell className="text-xs p-2">{coach.sport}</TableCell>
+                          <TableCell className="text-xs p-2 hidden md:table-cell">{coach.section}</TableCell>
+                          <TableCell className="text-xs p-2">{coach.school}</TableCell>
+                          <TableCell className="text-xs p-2 hidden lg:table-cell">{coach.qualification}</TableCell>
+                          <TableCell className="text-xs p-2 hidden lg:table-cell">{coach.email}</TableCell>
+                          <TableCell className="text-xs p-2 hidden xl:table-cell">{coach.tel}</TableCell>
+                          <TableCell className="text-xs p-2 hidden xl:table-cell">{coach.position}</TableCell>
+                          <TableCell className="text-xs p-2 hidden xl:table-cell">
+                            <div className="space-y-1">
                               {coach.trainingTypes && coach.trainingTypes.length > 0 ? (
-                                coach.trainingTypes.slice(0, 2).map((type, index) => (
-                                  <span
+                                coach.trainingTypes.map((type, index) => (
+                                  <div
                                     key={index}
-                                    className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full"
-                                    title={type}
+                                    className="text-xs text-gray-700 leading-relaxed"
                                   >
-                                    {type.length > 15 ? `${type.substring(0, 15)}...` : type}
-                                  </span>
+                                    • {type}
+                                  </div>
                                 ))
                               ) : (
                                 <span className="text-gray-400">None</span>
                               )}
-                              {coach.trainingTypes && coach.trainingTypes.length > 2 && (
-                                <span className="text-xs text-gray-500">
-                                  +{coach.trainingTypes.length - 2} more
-                                </span>
-                              )}
                             </div>
                           </TableCell>
-                          <TableCell className="text-xs text-center">
+                          <TableCell className="text-xs text-center p-2 hidden xl:table-cell">
                             <div className="flex items-center justify-center">
-                              <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-xs font-medium ${
+                              <span className={`inline-flex items-center justify-center min-w-[40px] h-8 px-3 rounded-full text-sm font-medium ${
                                 coach.trainingTypes && coach.trainingTypes.length > 0 
                                   ? 'bg-blue-100 text-blue-800' 
                                   : 'bg-gray-100 text-gray-500'
@@ -1703,15 +1630,15 @@ const IsongaPrograms = () => {
                               </span>
                             </div>
                           </TableCell>
-                          <TableCell className="operation">
+                          <TableCell className="p-2 operation">
                             <div className="flex items-center gap-1">
-                              <button
+                              {/* <button
                                 onClick={() => handleViewCoachDetails(coach)}
                                 className="p-1 rounded-lg hover:bg-gray-100"
                                 title="View Details"
                               >
                                 <Eye className="h-4 w-4" />
-                              </button>
+                              </button> */}
                               {permissions.canUpdate && (
                                 <button
                                   onClick={() => handleEditCoach(coach)}
@@ -1735,7 +1662,8 @@ const IsongaPrograms = () => {
                         </TableRow>
                       ))}
                     </TableBody>
-                  </Table>
+                    </Table>
+                  </div>
                 </PrintButton>
               </div>
 
@@ -1773,70 +1701,28 @@ const IsongaPrograms = () => {
       case 'PE Teachers':
         return (
           <div className="transition-all duration-300 ease-in-out">
-            {permissions.canCreate && (
-              <Button
-                onClick={handleAddPeTeacher}
-                className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2 mb-6"
-              >
-                <Plus className="h-4 w-4" />
-                Add PE Teacher
-              </Button>
-            )}
-
-            <div className="space-y-6">
-              {/* Search and Entries Section */}
-              <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">Show entries:</span>
-                    <select
-                      className="border rounded px-2 py-1"
-                      value={itemsPerPage}
-                      onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                    >
-                      <option value={5}>5</option>
-                      <option value={10}>10</option>
-                      <option value={25}>25</option>
-                      <option value={50}>50</option>
-                      <option value={100}>100</option>
-                    </select>
-                  </div>
-
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                    <input
-                      type="text"
-                      placeholder="Search PE teachers..."
-                      className="pl-10 pr-4 py-2 border rounded-lg w-full sm:w-64"
-                      onChange={(e) => handleSearch(e.target.value, 'peTeachers')}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* PE Teacher Report Filters */}
-              <div className={`rounded-lg p-3 mb-4 ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
-                <h3 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">PDF Report Filters</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+            <div className="space-y-4">
+              {/* PE Teacher Report Filters - Smaller and Above Table */}
+              <div className={`rounded-lg p-1.5 ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
+                <h3 className="text-xs font-medium mb-2 text-gray-700 dark:text-gray-300">Filters</h3>
+                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
                   {/* Teacher Name Filter */}
                   <div>
-                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Teacher Name</label>
                     <input
                       type="text"
                       value={peTeacherFilters.name}
                       onChange={(e) => handlePeTeacherFilterChange('name', e.target.value)}
-                      placeholder="Search by name..."
-                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                      placeholder="Teacher name..."
+                      className="w-full text-xs border rounded px-1.5 py-0.5 bg-white dark:bg-gray-700 dark:border-gray-600"
                     />
                   </div>
 
                   {/* School Filter */}
                   <div>
-                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">School</label>
                     <select
                       value={peTeacherFilters.school}
                       onChange={(e) => handlePeTeacherFilterChange('school', e.target.value)}
-                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                      className="w-full text-xs border rounded px-1.5 py-0.5 bg-white dark:bg-gray-700 dark:border-gray-600"
                     >
                       <option value="">All Schools</option>
                       {getUniquePeTeacherSchools().map(school => (
@@ -1847,11 +1733,10 @@ const IsongaPrograms = () => {
 
                   {/* Sport of Interest Filter */}
                   <div>
-                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Sport of Interest</label>
                     <select
                       value={peTeacherFilters.sportOfInterest}
                       onChange={(e) => handlePeTeacherFilterChange('sportOfInterest', e.target.value)}
-                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                      className="w-full text-xs border rounded px-1.5 py-0.5 bg-white dark:bg-gray-700 dark:border-gray-600"
                     >
                       <option value="">All Sports</option>
                       {getUniquePeTeacherSports().map(sport => (
@@ -1862,11 +1747,10 @@ const IsongaPrograms = () => {
 
                   {/* Experience Filter */}
                   <div>
-                    <label className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">Experience</label>
                     <select
                       value={peTeacherFilters.experience}
                       onChange={(e) => handlePeTeacherFilterChange('experience', e.target.value)}
-                      className="w-full text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 dark:border-gray-600"
+                      className="w-full text-xs border rounded px-1.5 py-0.5 bg-white dark:bg-gray-700 dark:border-gray-600"
                     >
                       <option value="">All Experience Levels</option>
                       {getUniquePeTeacherExperience().map(experience => (
@@ -1874,56 +1758,74 @@ const IsongaPrograms = () => {
                       ))}
                     </select>
                   </div>
-                </div>
-
-                {/* Clear Filters Button */}
-                <div className="mt-3 flex justify-end">
-                  <button
-                    onClick={() => setPeTeacherFilters({
-                      name: '',
-                      school: '',
-                      sportOfInterest: '',
-                      experience: ''
-                    })}
-                    className="text-xs bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded transition-colors"
-                  >
-                    Clear Filters
-                  </button>
+                  
+                  {/* Clear Filters Button */}
+                  <div>
+                    <button
+                      onClick={() => setPeTeacherFilters({
+                        name: '',
+                        school: '',
+                        sportOfInterest: '',
+                        experience: ''
+                      })}
+                      className="w-full text-xs bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded transition-colors"
+                    >
+                      Clear
+                    </button>
+                  </div>
                 </div>
                 
-                {/* Filter Summary */}
-                <div className="mt-3 text-xs text-gray-600 dark:text-gray-400">
-                  Showing {getFilteredPeTeachersForReport().length} of {peTeachers.length} PE teachers
+                {/* Show entries and Filter Summary */}
+                <div className="mt-2 flex justify-between items-center text-xs text-gray-600 dark:text-gray-400">
+                  <div className="flex items-center gap-2">
+                    <span>Show:</span>
+                    <select
+                      className="border rounded px-1 py-0.5 text-xs"
+                      value={itemsPerPage}
+                      onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                    >
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                    </select>
+                    <span>entries</span>
+                  </div>
+                  <div>
+                    Showing {getFilteredPeTeachersForReport().length} of {peTeachers.length} PE teachers
+                  </div>
                 </div>
               </div>
 
               {/* PE Teachers Table */}
               <div className={`rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow'}`}>
                 <PrintButton title='PE Teachers Report'>
-                  <Table>
+                  <div className="w-full">
+                    <Table className="w-full table-auto">
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="min-w-[150px] text-xs">Names</TableHead>
-                        <TableHead className="min-w-[80px] text-xs">Age</TableHead>
-                        <TableHead className="min-w-[120px] text-xs">Experience</TableHead>
-                        <TableHead className="min-w-[150px] text-xs">School</TableHead>
-                        <TableHead className="min-w-[150px] text-xs">Sport of Interest</TableHead>
-                        <TableHead className="min-w-[150px] text-xs">Email</TableHead>
-                        <TableHead className="min-w-[100px] text-xs">Tel</TableHead>
-                        <TableHead className="w-[150px] text-xs operation">Operation</TableHead>
+                        <TableHead className="text-xs p-2 sm:min-w-[150px]">Names</TableHead>
+                        <TableHead className="text-xs p-2 hidden sm:table-cell sm:min-w-[80px]">Age</TableHead>
+                        <TableHead className="text-xs p-2 hidden md:table-cell sm:min-w-[120px]">Experience</TableHead>
+                        <TableHead className="text-xs p-2 sm:min-w-[150px]">School</TableHead>
+                        <TableHead className="text-xs p-2 hidden lg:table-cell sm:min-w-[150px]">Sport of Interest</TableHead>
+                        <TableHead className="text-xs p-2 hidden lg:table-cell sm:min-w-[150px]">Email</TableHead>
+                        <TableHead className="text-xs p-2 hidden xl:table-cell sm:min-w-[100px]">Tel</TableHead>
+                        <TableHead className="text-xs p-2 w-[80px] sm:w-[150px]">Action</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {currentPeTeachers.map((teacher) => (
                         <TableRow key={teacher.id}>
-                          <TableCell className="text-xs font-medium">{teacher.names}</TableCell>
-                          <TableCell className="text-xs">{teacher.age}</TableCell>
-                          <TableCell className="text-xs">{teacher.experience}</TableCell>
-                          <TableCell className="text-xs">{teacher.school}</TableCell>
-                          <TableCell className="text-xs">{teacher.sportOfInterest}</TableCell>
-                          <TableCell className="text-xs">{teacher.email}</TableCell>
-                          <TableCell className="text-xs">{teacher.tel}</TableCell>
-                          <TableCell className="operation">
+                          <TableCell className="text-xs font-medium p-2">{teacher.names}</TableCell>
+                          <TableCell className="text-xs p-2 hidden sm:table-cell">{teacher.age}</TableCell>
+                          <TableCell className="text-xs p-2 hidden md:table-cell">{teacher.experience}</TableCell>
+                          <TableCell className="text-xs p-2">{teacher.school}</TableCell>
+                          <TableCell className="text-xs p-2 hidden lg:table-cell">{teacher.sportOfInterest}</TableCell>
+                          <TableCell className="text-xs p-2 hidden lg:table-cell">{teacher.email}</TableCell>
+                          <TableCell className="text-xs p-2 hidden xl:table-cell">{teacher.tel}</TableCell>
+                          <TableCell className="p-2">
                             <div className="flex items-center gap-1">
                               <button
                                 onClick={() => handleViewPeTeacherDetails(teacher)}
@@ -1955,7 +1857,8 @@ const IsongaPrograms = () => {
                         </TableRow>
                       ))}
                     </TableBody>
-                  </Table>
+                    </Table>
+                  </div>
                 </PrintButton>
               </div>
 
@@ -2048,7 +1951,7 @@ const IsongaPrograms = () => {
   }
 
   return (
-    <div className={`p-4 overflow-x-hidden ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`} style={{maxWidth: '100%'}}>
+    <div className={`p-2 sm:p-4 overflow-x-hidden ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`} style={{maxWidth: '100vw'}}>
       {message && (
         <Message
           type={message.type}
@@ -2063,25 +1966,101 @@ const IsongaPrograms = () => {
         </h1>
       </div>
 
-      {/* Navigation Tabs */}
+      {/* Navigation Tabs with Search and Add Button */}
       <div className="mb-6">
-        <nav className="flex space-x-4">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
-                activeTab === tab
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : isDarkMode
-                    ? 'text-gray-300 hover:bg-gray-800'
-                    : 'text-gray-500 hover:bg-gray-100'
-              }`}
-              onClick={() => setActiveTab(tab)}
-            >
-              {tab}
-            </button>
-          ))}
-        </nav>
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          {/* Tabs */}
+          <nav className="flex space-x-4">
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                  activeTab === tab
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : isDarkMode
+                      ? 'text-gray-300 hover:bg-gray-800'
+                      : 'text-gray-500 hover:bg-gray-100'
+                }`}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab}
+              </button>
+            ))}
+          </nav>
+          
+          {/* Search and Add Button for different tabs */}
+          {activeTab === 'Manage School' && (
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <input
+                  type="text"
+                  placeholder="Search School..."
+                  className="pl-9 pr-4 py-2 border rounded-lg w-64 text-sm"
+                  onChange={(e) => handleSearch(e.target.value, 'programs')}
+                />
+              </div>
+              {permissions.canCreate && (
+                <Button
+                  onClick={handleAddInstitution}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 text-sm"
+                  disabled={isSubmitting}
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Add School</span>
+                </Button>
+              )}
+            </div>
+          )}
+          
+          {activeTab === 'Coaches' && (
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <input
+                  type="text"
+                  placeholder="Search coaches..."
+                  className="pl-9 pr-4 py-2 border rounded-lg w-64 text-sm"
+                  onChange={(e) => handleSearch(e.target.value, 'coaches')}
+                />
+              </div>
+              {permissions.canCreate && (
+                <Button
+                  onClick={handleAddCoach}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 text-sm"
+                  disabled={isSubmitting}
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Add Coach</span>
+                </Button>
+              )}
+            </div>
+          )}
+          
+          {activeTab === 'PE Teachers' && (
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <input
+                  type="text"
+                  placeholder="Search PE teachers..."
+                  className="pl-9 pr-4 py-2 border rounded-lg w-64 text-sm"
+                  onChange={(e) => handleSearch(e.target.value, 'peTeachers')}
+                />
+              </div>
+              {permissions.canCreate && (
+                <Button
+                  onClick={handleAddPeTeacher}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 text-sm"
+                  disabled={isSubmitting}
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Add PE Teacher</span>
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Dynamic Tab Content with Transition */}
@@ -2108,11 +2087,11 @@ const IsongaPrograms = () => {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-red-600">
               <AlertCircle className="h-5 w-5" />
-              Delete Institution
+              Delete School
             </DialogTitle>
             <DialogDescription className="py-4">
               <div className="space-y-2">
-                <p>Are you sure you want to delete this institution?</p>
+                <p>Are you sure you want to delete this school?</p>
                 {institutionToDelete && (
                   <div className="bg-gray-50 p-3 rounded-lg">
                     <p><span className="font-semibold">Name:</span> {institutionToDelete.name}</p>
@@ -2232,7 +2211,7 @@ const IsongaPrograms = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">ID/Passport No</label>
+              <label className="block text-sm font-medium mb-1">Child ID/Passport No</label>
               <input
                 type="text"
                 name="idPassportNo"
@@ -2294,7 +2273,7 @@ const IsongaPrograms = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Institution</label>
+              <label className="block text-sm font-medium mb-1">School</label>
               <select
                 name="institutionId"
                 value={studentFormData.institutionId}
@@ -2302,7 +2281,7 @@ const IsongaPrograms = () => {
                 className="w-full border rounded-lg px-3 py-2"
                 required
               >
-                <option value="">Select Institution</option>
+                <option value="">Select School</option>
                 {programs.map((institution) => (
                   <option key={institution.id} value={institution.id}>
                     {institution.name}
@@ -2311,14 +2290,14 @@ const IsongaPrograms = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Type of Institution</label>
+              <label className="block text-sm font-medium mb-1">Type of School</label>
               <input
                 type="text"
                 name="typeOfSchoolAcademyTrainingCenter"
                 value={derivedSelectedInstitution?.category || ''}
                 readOnly
                 className="w-full border rounded-lg px-3 py-2 bg-gray-100"
-                placeholder="Auto-filled from selected Institution"
+                placeholder="Auto-filled from selected School"
               />
             </div>
             <div>
@@ -2347,7 +2326,7 @@ const IsongaPrograms = () => {
                 disabled={!derivedSelectedInstitution || availableGameTypes.length === 0}
               >
                 <option value="" disabled>
-                  {(!derivedSelectedInstitution) ? 'Select Institution first' : (availableGameTypes.length === 0 ? 'No Sport Discipline available' : 'Select Sport Discipline')}
+                  {(!derivedSelectedInstitution) ? 'Select School first' : (availableGameTypes.length === 0 ? 'No Sport Discipline available' : 'Select Sport Discipline')}
                 </option>
                 {availableGameTypes.map((game) => (
                   <option key={game} value={game}>{game}</option>
@@ -2365,7 +2344,7 @@ const IsongaPrograms = () => {
                 disabled={!derivedSelectedInstitution || !studentFormData.typeOfGame || availableSections.length === 0}
               >
                 <option value="" disabled>
-                  {(!derivedSelectedInstitution) ? 'Select Institution first' : 
+                  {(!derivedSelectedInstitution) ? 'Select School first' : 
                    (!studentFormData.typeOfGame) ? 'Select Sport Discipline first' : 
                    (availableSections.length === 0 ? 'No sections available for this sport' : 'Select Section/Team')}
                 </option>
@@ -2494,10 +2473,13 @@ const IsongaPrograms = () => {
                     </p>
                   </div>
                   <div>
-                    <label className="font-medium text-gray-600 block">School</label>
-                    <p className="mt-1">
-                      {selectedStudent.nameOfSchoolAcademyTrainingCenter || 'N/A'}
-                    </p>
+                    <label className="font-medium text-gray-600 block">School Name</label>
+                    <p className="mt-1">{(() => {
+                      const studentInstitution = programs.find(p => 
+                        Number(p.id) === Number(selectedStudent.institutionId)
+                      );
+                      return studentInstitution?.name || 'N/A';
+                    })()}</p>
                   </div>
                   <div>
                     <label className="font-medium text-gray-600 block">Date of Birth</label>
@@ -2530,7 +2512,7 @@ const IsongaPrograms = () => {
                     <p className="mt-1">{selectedStudent.placeOfResidence || 'N/A'}</p>
                   </div>
                   <div>
-                    <label className="font-medium text-gray-600 block">ID/Passport No</label>
+                    <label className="font-medium text-gray-600 block">Child ID/Passport No</label>
                     <p className="mt-1">{selectedStudent.idPassportNo || 'N/A'}</p>
                   </div>
                   <div>
@@ -2560,10 +2542,10 @@ const IsongaPrograms = () => {
                     <label className="font-medium text-gray-600 block">Sport Discipline</label>
                     <p className="mt-1">{selectedStudent.typeOfGame || 'N/A'}</p>
                   </div>
-                  <div>
+                  {/* <div>
                     <label className="font-medium text-gray-600 block">Position/Role</label>
-                    <p className="mt-1">{selectedStudent.position || 'N/A'}</p>
-                  </div>
+                    <p className="mt-1">{selectedStudent.section || 'N/A'}</p>
+                  </div> */}
                 </div>
               </div>
 
@@ -2575,10 +2557,7 @@ const IsongaPrograms = () => {
                     <label className="font-medium text-gray-600 block">Institution Type</label>
                     <p className="mt-1">{selectedStudent.typeOfSchoolAcademyTrainingCenter || 'N/A'}</p>
                   </div>
-                  <div>
-                    <label className="font-medium text-gray-600 block">School Name</label>
-                    <p className="mt-1">{selectedStudent.nameOfSchoolAcademyTrainingCenter || 'N/A'}</p>
-                  </div>
+                
                 </div>
               </div>
             </div>
@@ -2727,7 +2706,7 @@ const IsongaPrograms = () => {
                             : 'N/A')}
                     </p>
                   </div>
-                  <div>
+                  {/* <div>
                     <label className="font-medium text-gray-600 block">Status</label>
                     <p className="mt-1">
                       <span className={`px-2 py-1 rounded-full text-xs ${
@@ -2738,7 +2717,7 @@ const IsongaPrograms = () => {
                         {selectedProgram.status || 'N/A'}
                       </span>
                     </p>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>

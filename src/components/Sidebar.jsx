@@ -5,7 +5,7 @@ import { usePermissions } from '../utils/permissionUtils';
 import { MODULE_IDS } from '../constants/modules';
 import { LayoutGrid, Flag, Award, Users, GraduationCap, School, Building2, Plane, FileText, Briefcase, Calendar, CircleUser, UsersRound, BarChart3, Trophy, UserPlus, Timer } from 'lucide-react';
  
-const Sidebar = () => {
+const Sidebar = ({ onLinkClick }) => {
   const { isDarkMode } = useDarkMode();
   const location = useLocation();
   const { hasModuleAccess } = usePermissions();
@@ -52,13 +52,7 @@ const Sidebar = () => {
   }, [hasModuleAccess]);
 
   return (
-    <aside
-      className={`fixed top-0 left-0 z-40 h-screen transition-transform md:relative md:translate-x-0 ${
-        isDarkMode ? "bg-gray-900" : "bg-white"
-      }`}
-      style={{ width: "256px" }}
-    >
-      <div className={`flex flex-col h-full ${isDarkMode ? "border-gray-700" : "border-gray-200"} border-r`}>
+    <div className="flex flex-col h-full">
         <NavLink to="/">
           <div className={`flex items-center justify-center h-16 px-4 ${isDarkMode ? "border-gray-700" : "border-gray-200"} border-b`}>
             <img src="/logo/logo.svg" alt="Logo" className="h-10 w-auto" />
@@ -73,6 +67,7 @@ const Sidebar = () => {
                 <NavLink
                   key={item.title}
                   to={item.path}
+                  onClick={onLinkClick}
                   className={`flex items-center space-x-3 px-4 py-2.5 rounded-lg transition-colors ${
                     isActive
                       ? "bg-blue-600 text-white"
@@ -90,8 +85,7 @@ const Sidebar = () => {
         </div>
 
         <div className={`p-1 ${isDarkMode ? "border-gray-700" : "border-gray-200"} border-t`} />
-      </div>
-    </aside>
+    </div>
   );
 };
 

@@ -75,8 +75,17 @@ const PrintButton = ({ children, title = "MIS REPORT", className = '' }) => {
               .map((cell) => {
                 // Clean up cell content - remove extra spaces and line breaks
                 let content = cell.innerText.trim();
+                
+                // Handle training types with bullet points
+                if (cell.querySelector('div[class*="space-y-1"]')) {
+                  const trainingItems = Array.from(cell.querySelectorAll('div')).map(div => {
+                    const text = div.innerText.trim();
+                    return text.startsWith('•') ? text.substring(1).trim() : text;
+                  }).filter(text => text && text !== 'None');
+                  content = trainingItems.join('\n');
+                }
                 // Handle badge content (like sports disciplines and sections)
-                if (cell.querySelector('.bg-blue-100, .bg-purple-100, .bg-green-100')) {
+                else if (cell.querySelector('.bg-blue-100, .bg-purple-100, .bg-green-100')) {
                   const badges = Array.from(cell.querySelectorAll('span')).map(span => span.innerText.trim());
                   content = badges.join(', ');
                 }
@@ -84,21 +93,70 @@ const PrintButton = ({ children, title = "MIS REPORT", className = '' }) => {
               });
           });
 
-          // Define column widths based on content type - optimized for landscape A4
-          const columnStyles = {
-            0: { cellWidth: 25 }, // Name
-            1: { cellWidth: 18 }, // Domain
-            2: { cellWidth: 20 }, // Category
-            3: { cellWidth: 12 }, // Students
-            4: { cellWidth: 20 }, // Province
-            5: { cellWidth: 20 }, // District
-            6: { cellWidth: 18 }, // Sector
-            7: { cellWidth: 25 }, // Legal Representative
-            8: { cellWidth: 22 }, // Contact
-            9: { cellWidth: 28 }, // Sports Disciplines
-            10: { cellWidth: 12 }, // No. of Sports
-            11: { cellWidth: 25 }, // Sections/Teams
-          };
+          // Define column widths based on content type and table type
+          let columnStyles = {};
+          
+          // Detect table type based on headers
+          const isCoachesTable = headers.includes('Training Types') || headers.includes('Training Count');
+          const isStudentsTable = headers.includes('SDMS Number') || headers.includes('Nationality');
+          const isPeTeachersTable = headers.includes('Sport of Interest');
+          
+          if (isCoachesTable) {
+            // Coaches table column widths
+            columnStyles = {
+              0: { cellWidth: 20 }, // Name
+              1: { cellWidth: 12 }, // Age
+              2: { cellWidth: 15 }, // Sport
+              3: { cellWidth: 15 }, // Section
+              4: { cellWidth: 20 }, // School
+              5: { cellWidth: 18 }, // Qualification
+              6: { cellWidth: 25 }, // Email
+              7: { cellWidth: 15 }, // Tel
+              8: { cellWidth: 18 }, // Position
+              9: { cellWidth: 45 }, // Training Types (wider for full text)
+              10: { cellWidth: 20 }, // Training Count (wider to prevent wrapping)
+            };
+          } else if (isStudentsTable) {
+            // Students table column widths
+            columnStyles = {
+              0: { cellWidth: 30 }, // Names
+              1: { cellWidth: 20 }, // SDMS Number
+              2: { cellWidth: 12 }, // Gender
+              3: { cellWidth: 12 }, // Class
+              4: { cellWidth: 25 }, // School Name
+              5: { cellWidth: 18 }, // Section
+              6: { cellWidth: 20 }, // Sport Discipline
+              7: { cellWidth: 25 }, // Contact
+              8: { cellWidth: 18 }, // Nationality
+            };
+          } else if (isPeTeachersTable) {
+            // PE Teachers table column widths
+            columnStyles = {
+              0: { cellWidth: 25 }, // Names
+              1: { cellWidth: 12 }, // Age
+              2: { cellWidth: 15 }, // Experience
+              3: { cellWidth: 25 }, // School
+              4: { cellWidth: 25 }, // Sport of Interest
+              5: { cellWidth: 30 }, // Email
+              6: { cellWidth: 18 }, // Tel
+            };
+          } else {
+            // Default (Schools/Institutions) table column widths
+            columnStyles = {
+              0: { cellWidth: 25 }, // Name
+              1: { cellWidth: 18 }, // Domain
+              2: { cellWidth: 20 }, // Category
+              3: { cellWidth: 12 }, // Students
+              4: { cellWidth: 20 }, // Province
+              5: { cellWidth: 20 }, // District
+              6: { cellWidth: 18 }, // Sector
+              7: { cellWidth: 25 }, // Legal Representative
+              8: { cellWidth: 22 }, // Contact
+              9: { cellWidth: 28 }, // Sports Disciplines
+              10: { cellWidth: 12 }, // No. of Sports
+              11: { cellWidth: 25 }, // Sections/Teams
+            };
+          }
 
           autoTable(doc, {
             head: [headers],
