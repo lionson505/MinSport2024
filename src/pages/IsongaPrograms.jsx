@@ -97,6 +97,17 @@ const IsongaPrograms = () => {
     sportOfInterest: '',
     experience: ''
   });
+
+  // Student Report Filters
+  const [studentFilters, setStudentFilters] = useState({
+    name: '',
+    school: '',
+    gender: '',
+    class: '',
+    section: '',
+    sportDiscipline: '',
+    nationality: ''
+  });
   
   const logPermissions = usePermissionLogger('isonga_programs');
   const [permissions, setPermissions] = useState({
@@ -474,6 +485,55 @@ const IsongaPrograms = () => {
 
   const handlePeTeacherFilterChange = (filterName, value) => {
     setPeTeacherFilters(prev => ({ ...prev, [filterName]: value }));
+  };
+
+  // Student filter functions
+  const getUniqueStudentSchools = () => {
+    const schoolNames = students.map(s => {
+      const institution = programs.find(p => Number(p.id) === Number(s.institutionId));
+      return institution?.name;
+    }).filter(Boolean);
+    return [...new Set(schoolNames)];
+  };
+
+  const getUniqueStudentGenders = () => {
+    return [...new Set(students.map(s => s.gender).filter(Boolean))];
+  };
+
+  const getUniqueStudentClasses = () => {
+    return [...new Set(students.map(s => s.class).filter(Boolean))];
+  };
+
+  const getUniqueStudentSections = () => {
+    return [...new Set(students.map(s => s.section).filter(Boolean))];
+  };
+
+  const getUniqueStudentSportDisciplines = () => {
+    return [...new Set(students.map(s => s.typeOfGame).filter(Boolean))];
+  };
+
+  const getUniqueStudentNationalities = () => {
+    return [...new Set(students.map(s => s.nationality).filter(Boolean))];
+  };
+
+  const getFilteredStudentsForReport = () => {
+    return students.filter(student => {
+      const institution = programs.find(p => Number(p.id) === Number(student.institutionId));
+      const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim().toLowerCase();
+      
+      if (studentFilters.name && !fullName.includes(studentFilters.name.toLowerCase())) return false;
+      if (studentFilters.school && institution?.name !== studentFilters.school) return false;
+      if (studentFilters.gender && student.gender !== studentFilters.gender) return false;
+      if (studentFilters.class && student.class !== studentFilters.class) return false;
+      if (studentFilters.section && student.section !== studentFilters.section) return false;
+      if (studentFilters.sportDiscipline && student.typeOfGame !== studentFilters.sportDiscipline) return false;
+      if (studentFilters.nationality && student.nationality !== studentFilters.nationality) return false;
+      return true;
+    });
+  };
+
+  const handleStudentFilterChange = (filterName, value) => {
+    setStudentFilters(prev => ({ ...prev, [filterName]: value }));
   };
 
   const handleAddInstitution = () => {
@@ -963,11 +1023,11 @@ const IsongaPrograms = () => {
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentPrograms = Array.isArray(filteredPrograms) ? filteredPrograms.slice(indexOfFirstItem, indexOfLastItem) : [];
-  const currentStudents = Array.isArray(filteredStudents) ? filteredStudents.slice(indexOfFirstItem, indexOfLastItem) : [];
+  const currentStudents = Array.isArray(getFilteredStudentsForReport()) ? getFilteredStudentsForReport().slice(indexOfFirstItem, indexOfLastItem) : [];
   const currentCoaches = Array.isArray(getFilteredCoachesForReport()) ? getFilteredCoachesForReport().slice(indexOfFirstItem, indexOfLastItem) : [];
   const currentPeTeachers = Array.isArray(getFilteredPeTeachersForReport()) ? getFilteredPeTeachersForReport().slice(indexOfFirstItem, indexOfLastItem) : [];
   const totalProgramPages = Math.ceil(filteredPrograms.length / itemsPerPage);
-  const totalStudentPages = Math.ceil(filteredStudents.length / itemsPerPage);
+  const totalStudentPages = Math.ceil(getFilteredStudentsForReport().length / itemsPerPage);
   const totalCoachPages = Math.ceil(getFilteredCoachesForReport().length / itemsPerPage);
   const totalPeTeacherPages = Math.ceil(getFilteredPeTeachersForReport().length / itemsPerPage);
 
@@ -1117,7 +1177,7 @@ const IsongaPrograms = () => {
 
               {/* Table */}
               <div className={`rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white shadow'}`}>
-                <PrintButton title='Institutions Report'>
+                <PrintButton title='School Report'>
                   <div className="w-full">
                     <Table className="w-full table-auto">
                     <TableHeader>
@@ -1125,7 +1185,7 @@ const IsongaPrograms = () => {
                         <TableHead className="text-xs p-2 sm:min-w-[140px]">Name</TableHead>
                         <TableHead className="text-xs p-2 hidden sm:table-cell sm:min-w-[80px]">Domain</TableHead>
                         <TableHead className="text-xs p-2 sm:min-w-[100px]">Category</TableHead>
-                        <TableHead className="text-xs p-2 sm:min-w-[70px]">Students</TableHead>
+                        <TableHead className="text-xs p-2 sm:min-w-[70px]">Student Count</TableHead>
                         <TableHead className="text-xs p-2 hidden md:table-cell sm:min-w-[80px]">Province</TableHead>
                         <TableHead className="text-xs p-2 hidden md:table-cell sm:min-w-[80px]">District</TableHead>
                         <TableHead className="text-xs p-2 hidden lg:table-cell sm:min-w-[80px]">Sector</TableHead>
@@ -1134,7 +1194,6 @@ const IsongaPrograms = () => {
                         <TableHead className="text-xs p-2 hidden xl:table-cell sm:min-w-[120px]">Sports Disciplines</TableHead>
                         <TableHead className="text-xs p-2 hidden xl:table-cell sm:min-w-[80px]">No. of Sports</TableHead>
                         <TableHead className="text-xs p-2 hidden xl:table-cell sm:min-w-[120px]">Sections/Teams</TableHead>
-                        <TableHead className="text-xs p-2 w-[80px] sm:w-[100px]">Action</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -1245,39 +1304,6 @@ const IsongaPrograms = () => {
                               <span className="text-gray-500">N/A</span>
                             )}
                           </TableCell>
-                          <TableCell className="operation">
-                            <div className="flex items-center gap-1">
-                              <button
-                                onClick={() => handleViewDetails(program)}
-                                className="p-1 rounded-lg hover:bg-gray-100"
-                                title="View Details"
-                              >
-                                <Eye className="h-4 w-4" />
-                              </button>
-                              {permissions.canUpdate && (<button
-                                onClick={() => handleEditInstitution(program)}
-                                className="p-1 rounded-lg hover:bg-gray-100"
-                                title="Edit"
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </button>)}
-                              {permissions.canDelete && (<button
-                                onClick={() => handleDeleteInstitution(program)}
-                                className="p-1 rounded-lg hover:bg-red-50 text-red-600"
-                                title="Delete"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>)}
-
-                              <button
-                                onClick={() => handleViewStudents(program)}
-                                className="p-1 rounded-lg hover:bg-gray-100"
-                                title="View Students"
-                              >
-                                <Users className="h-4 w-4" />
-                              </button>
-                            </div>
-                          </TableCell>
                         </TableRow>
                         );
                       })}
@@ -1328,6 +1354,125 @@ const IsongaPrograms = () => {
                       className="pl-10 pr-4 py-2 border rounded-lg w-full sm:w-64"
                       onChange={(e) => handleSearch(e.target.value, 'students')}
                     />
+                  </div>
+                </div>
+              </div>
+
+              {/* Student Report Filters */}
+              <div className={`rounded-lg p-1.5 ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
+                <h3 className="text-xs font-medium mb-2 text-gray-700 dark:text-gray-300">Filters</h3>
+                <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-1.5">
+                  {/* Student Name Filter */}
+                  <div>
+                    <input
+                      type="text"
+                      value={studentFilters.name}
+                      onChange={(e) => handleStudentFilterChange('name', e.target.value)}
+                      placeholder="Student name..."
+                      className="w-full text-xs border rounded px-1.5 py-0.5 bg-white dark:bg-gray-700 dark:border-gray-600"
+                    />
+                  </div>
+
+                  {/* School Filter */}
+                  <div>
+                    <select
+                      value={studentFilters.school}
+                      onChange={(e) => handleStudentFilterChange('school', e.target.value)}
+                      className="w-full text-xs border rounded px-1.5 py-0.5 bg-white dark:bg-gray-700 dark:border-gray-600"
+                    >
+                      <option value="">All Schools</option>
+                      {getUniqueStudentSchools().map(school => (
+                        <option key={school} value={school}>{school}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Gender Filter */}
+                  <div>
+                    <select
+                      value={studentFilters.gender}
+                      onChange={(e) => handleStudentFilterChange('gender', e.target.value)}
+                      className="w-full text-xs border rounded px-1.5 py-0.5 bg-white dark:bg-gray-700 dark:border-gray-600"
+                    >
+                      <option value="">All Genders</option>
+                      {getUniqueStudentGenders().map(gender => (
+                        <option key={gender} value={gender}>{gender}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Class Filter */}
+                  <div>
+                    <select
+                      value={studentFilters.class}
+                      onChange={(e) => handleStudentFilterChange('class', e.target.value)}
+                      className="w-full text-xs border rounded px-1.5 py-0.5 bg-white dark:bg-gray-700 dark:border-gray-600"
+                    >
+                      <option value="">All Classes</option>
+                      {getUniqueStudentClasses().map(cls => (
+                        <option key={cls} value={cls}>{cls}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Section Filter */}
+                  <div>
+                    <select
+                      value={studentFilters.section}
+                      onChange={(e) => handleStudentFilterChange('section', e.target.value)}
+                      className="w-full text-xs border rounded px-1.5 py-0.5 bg-white dark:bg-gray-700 dark:border-gray-600"
+                    >
+                      <option value="">All Sections</option>
+                      {getUniqueStudentSections().map(section => (
+                        <option key={section} value={section}>{section}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Sport Discipline Filter */}
+                  <div>
+                    <select
+                      value={studentFilters.sportDiscipline}
+                      onChange={(e) => handleStudentFilterChange('sportDiscipline', e.target.value)}
+                      className="w-full text-xs border rounded px-1.5 py-0.5 bg-white dark:bg-gray-700 dark:border-gray-600"
+                    >
+                      <option value="">All Sports</option>
+                      {getUniqueStudentSportDisciplines().map(sport => (
+                        <option key={sport} value={sport}>{sport}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Nationality Filter */}
+                  <div>
+                    <select
+                      value={studentFilters.nationality}
+                      onChange={(e) => handleStudentFilterChange('nationality', e.target.value)}
+                      className="w-full text-xs border rounded px-1.5 py-0.5 bg-white dark:bg-gray-700 dark:border-gray-600"
+                    >
+                      <option value="">All Nationalities</option>
+                      {getUniqueStudentNationalities().map(nationality => (
+                        <option key={nationality} value={nationality}>{nationality}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Clear Filters Button */}
+                  <div>
+                    <button
+                      onClick={() => setStudentFilters({
+                        name: '',
+                        school: '',
+                        gender: '',
+                        class: '',
+                        section: '',
+                        sportDiscipline: '',
+                        nationality: ''
+                      })}
+                      className="w-full text-xs bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 px-1.5 py-0.5 rounded"
+                    >
+                      Clear
+                    </button>
                   </div>
                 </div>
               </div>

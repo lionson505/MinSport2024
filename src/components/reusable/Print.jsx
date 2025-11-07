@@ -102,59 +102,59 @@ const PrintButton = ({ children, title = "MIS REPORT", className = '' }) => {
           const isPeTeachersTable = headers.includes('Sport of Interest');
           
           if (isCoachesTable) {
-            // Coaches table column widths
+            // Coaches table - responsive column widths
             columnStyles = {
-              0: { cellWidth: 20 }, // Name
-              1: { cellWidth: 12 }, // Age
-              2: { cellWidth: 15 }, // Sport
-              3: { cellWidth: 15 }, // Section
-              4: { cellWidth: 20 }, // School
-              5: { cellWidth: 18 }, // Qualification
-              6: { cellWidth: 25 }, // Email
-              7: { cellWidth: 15 }, // Tel
-              8: { cellWidth: 18 }, // Position
-              9: { cellWidth: 45 }, // Training Types (wider for full text)
-              10: { cellWidth: 20 }, // Training Count (wider to prevent wrapping)
+              0: { cellWidth: 'auto', minCellWidth: 20 }, // Name
+              1: { cellWidth: 'auto', minCellWidth: 10 }, // Age
+              2: { cellWidth: 'auto', minCellWidth: 15 }, // Sport
+              3: { cellWidth: 'auto', minCellWidth: 15 }, // Section
+              4: { cellWidth: 'auto', minCellWidth: 20 }, // School
+              5: { cellWidth: 'auto', minCellWidth: 18 }, // Qualification
+              6: { cellWidth: 'auto', minCellWidth: 25 }, // Email
+              7: { cellWidth: 'auto', minCellWidth: 15 }, // Tel
+              8: { cellWidth: 'auto', minCellWidth: 18 }, // Position
+              9: { cellWidth: 'auto', minCellWidth: 35 }, // Training Types
+              10: { cellWidth: 'auto', minCellWidth: 15 }, // Training Count
             };
           } else if (isStudentsTable) {
-            // Students table column widths
+            // Students table - responsive column widths
             columnStyles = {
-              0: { cellWidth: 30 }, // Names
-              1: { cellWidth: 20 }, // SDMS Number
-              2: { cellWidth: 12 }, // Gender
-              3: { cellWidth: 12 }, // Class
-              4: { cellWidth: 25 }, // School Name
-              5: { cellWidth: 18 }, // Section
-              6: { cellWidth: 20 }, // Sport Discipline
-              7: { cellWidth: 25 }, // Contact
-              8: { cellWidth: 18 }, // Nationality
+              0: { cellWidth: 'auto', minCellWidth: 25 }, // Names
+              1: { cellWidth: 'auto', minCellWidth: 18 }, // SDMS Number
+              2: { cellWidth: 'auto', minCellWidth: 10 }, // Gender
+              3: { cellWidth: 'auto', minCellWidth: 10 }, // Class
+              4: { cellWidth: 'auto', minCellWidth: 20 }, // School Name
+              5: { cellWidth: 'auto', minCellWidth: 15 }, // Section
+              6: { cellWidth: 'auto', minCellWidth: 18 }, // Sport Discipline
+              7: { cellWidth: 'auto', minCellWidth: 20 }, // Contact
+              8: { cellWidth: 'auto', minCellWidth: 15 }, // Nationality
             };
           } else if (isPeTeachersTable) {
-            // PE Teachers table column widths
+            // PE Teachers table - responsive column widths
             columnStyles = {
-              0: { cellWidth: 25 }, // Names
-              1: { cellWidth: 12 }, // Age
-              2: { cellWidth: 15 }, // Experience
-              3: { cellWidth: 25 }, // School
-              4: { cellWidth: 25 }, // Sport of Interest
-              5: { cellWidth: 30 }, // Email
-              6: { cellWidth: 18 }, // Tel
+              0: { cellWidth: 'auto', minCellWidth: 20 }, // Names
+              1: { cellWidth: 'auto', minCellWidth: 10 }, // Age
+              2: { cellWidth: 'auto', minCellWidth: 12 }, // Experience
+              3: { cellWidth: 'auto', minCellWidth: 20 }, // School
+              4: { cellWidth: 'auto', minCellWidth: 20 }, // Sport of Interest
+              5: { cellWidth: 'auto', minCellWidth: 25 }, // Email
+              6: { cellWidth: 'auto', minCellWidth: 15 }, // Tel
             };
           } else {
-            // Default (Schools/Institutions) table column widths
+            // Default (Schools/Institutions) table - responsive column widths
             columnStyles = {
-              0: { cellWidth: 25 }, // Name
-              1: { cellWidth: 18 }, // Domain
-              2: { cellWidth: 20 }, // Category
-              3: { cellWidth: 12 }, // Students
-              4: { cellWidth: 20 }, // Province
-              5: { cellWidth: 20 }, // District
-              6: { cellWidth: 18 }, // Sector
-              7: { cellWidth: 25 }, // Legal Representative
-              8: { cellWidth: 22 }, // Contact
-              9: { cellWidth: 28 }, // Sports Disciplines
-              10: { cellWidth: 12 }, // No. of Sports
-              11: { cellWidth: 25 }, // Sections/Teams
+              0: { cellWidth: 'auto', minCellWidth: 25 }, // Name
+              1: { cellWidth: 'auto', minCellWidth: 15 }, // Domain
+              2: { cellWidth: 'auto', minCellWidth: 20 }, // Category
+              3: { cellWidth: 'auto', minCellWidth: 12 }, // Students
+              4: { cellWidth: 'auto', minCellWidth: 18 }, // Province
+              5: { cellWidth: 'auto', minCellWidth: 18 }, // District
+              6: { cellWidth: 'auto', minCellWidth: 15 }, // Sector
+              7: { cellWidth: 'auto', minCellWidth: 25 }, // Legal Representative
+              8: { cellWidth: 'auto', minCellWidth: 20 }, // Contact
+              9: { cellWidth: 'auto', minCellWidth: 30 }, // Sports Disciplines
+              10: { cellWidth: 'auto', minCellWidth: 12 }, // No. of Sports
+              11: { cellWidth: 'auto', minCellWidth: 25 }, // Sections/Teams
             };
           }
 
@@ -182,13 +182,15 @@ const PrintButton = ({ children, title = "MIS REPORT", className = '' }) => {
             columnStyles: columnStyles,
             styles: {
               overflow: 'linebreak',
-              cellWidth: 'wrap',
+              cellWidth: 'auto',
               fontSize: 7,
               cellPadding: 2,
               halign: 'left'
             },
             margin: { top: 45, left: 15, right: 15 },
             tableWidth: 'auto',
+            tableLineColor: [200, 200, 200],
+            tableLineWidth: 0.1,
             didDrawPage: function (data) {
               // Add page numbers
               doc.setFontSize(8);
@@ -254,18 +256,18 @@ const PrintButton = ({ children, title = "MIS REPORT", className = '' }) => {
           });
 
           const columnStyles = {
-            0: { cellWidth: 25 }, // Name
-            1: { cellWidth: 18 }, // Domain
-            2: { cellWidth: 20 }, // Category
-            3: { cellWidth: 12 }, // Students
-            4: { cellWidth: 20 }, // Province
-            5: { cellWidth: 20 }, // District
-            6: { cellWidth: 18 }, // Sector
-            7: { cellWidth: 25 }, // Legal Representative
-            8: { cellWidth: 22 }, // Contact
-            9: { cellWidth: 28 }, // Sports Disciplines
-            10: { cellWidth: 12 }, // No. of Sports
-            11: { cellWidth: 25 }, // Sections/Teams
+            0: { cellWidth: 'auto', minCellWidth: 25 }, // Name
+            1: { cellWidth: 'auto', minCellWidth: 15 }, // Domain
+            2: { cellWidth: 'auto', minCellWidth: 20 }, // Category
+            3: { cellWidth: 'auto', minCellWidth: 12 }, // Students
+            4: { cellWidth: 'auto', minCellWidth: 18 }, // Province
+            5: { cellWidth: 'auto', minCellWidth: 18 }, // District
+            6: { cellWidth: 'auto', minCellWidth: 15 }, // Sector
+            7: { cellWidth: 'auto', minCellWidth: 25 }, // Legal Representative
+            8: { cellWidth: 'auto', minCellWidth: 20 }, // Contact
+            9: { cellWidth: 'auto', minCellWidth: 30 }, // Sports Disciplines
+            10: { cellWidth: 'auto', minCellWidth: 12 }, // No. of Sports
+            11: { cellWidth: 'auto', minCellWidth: 25 }, // Sections/Teams
           };
 
           autoTable(doc, {
@@ -290,10 +292,12 @@ const PrintButton = ({ children, title = "MIS REPORT", className = '' }) => {
               fontSize: 7, 
               cellPadding: 2,
               overflow: 'linebreak',
-              cellWidth: 'wrap'
+              cellWidth: 'auto'
             },
             margin: { top: 45, left: 15, right: 15 },
-            tableWidth: 'auto'
+            tableWidth: 'auto',
+            tableLineColor: [200, 200, 200],
+            tableLineWidth: 0.1
           });
         }
         
@@ -427,6 +431,13 @@ const PrintButton = ({ children, title = "MIS REPORT", className = '' }) => {
             }
             th.operation, td.operation {
               display: none !important;
+            }
+            .content-to-export th,
+            .content-to-export td {
+              display: table-cell !important;
+            }
+            .content-to-export .hidden {
+              display: table-cell !important;
             }
           }
         `}
