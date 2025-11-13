@@ -238,7 +238,7 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
                 {/* Institution Name */}
                 <div className="space-y-1.5">
                   <label className="block text-sm font-medium text-gray-700">
-                    Institution Name
+                    School Name
                   </label>
                   <input
                     type="text"
@@ -247,7 +247,7 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
                     onChange={handleChange}
                     onBlur={handleBlur}
                     className={inputClassName}
-                    placeholder="Enter institution name"
+                    placeholder="Enter school name"
                   />
                   {errors.name && touched.name && (
                     <p className="text-sm text-red-500">{errors.name}</p>

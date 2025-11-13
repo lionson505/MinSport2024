@@ -1194,6 +1194,7 @@ const IsongaPrograms = () => {
                         <TableHead className="text-xs p-2 hidden xl:table-cell sm:min-w-[120px]">Sports Disciplines</TableHead>
                         <TableHead className="text-xs p-2 hidden xl:table-cell sm:min-w-[80px]">No. of Sports</TableHead>
                         <TableHead className="text-xs p-2 hidden xl:table-cell sm:min-w-[120px]">Sections/Teams</TableHead>
+                        <TableHead className="text-xs p-2 sm:min-w-[100px] operation">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -1248,54 +1249,81 @@ const IsongaPrograms = () => {
                             {program.sections ? (
                               <div className="flex flex-wrap gap-1">
                                 {(() => {
-                                  let sportSectionCombinations = [];
+                                  let sectionsToDisplay = [];
                                   
                                   if (Array.isArray(program.sections)) {
-                                    // Simple array format: ["Male", "Female"]
-                                    // Combine with all sports disciplines
-                                    const sports = Array.isArray(program.sportsDisciplines) ? program.sportsDisciplines : [];
-                                    if (sports.length > 0) {
-                                      sports.forEach(sport => {
-                                        program.sections.forEach(section => {
-                                          sportSectionCombinations.push(`${sport} ${section}`);
-                                        });
-                                      });
+                                    // Check if sections already contain sport names (e.g., "Football Male")
+                                    const hasEmbeddedSports = program.sections.some(section => 
+                                      Array.isArray(program.sportsDisciplines) && 
+                                      program.sportsDisciplines.some(sport => 
+                                        section.toLowerCase().includes(sport.toLowerCase())
+                                      )
+                                    );
+                                    
+                                    if (hasEmbeddedSports) {
+                                      // Sections already contain sport names, use them directly
+                                      sectionsToDisplay = [...new Set(program.sections)]; // Remove duplicates
                                     } else {
-                                      // If no sports, just show sections
-                                      sportSectionCombinations = program.sections;
+                                      // Simple sections like ["Male", "Female"], combine with sports
+                                      const sports = Array.isArray(program.sportsDisciplines) ? program.sportsDisciplines : [];
+                                      if (sports.length > 0) {
+                                        sports.forEach(sport => {
+                                          program.sections.forEach(section => {
+                                            sectionsToDisplay.push(`${sport} ${section}`);
+                                          });
+                                        });
+                                      } else {
+                                        sectionsToDisplay = program.sections;
+                                      }
                                     }
                                   } else if (typeof program.sections === 'object' && program.sections !== null) {
                                     // Object format: { "Football": ["Male", "Female"], "Volleyball": ["Male", "Female"] }
                                     Object.entries(program.sections).forEach(([sport, sections]) => {
                                       if (Array.isArray(sections)) {
                                         sections.forEach(section => {
-                                          sportSectionCombinations.push(`${sport} ${section}`);
+                                          sectionsToDisplay.push(`${sport} ${section}`);
                                         });
                                       }
                                     });
                                   } else if (typeof program.sections === 'string') {
-                                    // String format: "Male,Female,Mixed"
+                                    // String format: "Male,Female,Mixed" or "Football Male,Football Female"
                                     const sections = program.sections.split(',').map(s => s.trim()).filter(Boolean);
-                                    const sports = Array.isArray(program.sportsDisciplines) ? program.sportsDisciplines : [];
-                                    if (sports.length > 0) {
-                                      sports.forEach(sport => {
-                                        sections.forEach(section => {
-                                          sportSectionCombinations.push(`${sport} ${section}`);
-                                        });
-                                      });
+                                    
+                                    // Check if sections already contain sport names
+                                    const hasEmbeddedSports = sections.some(section => 
+                                      Array.isArray(program.sportsDisciplines) && 
+                                      program.sportsDisciplines.some(sport => 
+                                        section.toLowerCase().includes(sport.toLowerCase())
+                                      )
+                                    );
+                                    
+                                    if (hasEmbeddedSports) {
+                                      sectionsToDisplay = [...new Set(sections)]; // Remove duplicates
                                     } else {
-                                      sportSectionCombinations = sections;
+                                      const sports = Array.isArray(program.sportsDisciplines) ? program.sportsDisciplines : [];
+                                      if (sports.length > 0) {
+                                        sports.forEach(sport => {
+                                          sections.forEach(section => {
+                                            sectionsToDisplay.push(`${sport} ${section}`);
+                                          });
+                                        });
+                                      } else {
+                                        sectionsToDisplay = sections;
+                                      }
                                     }
                                   }
                                   
-                                  if (sportSectionCombinations.length === 0) {
+                                  // Remove duplicates and filter out empty values
+                                  sectionsToDisplay = [...new Set(sectionsToDisplay.filter(Boolean))];
+                                  
+                                  if (sectionsToDisplay.length === 0) {
                                     return <span className="text-gray-500">N/A</span>;
                                   }
                                   
-                                  // Display all combinations
-                                  return sportSectionCombinations.map((combination, index) => (
+                                  // Display all sections
+                                  return sectionsToDisplay.map((section, index) => (
                                     <span key={index} className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
-                                      {combination}
+                                      {section}
                                     </span>
                                   ));
                                 })()}
@@ -1303,6 +1331,38 @@ const IsongaPrograms = () => {
                             ) : (
                               <span className="text-gray-500">N/A</span>
                             )}
+                          </TableCell>
+                          <TableCell className="text-xs operation">
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => {
+                                  setSelectedProgram(program);
+                                  setShowDetailsModal(true);
+                                }}
+                                className="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded transition-colors"
+                                title="View Details"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </button>
+                              {permissions.canUpdate && (
+                                <button
+                                  onClick={() => handleEditInstitution(program)}
+                                  className="p-1 text-green-600 hover:text-green-800 hover:bg-green-100 rounded transition-colors"
+                                  title="Edit Institution"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </button>
+                              )}
+                              {permissions.canDelete && (
+                                <button
+                                  onClick={() => handleDeleteInstitution(program)}
+                                  className="p-1 text-red-600 hover:text-red-800 hover:bg-red-100 rounded transition-colors"
+                                  title="Delete Institution"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              )}
+                            </div>
                           </TableCell>
                         </TableRow>
                         );
@@ -1493,7 +1553,7 @@ const IsongaPrograms = () => {
                         <TableHead className="text-xs p-2 hidden lg:table-cell sm:min-w-[120px]">Sport Discipline</TableHead>
                         <TableHead className="text-xs p-2 hidden xl:table-cell sm:min-w-[150px]">Contact</TableHead>
                         <TableHead className="text-xs p-2 hidden xl:table-cell sm:min-w-[150px]">Nationality</TableHead>
-                        <TableHead className="text-xs p-2 w-[80px] sm:w-[150px]">Action</TableHead>
+                        <TableHead className="text-xs p-2 w-[80px] sm:w-[150px] operation">Action</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -1518,7 +1578,11 @@ const IsongaPrograms = () => {
                           <TableCell className="text-xs">{student.gender}</TableCell>
                           <TableCell className="text-xs">{student.class}</TableCell>
                           <TableCell className="text-xs">{studentInstitution?.name || 'N/A'}</TableCell>
-                          <TableCell className="text-xs">{studentSection}</TableCell>
+                          <TableCell className="text-xs">
+                            <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
+                              {student.typeOfGame && studentSection ? `${student.typeOfGame} ${studentSection}` : studentSection || 'N/A'}
+                            </span>
+                          </TableCell>
                           <TableCell className="text-xs">{student.typeOfGame}</TableCell>
                           <TableCell className="text-xs">{student.contact}</TableCell>
                           <TableCell className="text-xs">{student.nationality || 'N/A'}</TableCell>
@@ -1742,7 +1806,11 @@ const IsongaPrograms = () => {
                           <TableCell className="text-xs font-medium p-2">{coach.name}</TableCell>
                           <TableCell className="text-xs p-2 hidden sm:table-cell">{coach.age}</TableCell>
                           <TableCell className="text-xs p-2">{coach.sport}</TableCell>
-                          <TableCell className="text-xs p-2 hidden md:table-cell">{coach.section}</TableCell>
+                          <TableCell className="text-xs p-2 hidden md:table-cell">
+                            <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
+                              {coach.sport && coach.section ? `${coach.sport} ${coach.section}` : coach.section || 'N/A'}
+                            </span>
+                          </TableCell>
                           <TableCell className="text-xs p-2">{coach.school}</TableCell>
                           <TableCell className="text-xs p-2 hidden lg:table-cell">{coach.qualification}</TableCell>
                           <TableCell className="text-xs p-2 hidden lg:table-cell">{coach.email}</TableCell>
@@ -1957,7 +2025,7 @@ const IsongaPrograms = () => {
                         <TableHead className="text-xs p-2 hidden lg:table-cell sm:min-w-[150px]">Sport of Interest</TableHead>
                         <TableHead className="text-xs p-2 hidden lg:table-cell sm:min-w-[150px]">Email</TableHead>
                         <TableHead className="text-xs p-2 hidden xl:table-cell sm:min-w-[100px]">Tel</TableHead>
-                        <TableHead className="text-xs p-2 w-[80px] sm:w-[150px]">Action</TableHead>
+                        <TableHead className="text-xs p-2 w-[80px] sm:w-[150px] operation">Action</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -1970,7 +2038,7 @@ const IsongaPrograms = () => {
                           <TableCell className="text-xs p-2 hidden lg:table-cell">{teacher.sportOfInterest}</TableCell>
                           <TableCell className="text-xs p-2 hidden lg:table-cell">{teacher.email}</TableCell>
                           <TableCell className="text-xs p-2 hidden xl:table-cell">{teacher.tel}</TableCell>
-                          <TableCell className="p-2">
+                          <TableCell className="p-2 operation">
                             <div className="flex items-center gap-1">
                               <button
                                 onClick={() => handleViewPeTeacherDetails(teacher)}
@@ -2900,7 +2968,7 @@ const IsongaPrograms = () => {
                   <TableHead className="min-w-[100px] text-xs">Gender</TableHead>
                   <TableHead className="min-w-[120px] text-xs">Date of Birth</TableHead>
                   <TableHead className="min-w-[150px] text-xs">Contact</TableHead>
-                  <TableHead className="w-[100px] text-xs">Actions</TableHead>
+                  <TableHead className="w-[100px] text-xs operation">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -2918,7 +2986,7 @@ const IsongaPrograms = () => {
                         {new Date(student.dateOfBirth).toLocaleDateString()}
                       </TableCell>
                       <TableCell className="text-xs">{student.contact}</TableCell>
-                      <TableCell>
+                      <TableCell className="operation">
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => {
