@@ -128,6 +128,14 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
       const payload = {
         name: values.name,
         category: values.category,
+        // Also include nested location for backward compatibility
+        location: {
+          province: values.location.province,
+          district: values.location.district,
+          sector: values.location.sector,
+          cell: values.location.cell,
+          village: values.location.village,
+        },
         // Transform nested location object to flat structure for API
         location_province: values.location.province,
         location_district: values.location.district,
@@ -142,6 +150,7 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
         sportsDisciplines: values.sportsDisciplines,
         sections: values.sections,
       };
+      console.debug('InstitutionForm: payload to submit', payload);
       await onSubmit(payload);
       showToast('Institution saved successfully');
       resetForm();

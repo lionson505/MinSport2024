@@ -662,9 +662,12 @@ const IsongaPrograms = () => {
   const handleInstitutionSubmit = async (institutionData) => {
     setIsSubmitting(true);
     try {
+      console.debug('IsongaPrograms: handleInstitutionSubmit payload', institutionData);
       if (selectedInstitution) {
         // Update institution
-        await axiosInstance.put(`/institutions/${selectedInstitution.id}`, institutionData);
+        console.debug('IsongaPrograms: PUT /institutions/:id', selectedInstitution.id);
+        const putRes = await axiosInstance.put(`/institutions/${selectedInstitution.id}`, institutionData);
+        console.debug('IsongaPrograms: PUT response', putRes?.data);
         const updatedPrograms = programs.map(p =>
           p.id === selectedInstitution.id ? { ...p, ...institutionData } : p
         );
@@ -673,7 +676,9 @@ const IsongaPrograms = () => {
         toast.success('Institution updated successfully');
       } else {
         // Add new institution
+        console.debug('IsongaPrograms: POST /institutions');
         const response = await axiosInstance.post('/institutions', institutionData);
+        console.debug('IsongaPrograms: POST response', response?.data);
         setPrograms([...programs, response.data]);
         setFilteredPrograms([...programs, response.data]);
         toast.success('Institution added successfully');
@@ -684,6 +689,10 @@ const IsongaPrograms = () => {
       const backendData = error?.response?.data;
       const msg = backendData?.error || backendData?.message || error.message || 'Failed to save institution';
       console.error('Institution save failed:', backendData || error);
+      if (error?.response) {
+        console.error('IsongaPrograms: error status', error.response.status);
+        console.error('IsongaPrograms: error data', error.response.data);
+      }
       toast.error(msg);
     } finally {
       setIsSubmitting(false);
