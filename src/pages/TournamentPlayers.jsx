@@ -89,7 +89,7 @@ export default function TournamentPlayers() {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
     try {
-      const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3300/api';
+      const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
       const fd = new FormData();
       fd.append('file', file);
       const res = await fetch(`${API_BASE}/uploads/passport`, { method: 'POST', body: fd, credentials: 'include' });
@@ -600,11 +600,18 @@ export default function TournamentPlayers() {
                 <div className="md:col-span-1">
                   <div className="text-xs text-gray-500">Passport Photo</div>
                   {viewing.passportPhotoUrl ? (
-                    <img
-                      src={(viewing.passportPhotoUrl && viewing.passportPhotoUrl.startsWith('/uploads')) ? ((import.meta.env.VITE_API_BASE || 'http://localhost:3300/api') + viewing.passportPhotoUrl) : viewing.passportPhotoUrl}
-                      alt="Passport"
-                      className="mt-1 h-40 w-32 object-cover rounded border"
-                    />
+                    (() => {
+                      const API = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
+                      const p = viewing.passportPhotoUrl || '';
+                      const src = p.startsWith('http') ? p : `${API}${p.replace(/^\/api/, '')}`;
+                      return (
+                        <img
+                          src={src}
+                          alt="Passport"
+                          className="mt-1 h-40 w-32 object-cover rounded border"
+                        />
+                      );
+                    })()
                   ) : (
                     <div className="font-medium">-</div>
                   )}

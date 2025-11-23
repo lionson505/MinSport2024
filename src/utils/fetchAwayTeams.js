@@ -7,7 +7,8 @@ export function useFetchAwayTeams() {
   useEffect(() => {
     const fetchAwayTeams = async () => {
       try {
-        const response = await fetch('http://localhost:3300/api/away-teams');
+        const API = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
+        const response = await fetch(`${API}/away-teams`);
         if (!response.ok) {
           throw new Error('Failed to fetch away teams');
         }

@@ -811,9 +811,17 @@ const Federations = () => {
                     </TableCell>
                     <TableCell className="text-xs font-medium">{federation.name}</TableCell>
                       <TableCell>
-                        <img src={`http://localhost:3300${federation.logo}`} alt="federation Logo" className="w-12 h-12 object-cover rounded-full" />
-                        {console.log(`Logo Path: http://localhost:3300${federation.logo}`)}
-                        {console.log(`Federation logo value:`, federation.logo)}
+                        {(() => {
+                          const API = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
+                          const src = federation?.logo
+                            ? (federation.logo.startsWith('http') ? federation.logo : `${API}${federation.logo}`)
+                            : '';
+                          console.log(`Logo Path: ${src}`);
+                          console.log(`Federation logo value:`, federation.logo);
+                          return (
+                            <img src={src} alt="federation Logo" className="w-12 h-12 object-cover rounded-full" />
+                          );
+                        })()}
   
                       </TableCell>
                     <TableCell className="text-xs">{federation.acronym}</TableCell>

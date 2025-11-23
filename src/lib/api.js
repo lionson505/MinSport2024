@@ -1,5 +1,5 @@
 // Simple API client for Tournament module
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3300/api';
+const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
 
 async function http(method, path, body) {
   const res = await fetch(`${API_BASE}${path}`, {

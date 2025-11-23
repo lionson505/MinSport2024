@@ -270,13 +270,18 @@ function LandingPage() {
                       {federations.map((federation, index) => {
                         const color = colors[index % colors.length];
 
+                        const API = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
                         return (
                           <SwiperSlide
                             key={federation.id}
                             className={`aspect-square m-4 rounded-xl !w-[250px] !md:w-[280px] ${color} flex flex-col items-center justify-center p-4 cursor-pointer hover:opacity-90 transition-all transform hover:scale-105`}
                           >
                             <img
-                              src={`http://localhost:3300${federation.logo}` || federationImage}
+                              src={federation?.logo
+                                ? (federation.logo.startsWith('http')
+                                  ? federation.logo
+                                  : `${API}${federation.logo}`)
+                                : federationImage}
                               alt={federation.name}
                               className="h-16 w-16 mb-4 rounded-full"
                             />
@@ -292,13 +297,22 @@ function LandingPage() {
                     <div className="md:grid md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 w-full">
                       {federations.map((federation, index) => {
                         const color = colors[index % colors.length];
+                        const API = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
                         return (
                           <div
                             key={federation.id}
                             className={`aspect-square my-2 rounded-xl w-[175px] lg:w-[265px] xl:w-[230px] 2xl:w-[275px] ${color} flex flex-col items-center justify-center p-4 cursor-pointer hover:opacity-90 transition-all transform hover:scale-105`}
                           >
-                            <img src={`http://localhost:3300${federation.logo}`} alt="federation Logo" className="w-12 h-12 object-cover rounded-full" />
-                            {console.log(`Logo Path: http://localhost:3300${federation.logo}`)}
+                            <img
+                              src={federation?.logo
+                                ? (federation.logo.startsWith('http')
+                                  ? federation.logo
+                                  : `${API}${federation.logo}`)
+                                : federationImage}
+                              alt="federation Logo"
+                              className="w-12 h-12 object-cover rounded-full"
+                            />
+                            {console.log(`Logo Path: ${federation?.logo?.startsWith('http') ? federation.logo : `${API}${federation?.logo || ''}`}`)}
 
                             <span className="text-white text-center font-medium text-sm">
                               {federation.name}
@@ -483,7 +497,11 @@ function LandingPage() {
 
                             {console.log(event.banner)}
                             <img
-                              src={`http://localhost:3300${event.banner}`}
+                              src={event?.banner
+                                ? (event.banner.startsWith('http')
+                                  ? event.banner
+                                  : `${(import.meta.env.VITE_API_URL || '').replace(/\/+$/, '')}${event.banner}`)
+                                : eventImage}
                               alt={event.name}
                               className="w-full aspect-[3/4] object-contain transition-transform duration-300 group-hover:scale-110"
                             />
