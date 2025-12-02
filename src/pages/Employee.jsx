@@ -515,7 +515,7 @@ function Employee() {
         <Dialog 
           as="div" 
           className="relative z-50" 
-          onClose={() => setIsDeleteModalOpen(false)}
+          onClose={() => {}} // Prevent closing on outside click
         >
           <Transition.Child
             as={Fragment}
@@ -579,7 +579,7 @@ function Employee() {
         <Dialog 
           as="div" 
           className="relative z-50" 
-          onClose={() => setIsViewModalOpen(false)}
+          onClose={() => {}} // Prevent closing on outside click
         >
           <Transition.Child
             as={Fragment}

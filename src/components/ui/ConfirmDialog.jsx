@@ -12,7 +12,7 @@ const ConfirmDialog = ({ isOpen, onClose, onConfirm, title, message, isSubmittin
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div 
         className="absolute inset-0 bg-black/50" 
-        onClick={!isSubmitting ? onClose : undefined}
+        onClick={() => {}} // Prevent closing on outside click
       />
       <div className={`relative w-full max-w-md p-6 rounded-lg ${
         isDarkMode ? 'bg-gray-800' : 'bg-white'

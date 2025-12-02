@@ -314,10 +314,11 @@ const Training = () => {
       />
 
       <Dialog open={showAddModal} onOpenChange={(open) => {
+        if (open === false) return; // Prevent closing on outside click
         setShowAddModal(open);
         setTrainingToEdit(null);
       }}>
-        <DialogContent>
+        <DialogContent disableOutsideClose={true} hideCloseButton={true}>
           <DialogHeader>
             <DialogTitle>{trainingToEdit ? 'Edit Training' : 'Add Training'}</DialogTitle>
             <DialogDescription>
@@ -335,8 +336,8 @@ const Training = () => {
 
       {/* View Training Modal */}
       {trainingToView && (
-        <Dialog open={!!trainingToView} onOpenChange={() => setTrainingToView(null)}>
-          <DialogContent>
+        <Dialog open={!!trainingToView} onOpenChange={(open) => { if (open === false) return; }}>
+          <DialogContent disableOutsideClose={true} hideCloseButton={true}>
             <DialogHeader>
               <DialogTitle>View Training</DialogTitle>
               <DialogDescription>
@@ -356,14 +357,17 @@ const Training = () => {
                 ))}
               </ul>
             </div>
+            <div className="flex justify-end gap-3 pt-4 border-t mt-6">
+              <Button onClick={() => setTrainingToView(null)}>Close</Button>
+            </div>
           </DialogContent>
         </Dialog>
       )}
 
       {/* Participant Details Modal */}
       {participantsToView && (
-        <Dialog open={!!participantsToView} onOpenChange={() => setParticipantsToView(null)}>
-          <DialogContent>
+        <Dialog open={!!participantsToView} onOpenChange={(open) => { if (open === false) return; }}>
+          <DialogContent disableOutsideClose={true} hideCloseButton={true}>
             <DialogHeader>
               <DialogTitle>Participants Details</DialogTitle>
               <DialogDescription>
@@ -378,6 +382,9 @@ const Training = () => {
                   </li>
                 ))}
               </ul>
+            </div>
+            <div className="flex justify-end gap-3 pt-4 border-t mt-6">
+              <Button onClick={() => setParticipantsToView(null)}>Close</Button>
             </div>
           </DialogContent>
         </Dialog>

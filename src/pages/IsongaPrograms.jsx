@@ -2304,8 +2304,11 @@ const IsongaPrograms = () => {
       </Modal>
 
       {/* Delete Institution Confirmation Dialog */}
-      <Dialog open={showDeleteInstitutionModal} onOpenChange={setShowDeleteInstitutionModal}>
-        <DialogContent className="sm:max-w-[425px]">
+      <Dialog open={showDeleteInstitutionModal} onOpenChange={(open) => {
+        if (open === false) return; // Prevent closing on outside click
+        setShowDeleteInstitutionModal(open);
+      }}>
+        <DialogContent className="sm:max-w-[425px]" disableOutsideClose={true} hideCloseButton={true}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-red-600">
               <AlertCircle className="h-5 w-5" />
@@ -2608,8 +2611,11 @@ const IsongaPrograms = () => {
       </Modal>
 
       {/* Delete Student Confirmation Dialog */}
-      <Dialog open={showDeleteStudentModal} onOpenChange={setShowDeleteStudentModal}>
-        <DialogContent className="sm:max-w-[425px]">
+      <Dialog open={showDeleteStudentModal} onOpenChange={(open) => {
+        if (open === false) return; // Prevent closing on outside click
+        setShowDeleteStudentModal(open);
+      }}>
+        <DialogContent className="sm:max-w-[425px]" disableOutsideClose={true} hideCloseButton={true}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-red-600">
               <AlertCircle className="h-5 w-5" />
@@ -2648,8 +2654,11 @@ const IsongaPrograms = () => {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
-        <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
+      <Dialog open={showDetailsModal} onOpenChange={(open) => {
+        if (open === false) return; // Prevent closing on outside click
+        setShowDetailsModal(open);
+      }}>
+        <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto" disableOutsideClose={true} hideCloseButton={true}>
           <DialogHeader>
             <DialogTitle className="text-xl font-bold flex items-center justify-between">
               {selectedStudent ? 'Student Details' : 'Institution Details'}
@@ -2951,8 +2960,11 @@ const IsongaPrograms = () => {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={showStudentsModal} onOpenChange={setShowStudentsModal}>
-        <DialogContent className="sm:max-w-[900px] max-h-[80vh] overflow-y-auto">
+      <Dialog open={showStudentsModal} onOpenChange={(open) => {
+        if (open === false) return; // Prevent closing on outside click
+        setShowStudentsModal(open);
+      }}>
+        <DialogContent className="sm:max-w-[900px] max-h-[80vh] overflow-y-auto" disableOutsideClose={true} hideCloseButton={true}>
           <DialogHeader>
             <DialogTitle className="text-xl font-bold flex items-center justify-between">
               Students - {selectedProgram?.name}
@@ -3386,8 +3398,11 @@ const IsongaPrograms = () => {
       </Modal>
 
       {/* Delete Coach Confirmation Dialog */}
-      <Dialog open={showDeleteCoachModal} onOpenChange={setShowDeleteCoachModal}>
-        <DialogContent className="sm:max-w-[425px]">
+      <Dialog open={showDeleteCoachModal} onOpenChange={(open) => {
+        if (open === false) return; // Prevent closing on outside click
+        setShowDeleteCoachModal(open);
+      }}>
+        <DialogContent className="sm:max-w-[425px]" disableOutsideClose={true} hideCloseButton={true}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-red-600">
               <AlertCircle className="h-5 w-5" />
@@ -3428,8 +3443,11 @@ const IsongaPrograms = () => {
       </Dialog>
 
       {/* Delete PE Teacher Confirmation Dialog */}
-      <Dialog open={showDeletePeTeacherModal} onOpenChange={setShowDeletePeTeacherModal}>
-        <DialogContent className="sm:max-w-[425px]">
+      <Dialog open={showDeletePeTeacherModal} onOpenChange={(open) => {
+        if (open === false) return; // Prevent closing on outside click
+        setShowDeletePeTeacherModal(open);
+      }}>
+        <DialogContent className="sm:max-w-[425px]" disableOutsideClose={true} hideCloseButton={true}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-red-600">
               <AlertCircle className="h-5 w-5" />

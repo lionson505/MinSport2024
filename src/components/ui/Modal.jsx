@@ -5,11 +5,22 @@ import { Button } from './Button';
 export const Modal = ({ isOpen, onClose, title, children, size = "md" }) => {
   if (!isOpen) return null;
 
+  // Prevent closing when clicking outside - only close on explicit button click
+  const handleOpenChange = (open) => {
+    if (!open) {
+      // Prevent closing when Dialog tries to close (e.g., from outside click)
+      // Do nothing - modal stays open
+    }
+  };
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white p-6 rounded-lg shadow-lg">
-        <Dialog open={isOpen} onOpenChange={onClose}>
-          <DialogContent className={`${
+        <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+          <DialogContent 
+            hideCloseButton={true}
+            disableOutsideClose={true}
+            className={`${
             size === "sm" ? "max-w-sm" :
             size === "md" ? "max-w-md" :
             size === "lg" ? "max-w-lg" :

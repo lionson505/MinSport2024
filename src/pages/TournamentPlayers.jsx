@@ -365,8 +365,8 @@ export default function TournamentPlayers() {
       </Card>
 
       {/* Inline Player Registration Modal */}
-      <Dialog open={isRegOpen} onOpenChange={(open) => { if (!open) { setIsRegOpen(false); setEditingPlayer(null); } }}>
-        <DialogContent className="max-w-4xl w-full max-h-[85vh] overflow-y-auto">
+      <Dialog open={isRegOpen} onOpenChange={(open) => { if (open === false) return; }}>
+        <DialogContent className="max-w-4xl w-full max-h-[85vh] overflow-y-auto" disableOutsideClose={true} hideCloseButton={true}>
           <DialogHeader>
             <DialogTitle>{editingPlayer ? 'Edit Player' : 'Add Player'}</DialogTitle>
           </DialogHeader>
@@ -574,8 +574,8 @@ export default function TournamentPlayers() {
       </Dialog>
 
       {/* View Player dialog (read-only, mirrors form sections) */}
-      <Dialog open={!!viewing} onOpenChange={(open) => !open && setViewing(null)}>
-        <DialogContent className="max-w-4xl w-full max-h-[85vh] overflow-y-auto">
+      <Dialog open={!!viewing} onOpenChange={(open) => { if (open === false) return; }}>
+        <DialogContent className="max-w-4xl w-full max-h-[85vh] overflow-y-auto" disableOutsideClose={true} hideCloseButton={true}>
           <DialogHeader>
             <DialogTitle>View Player</DialogTitle>
           </DialogHeader>
@@ -680,6 +680,9 @@ export default function TournamentPlayers() {
               </div>
             </div>
           )}
+          <div className="flex justify-end gap-3 pt-4 border-t mt-6">
+            <Button onClick={() => setViewing(null)}>Close</Button>
+          </div>
         </DialogContent>
       </Dialog>
 

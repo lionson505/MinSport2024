@@ -443,7 +443,7 @@ function Contracts() {
         <Dialog 
           as="div" 
           className="relative z-50" 
-          onClose={() => setIsViewModalOpen(false)}
+          onClose={() => {}} // Prevent closing on outside click
         >
           <div className="fixed inset-0 bg-black bg-opacity-25" />
           <div className="fixed inset-0 overflow-y-auto">
@@ -476,7 +476,8 @@ function Contracts() {
 
       {/* Delete Modal */}
       <Transition appear show={isDeleteModalOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-50" onClose={() => setIsDeleteModalOpen(false)}>
+        <Dialog as="div" className="relative z-50" onClose={() => {}} // Prevent closing on outside click
+        >
           <div className="fixed inset-0 bg-black bg-opacity-50" />
           <div className="fixed inset-0 flex items-center justify-center">
             <Dialog.Panel className="bg-white p-6 rounded-lg shadow-xl">
