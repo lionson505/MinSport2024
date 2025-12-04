@@ -36,8 +36,9 @@ const validationRules = {
   }
 };
 
-function InstitutionForm({ institution, onSubmit, onCancel }) {
+function InstitutionForm({ institution, onSubmit, onCancel, existingInstitutions = [] }) {
   const [loading, setLoading] = useState(false);
+  const [nameError, setNameError] = useState('');
   const { showToast } = useToast();
 
   const initialValues = {
@@ -100,8 +101,46 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
     }
   }, [institution, setValues]);
 
+  // Check if school name already exists
+  const checkDuplicateName = (schoolName) => {
+    if (!schoolName.trim()) return false;
+    
+    // When editing, allow the same name for the current institution
+    if (institution && institution.id) {
+      return existingInstitutions.some(inst => 
+        inst.id !== institution.id && 
+        inst.name.toLowerCase().trim() === schoolName.toLowerCase().trim()
+      );
+    }
+    
+    // When creating new, check all existing institutions
+    return existingInstitutions.some(inst => 
+      inst.name.toLowerCase().trim() === schoolName.toLowerCase().trim()
+    );
+  };
+
+  const handleNameChange = (e) => {
+    const { value } = e.target;
+    handleChange(e);
+    
+    // Check for duplicate
+    if (value.trim() && checkDuplicateName(value)) {
+      setNameError('School name already exists in the database');
+    } else {
+      setNameError('');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Check for duplicate school name
+    if (checkDuplicateName(values.name)) {
+      setNameError('School name already exists in the database');
+      showToast('School name already exists. Please use a different name.', 'error');
+      return;
+    }
+
     if (!validate()) {
       showToast('Please fix the highlighted errors', 'error');
       return;
@@ -253,12 +292,17 @@ function InstitutionForm({ institution, onSubmit, onCancel }) {
                     type="text"
                     name="name"
                     value={values.name}
-                    onChange={handleChange}
+                    onChange={handleNameChange}
                     onBlur={handleBlur}
-                    className={inputClassName}
+                    className={`${inputClassName} ${nameError ? 'border-red-500 focus:ring-red-500' : ''}`}
                     placeholder="Enter school name"
                   />
-                  {errors.name && touched.name && (
+                  {nameError && (
+                    <p className="text-sm text-red-500 flex items-center gap-1">
+                      <span>⚠️</span> {nameError}
+                    </p>
+                  )}
+                  {errors.name && touched.name && !nameError && (
                     <p className="text-sm text-red-500">{errors.name}</p>
                   )}
                 </div>

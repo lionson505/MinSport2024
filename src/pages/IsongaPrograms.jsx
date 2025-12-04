@@ -1381,6 +1381,34 @@ const IsongaPrograms = () => {
                   </div>
                 </PrintButton>
               </div>
+
+              {/* Pagination */}
+              {totalProgramPages > 1 && (
+                <div className="flex justify-between items-center mt-4">
+                  <div className="text-sm text-gray-600">
+                    Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, getFilteredProgramsForReport().length)} of {getFilteredProgramsForReport().length} entries
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="px-3 py-1 border rounded disabled:opacity-50"
+                    >
+                      Previous
+                    </button>
+                    <span className="px-3 py-1">
+                      Page {currentPage} of {totalProgramPages}
+                    </span>
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalProgramPages))}
+                      disabled={currentPage === totalProgramPages}
+                      className="px-3 py-1 border rounded disabled:opacity-50"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         );
@@ -1628,6 +1656,34 @@ const IsongaPrograms = () => {
                   </div>
                 </PrintButton>
               </div>
+
+              {/* Pagination */}
+              {totalStudentPages > 1 && (
+                <div className="flex justify-between items-center mt-4">
+                  <div className="text-sm text-gray-600">
+                    Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, getFilteredStudentsForReport().length)} of {getFilteredStudentsForReport().length} entries
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="px-3 py-1 border rounded disabled:opacity-50"
+                    >
+                      Previous
+                    </button>
+                    <span className="px-3 py-1">
+                      Page {currentPage} of {totalStudentPages}
+                    </span>
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalStudentPages))}
+                      disabled={currentPage === totalStudentPages}
+                      className="px-3 py-1 border rounded disabled:opacity-50"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         );
@@ -2300,6 +2356,7 @@ const IsongaPrograms = () => {
           institution={selectedInstitution}
           onSubmit={handleInstitutionSubmit}
           onCancel={() => setShowInstitutionModal(false)}
+          existingInstitutions={programs}
         />
       </Modal>
 
