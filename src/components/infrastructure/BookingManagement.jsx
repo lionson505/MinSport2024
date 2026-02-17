@@ -205,6 +205,7 @@ const BookingManagement = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>No.</TableHead>
                 <TableHead>Facility</TableHead>
                 <TableHead>Organizer</TableHead>
                 <TableHead>Date</TableHead>
@@ -216,8 +217,9 @@ const BookingManagement = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedBookings.map((booking) => (
+              {paginatedBookings.map((booking, index) => (
                 <TableRow key={booking.id}>
+                  <TableCell>{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                   <TableCell>{booking.infrastructure.name}</TableCell>
                   <TableCell>{booking.name}</TableCell>
                   <TableCell>{new Date(booking.bookingDateFrom).toLocaleDateString()} - {new Date(booking.bookingDateTo).toLocaleDateString()}</TableCell>

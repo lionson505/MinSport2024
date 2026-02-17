@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { useLocation, useParams, Link } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
-import { Button } from '../components/ui/button';
+import { Button } from '../components/ui/Button';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell, TablePagination } from '../components/ui/table';
 import { Input } from '../components/ui/input';
 import { Badge } from '../components/ui/badge';
@@ -252,7 +252,7 @@ export default function TournamentPlayers() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>#</TableHead>
+                <TableHead>No.</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>National/Passport</TableHead>
                 <TableHead>University/Sector</TableHead>

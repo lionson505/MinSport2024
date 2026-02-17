@@ -398,6 +398,7 @@ function Academies() {
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">No.</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Name</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Location</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Category</th>
@@ -406,12 +407,13 @@ function Academies() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {paginatedAcademies.map((academy) => {
+                  {paginatedAcademies.map((academy, index) => {
                     // Calculate the number of students for this academy
                     const studentCount = students.filter(student => student.nameOfSchoolAcademyTrainingCenter === academy.name).length;
 
                     return (
                       <tr key={academy.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 text-sm">{(currentPage - 1) * entriesPerPage + index + 1}</td>
                         <td className="px-4 py-3 text-sm">{academy.name}</td>
                         <td className="px-4 py-3 text-sm">{academy.location_province},{academy.location_district}</td>
                         <td className="px-4 py-3 text-sm">{academy.category}</td>
@@ -522,6 +524,7 @@ function Academies() {
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">No.</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Name</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">School</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Age/Date of Birth</th>
@@ -533,8 +536,9 @@ function Academies() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {paginatedStudents.map((student) => (
+                  {paginatedStudents.map((student, index) => (
                     <tr key={student.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 text-sm">{(studentCurrentPage - 1) * entriesPerPage + index + 1}</td>
                       <td className="px-4 py-3 text-sm">{`${student.firstName} ${student.lastName}`}</td>
                       <td className="px-4 py-3 text-sm">{student.nameOfSchoolAcademyTrainingCenter}</td>
                       <td className="px-4 py-3 text-sm">{new Date(student.dateOfBirth).toLocaleDateString()}</td>

@@ -784,6 +784,7 @@ const Federations = () => {
                         onChange={handleSelectAll}
                       />
                     </TableHead>
+                    <TableHead className="w-[60px] text-xs">No.</TableHead>
                     <TableHead className="min-w-[180px] text-xs">Name</TableHead>
                     <TableHead className="min-w-[180px] text-xs">Logo</TableHead>
                     <TableHead className="w-[80px] text-xs">Acronym</TableHead>
@@ -793,7 +794,7 @@ const Federations = () => {
                   </TableRow>
                 </TableHeader>
               <TableBody>
-                {currentItems.map((federation) => (
+                {currentItems.map((federation, index) => (
                   <TableRow key={federation.id}>
                     <TableCell className="text-xs">
                       <input
@@ -809,6 +810,7 @@ const Federations = () => {
                         }}
                       />
                     </TableCell>
+                    <TableCell className="text-xs">{indexOfFirstItem + index + 1}</TableCell>
                     <TableCell className="text-xs font-medium">{federation.name}</TableCell>
                       <TableCell>
                         {(() => {
@@ -932,6 +934,7 @@ const Federations = () => {
                     <TableHead className="w-[30px] text-xs">
                       <input type="checkbox" className="rounded border-gray-300" />
                     </TableHead>
+                    <TableHead className="w-[60px] text-xs">No.</TableHead>
                     <TableHead className="min-w-[180px] text-xs">Name</TableHead>
                     <TableHead className="w-[100px] text-xs">Logo</TableHead>
                     <TableHead className="w-[80px] text-xs">Acronym</TableHead>
@@ -941,11 +944,12 @@ const Federations = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {federations.slice(indexOfFirstItem, indexOfLastItem).map((federation) => (
+                  {federations.slice(indexOfFirstItem, indexOfLastItem).map((federation, index) => (
                     <TableRow key={federation.id}>
                       <TableCell>
                         <input type="checkbox" className="rounded border-gray-300" />
                       </TableCell>
+                      <TableCell className="text-xs">{indexOfFirstItem + index + 1}</TableCell>
                       <TableCell className="font-medium">{federation.name}</TableCell>
                       <TableCell>
                         <img src={`${axiosInstance.defaults.baseURL}${federation.logo}`} alt="federation Logo" className="w-12 h-12 object-cover rounded-full" />
@@ -1237,6 +1241,7 @@ const Federations = () => {
                     <TableHead className="w-[30px] text-xs">
                       <input type="checkbox" className="rounded border-gray-300" />
                     </TableHead>
+                    <TableHead className="w-[60px] text-xs">No.</TableHead>
                     <TableHead className="min-w-[200px] text-xs">Name</TableHead>
                     <TableHead className="w-[100px] text-xs">Type</TableHead>
                     <TableHead className="min-w-[200px] text-xs">Federation</TableHead>
@@ -1247,11 +1252,12 @@ const Federations = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredPlayersStaff.slice(indexOfFirstItem, indexOfLastItem).map((person) => (
+                  {filteredPlayersStaff.slice(indexOfFirstItem, indexOfLastItem).map((person, index) => (
                     <TableRow key={person.id}>
                       <TableCell>
                         <input type="checkbox" className="rounded border-gray-300" />
                       </TableCell>
+                      <TableCell className="text-xs">{indexOfFirstItem + index + 1}</TableCell>
                       <TableCell className="font-medium">{`${person.firstName} ${person.lastName}`}</TableCell>
                       <TableCell>{person.type}</TableCell>
                       <TableCell>{person.federation.name}</TableCell>

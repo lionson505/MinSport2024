@@ -568,6 +568,7 @@ const InfrastructureList = ({ infrastructures, categories, subCategories }) => {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>No.</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Subcategory</TableHead>
@@ -578,7 +579,7 @@ const InfrastructureList = ({ infrastructures, categories, subCategories }) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredInfrastructures.map((infra) => {
+            {filteredInfrastructures.map((infra, index) => {
               const categoryName = localCategories.find(cat => cat.id === infra.infraCategoryId )?.name || 'N/A';
               const subCategoryName = localSubCategories.find(sub => sub.id === infra.infraSubCategoryId)?.name || 'N/A';
 
@@ -589,6 +590,7 @@ const InfrastructureList = ({ infrastructures, categories, subCategories }) => {
 
               return (
                 <TableRow key={infra.id}>
+                  <TableCell>{index + 1}</TableCell>
                   <TableCell className="font-medium">{infra.name}</TableCell>
                   <TableCell>{categoryName}</TableCell>
                   <TableCell>{subCategoryName}</TableCell>

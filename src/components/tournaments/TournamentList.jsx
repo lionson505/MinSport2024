@@ -232,6 +232,7 @@ const TournamentList = ({ tournaments, loading, error }) => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>No.</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Season</TableHead>
@@ -245,16 +246,17 @@ const TournamentList = ({ tournaments, loading, error }) => {
             <TableBody>
               {pageItems.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-gray-600">
+                  <TableCell colSpan={9} className="text-center py-8 text-gray-600">
                     No tournaments found. {searchTerm || filterType !== 'all' || filterStatus !== 'all' ? 'Try adjusting your search or filters.' : 'Create your first tournament to get started.'}
                   </TableCell>
                 </TableRow>
               ) : (
-                pageItems.map((tournament) => {
+                pageItems.map((tournament, index) => {
                   const TypeIcon = getTypeIcon(tournament.type);
                   const statusText = deriveStatus(tournament);
                   return (
                     <TableRow key={tournament.id}>
+                      <TableCell>{pageStart + index + 1}</TableCell>
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
                           <span className="p-1.5 rounded-md bg-blue-50 text-blue-600">

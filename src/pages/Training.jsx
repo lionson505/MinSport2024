@@ -222,6 +222,7 @@ const Training = () => {
               <TableHead className="w-[20px] text-[11px]">
                 <input type="checkbox" className="rounded border-gray-300 w-3 h-3" />
               </TableHead>
+              <TableHead className="w-[60px] text-[11px]">No.</TableHead>
               <TableHead className="w-[60px] text-[11px]">ID</TableHead>
               <TableHead className="min-w-[150px] text-[11px]">TRAINING TITLE</TableHead>
               <TableHead className="min-w-[120px] text-[11px]">TRAINING PERIOD</TableHead>
@@ -232,7 +233,7 @@ const Training = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {currentItems.map((training) => (
+            {currentItems.map((training, index) => (
               <TableRow key={training.id}>
                 <TableCell>
                   <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${
@@ -243,6 +244,7 @@ const Training = () => {
                     {training.status}
                   </span>
                 </TableCell>
+                <TableCell>{indexOfFirstItem + index + 1}</TableCell>
                 <TableCell>{training.id}</TableCell>
                 <TableCell>{training.title}</TableCell>
                 <TableCell>{training.fromDate ? new Date(training.fromDate).toLocaleDateString() : 'N/A'}</TableCell>

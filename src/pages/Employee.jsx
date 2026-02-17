@@ -349,6 +349,7 @@ function Employee() {
                 <table className="w-full">
                   <thead className="bg-gray-50">
                     <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No.</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Names</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Start Date</th>
@@ -359,8 +360,9 @@ function Employee() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {paginatedData.map((employee) => (
+                    {paginatedData.map((employee, index) => (
                       <tr key={employee.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 text-sm">{(currentPage - 1) * rowsPerPage + index + 1}</td>
                         <td className="px-4 py-3 text-sm text-blue-600">{employee.id}</td>
                         <td className="px-4 py-3 text-sm">{`${employee.firstname} ${employee.lastname}`}</td>
                         <td className="px-4 py-3 text-sm">{employee.start_date}</td>

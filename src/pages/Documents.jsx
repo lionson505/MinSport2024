@@ -166,6 +166,7 @@ function Documents() {
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">No.</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Document Name</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Document Type</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Reference No.</th>
@@ -179,8 +180,9 @@ function Documents() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {currentDocuments.map((doc) => (
+            {currentDocuments.map((doc, index) => (
               <tr key={doc.id} className="hover:bg-gray-50">
+                <td className="px-4 py-3 text-sm">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                 <td className="px-4 py-3 text-sm">{doc.documentName}</td>
                 <td className="px-4 py-3 text-sm">{doc.documentType}</td>
                 <td className="px-4 py-3 text-sm">{doc.referenceNo}</td>

@@ -16,6 +16,7 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
     email: '',
     phone: '',
     status: 'ACTIVE',
+    dateOfBirth: '',
     maritalStatus: '',
     region: '',
     discipline: '',
@@ -150,6 +151,7 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
         // Auto-fill form fields from NIDA
         setFormData(prev => ({
           ...prev,
+          dateOfBirth: details.dob || prev.dateOfBirth || '',
           maritalStatus: (details.marital_status || details.civilStatus || prev.maritalStatus || '').toString().toUpperCase(),
           region: details.province || prev.region || '',
           placeOfResidence: details.placeOfResidence || `${details.district || ''}${details.sector ? ', ' + details.sector : ''}${details.cell ? ', ' + details.cell : ''}${details.village ? ', ' + details.village : ''}`.replace(/^,\s*/, '').replace(/,\s*,/g, ',')
@@ -237,11 +239,17 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const dobToSend = (idType === 'passport' ? formData.dateOfBirth : (nidaData?.dateOfBirth || formData.dateOfBirth)) || '';
+    if (!dobToSend) {
+      toast.error('dateOfBirth is required');
+      return;
+    }
+
     const formDataToSubmit = new FormData();
     formDataToSubmit.append('idPassportNo', idNumber || '');
     formDataToSubmit.append('firstName', nidaData?.names.split(' ')[0] || '');
     formDataToSubmit.append('lastName', nidaData?.names.split(' ')[1] || '');
-    formDataToSubmit.append('dateOfBirth', nidaData?.dateOfBirth || '');
+    formDataToSubmit.append('dateOfBirth', dobToSend);
     formDataToSubmit.append('gender', nidaData?.gender.toUpperCase() || '');
     formDataToSubmit.append('maritalStatus', formData.maritalStatus || '');
     formDataToSubmit.append('region', formData.region || '');
@@ -290,7 +298,7 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
       }
 
       if (typeof onSubmit === 'function') {
-        onSubmit(response.data);
+        onSubmit(response.data?.data ?? response.data);
       }
     } catch (error) {
       console.error('API Error:', error);
@@ -428,7 +436,7 @@ const AddSportsProfessionalForm = ({ onCancel, onSubmit, initialData = {}, isSub
             <label className="block text-sm font-medium mb-1">Date of Birth</label>
             <Input
               type="date"
-              value={idType === 'passport' ? formData.dateOfBirth : nidaData?.dateOfBirth || ''}
+              value={idType === 'passport' ? formData.dateOfBirth : (nidaData?.dateOfBirth || formData.dateOfBirth || '')}
               onChange={(e) => idType === 'passport' && setFormData({ ...formData, dateOfBirth: e.target.value })}
               readOnly={idType !== 'passport'}
               className={idType !== 'passport' ? 'bg-gray-50' : ''}

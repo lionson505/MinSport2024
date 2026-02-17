@@ -328,6 +328,7 @@ const TourismEventsList = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>No.</TableHead>
                 <TableHead>Event Name</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>Sub Category</TableHead>
@@ -340,8 +341,9 @@ const TourismEventsList = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedEvents.map((event) => (
+              {paginatedEvents.map((event, index) => (
                 <TableRow key={event.id}>
+                  <TableCell>{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                   <TableCell className="font-medium">{event.name}</TableCell>
                   <TableCell>
                     {categories.find(cat => cat.id === event.categoryId)?.name || 'Unknown Category'}

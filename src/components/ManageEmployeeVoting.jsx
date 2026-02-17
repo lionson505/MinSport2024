@@ -827,18 +827,21 @@ function ManageEmployeeVoting() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead>
             <tr>
+              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">No.</th>
               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Criteria</th>
               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Points</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {Object.entries(criteriaPoints).map(([name, points]) => (
+            {Object.entries(criteriaPoints).map(([name, points], index) => (
               <tr key={name}>
+                <td className="px-4 py-2 text-sm text-gray-900">{index + 1}</td>
                 <td className="px-4 py-2 text-sm text-gray-900">{name}</td>
                 <td className="px-4 py-2 text-sm text-gray-900">{points}</td>
               </tr>
             ))}
             <tr className="bg-gray-50">
+              <td className="px-4 py-2 text-sm font-medium text-gray-900"></td>
               <td className="px-4 py-2 text-sm font-medium text-gray-900">Total Points</td>
               <td className="px-4 py-2 text-sm font-medium text-indigo-600">{totalPoints}</td>
             </tr>
@@ -931,6 +934,7 @@ function ManageEmployeeVoting() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No.</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee Count</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -939,8 +943,9 @@ function ManageEmployeeVoting() {
             <tbody className="bg-white divide-y divide-gray-200">
               {departmentsList
                 .filter(dept => dept.toLowerCase().includes(searchTerm.toLowerCase()))
-                .map((department) => (
+                .map((department, index) => (
                 <tr key={department}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{index + 1}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {department}
                   </td>
@@ -1125,6 +1130,7 @@ function ManageEmployeeVoting() {
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No.</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Voting Period</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created Date</th>
@@ -1132,8 +1138,9 @@ function ManageEmployeeVoting() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {groupedVotings[selectedDepartment]?.map((voting) => (
+                      {groupedVotings[selectedDepartment]?.map((voting, index) => (
                         <tr key={voting.id}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{index + 1}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {voting.employee?.email || 'N/A'}
                           </td>
@@ -1991,19 +1998,21 @@ function ManageEmployeeVoting() {
                             <table className="min-w-full divide-y divide-gray-200">
                               <thead className="bg-gray-50">
                                 <tr>
+                                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">No.</th>
                                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Department</th>
                                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Department Email</th>
                                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Employee Count</th>
                                 </tr>
                               </thead>
                               <tbody className="bg-white divide-y divide-gray-200">
-                                {departmentsWithResults.map(department => {
+                                {departmentsWithResults.map((department, index) => {
                                   const departmentVotings = groupedVotings[department] || [];
                                   const departmentEmail = departmentVotings[0]?.department_email || 'Email not available';
                                   const employeeCount = departmentVotings.length;
                                   
                                   return (
                                     <tr key={department}>
+                                      <td className="px-4 py-2 text-sm text-gray-900">{index + 1}</td>
                                       <td className="px-4 py-2 text-sm text-gray-900">{department}</td>
                                       <td className="px-4 py-2 text-sm text-gray-900">{departmentEmail}</td>
                                       <td className="px-4 py-2 text-sm text-gray-900">{employeeCount} employees</td>

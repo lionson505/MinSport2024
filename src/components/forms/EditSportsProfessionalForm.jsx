@@ -58,20 +58,13 @@ const EditSportsProfessionalForm = ({ onCancel, isSubmitting }) => {
 
     setIsLoadingNIDA(true);
     try {
-      const res = await fetch(`/api/player-staff/citizen/${idNumber}`, {
-        method: 'GET',
-        headers: { 'Accept': 'application/json' },
-      });
+      const response = await axios.get(`/player-staff/citizen/${idNumber}`);
+      const statusCode = response?.data?.status_code ?? response?.status;
+      const details = response?.data?.details;
 
-      if (!res.ok) {
-        const errorBody = await res.json().catch(() => ({}));
-        throw new Error(errorBody?.message || `Lookup failed with status ${res.status}`);
-      }
-
-      const data = await res.json();
-      if (data?.status_code === 200) {
-        setNidaData(data.details || null);
-      toast.success('ID verified successfully');
+      if (statusCode === 200 && details) {
+        setNidaData(details || null);
+        toast.success('ID verified successfully');
       } else {
         setNidaData(null);
         toast.error('Failed to verify ID');

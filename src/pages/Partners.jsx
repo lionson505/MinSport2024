@@ -165,6 +165,7 @@ const Partners = () => {
   <Table>
     <TableHeader>
       <TableRow>
+        <TableHead>No.</TableHead>
         <TableHead>Name</TableHead>
         <TableHead>Sports Discipline</TableHead>
         <TableHead>Business</TableHead>
@@ -180,8 +181,9 @@ const Partners = () => {
       </TableRow>
     </TableHeader>
     <TableBody>
-      {currentPartners.map((partner) => (
+      {currentPartners.map((partner, index) => (
         <TableRow key={partner.id}>
+          <TableCell>{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
           <TableCell>{partner.name || 'Not Available'}</TableCell>
           <TableCell>{partner.sports_discipline || 'Not Available'}</TableCell>
           <TableCell>{partner.business || 'Not Available'}</TableCell>

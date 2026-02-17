@@ -58,7 +58,7 @@ const EditSportsProfessionalForm = ({ onCancel, isSubmitting }) => {
 
     setIsLoadingNIDA(true);
     try {
-      const response = await axios.get(`/player-staff/citizen/${idNumber}`); // Use axiosInstance baseURL
+      const response = await axios.get(`/player-staff/citizen/${idNumber}`);
       console.log('Frontend: Raw API response data:', response.data);
 
       const statusCode = response?.data?.status_code ?? response?.status;

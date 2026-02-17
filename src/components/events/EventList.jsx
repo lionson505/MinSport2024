@@ -7,6 +7,7 @@ export function EventList({ events, onView, onEdit, onDelete }) {
     <Table>
       <TableHeader>
         <TableRow>
+          <TableHead>No.</TableHead>
           <TableHead>Event Name</TableHead>
           <TableHead>Date</TableHead>
           <TableHead>Location</TableHead>
@@ -15,8 +16,9 @@ export function EventList({ events, onView, onEdit, onDelete }) {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {events.map((event) => (
+        {events.map((event, index) => (
           <TableRow key={event.id}>
+            <TableCell>{index + 1}</TableCell>
             <TableCell>
               <div>
                 <p className="font-medium">{event.title}</p>

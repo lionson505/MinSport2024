@@ -326,6 +326,7 @@ function PSAppointments() {
                                     }}
                                 />
                             </th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">No.</th>
                             <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">TIME</th>
                             <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">NAMES</th>
                             <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Gender</th>
@@ -338,7 +339,7 @@ function PSAppointments() {
                         </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
-                        {currentItems.map((appointment) => (
+                        {currentItems.map((appointment, index) => (
                             <tr key={appointment.id} className="hover:bg-gray-50">
                                 <td className="px-3 py-2">
                                     <input
@@ -354,6 +355,7 @@ function PSAppointments() {
                                         }}
                                     />
                                 </td>
+                                <td className="px-3 py-2 text-sm">{startIndex + index + 1}</td>
                                 <td className="px-3 py-2 text-sm whitespace-nowrap">
                                     {new Date(appointment.request_time).toLocaleTimeString()}
                                 </td>

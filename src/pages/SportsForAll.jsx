@@ -187,6 +187,7 @@ function SportsForAll() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="px-4 py-2 text-left">No.</TableHead>
                 <TableHead className="px-4 py-2 text-left">Date</TableHead>
                 <th className="px-4 py-2 text-left">Province</th>
                 <th className="px-4 py-2 text-left">District</th>
@@ -199,8 +200,9 @@ function SportsForAll() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {currentItems.map((sport) => (
+              {currentItems.map((sport, index) => (
                 <TableRow key={sport.id}>
+                  <TableCell className="px-4 py-2">{indexOfFirstItem + index + 1}</TableCell>
                   <TableCell className="px-4 py-2">{sport.date}</TableCell>
                   <td className="px-4 py-2">{sport.province}</td>
                   <td className="px-4 py-2">{sport.district}</td>

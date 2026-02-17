@@ -19,6 +19,7 @@ export function FederationTable({
     <Table>
       <TableHeader>
         <TableRow>
+          <TableHead>No.</TableHead>
           <TableHead>Name</TableHead>
           <TableHead>Sport</TableHead>
           <TableHead>Status</TableHead>
@@ -27,8 +28,9 @@ export function FederationTable({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {federations.map((federation) => (
+        {federations.map((federation, index) => (
           <TableRow key={federation.id}>
+            <TableCell>{index + 1}</TableCell>
             <TableCell>{federation.name}</TableCell>
             <TableCell>{federation.sport}</TableCell>
             <TableCell>

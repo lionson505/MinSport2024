@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import axios from 'axios';
 import { Plus, Edit, Trash2, AlertCircle, Eye, PencilLine, Search } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import PageLoading from '../components/ui/PageLoading';
@@ -46,6 +47,17 @@ const SportsProfessionals = () => {
   const [viewingFunction, setViewingFunction] = useState(null);
 
   const [passportImage, setPassportImage] = useState(null);
+
+  const assetBase = useMemo(() => {
+    const apiBase = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
+    return apiBase.endsWith('/api') ? apiBase.slice(0, -4) : apiBase;
+  }, []);
+
+  const resolveAssetUrl = (maybeRelativeUrl) => {
+    if (!maybeRelativeUrl) return '';
+    if (/^https?:\/\//i.test(maybeRelativeUrl)) return maybeRelativeUrl;
+    return `${assetBase}${maybeRelativeUrl.startsWith('/') ? '' : '/'}${maybeRelativeUrl}`;
+  };
 
   // Filters state
   const [filters, setFilters] = useState({
@@ -329,7 +341,7 @@ const SportsProfessionals = () => {
 
   const fetchPassportImage = async (imageUrl) => {
     try {
-      const response = await axiosInstance.get(imageUrl, { responseType: 'blob' });
+      const response = await axios.get(resolveAssetUrl(imageUrl), { responseType: 'blob' });
       const imageObjectURL = URL.createObjectURL(response.data);
       setPassportImage(imageObjectURL);
     } catch (error) {
@@ -340,7 +352,7 @@ const SportsProfessionals = () => {
 
   const fetchResume = async (resumeUrl) => {
     try {
-      const response = await axiosInstance.get(resumeUrl, { responseType: 'blob' });
+      const response = await axios.get(resolveAssetUrl(resumeUrl), { responseType: 'blob' });
       const resumeObjectURL = URL.createObjectURL(response.data);
       window.open(resumeObjectURL, '_blank');
     } catch (error) {
@@ -349,8 +361,9 @@ const SportsProfessionals = () => {
     }
   };
 
-  const renderDisciplineRow = (discipline) => (
+  const renderDisciplineRow = (discipline, rowNumber) => (
     <TableRow key={discipline.id}>
+      <TableCell>{rowNumber}</TableCell>
       <TableCell>{discipline.name}</TableCell>
       <TableCell>{discipline.type}</TableCell>
       <TableCell className="operation">
@@ -387,8 +400,9 @@ const SportsProfessionals = () => {
     </TableRow>
   );
 
-  const renderFunctionRow = (func) => (
+  const renderFunctionRow = (func, rowNumber) => (
     <TableRow key={func.id}>
+      <TableCell>{rowNumber}</TableCell>
       <TableCell>{func.name}</TableCell>
       <TableCell>{disciplines.find((d) => d.id === func.disciplineId)?.name}</TableCell>
       <TableCell className="operation">
@@ -425,8 +439,23 @@ const SportsProfessionals = () => {
     </TableRow>
   );
 
-  const renderProfessionalRow = (professional) => (
+  const renderProfessionalRow = (professional, rowNumber) => (
     <TableRow key={professional.id}>
+      <TableCell>{rowNumber}</TableCell>
+      <TableCell>
+        {professional.passportPicture ? (
+          <img
+            src={resolveAssetUrl(professional.passportPicture)}
+            alt="passport"
+            className="h-10 w-10 rounded object-cover"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        ) : (
+          'N/A'
+        )}
+      </TableCell>
       <TableCell>{`${professional.firstName || ''} ${professional.lastName || ''}`.trim() || 'N/A'}</TableCell>
       <TableCell>{professional.function ? professional.function : 'N/A'}</TableCell>
       <TableCell>{professional.nationality}</TableCell>
@@ -678,6 +707,8 @@ const SportsProfessionals = () => {
             <TableRow>
               {activeTab === 'Professionals' ? (
                 <>
+                  <TableHead>No.</TableHead>
+                  <TableHead>Passport Picture</TableHead>
                   <TableHead>Full Name</TableHead>
                   <TableHead>Function</TableHead>
                   <TableHead>Nationality</TableHead>
@@ -688,12 +719,14 @@ const SportsProfessionals = () => {
                 </>
               ) : activeTab === 'Disciplines' ? (
                 <>
+                  <TableHead>No.</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead className="operation">Actions</TableHead>
                 </>
               ) : (
                 <>
+                  <TableHead>No.</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Discipline</TableHead>
                   <TableHead className="operation">Actions</TableHead>
@@ -703,10 +736,16 @@ const SportsProfessionals = () => {
           </TableHeader>
           <TableBody>
             {activeTab === 'Professionals'
-              ? getCurrentPageData(filteredProfessionals).map(renderProfessionalRow)
+              ? getCurrentPageData(filteredProfessionals).map((p, index) =>
+                  renderProfessionalRow(p, (currentPage - 1) * rowsPerPage + index + 1)
+                )
               : activeTab === 'Disciplines'
-              ? getCurrentPageData(filteredDisciplines).map(renderDisciplineRow)
-              : getCurrentPageData(filteredFunctions).map(renderFunctionRow)}
+              ? getCurrentPageData(filteredDisciplines).map((d, index) =>
+                  renderDisciplineRow(d, (currentPage - 1) * rowsPerPage + index + 1)
+                )
+              : getCurrentPageData(filteredFunctions).map((f, index) =>
+                  renderFunctionRow(f, (currentPage - 1) * rowsPerPage + index + 1)
+                )}
           </TableBody>
         </Table>
         </PrintButton>
@@ -935,6 +974,27 @@ const SportsProfessionals = () => {
               <DialogTitle>Professional Details</DialogTitle>
             </DialogHeader>
             <div className="py-4 max-h-[70vh] overflow-y-auto">
+              <div className="flex justify-center mb-6">
+                {passportImage ? (
+                  <img
+                    src={passportImage}
+                    alt="passport"
+                    className="h-32 w-32 rounded object-cover border"
+                  />
+                ) : viewingProfessional.passportPicture ? (
+                  <img
+                    src={resolveAssetUrl(viewingProfessional.passportPicture)}
+                    alt="passport"
+                    className="h-32 w-32 rounded object-cover border"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <div className="text-sm text-gray-500">No passport picture</div>
+                )}
+              </div>
+
               <div className="grid grid-cols-2 gap-6">
                 {/* Personal Information */}
                 <div className="space-y-4">

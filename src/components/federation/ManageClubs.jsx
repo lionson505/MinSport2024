@@ -261,82 +261,78 @@ const ManageClubs = ({ onAdd, onEdit, onDelete, federations, isLoading, actionIc
           <p>No clubs found for this federation or search criteria.</p>
         ) : (
           <>
-          <PrintButton title='CLUBS REPORT'>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Logo</TableHead>
-                  <TableHead>Club Name</TableHead>
-                  <TableHead>Federation</TableHead>
-                  <TableHead>Year Founded</TableHead>
-                  <TableHead>Legal Rep. Email</TableHead>
-                  <TableHead>Division</TableHead>
-                  <TableHead>Players</TableHead>
-                  <TableHead>Staff</TableHead>
-                  <TableHead className="operation">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {currentClubs.map((club) => (
-                  <TableRow key={club.id}>
-                    <TableCell>
-                      {club.logo && <img src={club.logo} alt={club.name} className="w-10 h-10 object-cover" />}
-                    </TableCell>
-                    <TableCell>{club.name}</TableCell>
-                    <TableCell>{federations.find((fed) => fed.id === club.federationId)?.name}</TableCell>
-                    <TableCell>{club.yearFounded}</TableCell>
-                    <TableCell>{club.legalRepresentativeEmail || 'N/A'}</TableCell>
-                    <TableCell>{club.division || 'N/A'}</TableCell>
-                    <TableCell>{club.playersList?.filter(player => player.type === 'player').length || 0}</TableCell>
-                    <TableCell>{club.playersList?.filter(player => player.type === 'staff').length || 0}</TableCell>
-                    <TableCell className="operation">
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => handleViewDetails(club)}
-                          className="p-1 rounded-lg hover:bg-gray-100"
-                          title="View Details"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleEdit(club)}
-                          className="p-1 rounded-lg hover:bg-gray-100"
-                          title="Edit"
-                        >
-                          <Pen className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteClick(club)}
-                          className="p-1 rounded-lg hover:bg-red-50 text-red-600"
-                          title="Delete"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleViewPlayers(club)}
-                          className="p-1 rounded-lg hover:bg-gray-100"
-                          title="View Players"
-                        >
-                          <Users className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </TableCell>
+            <PrintButton title='CLUBS REPORT'>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>No.</TableHead>
+                    <TableHead>Logo</TableHead>
+                    <TableHead>Club Name</TableHead>
+                    <TableHead>Federation</TableHead>
+                    <TableHead>Year Founded</TableHead>
+                    <TableHead>Legal Rep. Email</TableHead>
+                    <TableHead>Division</TableHead>
+                    <TableHead>Players</TableHead>
+                    <TableHead>Staff</TableHead>
+                    <TableHead className="operation">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {currentClubs.map((club, index) => (
+                    <TableRow key={club.id}>
+                      <TableCell>{indexOfFirstRow + index + 1}</TableCell>
+                      <TableCell>
+                        {club.logo && <img src={club.logo} alt={club.name} className="w-10 h-10 object-cover" />}
+                      </TableCell>
+                      <TableCell>{club.name}</TableCell>
+                      <TableCell>{federations.find((fed) => fed.id === club.federationId)?.name}</TableCell>
+                      <TableCell>{club.yearFounded}</TableCell>
+                      <TableCell>{club.legalRepresentativeEmail}</TableCell>
+                      <TableCell>{club.division}</TableCell>
+                      <TableCell>{club.players || 0}</TableCell>
+                      <TableCell>{club.staff || 0}</TableCell>
+                      <TableCell className="operation">
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleViewDetails(club)}
+                            className="p-1 rounded-lg hover:bg-gray-100"
+                            title="View Details"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleEdit(club)}
+                            className="p-1 rounded-lg hover:bg-gray-100"
+                            title="Edit"
+                          >
+                            <Pen className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteClick(club)}
+                            className="p-1 rounded-lg hover:bg-red-50 text-red-600"
+                            title="Delete"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleViewPlayers(club)}
+                            className="p-1 rounded-lg hover:bg-gray-100"
+                            title="View Players"
+                          >
+                            <Users className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </PrintButton>
             <div className="flex justify-between mt-4">
-              <Button
-                onClick={() => paginate(currentPage - 1)}
-                disabled={currentPage === 1}
-              >
+              <Button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>
                 Previous
               </Button>
-              <Button
-                onClick={() => paginate(currentPage + 1)}
-                disabled={indexOfLastRow >= filteredClubs.length}
-              >
+              <Button onClick={() => paginate(currentPage + 1)} disabled={indexOfLastRow >= filteredClubs.length}>
                 Next
               </Button>
             </div>

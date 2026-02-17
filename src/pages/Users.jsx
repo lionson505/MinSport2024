@@ -270,6 +270,7 @@ function Users() {
             <table className="min-w-full table-auto border-collapse">
               <thead>
                 <tr className="bg-gray-100">
+                  <th className="border p-2 text-left">No.</th>
                   <th className="border p-2 text-left">First Name</th>
                   <th className="border p-2 text-left">Last Name</th>
                   <th className="border p-2 text-left">Email</th>
@@ -279,8 +280,9 @@ function Users() {
                 </tr>
               </thead>
               <tbody>
-                {filteredUsers.map((user) => (
+                {filteredUsers.map((user, index) => (
                   <tr key={user.id} className="hover:bg-gray-50">
+                    <td className="border p-2">{index + 1}</td>
                     <td className="border p-2">{user.firstName}</td>
                     <td className="border p-2">{user.lastName}</td>
                     <td className="border p-2">{user.email}</td>
@@ -379,6 +381,7 @@ function Users() {
             <table className="min-w-full table-auto border-collapse">
               <thead>
                 <tr className="bg-gray-100">
+                  <th className="border p-2 text-left">No.</th>
                   <th className="border p-2 text-left">First Name</th>
                   <th className="border p-2 text-left">Last Name</th>
                   <th className="border p-2 text-left">Email</th>
@@ -398,8 +401,9 @@ function Users() {
 
                     return matchesName && matchesGroup;
                   })
-                  .map((user) => (
+                  .map((user, index) => (
                     <tr key={user.id} className="hover:bg-gray-50">
+                      <td className="border p-2">{index + 1}</td>
                       <td className="border p-2">{user.firstName}</td>
                       <td className="border p-2">{user.lastName}</td>
                       <td className="border p-2">{user.email}</td>

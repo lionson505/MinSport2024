@@ -1191,33 +1191,28 @@ const IsongaPrograms = () => {
                     <Table className="w-full table-auto">
                     <TableHeader>
                       <TableRow>
+                        <TableHead className="text-xs p-2 sm:min-w-[40px]">No.</TableHead>
                         <TableHead className="text-xs p-2 sm:min-w-[140px]">Name</TableHead>
                         <TableHead className="text-xs p-2 hidden sm:table-cell sm:min-w-[80px]">Domain</TableHead>
                         <TableHead className="text-xs p-2 sm:min-w-[100px]">Category</TableHead>
-                        <TableHead className="text-xs p-2 sm:min-w-[70px]">Student Count</TableHead>
                         <TableHead className="text-xs p-2 hidden md:table-cell sm:min-w-[80px]">Province</TableHead>
                         <TableHead className="text-xs p-2 hidden md:table-cell sm:min-w-[80px]">District</TableHead>
                         <TableHead className="text-xs p-2 hidden lg:table-cell sm:min-w-[80px]">Sector</TableHead>
                         <TableHead className="text-xs p-2 hidden lg:table-cell sm:min-w-[120px]">School Representative</TableHead>
                         <TableHead className="text-xs p-2 hidden lg:table-cell sm:min-w-[100px]">Contact</TableHead>
                         <TableHead className="text-xs p-2 hidden xl:table-cell sm:min-w-[120px]">Sports Disciplines</TableHead>
-                        <TableHead className="text-xs p-2 hidden xl:table-cell sm:min-w-[80px]">No. of Sports</TableHead>
                         <TableHead className="text-xs p-2 hidden xl:table-cell sm:min-w-[120px]">Sections/Teams</TableHead>
                         <TableHead className="text-xs p-2 sm:min-w-[100px] operation">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {getFilteredProgramsForReport().slice(indexOfFirstItem, indexOfLastItem).map((program) => {
-                        const studentCount = students.filter((s) => (
-                          (s.institutionId && Number(s.institutionId) === Number(program.id)) ||
-                          (s.nameOfSchoolAcademyTrainingCenter && s.nameOfSchoolAcademyTrainingCenter === program.name)
-                        )).length;
+                      {getFilteredProgramsForReport().slice(indexOfFirstItem, indexOfLastItem).map((program, index) => {
                         return (
                         <TableRow key={program.id}>
+                          <TableCell className="text-xs">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                           <TableCell className="text-xs font-medium">{program.name}</TableCell>
                           <TableCell className="text-xs">{program.domain || 'N/A'}</TableCell>
                           <TableCell className="text-xs">{program.category}</TableCell>
-                          <TableCell className="text-xs">{studentCount}</TableCell>
                           <TableCell className="text-xs">{program.location_province || 'N/A'}</TableCell>
                           <TableCell className="text-xs">{program.location_district || 'N/A'}</TableCell>
                           <TableCell className="text-xs">{program.location_sector || 'N/A'}</TableCell>
@@ -1248,11 +1243,6 @@ const IsongaPrograms = () => {
                             ) : (
                               <span className="text-gray-500">N/A</span>
                             )}
-                          </TableCell>
-                          <TableCell className="text-xs text-center">
-                            <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium">
-                              {Array.isArray(program.sportsDisciplines) ? program.sportsDisciplines.length : 0}
-                            </span>
                           </TableCell>
                           <TableCell className="text-xs">
                             {program.sections ? (
@@ -1581,6 +1571,7 @@ const IsongaPrograms = () => {
                     <Table className="w-full table-auto">
                     <TableHeader>
                       <TableRow>
+                        <TableHead className="text-xs p-2 sm:min-w-[40px]">No.</TableHead>
                         <TableHead className="text-xs p-2 sm:min-w-[200px]">Names</TableHead>
                         <TableHead className="text-xs p-2 hidden sm:table-cell sm:min-w-[130px]">SDMS Number</TableHead>
                         <TableHead className="text-xs p-2 sm:min-w-[80px]">Gender</TableHead>
@@ -1594,7 +1585,7 @@ const IsongaPrograms = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {currentStudents.map((student) => {
+                      {currentStudents.map((student, index) => {
                         // Find the institution for this student
                         const studentInstitution = programs.find(p => 
                           Number(p.id) === Number(student.institutionId)
@@ -1608,6 +1599,7 @@ const IsongaPrograms = () => {
                         
                         return (
                         <TableRow key={student.id}>
+                          <TableCell className="text-xs">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                           <TableCell className="text-xs font-medium">
                             {`${student.firstName || ''} ${student.lastName || ''}`.trim() || 'N/A'}
                           </TableCell>
@@ -1851,6 +1843,7 @@ const IsongaPrograms = () => {
                     <Table className="w-full table-auto">
                     <TableHeader>
                       <TableRow>
+                        <TableHead className="text-xs p-2 sm:min-w-[40px]">No.</TableHead>
                         <TableHead className="text-xs p-2 sm:min-w-[120px]">Name</TableHead>
                         <TableHead className="text-xs p-2 hidden sm:table-cell sm:min-w-[60px]">Age</TableHead>
                         <TableHead className="text-xs p-2 sm:min-w-[80px]">Sport</TableHead>
@@ -1861,18 +1854,18 @@ const IsongaPrograms = () => {
                         <TableHead className="text-xs p-2 hidden xl:table-cell sm:min-w-[80px]">Tel</TableHead>
                         <TableHead className="text-xs p-2 hidden xl:table-cell sm:min-w-[100px]">Position</TableHead>
                         <TableHead className="text-xs p-2 hidden xl:table-cell sm:min-w-[250px]">Training Types</TableHead>
-                        <TableHead className="text-xs p-2 hidden xl:table-cell sm:min-w-[140px]">Training Count</TableHead>
                         <TableHead className="text-xs p-2 w-[80px] sm:w-[120px] operation">Action</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {currentCoaches.map((coach) => (
+                      {currentCoaches.map((coach, index) => (
                         <TableRow key={coach.id}>
+                          <TableCell className="text-xs p-2">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                           <TableCell className="text-xs font-medium p-2">{coach.name}</TableCell>
                           <TableCell className="text-xs p-2 hidden sm:table-cell">{coach.age}</TableCell>
                           <TableCell className="text-xs p-2">{coach.sport}</TableCell>
                           <TableCell className="text-xs p-2 hidden md:table-cell">
-                            <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
+                            <span className="inline-flex max-w-[140px] items-center overflow-hidden text-ellipsis whitespace-nowrap rounded bg-green-100 px-2 py-1 text-xs text-green-800">
                               {coach.sport && coach.section ? `${coach.sport} ${coach.section}` : coach.section || 'N/A'}
                             </span>
                           </TableCell>
@@ -1895,17 +1888,6 @@ const IsongaPrograms = () => {
                               ) : (
                                 <span className="text-gray-400">None</span>
                               )}
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-xs text-center p-2 hidden xl:table-cell">
-                            <div className="flex items-center justify-center">
-                              <span className={`inline-flex items-center justify-center min-w-[40px] h-8 px-3 rounded-full text-sm font-medium ${
-                                coach.trainingTypes && coach.trainingTypes.length > 0 
-                                  ? 'bg-blue-100 text-blue-800' 
-                                  : 'bg-gray-100 text-gray-500'
-                              }`}>
-                                {coach.trainingTypes ? coach.trainingTypes.length : 0}
-                              </span>
                             </div>
                           </TableCell>
                           <TableCell className="p-2 operation">
@@ -2083,6 +2065,7 @@ const IsongaPrograms = () => {
                     <Table className="w-full table-auto">
                     <TableHeader>
                       <TableRow>
+                        <TableHead className="text-xs p-2 sm:min-w-[40px]">No.</TableHead>
                         <TableHead className="text-xs p-2 sm:min-w-[150px]">Names</TableHead>
                         <TableHead className="text-xs p-2 hidden sm:table-cell sm:min-w-[80px]">Age</TableHead>
                         <TableHead className="text-xs p-2 hidden md:table-cell sm:min-w-[120px]">Experience</TableHead>
@@ -2094,8 +2077,9 @@ const IsongaPrograms = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {currentPeTeachers.map((teacher) => (
+                      {currentPeTeachers.map((teacher, index) => (
                         <TableRow key={teacher.id}>
+                          <TableCell className="text-xs font-medium p-2">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                           <TableCell className="text-xs font-medium p-2">{teacher.names}</TableCell>
                           <TableCell className="text-xs p-2 hidden sm:table-cell">{teacher.age}</TableCell>
                           <TableCell className="text-xs p-2 hidden md:table-cell">{teacher.experience}</TableCell>
